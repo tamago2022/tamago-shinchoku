@@ -1,0 +1,102 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1147番 曲ページは軽くなったか</title>
+<style>
+:root{--ink:#2b2317;--paper:#faf5ec;--line:#e3d9c6;--aka:#b3261e;--sumi:#8a7a5c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+font-family:"Hiragino Mincho ProN",serif;padding:30px 18px 70px}
+.w{max-width:880px;margin:0 auto}
+h1{font-size:26px;letter-spacing:.07em;margin:0 0 4px;font-weight:500}
+.sub{color:var(--sumi);font-size:13px;margin-bottom:26px;line-height:1.8}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin:0 0 18px}
+h2{font-size:14px;letter-spacing:.1em;color:var(--sumi);margin:0 0 14px;font-weight:400;
+font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif}
+.n{font-size:38px;font-weight:700;letter-spacing:-.01em}
+.k{color:var(--sumi);font-size:12px;line-height:1.85;
+font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif}
+table{width:100%;border-collapse:collapse;font-size:13.5px;
+font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif}
+th{text-align:left;font-weight:400;color:var(--sumi);font-size:11.5px;letter-spacing:.06em;
+padding:0 8px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid #f0eade}
+td.r{text-align:right;font-variant-numeric:tabular-nums}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.g{grid-template-columns:1fr}}
+.bar{height:15px;border-radius:2px;background:var(--aka)}
+.bar.a{background:#5c7a52}
+.mae{color:var(--sumi)}
+.ato{color:#3f5c37;font-weight:700}
+a{color:#6b5a3f}
+</style></head><body><div class="w">
+
+<h1>曲ページは軽くなったか</h1>
+<div class="sub">1147番。たまごさん「Twitterから行って5秒かかる。1、2秒でパッと切り替わらないと」。<br>
+全部、本番のURLを iPhone / Twitter の名前で・キャッシュなしで叩いた数字。推定はゼロ。<br>
+測った日 2026-09-26 ／ 物差し：HTMLの &lt;link&gt;&lt;script&gt; を全部抜いて、1本ずつ圧縮後のバイト数を足す</div>
+
+<div class="card">
+<h2>★ 曲ページが最初に落とす量（圧縮後）</h2>
+<table>
+<tr><td style="width:88px" class="mae">直す前</td>
+    <td><div class="bar" style="width:100%"></div></td>
+    <td class="r mae" style="width:110px">3,500 KB</td></tr>
+<tr><td class="ato">直した後</td>
+    <td><div class="bar a" style="width:19.8%"></div></td>
+    <td class="r ato" style="width:110px">692 KB</td></tr>
+</table>
+<div class="k" style="margin-top:12px">
+生のバイト数では 10.7MB → 2.4MB。<b>5分の1になった。</b><br>
+一番効いたのは1本：<b>名簿（coverguide-data.js）2,688KB を初回から外した</b>こと。これだけで76%。
+</div>
+</div>
+
+<div class="g">
+<div class="card"><h2>内訳（圧縮後・曲ページ）</h2>
+<table>
+<tr><th>何</th><th style="text-align:right">前</th><th style="text-align:right">後</th></tr>
+<tr><td>名簿 coverguide-data.js</td><td class="r mae">2,688 KB</td><td class="r ato">0</td></tr>
+<tr><td>全ページ共通 index.js</td><td class="r mae">633 KB</td><td class="r ato">401 KB</td></tr>
+<tr><td>棚のデータ worlds-data.js</td><td class="r mae">（共通に同居）</td><td class="r">199 KB</td></tr>
+<tr><td>曲ページ本体</td><td class="r mae">76 KB</td><td class="r ato">2 KB</td></tr>
+<tr><td>CSS</td><td class="r">34 KB</td><td class="r">34 KB</td></tr>
+<tr><td>その他</td><td class="r mae">約 70 KB</td><td class="r">約 56 KB</td></tr>
+<tr><td>HTML（中身はサーバで描けている）</td><td class="r">43 KB</td><td class="r">13 KB</td></tr>
+</table>
+</div>
+
+<div class="card"><h2>下の帯（ミニプレイヤー＋タブバー）</h2>
+<div class="n">134<span class="k"> px</span> → <span class="ato">112<span class="k"> px</span></span></div>
+<div class="k" style="margin-top:10px">
+ミニプレイヤーを <b>2段 → 1段64px</b>（Spotifyと同じ高さ）。<br>
+シークバーは <b>数字を消して、下辺の細い線1本（2px）</b>に。<br>
+ボタンは <b>再生/停止・次の曲・⌃ の3つだけ</b>。<br>
+タブバーの高さを48pxに固定し、<b>隙間を8px → 0</b>にして1つの塊にした。<br>
+外したボタン（戻る・進む・一番上へ・前の曲・キュー・閉じる）は
+<b>1つも消していない。⌃ を押すと出る。</b>
+</div>
+</div>
+</div>
+
+<div class="card"><h2>サーバの返答（実測・3回ずつ）</h2>
+<div class="k">
+トップ ttfb 1.78 / 2.09 / 2.43 秒　　曲ページ ttfb 0.79 / 1.76 / 1.84 秒<br>
+<b>遅いのはサーバではなく、落とす量だった。</b>だから量を削った。<br>
+たまごさんが測った「5秒」は Twitterのアプリ内ブラウザ・実機の数字なので、
+ここで同じ条件は作れない。<b>落とす量が5分の1になったところまでが、こちらで言える事実。</b>
+実機の秒数は、次にたまごさんが開いた時が本当の答え。
+</div>
+</div>
+
+<div class="card"><h2>次に効くもの</h2>
+<div class="k">
+いま残っている一番大きいのは <b>全ページ共通の index.js 401KB</b> と <b>worlds-data 199KB</b>。<br>
+worlds-data は「棚の全データ」で、曲ページでも中身を使っていないのに残骸のimportで落ちている。
+曲ページから外せば、さらに約200KB（いまの3割）減る。<br>
+その次は、名簿を「その曲のぶんだけ」サーバから返す形（server function）にすること。
+そうすると、押しても反応しない時間も消える。
+</div>
+</div>
+
+<div class="k">やり方と物差しは <code>status/1147/keika.md</code>。戻し方も同じ場所に1行で書いてある。</div>
+</div></body></html>

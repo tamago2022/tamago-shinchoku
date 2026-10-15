@@ -1,0 +1,173 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1018 ― 空回しでも点く緑を消した。走った316本、取れた0本</title>
+<style>
+:root{--paper:#EDE6D6;--ink:#22304A;--accent:#C1442E;--ok:#2F6B4F;
+--rule:rgba(34,48,74,.18);--faint:rgba(34,48,74,.60)}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;font-size:16px}
+.wrap{max-width:60rem;margin:0 auto;padding:7vw 6vw 14vw}
+.eyebrow{font-size:.68rem;letter-spacing:.42em;color:var(--faint);margin:0 0 1.6rem}
+h1{font-weight:400;font-size:clamp(1.4rem,4.8vw,2.25rem);letter-spacing:.09em;margin:0 0 .4rem;line-height:1.5}
+.sub{color:var(--faint);font-size:.8rem;letter-spacing:.12em;margin:0 0 3.2rem}
+.verdict{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:2rem 0;margin:0 0 3.2rem}
+.verdict p{margin:0 0 1.1rem;font-size:clamp(1rem,2.7vw,1.13rem);line-height:1.95}
+.verdict p:last-child{margin-bottom:0}
+.verdict .n{color:var(--accent);letter-spacing:.3em;font-size:.7rem;margin-right:.9em;vertical-align:.18em}
+.big{color:var(--accent)}
+h2{font-weight:400;font-size:.74rem;letter-spacing:.34em;color:var(--faint);
+ margin:4.2rem 0 1.4rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+h3{font-weight:400;font-size:1.02rem;letter-spacing:.06em;margin:2.6rem 0 .6rem;line-height:1.6}
+h3 .k{color:var(--accent);font-size:.7rem;letter-spacing:.3em;margin-right:.8em;vertical-align:.18em}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:1px;
+ background:var(--rule);border:1px solid var(--rule);margin:0 0 1.4rem}
+.card{background:var(--paper);padding:1.2rem .9rem}
+.card b{display:block;font-weight:400;font-size:clamp(1.5rem,6vw,2rem);letter-spacing:.02em;line-height:1.25}
+.card span{display:block;font-size:.68rem;letter-spacing:.2em;color:var(--faint);margin-top:.5rem}
+.card.red b{color:var(--accent)}
+.card.ok b{color:var(--ok)}
+p{margin:0 0 1.2rem}
+table{width:100%;border-collapse:collapse;margin:0 0 1.6rem;font-size:.86rem}
+th,td{text-align:left;padding:.7rem .5rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:400;color:var(--faint);font-size:.68rem;letter-spacing:.18em}
+td.num{white-space:nowrap}
+.red{color:var(--accent)}
+.ok{color:var(--ok)}
+.box{border:1px solid var(--rule);padding:1.3rem 1.1rem;margin:0 0 1.6rem;background:rgba(255,255,255,.28)}
+.box.hot{border-color:var(--accent);border-left-width:3px}
+.box p:last-child{margin-bottom:0}
+.small{font-size:.8rem;color:var(--faint)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.82em;background:rgba(34,48,74,.07);padding:.1em .35em;border-radius:2px;word-break:break-all}
+ul{margin:0 0 1.3rem;padding-left:1.1rem}
+li{margin-bottom:.5rem}
+footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-size:.72rem;letter-spacing:.14em;color:var(--faint)}
+</style></head><body><div class="wrap">
+
+<p class="eyebrow">1018 ／ ハーネスエンジニアリング</p>
+<h1>空回しでも点く緑を消した。<br>走った316本、取れた0本。</h1>
+<p class="sub">2026-09-22 ／ 実測はすべて工場のログそのもの</p>
+
+<div class="verdict">
+<p><span class="n">1</span>心臓は死んでいませんでした。<span class="big">見張りが、生きている心臓を殺していました。</span>死亡宣告349件のうち、本当に死んでいたのは3件だけ。<span class="big">346件（99.1%）が誤殺。</span></p>
+<p><span class="n">2</span>工場は<span class="big">26時間、本物の仕事を1本も出していません。</span>空回しを316本まわして、紙の上では緑のままでした。</p>
+<p><span class="n">3</span>止めているのは<span class="big">Claudeのログイン切れ</span>。たまごさんが1回ログインし直すだけで、こちらが気づいて自動で再開します。</p>
+</div>
+
+<h2>ひとつめ　心臓</h2>
+
+<h3><span class="k">みつけた</span>閾値が、仕組みと最初から噛み合っていなかった</h3>
+<p>見張りは <code>.heartbeat_alive</code> の更新が60秒途切れたら「死んだ」と判断していました。根拠は見張り自身のコメントにある「心臓は15秒ごとにtouchする」。<span class="red">これが事実ではありませんでした。</span></p>
+<p>心臓は<b>ループの先頭で1回だけ</b>touchし、そのあと同じループの中で <code>auto_launcher</code>（最大45秒）と <code>command_ingest</code>（最大45秒）を順番に待ちます。1周は普通に90〜140秒。<span class="red">構造的に、必ず60秒を超える。</span></p>
+<p>そして <code>kickstart -k</code> は kill を伴います。殺された拍子に <code>auto_launcher.py</code> が孤児になり、ロックを握ったまま残る。<b>＝投げた仕事が一度も走りきらない。</b>順番待ちがリセットされる正体がこれでした。</p>
+
+<div class="cards">
+<div class="card red"><b>349</b><span>死亡宣告（全期間）</span></div>
+<div class="card red"><b>346</b><span>うち誤殺</span></div>
+<div class="card"><b>73秒</b><span>宣告の中央値</span></div>
+<div class="card ok"><b>3</b><span>本当の死（600秒超）</span></div>
+</div>
+
+<h3><span class="k">なおした</span>穴を塞がず、信号の素材を替えた</h3>
+<p>Kubernetes が liveness probe と readiness probe を分けているのと同じ理由です。<b>生きているか</b>の判定に<b>仕事が終わったか</b>を混ぜると、仕事が重いだけで全部再起動になる。</p>
+<ul>
+<li><b>鼓動</b>＝仕事に絶対に邪魔されない専用の子プロセスが5秒ごとに打つ。生死だけを表す。</li>
+<li><b>進行</b>＝1周を回りきった時だけ別ファイルに書く。本当に固まった時だけ、こちらが古くなる。</li>
+</ul>
+<p>見張りはこの2つを別々に見ます。<b>「忙しい」と「死んだ」が、初めて区別できるようになりました。</b></p>
+
+<table>
+<tr><th>　</th><th>入れ替え前（本日6.7時間）</th><th>入れ替え後</th></tr>
+<tr><td>心臓の再起動</td><td class="num red">72回</td><td class="num ok">0回</td></tr>
+<tr><td>死亡宣告</td><td class="num red">71回</td><td class="num ok">0回</td></tr>
+<tr><td>鼓動の最大の途切れ</td><td class="num red">90秒（1周まるごと）</td><td class="num ok">5秒</td></tr>
+<tr><td>本当の死の検知</td><td class="num">できる</td><td class="num">できる（変えていない）</td></tr>
+</table>
+<p class="small">入れ替え直後の実機の1周は <code>cycle_secs=110</code>。旧版なら確実に殺されていた長さで、誰も殺していません。<br>同じ信号を見ている所が9か所あったので、<b>1か所直したら9か所とも直りました。</b></p>
+
+<h2>ふたつめ　嘘の緑</h2>
+
+<h3><span class="k">みつけた</span>緑の根拠が「着火したか」だった</h3>
+<p><code>genzaichi.md</code>（たまごさんとDispatchが最初に読む1枚）は <span class="ok">✅ 発車：10分以内に動いている</span> と出し続けていました。ところがこの緑が見ていた <code>.last_launch_at</code> は、<b>本物でも空回しでも同じように書き換わる</b>設計でした。空回しは2分ごとに必ず入ります。</p>
+<p>つまりこの緑は「工場が動いている」ではなく<span class="red">「空回しが入った」しか意味していなかった。</span></p>
+
+<div class="cards">
+<div class="card red"><b>0</b><span>本物の発車 🚀</span></div>
+<div class="card"><b>316</b><span>空回し 🧪</span></div>
+<div class="card red"><b>2453</b><span>見送り（ログイン切れ）</span></div>
+<div class="card red"><b>26時間</b><span>無産のまま</span></div>
+</div>
+<p class="small">出典：<code>status/auto_launch.log</code> 全体（2026-09-21 04:42:42 〜 2026-09-22 06:45）。この期間、ログに存在する行は上の4種類だけです。</p>
+
+<h3><span class="k">みつけた</span>3つの紙が、3つの違うことを言っていた</h3>
+<p>「3層が同じ嘘を見ていた」ではありませんでした。もっと悪くて、<b>正しい答えは既に工場の中にあったのに、たまごさんが最初に読む紙だけがそれを持っていなかった。</b></p>
+<table>
+<tr><th>どの紙</th><th>言っていたこと</th><th>　</th></tr>
+<tr><td><code>genzaichi.md</code></td><td>発車：10分以内に動いている</td><td class="red">嘘</td></tr>
+<tr><td>鍵台帳 <code>probe_hassha()</code></td><td>発車が止められています（ログイン切れ）</td><td class="ok">正しい</td></tr>
+<tr><td><code>auto_launch.log</code></td><td>本物0本／空回し316本</td><td class="ok">正しい</td></tr>
+</table>
+<p>判定そのものも2か所に別々に書かれていました。<code>kagi_daicho.py</code> の696行目には<b>正しい型が既にあり</b>、<code>genzaichi.py</code> には無かった。同じ規則を2回書けば、片方だけ直る日が必ず来ます。実際そうなっていました。</p>
+
+<h3><span class="k">なおした</span>判定を1ファイルに引っ越した</h3>
+<p><code>tools/hantei.py</code> を作り、<b>規則はここにしか書かない</b>ことにしました。<code>genzaichi</code> も <code>kagi_daicho</code> も、これから足すどの見張りも、判定は必ずここを呼びます。ここを直せば全部が直る。常駐は1つも増えていません（呼ばれるだけで、自分では走らないファイル）。</p>
+<div class="box">
+<p class="small" style="letter-spacing:.2em">規則（これが全部）</p>
+<p>走った = 0 → ⚪ まだ走っていない（異常ではない）<br>
+走った &gt; 0・取れた &gt; 0 → <span class="ok">✅ 働いている</span><br>
+走った &gt; 0・取れた = 0 → <span class="red">🔴 動いているのに何も産んでいない</span><br>
+止めている理由がある → <span class="red">🔴 理由をそのまま出す</span>（推測で埋めない）</p>
+<p class="small">「動いている」の根拠に、プロセスの生死・ログの更新・着火の有無を使わない。それらは全部、空回しでも点く緑になる。<b>取れた本数だけが根拠になる。</b></p>
+</div>
+
+<h3><span class="k">出た</span>同じ規則を全部に当てた結果</h3>
+<p>1か所に寄せた瞬間、今まで緑だったものが赤で出てきました。</p>
+<table>
+<tr><th>　</th><th>中身</th></tr>
+<tr><td class="red">🔴 稼ぎ</td><td>Claudeのログインが切れています（OAuth session expired／更新用の鍵ごと無効）</td></tr>
+<tr><td class="red">🔴 LINE審査結果の見張り</td><td><code>no_credential</code></td></tr>
+<tr><td class="red">🔴 LINE問い合わせ返信の見張り</td><td><code>no_credential</code></td></tr>
+<tr><td class="red">🔴 Anthropic返信の見張り</td><td><code>no_credential</code></td></tr>
+<tr><td class="red">🔴 外部連絡窓口の見張り</td><td><code>credentialMissingNotified</code></td></tr>
+<tr><td class="red">🔴 アバターの返信拾い</td><td>走った65回 → <b>取れた0回</b></td></tr>
+<tr><td class="ok">✅ GitHub見張り番</td><td>走った66回 → 取れた65回</td></tr>
+<tr><td class="ok">✅ ログインの番人</td><td>走った14回 → 取れた14回</td></tr>
+<tr><td class="ok">✅ LINEストアの見張り</td><td>走った65回 → 取れた65回</td></tr>
+</table>
+
+<h2>みっつめ　黙って捨てていた返信</h2>
+
+<h3><span class="k">みつけた</span>緑の中身が「1件でも積めたか」だった</h3>
+<p>GitHub見張り番は「走った66回 → 取れた65回」で緑です。でもこの数字は<b>同じ回に何通捨てたかを1件も数えていませんでした。</b></p>
+<p>返信を拾うループには、無言で捨てる <code>continue</code> が7か所ありました。そのうち2つは、たまごさんが手で運び直す羽目になった事故そのものです。</p>
+<ul>
+<li>2026-09-19：同じ号への2通目以降が<b>「1通目と同じ題名」＝重複</b>と判定され、チャッピーの返信4通が消えた。</li>
+<li>2026-09-22：<b>Botだからと丸ごと</b>、Jules 9件・Devin 4件・Codex 2件が捨てられていた。</li>
+</ul>
+<p>どちらも既に直っています。<span class="red">けれど「捨てた事実が数字で残らない限り、次の穴には気づけない。」</span>3つ目の穴は、まだ無言でした。</p>
+
+<h3><span class="k">なおした</span>捨てるのはやめない。捨てた数と理由を必ず残す</h3>
+<p>7か所すべてに理由つきの記録を付けました。特に重いのがこの2つです。</p>
+<div class="box hot">
+<p><b>号の取得が200以外だった時</b> — ここに <code>401</code>・<code>403</code>・<code>404</code> が全部紛れて無言で消えていました。鍵切れも、叩きすぎも、「相手が返事をしなかった」と見分けがつかなかった。<b>HTTPコードをそのまま理由に残します。</b></p>
+<p><b>閉じた号への返信</b> — 積まないのは正しい。でも<b>返事は現に来ている。</b>無言にすると「投げたのに返り0」に見え、相手が黙ったのかこちらが捨てたのか永久に区別できません。<b>誰の何通かを残します。</b></p>
+</div>
+
+<h2>たまごさんにしか外せないもの</h2>
+<div class="box hot">
+<p><b>Claudeのログインが切れています。</b>2026-09-21 04:42 から、本物の仕事が1本も出ていません。</p>
+<p>いつものClaudeのアプリで<b>1回ログインし直すだけ</b>です。<code>auth_watch.py</code> が気づいて自動で再開します。枠の問題ではありません。</p>
+<p class="small">こちらからは触れません（鍵とパスワードには手を出さない決まりのため）。他は全部こちらで進めます。</p>
+</div>
+
+<h2>次に潰すもの</h2>
+<ul>
+<li><code>no_credential</code> で止まっている見張り4つ。何の鍵が要るのかを1件ずつ名指しして、1タップで可否が返せる形にして出す。</li>
+<li>アバターの返信拾い（走った65回・取れた0回）。走っているのに何も産んでいない理由を実測で取る。</li>
+<li><code>status/public/queue.json</code> が1MB超で毎回公開から外れている。スマホの進捗表が古いままになる経路。</li>
+</ul>
+
+<footer>1018 ／ 実測はすべて工場のログから。数字を作っていません。</footer>
+</div></body></html>

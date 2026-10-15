@@ -1,0 +1,332 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1022 ― たまごさんはボトルネックではありませんでした。詰まっていたのは工場の口です</title>
+<style>
+:root{--paper:#EDE6D6;--ink:#22304A;--accent:#C1442E;--ok:#2F6B4F;
+--rule:rgba(34,48,74,.18);--faint:rgba(34,48,74,.60)}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;font-size:16px}
+.wrap{max-width:60rem;width:100%;margin:0 auto;padding:7vw 6vw 14vw}
+.eyebrow{font-size:.68rem;letter-spacing:.42em;color:var(--faint);margin:0 0 1.6rem}
+h1{font-weight:400;font-size:clamp(1.35rem,4.6vw,2.2rem);letter-spacing:.08em;margin:0 0 .4rem;line-height:1.5}
+.sub{color:var(--faint);font-size:.8rem;letter-spacing:.12em;margin:0 0 3.2rem}
+.verdict{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:2rem 0;margin:0 0 3.2rem}
+.verdict p{margin:0 0 1.1rem;font-size:clamp(1rem,2.7vw,1.13rem);line-height:1.95}
+.verdict p:last-child{margin-bottom:0}
+.verdict .n{color:var(--accent);letter-spacing:.3em;font-size:.7rem;margin-right:.9em;vertical-align:.18em}
+.big{color:var(--accent)}
+h2{font-weight:400;font-size:.74rem;letter-spacing:.34em;color:var(--faint);
+ margin:4.2rem 0 1.4rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+h3{font-weight:400;font-size:1.02rem;letter-spacing:.06em;margin:2.6rem 0 .6rem;line-height:1.6}
+h3 .k{color:var(--accent);font-size:.7rem;letter-spacing:.3em;margin-right:.8em;vertical-align:.18em}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:1px;
+ background:var(--rule);border:1px solid var(--rule);margin:0 0 1.4rem}
+.card{background:var(--paper);padding:1.2rem .9rem}
+.card b{display:block;font-weight:400;font-size:clamp(1.5rem,6vw,2rem);letter-spacing:.02em;line-height:1.25}
+.card span{display:block;font-size:.68rem;letter-spacing:.2em;color:var(--faint);margin-top:.5rem}
+.card.red b{color:var(--accent)}
+.card.ok b{color:var(--ok)}
+p{margin:0 0 1.2rem}
+table{width:100%;border-collapse:collapse;margin:0 0 1.6rem;font-size:.86rem}
+th,td{text-align:left;padding:.7rem .5rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:400;color:var(--faint);font-size:.68rem;letter-spacing:.18em}
+td.num{white-space:nowrap}
+.red{color:var(--accent)}
+.ok{color:var(--ok)}
+.box{border:1px solid var(--rule);padding:1.3rem 1.1rem;margin:0 0 1.6rem;background:rgba(255,255,255,.28)}
+.box.hot{border-color:var(--accent);border-left-width:3px}
+.box p:last-child{margin-bottom:0}
+.small{font-size:.8rem;color:var(--faint)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.82em;background:rgba(34,48,74,.07);padding:.1em .35em;border-radius:2px;word-break:break-all}
+ul{margin:0 0 1.3rem;padding-left:1.1rem}
+li{margin-bottom:.5rem}
+blockquote{margin:0 0 1.4rem;padding:0 0 0 1rem;border-left:2px solid var(--accent);
+ font-size:.95rem;line-height:1.9}
+blockquote cite{display:block;font-style:normal;font-size:.72rem;letter-spacing:.16em;color:var(--faint);margin-top:.6rem}
+.bar{display:flex;width:100%;height:2.1rem;border:1px solid var(--rule);margin:0 0 .5rem;overflow:hidden}
+.bar i{font-style:normal;font-size:.62rem;letter-spacing:.08em;min-width:0;flex-shrink:1;
+ display:flex;align-items:center;justify-content:center;color:#fff;white-space:nowrap;overflow:hidden}
+@media (max-width:520px){.bar i{font-size:0}.bar i::after{font-size:.62rem;color:#fff}
+ .b1::after{content:"33"}.b2::after{content:"208"}.b3::after{content:"21"}}
+table{table-layout:fixed}
+th,td{word-break:break-word;overflow-wrap:anywhere}
+.b1{background:var(--accent)}.b2{background:#8A7B63}.b3{background:var(--ok)}
+.legend{font-size:.72rem;color:var(--faint);letter-spacing:.1em;margin:0 0 2rem}
+.legend s{display:inline-block;width:.7rem;height:.7rem;margin:0 .35em 0 1em;vertical-align:-.05em}
+.legend s:first-child{margin-left:0}
+footer{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--rule);font-size:.72rem;letter-spacing:.14em;color:var(--faint)}
+footer a{color:var(--faint)}
+</style></head><body><div class="wrap">
+
+<p class="eyebrow">1022 ／ ボトルネックの所在</p>
+<h1>たまごさんは、ボトルネックではありませんでした。<br>詰まっていたのは、工場の口です。</h1>
+<p class="sub">2026-09-22 ／ 数字はすべて工場のログとObsidianの実ファイルから数えたもの</p>
+
+<div class="verdict">
+<p><span class="n">1</span>23日間に「たまごさんの判断待ち」として積まれた<b>262件</b>のうち、本当にたまごさんにしか決められなかったのは<span class="big">3件（1.1%）</span>。<span class="big">残りは機械が自分で自分を止めていた分</span>です。</p>
+<p><span class="n">2</span>いちばん効く手放しは<span class="big">「確認待ち」を消すこと</span>。いま確認列に並んでいる10件のうち<b>4件は機械の自己点検票</b>で、たまごさんが見ても決めようがありません。<b>明日から、たまごさんが頼んでいない票は確認列に出さない。</b></p>
+<p><span class="n">3</span>ただし一つだけ、本物の詰まりがあります。<span class="big">たまごさんの言葉を記録する台帳に、5日間で本人の発言が0件しか入っていません。</span>工場は、たまごさんの声が聞こえないまま回っていました。</p>
+</div>
+
+<h2>はじめに　この紙の読み方</h2>
+<p>たまごさんの問いは「自分がボトルネックなのかな」でした。<b>印象ではなく数で答えます。</b>数えられたものは数字で出し、<span class="red">数えられなかったものは「数えられない」と書きます。</span></p>
+<p>先に結論の形だけ言うと――<b>ボトルネックは「たまごさんの判断の遅さ」ではなく、「たまごさんに何を渡すかを決める係が居ないこと」でした。</b>工場は、決めてほしいことと、決めようのないことを、同じ列に混ぜて積んでいます。</p>
+
+<h2>一　たまごさんは本当にボトルネックか</h2>
+
+<h3><span class="k">数えた</span>「判断待ち」の中身を1件ずつ仕分けた</h3>
+<p>Obsidianの <code>AI出力/_ルール/留守中の判断待ち.md</code> は、工場がたまごさんを待つときに1行足す台帳です。<b>08-31から09-22までの23日間で262行</b>。中身を機械で仕分けました。</p>
+
+<div class="bar">
+<i class="b2" style="width:79.4%">記録のみ・判断不要　208件（79.4%）</i>
+<i class="b1" style="width:12.6%">機械の自縛 33</i>
+<i class="b3" style="width:8%">本物 21</i>
+</div>
+<p class="legend"><s class="b2"></s>そもそも判断が要らない報告<s class="b1"></s>機械が自分の仕組み・メモリに阻まれた<s class="b3"></s>データ上書き・公開・好み・お金</p>
+
+<table>
+<tr><th>仕分け</th><th>件数</th><th>中身</th></tr>
+<tr><td>記録のみ・判断不要</td><td class="num">208</td><td>「セッションを引き継ぎました」等。たまごさんが読んでも押すボタンが無い</td></tr>
+<tr><td class="red">機械が自分の仕組みに阻まれた</td><td class="num red">19</td><td>予算ガードが自分の見回りを止める／許可が下りない／袋小路</td></tr>
+<tr><td class="red">機械の資源不足</td><td class="num red">14</td><td>メモリ・swap・ディスク。Braveのタブやアプリを閉じてほしい系</td></tr>
+<tr><td>既存データの上書き・削除</td><td class="num">9</td><td>曲名の一括正規化、部屋IDの付け替え等</td></tr>
+<tr><td>外部公開・送信・ログイン</td><td class="num">7</td><td>push／PR／Bufferログイン等</td></tr>
+<tr><td class="ok">たまごさんの好み・お金</td><td class="num ok">3</td><td>配る棚を10〜20本に絞る／fal.aiで1枚課金する 等</td></tr>
+<tr><td>その他</td><td class="num">2</td><td>　</td></tr>
+</table>
+
+<div class="box hot">
+<p><b>262件のうち、たまごさんの「好き／嫌い」と「お金」にしか答えの無いものは3件。1.1%です。</b></p>
+<p>いっぽう、<b>機械が自分の仕組みと資源に引っかかって止まった分が33件（12.6%）</b>。たまごさんを待っていたのではなく、<span class="red">工場が自分で自分の足を踏んでいました。</span></p>
+</div>
+
+<h3><span class="k">数えた</span>発車待ち台帳263件の、いま詰まっている場所</h3>
+<p><code>status/queue.json</code> の全263件。<b>たまごさんの確認を待っている（awaiting_check）のは10件で、全体の3.8%</b>です。</p>
+
+<div class="cards">
+<div class="card"><b>130</b><span>順番待ち</span></div>
+<div class="card red"><b>28</b><span>詰まっている</span></div>
+<div class="card red"><b>30</b><span>棚上げ</span></div>
+<div class="card ok"><b>10</b><span>たまごさん待ち</span></div>
+<div class="card"><b>1</b><span>いま走っている</span></div>
+</div>
+
+<p>しかもその10件を開くと、こうでした。</p>
+<ul>
+<li><b>4件は機械の自己点検票</b>（「【自動検知】鬼監督が動いていません」「確認待ち40件を10件以下へ」等）。たまごさんが見ても、決めることがありません。</li>
+<li><b>実質たまごさん待ちは6件。263件中の2.3%。</b></li>
+</ul>
+
+<p>棚上げになっている30件の理由も読みました。<b>たまごさんの判断で止まっているのは2件だけ</b>（「留守番の見回りはやめない」という取り消しと、優先度の指示）。<span class="red">12件は「セッションが止まったまま10日進んでいない」「報告にあった実装がmainに一度も入っていない」</span>――つまり<b>完了と報告されたものが実在しなかった分</b>です。</p>
+
+<div class="box">
+<p class="small" style="letter-spacing:.2em">ここまでの答え</p>
+<p><b>たまごさんはボトルネックではありません。</b>工場が詰まっている原因を多い順に並べると、①機械が自分の仕組みに引っかかる ②完了報告が嘘だった ③メモリ・容量 ④たまごさんの判断――の順で、④はいちばん細いです。</p>
+</div>
+
+<h3><span class="k">数えられなかった</span>「待った時間」は出せません</h3>
+<p>たまごさんが実際に何分待たされたかは<span class="red">数えられませんでした。</span>理由は2つ。<b>①判断待ちの行に「いつ解決したか」が書かれていない</b>（打ち消し線で残す運用だが、実際にはほぼ使われていない）。<b>②発車待ち台帳の263件のうち、日付が入っているのは23件だけ</b>で、残りは滞留日数が計算できません。</p>
+<p>推測で埋めません。<b>これは工場の測り漏れであって、たまごさんの遅さの証拠にはなりません。</b></p>
+
+<h2>二　本当の詰まりは、たまごさんの声が届いていないこと</h2>
+
+<h3><span class="k">みつけた</span>「言われたことを一言も落とさない」台帳が、5日間で本人の発言0件</h3>
+<p>Obsidianの <code>AI出力/_ルール/受付台帳_自動記録.md</code> は、たまごさんの発言を機械的に全部残すための台帳です。冒頭にこう書いてあります――<b>「AIの記憶力・善意に依存しない。落とすのが最悪、という運用ルールの物理的な土台。」</b></p>
+<p>中身を数えました。<b>09-18から09-22までの5日間で565行。たまごさんの発言は0行でした。</b></p>
+
+<div class="cards">
+<div class="card red"><b>0</b><span>たまごさんの発言</span></div>
+<div class="card red"><b>388</b><span>「1+1は？」</span></div>
+<div class="card"><b>121</b><span>工場の自動発車文</span></div>
+<div class="card"><b>565</b><span>全行数</span></div>
+</div>
+
+<p><b>388行（68.7%）が「1+1は？」</b>です。これはログインが生きているか確かめるために、番人（<code>auth_watch.py</code>）が10分おきに打っている一番軽い実行です。台帳はそれを「たまごさんの発言」として記録し続けていました。</p>
+<p>理由は単純で、<b>この台帳のフックはObsidian側のClaude Codeにしか入っていない</b>のに、たまごさんが実際に喋っているのは<b>Cowork／Dispatch</b>だからです。<span class="red">マイクが、誰も喋っていない部屋に置いてありました。</span></p>
+
+<div class="box hot">
+<p><b>これが本当のボトルネックです。</b>たまごさんが「絶対おもらしするから、言われたことに漏れがないようにして」と言って作らせた土台が、<b>たまごさんの声を1件も拾っていません。</b></p>
+<p>だから「あの時これ言ったのに反映されてない」は、AIの記憶力の問題ではありません。<b>録音機が別の部屋にあった</b>というだけの話です。</p>
+</div>
+
+<h3><span class="k">みつけた</span>人が仕分けるほうの台帳は、19日前で止まっている</h3>
+<p><code>AI出力/_ルール/作業キュー.md</code> の受付台帳は266行ありますが、<b>最後の行は09-03</b>。19日間更新されていません。自動の台帳はノイズで埋まり、手動の台帳は止まった。<b>いま、たまごさんが言ったことを預かっている場所は、事実上ありません。</b></p>
+
+<h3><span class="k">みつけた</span>「たまごさんを動かすな」の検査自体が動いていない</h3>
+<p><code>判断待ち検査ログ.md</code> は、規約違反の「判断待ち」を機械が差し戻した証跡です。<b>「0件が正常」</b>と書いてあります。実際に記録されているのは<b>08-27以降の2件だけ</b>。同じ期間に判断待ちは54件（記録のみを除いた実数）積まれています。<span class="red">検査は0件ではなく、動いていませんでした。</span></p>
+
+<h3><span class="k">みつけた</span>同じ壁に8回ぶつかっている</h3>
+<p><code>status/REPEATED_UNFIXED.md</code> には「関所を3回連続で通過できなかった」案件が10件。<b>うち8件が、文字どおり同じ理由</b>です――「pxや%の数字を主張しているが、実際に測った跡が無い」。3回×8件＝24回、同じ所で落ちています。</p>
+<p><b>これはたまごさんの判断を1秒も必要としていません。</b>測った生データを報告に貼る、という1行のやり方が伝わっていないだけです。</p>
+
+<h3><span class="k">みつけた</span>完了報告の43.5%が失敗</h3>
+<p><code>status/dispatch_outbox.jsonl</code> の完了報告278件。<b>成功157／失敗121。</b>着火から完了までの中央値は16分です。<b>1件を仕上げるのに、平均すると2回近く走らせている</b>計算になります。</p>
+
+<h3><span class="k">今日の実測</span>紙の上の緑が、26時間ずっと嘘だった</h3>
+<p>今日1018番が実測した数字を、そのまま置きます。</p>
+<div class="cards">
+<div class="card red"><b>346</b><span>心臓の誤殺（349件中）</span></div>
+<div class="card red"><b>0</b><span>26時間の本物の発車</span></div>
+<div class="card"><b>316</b><span>同じ期間の空回し</span></div>
+<div class="card red"><b>2453</b><span>ログイン切れの見送り</span></div>
+</div>
+<p><b>この26時間、たまごさんは1件も判断を求められていません。</b>それでも工場は1本も産んでいませんでした。<span class="red">たまごさんを外しても、工場は止まったままだった。</span>これが「たまごさんはボトルネックではない」ことの、いちばん短い証明です。</p>
+
+<div class="box hot">
+<p class="small" style="letter-spacing:.2em">追記 ― 7時間後に測り直した（09-22 16:00）</p>
+<p>この紙を書いたのが今日の朝9時。<b>7時間後にもう一度測ったら、まだ同じでした。</b>直近6時間で<span class="red">152本走って、取れたのは0本</span>。152本ぜんぶ空回しです。</p>
+<p>止めている物はただ一つ、<b>Claudeのログインが切れていること</b>（OAuthの鍵が更新用ごと無効）。枠でも、たまごさんの判断待ちでもありません。</p>
+<p><b>この7時間、たまごさんは1件も判断を求められていません。それでも産んだ本数は0のままです。</b>朝の26時間＋この7時間で、合わせて<span class="red">33時間、たまごさん抜きで空回しし続けた</span>ことになります。</p>
+<p class="small">※ただしこの1件だけは、たまごさんにしか外せません。<b>いつものClaudeのアプリで1回ログインし直すだけで、あとは自動で再開します。</b>――「たまごさんはボトルネックではない」は、<b>「たまごさんの出番がゼロでいい」という意味ではありません。</b>出番は、判断ではなく<b>鍵</b>のほうに寄っています。</p>
+</div>
+
+<h2>三　「自分だったらこう決める」の精度を上げるには</h2>
+
+<p>たまごさんの言葉――<b>「『自分だったらこう決定するだろうな』という精度が高まるのであれば、俺はどんどん投げたい。」</b></p>
+<p>精度を上げる方法は、賢いモデルを使うことではありません。<b>決めた結果を、決めた理由とセットで、機械が読める形で貯めること</b>です。いまそれが貯まっていません。</p>
+
+<h3><span class="k">いま有るもの</span>と<span class="k">足りないもの</span></h3>
+<table>
+<tr><th>　</th><th>いまの状態</th></tr>
+<tr><td>たまご憲法（29条）</td><td class="ok">有る。ただし価値観の形が多く、その場で解釈が要る</td></tr>
+<tr><td>鬼監督のチェックリスト</td><td class="ok">有る。「何度も言われていること」まで具体的</td></tr>
+<tr><td>編集長AIの5問判定</td><td class="ok">有る（Q1〜Q5でA/B/C）</td></tr>
+<tr><td class="red">却下の記録</td><td class="red">無い。たまごさんが「違う」と言った瞬間とその理由が、どこにも残っていない</td></tr>
+<tr><td class="red">採用の記録</td><td class="red">無い。通ったものは黙って通るだけで、なぜ通ったかが残らない</td></tr>
+</table>
+
+<div class="box hot">
+<p><b>分身の精度は「正解の量」ではなく「却下の量」で決まります。</b></p>
+<p>たまごさんの判断は、足すほうではなく<b>引くほう</b>です（憲法の「AIが足して、人間が引く」）。ところが工場は<b>足した記録しか残していません。</b>何を引いたかが1件も残っていないので、分身はいつまでも足す側の真似しかできません。</p>
+<p>具体策は1つだけ。<b>たまごさんが「違う」と言ったら、その場で〈何を・なぜ・代わりに何が正解か〉の3行を1つのファイルに追記する。</b>これを100件貯めれば、分身の精度は上がります。月1000件の作業をしている工場なので、100件は数週間で貯まります。</p>
+</div>
+
+<h2>四　投げていい判断と、投げてはいけない判断</h2>
+
+<p>いまここがいちばん曖昧です。線を1本だけ引きます。<b>基準は「難しさ」ではなく「取り消せるか」。</b></p>
+
+<table>
+<tr><th>　</th><th>投げていい（聞かずにやる）</th><th>投げてはいけない</th></tr>
+<tr><td>見分け方</td><td class="ok">間違えても、こちらが黙って直せる</td><td class="red">間違えたら、たまごさんが誰かに謝る／お金が減る／取り返せない</td></tr>
+<tr><td>具体</td><td>調べる・作る・書き直す・仕入れる・候補を並べる・体裁を整える・検品する・社内の記録を書く</td><td>棚に載せる／降ろす最終判断・価格と公開・課金・実在の人の事情を書く・削除・外へ送る</td></tr>
+<tr><td>いまの数</td><td class="ok">実作業のほぼ全部</td><td class="red">23日で3件</td></tr>
+</table>
+
+<p>そのうえで、<b>いま曖昧なまま宙に浮いている3種類</b>に、こちらで線を引きます。たまごさんが「違う」と言ったらその場で直します。</p>
+
+<table>
+<tr><th>宙に浮いているもの</th><th>これからの扱い</th></tr>
+<tr><td>既存データの一括上書き（曲名の正規化1,175件、部屋IDの付け替え137件など）</td><td><b>投げていい。</b>ただし「元に戻す1コマンド」を先に作って、それが動くことを確かめてから流す。戻せるなら可逆</td></tr>
+<tr><td>メモリ・容量でアプリを閉じてほしい系</td><td><b>たまごさんに聞かない。</b>これは判断ではなく作業。工場が自分で畳む権限を持つべきもの。聞くなら「閉じていいですか」ではなく、閉じた後の報告1行</td></tr>
+<tr><td>機械の自己点検票（「〇〇が動いていません」）</td><td><b>確認列に出さない。</b>工場が自分で直す。直せなければ失敗の台帳に足す。たまごさんの目に入れない</td></tr>
+</table>
+
+<div class="box">
+<p class="small" style="letter-spacing:.2em">外の実例（失敗例が先）</p>
+<p><b>Klarna</b>は2024年にAIで人間の応対を置き換えた事例として最も引用されましたが、<b>2025年5月に人を採り直しています。</b>境界を「できるか」で引いて、「間違えた時に誰が謝るか」で引かなかった例です。</p>
+<p><b>UC Berkeleyの調査（MAST）</b>は、本番で動く7つのマルチエージェント基盤の失敗率を<b>41〜86.7%</b>と測っています。<b>「賢いから任せる」は成立しません。</b></p>
+<p>実務で効いている線の引き方は、どこも同じでした――<b>取り消せる書き込み（下書き・タグ付け・項目の更新）は自動、取り消せない書き込み（外へのメール、送金、削除、権限の取り消し）は明示の確認。</b>金額の大小ではなく、可逆かどうかで分けています。</p>
+</div>
+
+<h2>五　80点で進ませるために、何が担保されていればいいか</h2>
+
+<p>たまごさんの条件――<b>「任せて本当に80点、85点でどんどん進むのであるならば全然離れていきたい。」</b></p>
+<p>いま足りないのは点数ではありません。<b>80点であることを、たまごさんが見なくても分かる状態</b>です。次の4つが揃えば、止めなくても事故りません。</p>
+
+<table>
+<tr><th>担保</th><th>いま</th><th>足りないもの</th></tr>
+<tr><td><b>①作った人が合格を出さない</b></td><td class="ok">鬼監督が今日、機械の門になった（<code>oni_gate.py</code>／AIを1回も呼ばず0円）</td><td>合格した記録を数で出す。通過率が出せていない</td></tr>
+<tr><td><b>②緑が本物である</b></td><td class="ok">今日 <code>hantei.py</code> に一本化。「取れた本数だけが根拠」</td><td>なし（今日直った）</td></tr>
+<tr><td><b>③戻せる</b></td><td class="red">無い。一括更新に「戻す」が用意されていない</td><td><b>ここが最大の穴。</b>戻せないから聞くしかなくなっている</td></tr>
+<tr><td><b>④落ちた時に自分で気づく</b></td><td class="red">失敗121件が数えられているだけで、同じ壁に8回ぶつかっても誰も気づかない</td><td>同じ理由で2回落ちたら、直し方ごと台帳に足す係</td></tr>
+</table>
+
+<div class="box hot">
+<p><b>「80点で進んでいい」の正体は、点数ではなく〈戻せること〉です。</b></p>
+<p>戻せるなら80点で出せます。間違っていたら戻せばいいからです。戻せないなら、95点でも怖くて出せません。<b>だから次に作るべきものは、もっと賢いAIではなく「戻す1コマンド」です。</b></p>
+</div>
+
+<h2>六　離れていく順番</h2>
+
+<p>いきなり全部は無理です。<b>いちばん数が多くて、いちばん取り返しがつくものから手放します。</b></p>
+
+<table>
+<tr><th>順</th><th>手放すもの</th><th>効く量（実測）</th></tr>
+<tr><td class="num"><b>1</b></td><td class="ok"><b>機械の自己点検票を、たまごさんの確認列に出さない</b></td><td>確認列10件→6件。判断待ち262件→54件</td></tr>
+<tr><td class="num"><b>2</b></td><td><b>たまごさんの声を拾うマイクを、喋っている部屋に置き直す</b>（CoworkとDispatchの発言を台帳に入れる）</td><td>5日で0件→実数へ。「言ったのに」が構造的に消える</td></tr>
+<tr><td class="num"><b>3</b></td><td><b>却下の記録を貯めはじめる</b>（違うと言われたら3行足す）</td><td>分身の精度の唯一の材料。100件で効きはじめる</td></tr>
+<tr><td class="num"><b>4</b></td><td><b>一括更新に「戻す1コマンド」を付ける</b></td><td>判断待ちのうち9件（データ上書き）がそのまま自走へ移る</td></tr>
+<tr><td class="num"><b>5</b></td><td><b>メモリ・容量の後始末を工場の権限にする</b></td><td>判断待ち14件が消える</td></tr>
+<tr><td class="num"><b>6</b></td><td>棚に載せる／降ろす最終判断、価格・公開・課金</td><td class="red"><b>手放さない。</b>ここが卵商店街の存在理由そのもの</td></tr>
+</table>
+
+<div class="box">
+<p class="small" style="letter-spacing:.2em">明日から手放せるのは1つだけ</p>
+<p><b>「たまごさんが頼んでいない票を、確認列に出さない。」</b></p>
+<p>実装は難しくありません。台帳には既に <code>origin</code>（user / factory）という欄があり、263件のうち<b>99件が factory</b>＝工場が自分で作った票です。<b>factory の票は確認列に出さない</b>――この1行で、たまごさんの目に入る量が減ります。</p>
+</div>
+
+<h2>七　外の知見（失敗例を先に）</h2>
+
+<h3><span class="k">失敗</span>速くした分、人間のレビューに全部returnしてくる</h3>
+<p>Faros AIが2026年に22,000人の開発者を計測したところ、<b>処理量は33.7%増えたのに、レビューにかかる時間の中央値は441.5%増えました。</b>AIが書いたプルリクエストの<b>67.3%が初回レビューで落ちます</b>（人間が書いたものは15.6%）。<span class="red">ボトルネックは消えず、人間の側へ引っ越しただけ</span>でした。</p>
+
+<h3><span class="k">失敗</span>承認が「判断」ではなく「反射」になる</h3>
+<p>個人・小チームの実践記録に共通して出てくる失敗が<b>承認疲れ</b>です。量が増えると「承認」を押すのが反射になり、<b>記録だけが残る判子になる。これは門が無いより悪い</b>と書かれています。対策として効いているのは、<b>差分だけを見せる承認</b>と<b>危険度で束ねる</b>こと。数を減らすのではなく、1回の承認で見る量を減らしています。</p>
+
+<h3><span class="k">効いた</span>意図的に遅くする・1件を小さく割る</h3>
+<p>Microsoftの牛尾剛さんが9月14日に書いています。要点――<b>エージェントはいくらでも速く並列で作れるが、作った分だけレビューする人間に負担が来て、そこがクリティカルパスになる。だからチームは意図的に速度を落としている。</b>いちばん効いた対策は小手先ではなく<b>「プルリクエストを小さくする」</b>でした。</p>
+<p class="small">この知見は既に工場に入っています（1019番）。<b>うちに置き換えると「1号＝でかい仕事1個」をやめて、1枚＝判断1つに割ること。</b></p>
+
+<h3><span class="k">効いた</span>流せる仕事は、そもそも承認を通さない</h3>
+<p>もう一つ共通していたのは、<b>流れ図で書ける判断をAIに毎回考え直させない</b>こと。if-elseで書けるものはコードに置く。<b>「NEVER」「ALWAYS」を大文字で書いて言い聞かせても守られない</b>ので、守らせたい規則はモデルの外で機械に実行させる――今日の <code>oni_gate.py</code>（AIを1回も呼ばない門）が、ちょうどこれです。</p>
+
+<div class="box hot">
+<p class="small" style="letter-spacing:.2em">外部AIへの白紙の問い ― 返事は来ませんでした</p>
+<p>同じ問いを、公開の掲示板にも立てました（<b>API代0円</b>）。<br>
+<code>https://github.com/tamago2022/ai-kaigi/issues/6</code><br>
+投稿は09-21 23:36（UTC）。<b>09-22 16:13（UTC）に叩き直して、コメントはまだ0件でした。16時間37分、返事ゼロです。</b><br>
+<span class="small">来ていないものを来たことにしません。この紙の外の知見は、すべて実在の公開記事（下の出典欄）から引いたもので、掲示板の返事は1文字も入っていません。<b>そして「0円で外のAIに聞く」道は、いまのところ返事が来ない＝使えていません。</b>これも工場の実測として残します。</span></p>
+</div>
+
+<h2>八　たまごさん自身の言葉と、他人の言葉を分けておく</h2>
+
+<h3><span class="k">たまごさん本人</span></h3>
+<blockquote>
+自分の出番が少なくなればなるほど自律走行に近づく。今目指してるのは、俺が死んでも回るようにしたい。
+<cite>たまご憲法 §0</cite></blockquote>
+<blockquote>
+やることがあるのに止まって指示待ちしてるのが1番嫌だ。
+<cite>コンロ3口</cite></blockquote>
+<blockquote>
+わからないってことすらこっちに来てないのよ。止まってんだよ。なんで止まってんのかこっちはわからないわけだ。
+<cite>4分類判定・2026-08-22</cite></blockquote>
+<blockquote>
+俺、バンバン言ってるよ。絶対おもらしするから。「あの時これ言ったのに反映されてない」ってがっかりして、また声を荒らげて言うのも、エネルギーをめちゃくちゃ消耗する。
+<cite>受付台帳</cite></blockquote>
+<blockquote>
+任せて本当に80点、85点でどんどん進むのであるならば全然離れていきたい。
+<cite>今回の依頼・2026-09-22</cite></blockquote>
+
+<h3><span class="k">他人の言葉（引用）</span></h3>
+<p><b>川邊健太郎さん</b>――「AIが賢くなるほど、人間の重要な仕事は〈AIよりうまく考えること〉ではなく、〈AIに何を委ねるかを決めること〉になる」。System 1＝人間の直感／System 2＝AIの知性／System 3＝人間の意思決定。<b>System 3は最終承認ボタンではなく、どこまで委ねるかを決める層</b>だと書いています。</p>
+<p><b>牛尾剛さん</b>――「人間のボトルネックはレビュー。だからチームは意図的に遅くしている。いちばん効いたのはプルリクエストを小さくすること。」</p>
+<p class="small">※Obsidianの円卓ノートにはKahneman・Sivers・Koerner等の席も立っていますが、<b>あれは円卓の形式で書かれた仮想の発言</b>です。本人の言葉としては引きません。</p>
+
+<h2>九　この紙が言っていること、一行で</h2>
+<div class="box hot">
+<p><b>たまごさんは詰まっていません。工場が、決めようのないものをたまごさんの列に積んでいるだけです。</b></p>
+<p>手放す順番は、<b>①要らない票を出さない ②声を拾い直す ③却下を貯める ④戻せるようにする。</b>ここまで来たら、80点で走らせて大丈夫です。</p>
+</div>
+
+<footer>
+1022番 ／ 2026-09-22<br>
+数えた場所：<code>AI出力/_ルール/留守中の判断待ち.md</code>（262行）／<code>AI出力/_ルール/受付台帳_自動記録.md</code>（565行）／<code>AI出力/_ルール/作業キュー.md</code>／<code>AI出力/_ルール/判断待ち検査ログ.md</code>／<code>status/queue.json</code>（263件）／<code>status/dispatch_outbox.jsonl</code>（278件）／<code>status/REPEATED_UNFIXED.md</code>（10件）／<code>status/failures.md</code>（39件）／1018番の実測<br>
+外の出典：<a href="https://www.flowverify.co/blog/ai-code-review-bottleneck-2026-data">FlowVerify「The AI Code Review Bottleneck, By the 2026 Numbers」</a>／<a href="https://agentconn.com/blog/10x-prs-1x-reviewers-code-quality-bottleneck-gate-2026/">AgentConn「10x PRs, 1x Reviewers」</a>／<a href="https://predictionguard.com/blog/least-agency-blast-radius-governance-framework-persistent-ai-agents">Prediction Guard「Least agency and blast radius」</a>／<a href="https://www.inteqgroup.com/blog/authority-boundaries-ai-agents">Inteq「Authority Boundaries for AI Agents」</a>／<a href="https://dev.to/aibuddy_il/lessons-from-running-100-ai-agents-in-production-4ffh">「Lessons from Running 100+ AI Agents in Production」</a>／<a href="https://note.com/simplearchitect/n/n582245fbfd54">牛尾剛「最近の人間ボトルネック問題解決の工夫」</a><br>
+Obsidianのノートは<b>読んだだけ</b>です。1文字も書き換えていません。
+</footer>
+
+</div></body></html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>他のAIとの連絡線 — 死活表</title>
+<style>
+  :root{ --paper:#f4f1ea; --ink:#16130f; --sub:#6b6259; --rule:#d8d2c6;
+         --red:#b3261e; --ok:#2f6b3f; --amber:#8a6d1f; --gray:#9a9186; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+       font-size:15px;line-height:1.65;-webkit-text-size-adjust:100%}
+  .wrap{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:8px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:.04em}
+  .lead{color:var(--sub);font-size:12.5px;margin:0}
+  .asof{color:var(--sub);font-size:11.5px;margin:6px 0 18px;
+        font-variant-numeric:tabular-nums}
+  .banner{border:2px solid var(--red);color:var(--red);padding:11px 13px;
+          font-weight:700;margin:0 0 18px;font-size:15px}
+  .banner.clear{border-color:var(--ok);color:var(--ok)}
+  h2{font-size:12px;letter-spacing:.16em;color:var(--sub);margin:28px 0 10px;
+     font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
+  .card{border:1px solid var(--rule);background:#fff;padding:12px 14px;margin:0 0 9px;
+        border-left:5px solid var(--gray)}
+  .card.green{border-left-color:var(--ok)}
+  .card.yellow{border-left-color:var(--amber)}
+  .card.red{border-left-color:var(--red);background:rgba(179,38,30,.04)}
+  .card.black{border-left-color:#2b2b2b;background:rgba(0,0,0,.035)}
+  .card.black .state{color:#2b2b2b}
+  .blocked{color:#2b2b2b;font-size:12.5px;margin-top:6px;line-height:1.55}
+  .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+             flex-wrap:wrap}
+  .name{font-weight:700;font-size:16px}
+  .state{font-size:13px;font-weight:700}
+  .card.green .state{color:var(--ok)}
+  .card.yellow .state{color:var(--amber)}
+  .card.red .state{color:var(--red)}
+  .card.gray .state{color:var(--gray)}
+  .counts{font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums;
+          margin-top:3px}
+  .route{font-size:12px;color:var(--sub);margin-top:6px;
+         border-top:1px dotted var(--rule);padding-top:6px}
+  .route code{background:#f0ece3;padding:1px 5px;font-size:11.5px}
+  .err{color:var(--red);font-size:12.5px;margin-top:6px}
+  .wait{font-size:12.5px;margin-top:5px}
+  a{color:#1a4f8a}
+  .note{font-size:12px;color:var(--sub);margin-top:5px}
+  .howto{border:1px solid var(--rule);background:#fffdf8;padding:12px 14px;font-size:13px}
+  .howto code{display:block;background:#16130f;color:#f4f1ea;padding:8px 10px;
+              margin:6px 0;font-size:12.5px;overflow-x:auto;white-space:pre}
+  .census{font-size:12.5px;color:var(--sub)}
+  footer{margin-top:40px;font-size:11.5px;color:var(--sub);
+         border-top:1px solid var(--rule);padding-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>他のAIとの連絡線 — 死活表</h1>
+  <p class="lead">投げた回数と、返ってきた回数を、両方数えています。片方しか動いていない線は赤で出ます。</p>
+</header>
+<p class="asof" id="asof">読み込み中…</p>
+
+<div id="banner" class="banner" style="display:none"></div>
+
+<h2>相手ごとの状態</h2>
+<div id="cards"></div>
+
+<h2>投げ方（たまごさんが押すのはここだけ）</h2>
+<div class="howto">
+  どの会社でも同じ1本です。宛先ごとの作法（誰を呼ぶか・ラベルを貼るか・どう書くか）は中に隠してあります。
+  <code>python3 tools/nageru.py codex "お題を1行" --body "詳しい依頼"</code>
+  <code>python3 tools/nageru.py --status      ← この表と同じものが文字で出ます</code>
+  <code>python3 tools/nageru.py --routes      ← 宛先ごとの作法を見る</code>
+  返事は<strong>こちらが勝手に拾いに行きます。</strong>たまごさんが向こうの画面を開いて運ぶ必要はありません。
+</div>
+
+<h2>GitHubでの実測（この台帳より前の分も含む・別枠）</h2>
+<div id="census" class="census"></div>
+
+<footer id="foot"></footer>
+</div>
+<script>
+/* black … 「投げても返らないと実測で分かったので、こちらから投げるのをやめた口」。
+   赤（直すべき穴）と分けている。赤は直せるが、黒はたまごさんの判断（課金・向こうの画面の操作）が要る。 */
+const MARK={green:"🟢",yellow:"🟡",red:"🔴",gray:"⚪",black:"⚫"};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+fetch('status/public/ai_daicho.json?t='+Date.now())
+ .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+ .then(d=>{
+  document.getElementById('asof').textContent =
+    '台帳の時点: '+(d.updatedAt||'').replace('T',' ').slice(0,16)+
+    '　／　合計 投げ '+d.totals.out+'（うち失敗 '+d.totals.outFail+'） 返り '+d.totals.in+
+    ((d.totals.blocked||0)?'　／　投げずに止めた '+d.totals.blocked:'');
+
+  const reds=(d.ai||[]).filter(a=>a.color==='red');
+  const b=document.getElementById('banner');
+  if(reds.length){
+    b.className='banner';
+    b.innerHTML='片方しか通っていない線が '+reds.length+' 本あります：'+
+      reds.map(a=>esc(a.label)+'（'+esc(a.state)+'）').join('、');
+  }else{
+    const used=(d.ai||[]).filter(a=>a.color!=='gray');
+    b.className='banner clear';
+    b.textContent = used.length
+      ? '使っている線 '+used.length+' 本は、行きも帰りも通っています。'
+      : 'まだ1本も投げていません。';
+  }
+  b.style.display='';
+
+  const wrap=document.getElementById('cards');
+  (d.ai||[]).forEach(a=>{
+    const r=(d.routes||{})[a.ai]||{};
+    const el=document.createElement('div');
+    el.className='card '+a.color;
+    let h='<div class="top"><span class="name">'+MARK[a.color]+' '+esc(a.label)+'</span>'+
+          '<span class="state">'+esc(a.state)+'</span></div>'+
+          '<div class="counts">投げた '+a.out+' ／ そのうち失敗 '+a.outFail+' ／ 返ってきた '+a['in']+
+          ((a.blocked||0)?' ／ <b>投げずに止めた '+a.blocked+'</b>':'')+'</div>';
+    if(a.blocked&&a.blockedWhy){
+      h+='<div class="blocked">⚫ 止めている理由：'+esc(a.blockedWhy)+'</div>';
+    }
+    (a.errs||[]).forEach(e=>{
+      h+='<div class="err">✕ '+esc(e.err)+'　<span style="color:var(--sub)">'+
+         esc((e.at||'').slice(5,16).replace('T',' '))+'</span></div>';
+    });
+    (a.openThreads||[]).forEach(t=>{
+      h+='<div class="wait">'+(t.overdue?'🔴 ':'⏳ ')+esc(t.topic||t.thread)+
+         ' … '+t.hours+'時間 返事なし'+
+         (t.ref?' <a href="'+esc(t.ref)+'" target="_blank" rel="noopener">現物</a>':'')+'</div>';
+    });
+    if(r.how){
+      h+='<div class="route">経路: <code>'+esc(r.how)+'</code> '+esc(r.repo||'')+
+         (r.wake?'　起こし方: <code>'+esc(r.wake)+'</code>':'　起こし方: 不要（自分で拾う）')+'</div>';
+    }
+    if(r.note){h+='<div class="note">'+esc(r.note)+'</div>';}
+    el.innerHTML=h;
+    wrap.appendChild(el);
+  });
+
+  const c=document.getElementById('census');
+  const repos=((d.census||{}).repos)||{};
+  const keys=Object.keys(repos);
+  if(!keys.length){c.textContent='まだ数えていません。';}
+  else{
+    c.innerHTML=keys.map(k=>{
+      const ws=(repos[k].writers||[]).filter(w=>w.login&&/bot|codex|jules|devin|genspark|grok|copilot/i.test(w.login));
+      const line=ws.length?ws.map(w=>esc(w.login)+' '+((w.issues||0)+(w.comments||0)+(w.commits||0))+'件').join('　／　')
+                          :'外部AIの書き込みは0件';
+      return '<div style="margin-bottom:5px"><strong>'+esc(k)+'</strong><br>'+line+'</div>';
+    }).join('');
+  }
+  document.getElementById('foot').textContent =
+    '台帳の実体: status/ai_daicho.jsonl（1件1行・消さない）／ 集計: status/public/ai_daicho.json ／ '+
+    '拾い屋: tools/github_watch.py（60秒ごとの条件付きGET）＋ tools/ai_daicho.py --collect（返り0の分だけ名指しで読む）';
+ })
+ .catch(e=>{
+   document.getElementById('asof').textContent='台帳が読めませんでした: '+e.message;
+   document.getElementById('asof').style.color='#b3261e';
+ });
+</script>
+</body>
+</html>

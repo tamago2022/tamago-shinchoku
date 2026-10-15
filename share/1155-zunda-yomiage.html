@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ずんだもん読み上げ機</title>
+<style>
+  :root{--bg:#11100e;--ink:#f4efe6;--dim:#a39c8f;--zunda:#8fd14f;--warn:#e0774a;
+        --line:#2b2924;--card:#1a1815}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+       line-height:1.7;padding:22px 16px 110px}
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 4px}
+  h1 .leaf{color:var(--zunda)}
+  .sub{color:var(--dim);font-size:13px;margin:0 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+        padding:16px;margin-bottom:12px}
+  label{display:block;font-size:12px;color:var(--dim);margin-bottom:6px}
+  input[type=url],textarea,input[type=text]{width:100%;background:#0c0b09;
+    border:1px solid var(--line);border-radius:10px;color:var(--ink);
+    padding:12px;font-size:16px;font-family:inherit}
+  textarea{min-height:100px;resize:vertical}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button{background:var(--zunda);color:#10240a;border:0;border-radius:999px;
+         padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+  button:disabled{opacity:.35}
+  .status{font-size:13px;color:var(--dim);margin-top:12px;min-height:22px}
+  .status b{color:var(--zunda)}
+  .status .ng{color:var(--warn)}
+  .bar{height:4px;background:#0c0b09;border-radius:99px;margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--zunda);width:0;transition:width .3s}
+  .body{font-size:14px;max-height:230px;overflow:auto;white-space:pre-wrap;
+        border-top:1px solid var(--line);margin-top:14px;padding-top:12px;color:#ded7c9}
+  .body .now{background:rgba(143,209,79,.2);border-radius:3px}
+  .pill{display:inline-block;font-size:11px;border:1px solid var(--line);
+        border-radius:999px;padding:3px 10px;color:var(--dim)}
+  .pill.on{border-color:var(--zunda);color:var(--zunda)}
+  .pill.off{border-color:var(--warn);color:var(--warn)}
+  .notes{max-height:230px;overflow:auto;margin-top:10px}
+  .notes button{display:block;width:100%;text-align:left;background:transparent;
+    border:0;border-bottom:1px solid var(--line);color:var(--ink);
+    font-size:13px;font-weight:400;padding:10px 4px;border-radius:0}
+  .notes button .mk{color:var(--zunda);font-size:11px;margin-right:6px}
+  .ctl{position:fixed;left:0;right:0;bottom:0;background:rgba(17,16,14,.95);
+       border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;
+       justify-content:center;align-items:center;backdrop-filter:blur(8px)}
+  .foot{color:#6f695e;font-size:12px;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="leaf">🌱</span> ずんだもん読み上げ機</h1>
+  <p class="sub">声はぜんぶ、Macの中のVOICEVOX（ずんだもん）。0円。</p>
+
+  <div class="card">
+    <span class="pill" id="pill">窓口をさがしています…</span>
+  </div>
+
+  <div class="card">
+    <label>URL を貼る（貼った瞬間に始まります）</label>
+    <input type="url" id="url" placeholder="https://… ／ obsidian://open?vault=…&file=…"
+           autocomplete="off" inputmode="url">
+    <div class="row">
+      <button id="go">ずんだもんで読む</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>文章を貼る</label>
+    <textarea id="raw" placeholder="ここに文章を貼る"></textarea>
+    <div class="row"><button id="goRaw">ずんだもんで読む</button></div>
+  </div>
+
+  <div class="card">
+    <label>#円卓会議 のノートから選ぶ</label>
+    <p class="meta" id="notesHead" style="color:var(--dim);font-size:12px;margin:0 0 8px">読み込み中…</p>
+    <input type="text" id="q" placeholder="ノート名で絞る（例：馬車）" autocomplete="off">
+    <div class="notes" id="notes"></div>
+  </div>
+
+  <div class="card">
+    <div class="status" id="st">まだ何も読んでいません</div>
+    <div class="bar"><i id="barI"></i></div>
+    <div class="body" id="body" style="display:none"></div>
+  </div>
+
+  <p class="foot">
+    ブラウザの合成音声は使いません。窓口が閉じているときは、声を出さずに「閉じている」と出します。<br>
+    Macで作ったmp3をそのまま配っているので、スマホでもずんだもんの声です。
+  </p>
+</div>
+
+<div class="ctl">
+  <button id="kick" style="display:none">▶ 鳴らす</button>
+  <span class="pill" style="border-color:#2b2924">押すまで音は出ません</span>
+  <button class="ghost" id="pause">一時停止</button>
+  <button class="ghost" id="stop">止める</button>
+  <span class="pill" id="cnt">0 / 0</span>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const SILENT = "data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA"
+             + "gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgP/7kMQAAAAA"
+             + "AAAAAAAAAAAAAAAAAFhpbmcAAAAPAAAAAgAAAnEAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
+
+let EP = null;            // {base, t}
+let job = null, cur = 0, stopped = false, poll = null, busy = false;
+let started = false;      // ★「▶ 鳴らす」を押すまで true にならない＝勝手に音が出ない
+
+// 音は WebAudio で鳴らす。<audio> は「一度押さないと鳴らせない」制限の外し方が
+// ブラウザごとに違って、実測で鳴らなかった（ずんだもんが出ない＝0点）。
+// WebAudio なら、押した瞬間に ac.resume() しておけば以後ずっと鳴らせる。
+let ac = null, src = null;
+function ensureAc(){
+  if(!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if(ac.state === "suspended") ac.resume();
+  return ac;
+}
+
+function say(msg, cls){ $("st").innerHTML = cls ? '<span class="'+cls+'">'+msg+'</span>' : msg; }
+function api(path){ return EP.base + path + (path.includes("?") ? "&" : "?") + "t=" + EP.t; }
+
+// ---------- 窓口さがし ----------
+async function findEndpoint(){
+  let j = null;
+  for(const p of ["../status/public/zunda_endpoint.json",
+                  "/tamago-shinchoku/status/public/zunda_endpoint.json"]){
+    try{
+      const r = await fetch(p + "?_=" + Date.now(), {cache:"no-store"});
+      if(r.ok){ j = await r.json(); break; }
+    }catch(e){}
+  }
+  // Macで開いているときは中の窓口を先に試す（速いし、外の穴が閉じていても効く）
+  const cands = [];
+  if(j) cands.push({base:"http://127.0.0.1:50023", t:j.t});
+  if(j) cands.push(j);
+  for(const c of cands){
+    try{
+      const ctl = new AbortController();
+      setTimeout(()=>ctl.abort(), 15000);   // Macが重い日は返事に10秒かかる（実測）
+      const r = await fetch(c.base + "/health", {cache:"no-store", signal:ctl.signal});
+      if(r.ok){
+        const h = await r.json();
+        EP = c;
+        $("pill").className = "pill on";
+        $("pill").textContent = "窓口あり／声：ずんだもん" + (h.engine ? "" : "（エンジン起動中）");
+        return true;
+      }
+    }catch(e){}
+  }
+  $("pill").className = "pill off";
+  $("pill").textContent = "Macの窓口が閉じています";
+  say("Macの窓口が閉じています。ずんだもんの声が出せないので、読み上げません。", "ng");
+  return false;
+}
+
+// ---------- 注文 ----------
+async function order(path, payload){
+  if(!EP && !(await findEndpoint())) return;
+  stopAll(); stopped = false; cur = 0; started = false;
+  $("kick").style.display = "none";
+  for(const k in cache) delete cache[k];
+  say("ずんだもんが読む準備をしています…（音はまだ出しません）");
+  try{
+    const r = await fetch(api(path), {method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+    const j = await r.json();
+    if(j.error){ say(j.error, "ng"); return; }
+    job = j;
+    watch();
+  }catch(e){
+    EP = null;
+    say("窓口につながりませんでした（" + e.message + "）", "ng");
+    findEndpoint();
+  }
+}
+
+function unlockAudio(){ try{ ensureAc(); }catch(e){} }
+
+function watch(){
+  clearInterval(poll);
+  poll = setInterval(async () => {
+    if(stopped || !job) return;
+    try{
+      const s = await (await fetch(api("/job/" + job.id), {cache:"no-store"})).json();
+      job.ready = s.ready; job.chunks = s.chunks; job.done = s.done; job.error = s.error;
+      $("cnt").textContent = cur + " / " + job.chunks;
+      $("barI").style.width = (job.chunks ? (job.ready / job.chunks * 100) : 0) + "%";
+      if(s.error){ say("つくる途中で止まりました：" + s.error, "ng"); clearInterval(poll); return; }
+      // ★押されるまでは鳴らさない。押されて初めて started が立つ。
+      if(!started){
+        if(job.ready > 0){
+          $("kick").style.display = "inline-block";
+          say("用意できました（" + job.ready + " / " + job.chunks + " 切れ）。<b>「▶ 鳴らす」</b>を押すと読みはじめます");
+        }else{
+          say("ずんだもんが作っています… " + job.ready + " / " + job.chunks + " 切れ");
+        }
+        return;
+      }
+      if(!busy && cur < job.ready) playChunk(cur);
+      else if(cur >= job.ready && !job.done)
+        say("ずんだもんが作っています… " + job.ready + " / " + job.chunks + " 切れ");
+      if(job.done && cur >= job.chunks){ say("読み終わりました"); clearInterval(poll); }
+    }catch(e){}
+  }, 1500);
+}
+
+// mp3は丸ごと取ってから鳴らす（トンネル越しだと <audio> の読み込みが止まるため）
+const cache = {};
+async function grab(n){
+  const k = job.id + ":" + n;          // 注文ごとに分ける（前の注文の音を鳴らさない）
+  if(cache[k]) return cache[k];
+  const url = job.url ? job.url : api("/audio/" + job.id + "/" + n + ".mp3");
+  const r = await fetch(url, {cache:"no-store"});
+  if(!r.ok) throw new Error("mp3 " + r.status);
+  const ab = await r.arrayBuffer();
+  cache[k] = await ensureAc().decodeAudioData(ab);
+  return cache[k];
+}
+
+async function playChunk(n){
+  if(stopped) return;
+  busy = true;
+  let buf;
+  try{
+    buf = await grab(n);
+  }catch(e){
+    busy = false;
+    setTimeout(()=>{ if(!stopped && cur === n) playChunk(n); }, 1500);
+    return;
+  }
+  if(stopped) { busy = false; return; }
+  if(job.ready > n + 1) grab(n + 1).catch(()=>{});   // 次を先に取っておく
+  try{ ensureAc(); }catch(e){}
+  if(ac.state === "suspended"){
+    busy = false;
+    $("kick").style.display = "inline-block";
+    say("下の「▶ 鳴らす」を押すと、ずんだもんが読みはじめます", "ng");
+    return;
+  }
+  src = ac.createBufferSource();
+  src.buffer = buf;
+  src.connect(ac.destination);
+  src.onended = () => {
+    if(stopped) return;
+    busy = false; cur = n + 1;
+    $("cnt").textContent = cur + " / " + job.chunks;
+    if(cur < job.ready) playChunk(cur);
+    else if(job.done) say("読み終わりました");
+  };
+  src.start();
+  $("kick").style.display = "none";
+  say("<b>ずんだもんが読んでいます</b> " + (n+1) + " / " + job.chunks +
+      (job.done ? "" : "（続きを作りながら）"));
+}
+
+function stopAll(){
+  stopped = true; busy = false; clearInterval(poll);
+  try{ if(src){ src.onended = null; src.stop(); src = null; } }catch(e){}
+}
+
+// ---------- ノート ----------
+// 一覧は本番(gh-pages)の静かな一覧を見る。窓口が落ちていても一覧は出るし、
+// 出来ている声は本番から直接鳴る（窓口ぬきで鳴る）。
+let NOTES = [];
+async function loadNotes(){
+  for(const p of ["../status/public/zunda_notes.json",
+                  "/tamago-shinchoku/status/public/zunda_notes.json"]){
+    try{
+      const r = await fetch(p + "?_=" + Date.now(), {cache:"no-store"});
+      if(r.ok){
+        const j = await r.json();
+        NOTES = j.notes || [];
+        $("notesHead").textContent =
+          "いま鳴らせるのは " + (j.ready||0) + " / " + (j.total||NOTES.length) + " 本（残りは順番に作っています）";
+        drawNotes();
+        return;
+      }
+    }catch(e){}
+  }
+  if(EP){                                  // 静かな一覧がまだ無いときだけ窓口に聞く
+    try{
+      const j = await (await fetch(api("/notes"))).json();
+      NOTES = (j.notes||[]).map(n => ({title:n.title, file:null}));
+      drawNotes();
+    }catch(e){}
+  }
+}
+function drawNotes(){
+  const q = $("q").value.trim();
+  const list = NOTES.filter(n => !q || n.title.includes(q)).slice(0, 80);
+  $("notes").innerHTML = list.map(n =>
+    '<button data-t="'+encodeURIComponent(n.title)+'" data-f="'+(n.file||"")+'">'+
+    '<span class="mk">'+(n.file ? "♪ 鳴らせる" : "・準備中")+'</span>'+
+    n.title.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))+'</button>').join("")
+    || '<p class="foot">見つかりません</p>';
+  [...$("notes").querySelectorAll("button")].forEach(b => b.onclick = () => {
+    const title = decodeURIComponent(b.dataset.t);
+    if(b.dataset.f) playFile(b.dataset.f, title);      // 本番の声をそのまま鳴らす
+    else makeNow(title);                                // まだ無いので作りにいく
+  });
+}
+
+// 本番に置いてある声（窓口が落ちていても鳴る）
+async function playFile(file, title){
+  stopAll(); stopped = false; cur = 0; started = false;
+  for(const k in cache) delete cache[k];
+  job = {id:"file", chunks:1, ready:1, done:true, error:null, url:file, title:title};
+  $("cnt").textContent = "0 / 1";
+  $("barI").style.width = "100%";
+  $("kick").style.display = "inline-block";
+  say("「" + title + "」の用意ができています。<b>「▶ 鳴らす」</b>を押すと読みはじめます");
+}
+
+// まだ声が無いものは、正直にそう出してから作りにいく
+async function makeNow(title){
+  if(!EP && !(await findEndpoint())){
+    say("「" + title + "」はまだ声にしていません。いまMacの窓口が閉じているので、作ることもできません。順番に作っています。", "ng");
+    return;
+  }
+  say("「" + title + "」はまだ声にしていません。いまから作ります（長い記事は数分かかります）");
+  order("/note", {q: title});
+}
+
+// ---------- 入口 ----------
+$("go").onclick = () => { const u = $("url").value.trim();
+  u ? order("/url", {url:u}) : say("URLを入れてください"); };
+$("goRaw").onclick = () => { const t = $("raw").value.trim();
+  t ? order("/say", {text:t}) : say("文章を貼ってください"); };
+$("kick").onclick = () => { $("kick").style.display = "none";
+  ensureAc(); started = true; stopped = false; busy = false; if(job) playChunk(cur); };
+$("stop").onclick = () => { stopAll(); say("止めました"); };
+$("pause").onclick = () => { if(!ac) return;
+  ac.state === "running" ? ac.suspend() : ac.resume(); };
+$("q").oninput = drawNotes;
+// ★勝手に喋らない。貼っただけでは音は出ない。鳴るのは「▶ 鳴らす」を押した時だけ。
+// 一覧は窓口に関係なく出す（本番に置いた声は窓口が落ちていても鳴るため）
+loadNotes();
+findEndpoint().then(ok => {
+  const u = new URLSearchParams(location.search).get("u");
+  if(u) $("url").value = u;
+  if(ok) say("読むものを選ぶと用意します。音が出るのは「▶ 鳴らす」を押した時だけです");
+  else say("Macの窓口は閉じていますが、<b>♪鳴らせる</b>と付いているノートはこのまま鳴らせます");
+  loadNotes();
+});
+setInterval(() => { if(!EP) findEndpoint().then(ok => ok && loadNotes()); }, 20000);
+</script>
+</body>
+</html>

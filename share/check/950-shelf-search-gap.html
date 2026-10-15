@@ -1,0 +1,116 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>950 検索に出るのに棚に無い曲を数えた</title>
+<style>
+:root{--ink:#23201c;--sub:#6b655c;--line:#ddd7cd;--bg:#f7f4ee;--hi:#8a5a2b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font-family:"Hiragino Mincho ProN",'Yu Mincho',serif;line-height:1.85}
+main{max-width:760px;margin:0 auto;padding:36px 20px 80px}
+.kicker{font-size:11px;letter-spacing:.34em;color:var(--sub)}
+h1{font-size:27px;line-height:1.5;margin:.4em 0 .2em;font-weight:600}
+h2{font-size:17px;margin:2.4em 0 .6em;padding-bottom:.35em;border-bottom:1px solid var(--line);letter-spacing:.06em}
+p{margin:.8em 0}
+.lead{color:var(--sub);font-size:14px}
+blockquote{margin:1.4em 0;padding:.2em 0 .2em 1em;border-left:2px solid var(--hi);color:var(--ink);font-size:15px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:.8em 0}
+th,td{border-bottom:1px solid var(--line);padding:.5em .4em;text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:600;font-size:12px;letter-spacing:.12em}
+.big{font-size:44px;letter-spacing:.02em}
+.num td:last-child,.num th:last-child{text-align:right;white-space:nowrap}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:#eee9e0;padding:.1em .35em;border-radius:3px}
+.note{font-size:13px;color:var(--sub)}
+</style></head><body><main>
+<div class="kicker">950 ／ 名カバー案内所 ／ 2026-09-19</div>
+<h1>検索に出るのに、その人の棚に無い曲を数えた</h1>
+<blockquote>検索では出るのに本人のページに無い。こういうの無数にあるからね。<br>
+おそらく数え切れない位ある。仕組みで解決して、仕組みで。</blockquote>
+
+<h2>数えた</h2>
+<p class="lead">対象：アーティスト 2,700棚 ／ 曲 37,820曲（<code>coverGuide.ts</code>）</p>
+<p><span class="big">2,551</span> 件<br>
+<span class="note">＝検索には出るのに、その人のアーティストページには並ばない曲。</span></p>
+<p><span class="big">0</span> 件<br>
+<span class="note">＝棚にあるのに検索に出ない曲（コードに書かれた曲について）。</span></p>
+<table class="num"><tr><th>内訳</th><th>件数</th></tr>
+<tr><td>再生できる動画が無い</td><td>2420件</td></tr><tr><td>originalRef（カバー）</td><td>90件</td></tr><tr><td>coversAreOriginals</td><td>38件</td></tr><tr><td>hideFromArtistList</td><td>3件</td></tr>
+</table>
+
+<h2>なぜ落ちていたか</h2>
+<p>棚（<code>cover-guide.tsx</code> の <code>playable</code>）だけが曲を捨てていた。
+検索（<code>searchSongs</code>）は全曲をそのまま見ていた。同じ元データなのに、片方だけが絞っている。</p>
+<p>さらに悪いのは、棚が捨てたカバーの行き先になっているはずの「カバー・パロディ」欄が、
+<code>aiCovers</code>（手で書いたリンク集）しか見ていないこと。
+<code>aiCovers</code> が無いアーティストでは、カバーはページのどこにも出ない。akiko がそれ。</p>
+
+<h2>akiko の棚（実測）</h2>
+<table><tr><th>曲</th><th>落ちた理由</th></tr>
+<tr><td>Love Theme From &quot;Spartacus&quot;</td><td>originalRef（カバー）</td></tr>
+<tr><td>ルパン三世のテーマ (feat. akiko)</td><td>originalRef（カバー）</td></tr>
+<tr><td>Somebody Else\&#x27;s Guy</td><td>originalRef（カバー）</td></tr>
+<tr><td>Tristeza</td><td>originalRef（カバー）</td></tr>
+<tr><td>Come Together</td><td>originalRef（カバー）</td></tr>
+<tr><td>Waters of March</td><td>originalRef（カバー）</td></tr>
+</table>
+<p class="note">棚に残っていた <code>Love Theme From "Spartucus"</code> は綴り違いの別レコードで、
+<code>originalRef</code> が付いていなかったから残っていただけ。</p>
+
+<h2>カバーなのに印が無い曲（一部）</h2>
+<p class="lead">カード内の「★ 原曲：◯◯」チップは2026-08-13に作られていたが、
+カバーが棚から消えていたので一度も画面に出ていなかった。</p>
+<table><tr><th>棚</th><th>曲</th></tr>
+<tr><td>Ronny Jordan</td><td>Come With Me</td></tr>
+<tr><td>Vanessa Moreno</td><td>Come With Me</td></tr>
+<tr><td>スピッツ</td><td>/ 愛のしるし</td></tr>
+<tr><td>エハラマサヒロ</td><td>SOUL’d OUTの Diggy-MO&#x27;が中島みゆきの「糸」を歌ったら。</td></tr>
+<tr><td>エハラマサヒロ</td><td>矢野顕子がサザンオールスターズのTSUNAMIを歌ったら。</td></tr>
+<tr><td>エハラマサヒロ</td><td>「夏の日の1993/class」(カバー) MJ(河本準一？＆？)</td></tr>
+<tr><td>椎名林檎</td><td>(Just Like) Starting Over（椎名林檎 ver.）</td></tr>
+<tr><td>King Gnu</td><td>飾りじゃないのよ涙は</td></tr>
+<tr><td>Michael Jackson / The Jackson 5</td><td>Michael Jackson - Come Together</td></tr>
+<tr><td>Guns N&#x27; Roses</td><td>Live And Let Die</td></tr>
+<tr><td>Guns N&#x27; Roses</td><td>Knockin&#x27; on Heaven&#x27;s Door</td></tr>
+<tr><td>Prince</td><td>Whole Lotta Love (Live At The Aladdin, Las Vegas 12/15/2002)</td></tr>
+<tr><td>Prince</td><td>While My Guitar Gently Weeps (Rock Hall 2004・with Tom Petty, Steve Winwood ほか)</td></tr>
+<tr><td>Sinéad O&#x27;Connor</td><td>Nothing Compares 2 U (Prince・名カバー)</td></tr>
+<tr><td>George Michael</td><td>Somebody to Love (Freddie Mercury Tribute Concert)</td></tr>
+<tr><td>Norah Jones</td><td>Black Hole Sun (Detroit Fox Theatre 5.23.17)</td></tr>
+<tr><td>Ed Sheeran</td><td>I Want You Back</td></tr>
+<tr><td>Donny Hathaway</td><td>What&#x27;s Going On</td></tr>
+<tr><td>Aretha Franklin</td><td>Bridge Over Troubled Water</td></tr>
+<tr><td>Celine Dion</td><td>Hymne à l&#x27;amour (Paris 2024)</td></tr>
+</table>
+<p class="note">全128件のうち先頭20件。</p>
+
+<h2>落ちている数が多い棚</h2>
+<table class="num"><tr><th>棚</th><th>件数</th></tr>
+<tr><td>Ms.OOJA</td><td>10件</td></tr>
+<tr><td>Great 3</td><td>9件</td></tr>
+<tr><td>Da-iCE</td><td>9件</td></tr>
+<tr><td>五木ひろし</td><td>9件</td></tr>
+<tr><td>TMG / 松本孝弘</td><td>9件</td></tr>
+<tr><td>NONA REEVES</td><td>9件</td></tr>
+<tr><td>SiR</td><td>9件</td></tr>
+<tr><td>Donny Hathaway (Live)</td><td>9件</td></tr>
+<tr><td>山下達郎 (バラード名演選)</td><td>9件</td></tr>
+<tr><td>山崎ハコ</td><td>9件</td></tr>
+<tr><td>上田正樹</td><td>9件</td></tr>
+<tr><td>さだまさし</td><td>9件</td></tr>
+<tr><td>松山千春</td><td>9件</td></tr>
+<tr><td>中村一義</td><td>9件</td></tr>
+<tr><td>FLIPPER&#x27;S GUITAR</td><td>9件</td></tr>
+</table>
+
+<h2>二度とズレない形</h2>
+<p>見せる／見せないの判断を <code>coverGuide.ts</code> の <code>songIsPublic()</code> 1か所に寄せ、
+棚も検索もそこだけを通す。カバーは棚から外さず「★ 原曲：◯◯」「♪ カバー」の印を付けて並べる。</p>
+<p>関所 <code>gate_shelf_search.py</code> は、データだけでなく<strong>コードの形</strong>も見張る。
+棚側だけが曲を捨てる書き方に戻った瞬間に <code>pre-commit</code> で落ちる。
+今たまたまデータが揃っていても通らない。</p>
+<p>見本 <code>fixture_shelf_gap.ts</code> を掛けて exit 1 にならなくなったら、関所のほうが壊れている。</p>
+
+<h2>まだ残っている1件</h2>
+<p>棚は DB（<code>admin_artist_songs</code>）に後付けした曲を合流させるが、検索はコード側しか見ない。
+＝「棚にあるが検索に出ない」がDB側に残る。数はコードからは測れない。
+関所は毎回これを注意として出す（落としはしない）。</p>
+</main></body></html>

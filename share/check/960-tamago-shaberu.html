@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>卵は喋るのか — 動く見本と、手の比較</title>
+<style>
+:root{
+  color-scheme: light;
+  --kinari:#EDE6D6;
+  --kinari-l:#F6F1E6;
+  --ai:#22304A;
+  --ai-soft:rgba(34,48,74,.55);
+  --shu:#C1442E;
+  --line:rgba(34,48,74,.18);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--kinari); color:var(--ai);
+  font-family:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",Georgia,serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:860px;margin:0 auto;padding:44px 22px 90px}
+.kicker{font-size:9.5px;letter-spacing:4.2px;color:var(--shu);text-transform:uppercase;margin:0 0 14px}
+h1{font-size:23px;font-weight:400;letter-spacing:5px;margin:0 0 10px;line-height:1.7}
+.lede{font-size:12.5px;line-height:2.1;color:var(--ai-soft);max-width:44em;margin:0 0 6px}
+h2{font-size:14px;font-weight:400;letter-spacing:4px;margin:0 0 6px}
+.sec{margin-top:66px;padding-top:26px;border-top:1px solid var(--line)}
+.secno{font-size:9px;letter-spacing:3px;color:var(--shu);margin:0 0 10px}
+
+/* stage */
+.studio{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:22px}
+.stagebox{flex:0 0 320px;max-width:100%}
+#stage{position:relative;width:320px;height:400px;margin:0 auto;touch-action:manipulation}
+#stage canvas,#stage .layer{position:absolute;left:0;top:0;width:320px;height:400px;pointer-events:none}
+#stage .layer{display:flex;align-items:center;justify-content:center}
+#stage .layer img{max-width:100%;max-height:100%;object-fit:contain}
+.guides #stage .lyr{outline:1px dashed rgba(193,68,46,.5);outline-offset:-1px}
+.lbl{position:absolute;font-family:ui-monospace,Menlo,monospace;font-size:8.5px;letter-spacing:1px;color:var(--shu);background:rgba(246,241,230,.9);padding:1px 4px;display:none}
+.guides .lbl{display:block}
+
+.panel{flex:1 1 300px;min-width:280px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button{
+  font-family:inherit;font-size:11.5px;letter-spacing:1.6px;color:var(--ai);
+  background:var(--kinari-l);border:1px solid var(--line);border-radius:2px;
+  padding:9px 14px;cursor:pointer;transition:.15s;
+}
+button:hover{border-color:var(--shu);color:var(--shu)}
+button.on{background:var(--shu);color:#fff;border-color:var(--shu)}
+button:disabled{opacity:.35;cursor:default}
+input[type=text]{
+  font-family:inherit;font-size:12px;padding:9px 11px;width:100%;
+  background:var(--kinari-l);border:1px solid var(--line);border-radius:2px;color:var(--ai);
+}
+.hint{font-size:10.5px;line-height:1.9;color:var(--ai-soft);margin:8px 0 0}
+
+/* HUD */
+.hud{margin-top:18px;border:1px solid var(--line);background:var(--kinari-l);padding:14px 15px}
+.hud h3{font-size:8.5px;letter-spacing:3px;color:var(--shu);margin:0 0 11px;font-weight:400}
+.meter{display:grid;grid-template-columns:78px 1fr 46px;gap:7px;align-items:center;margin-bottom:6px;
+  font-family:ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.3px;color:var(--ai-soft)}
+.bar{height:5px;background:rgba(34,48,74,.1);position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ai);width:0}
+.bar.shu i{background:var(--shu)}
+.vis{display:flex;gap:4px;margin:12px 0 4px}
+.vis span{
+  flex:1;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:11px;
+  padding:6px 0;border:1px solid var(--line);color:rgba(34,48,74,.32);transition:.08s
+}
+.vis span.hot{background:var(--shu);color:#fff;border-color:var(--shu)}
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;
+  font-family:ui-monospace,Menlo,monospace;font-size:9.5px;color:var(--ai-soft)}
+.dual b{display:block;font-weight:400;font-size:8px;letter-spacing:2px;color:var(--shu);margin-bottom:3px}
+.dual em{font-style:normal;font-size:15px;color:var(--ai)}
+
+/* drop */
+.slots{display:flex;gap:7px;margin-top:14px}
+.slot{flex:1;border:1px dashed var(--line);padding:11px 4px;text-align:center;
+  font-size:9.5px;letter-spacing:1px;color:var(--ai-soft);cursor:pointer;transition:.15s;background:var(--kinari-l)}
+.slot:hover,.slot.over{border-color:var(--shu);color:var(--shu)}
+.slot.filled{border-style:solid;border-color:var(--shu);color:var(--shu)}
+
+table{width:100%;border-collapse:collapse;margin-top:18px;font-size:11px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.75}
+th{font-size:8.5px;letter-spacing:2px;color:var(--shu);font-weight:400;white-space:nowrap}
+td:first-child{white-space:nowrap;font-size:11px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ok{color:var(--shu)}
+.pick{background:rgba(193,68,46,.055)}
+
+.callout{border-left:2px solid var(--shu);padding:3px 0 3px 16px;margin:20px 0;font-size:12.5px;line-height:2.1}
+.note{font-size:11px;line-height:2;color:var(--ai-soft)}
+ol,ul{font-size:12px;line-height:2.1;padding-left:1.3em;color:var(--ai-soft)}
+ol b,ul b,p b{color:var(--ai);font-weight:400;border-bottom:1px solid rgba(193,68,46,.4)}
+svg.diagram{width:100%;height:auto;display:block;margin-top:16px}
+@media(max-width:560px){
+  .wrap{padding:30px 16px 70px}
+  #stage,#stage canvas,#stage .layer{width:282px;height:356px}
+  .stagebox{flex-basis:282px}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+
+  <p class="kicker">Tamago &middot; Talking Egg &middot; Decision Sheet</p>
+  <h1>卵は、本当に喋るのか</h1>
+  <p class="lede">
+    結論から。<b>PNGを1枚貼っただけでは、永久に喋りません。</b>
+    喋らせる方法はひとつだけで、<b>絵をパーツに切って、別々に動かす</b>こと。NVIDIAも、Live2Dも、HeyGenも、やっていることは全部これです。
+    下のものは説明ではなく、<b>いま動いている実物</b>です。音を出してください。
+  </p>
+
+  <!-- ============ 1. 動く見本 ============ -->
+  <div class="sec" style="border-top:none;margin-top:34px">
+    <p class="secno">01 &mdash; 動く見本</p>
+    <h2>音が鳴って、口が動く</h2>
+    <p class="note">絵は仮です（本番の絵は画像生成か、既にある素材を差し込みます）。ここで見てほしいのは絵ではなく、<b style="color:var(--ai)">動きが音とつながっているか</b>だけ。</p>
+
+    <div class="studio">
+      <div class="stagebox">
+        <div id="stage">
+          <canvas id="cShadow" class="lyr"></canvas>
+          <canvas id="cBody"   class="lyr"></canvas>
+          <canvas id="cEyes"   class="lyr"></canvas>
+          <canvas id="cMouth"  class="lyr"></canvas>
+          <div class="layer lyr" id="slotBody"></div>
+          <div class="layer lyr" id="slotEyes"></div>
+          <div class="layer lyr" id="slotMouth"></div>
+          <div class="lbl" style="left:6px;top:6px">L1 shadow</div>
+          <div class="lbl" style="left:6px;top:22px">L2 body &larr; 呼吸・揺れ</div>
+          <div class="lbl" style="left:6px;top:38px">L3 eyes &larr; 瞬き</div>
+          <div class="lbl" style="left:6px;top:54px">L4 mouth &larr; 音素</div>
+        </div>
+        <div class="slots">
+          <div class="slot" id="dBody">体のPNGを落とす</div>
+          <div class="slot" id="dEyes">目のPNG</div>
+          <div class="slot" id="dMouth">口のPNG</div>
+        </div>
+        <p class="hint">ここに自分の卵の絵（透過PNG）をドラッグすると、その絵がそのまま喋り出します。仕組みは絵に依存していません。</p>
+      </div>
+
+      <div class="panel">
+        <div class="row">
+          <button id="bSay">▶ 卵の声で喋らせる</button>
+          <button id="bTts">人の声で読ませる</button>
+          <button id="bMic">自分の声でやってみる</button>
+        </div>
+        <input type="text" id="txt" value="おはよう、たまごです。きょうも ごきげんで いきましょう">
+        <p class="hint">かなで書くほど口が正確に合います（日本語は母音が5つしかないので、英語より当てやすい）。</p>
+
+        <div class="row" style="margin-top:12px">
+          <button id="bGuide">パーツの境目を見る</button>
+          <button id="bBreath" class="on">呼吸・揺れ ON</button>
+        </div>
+
+        <div class="hud">
+          <h3>いま何が起きているか（リアルタイム）</h3>
+          <div class="vis" id="vis">
+            <span data-v="a">あ</span><span data-v="i">い</span><span data-v="u">う</span>
+            <span data-v="e">え</span><span data-v="o">お</span><span data-v="n">ん</span><span data-v="x">閉</span>
+          </div>
+          <div class="meter"><span>口の開き</span><div class="bar shu"><i id="mOpen"></i></div><span id="tOpen">0%</span></div>
+          <div class="meter"><span>口の横幅</span><div class="bar shu"><i id="mWide"></i></div><span id="tWide">0%</span></div>
+          <div class="meter"><span>呼吸</span><div class="bar"><i id="mBre"></i></div><span id="tBre">0%</span></div>
+          <div class="meter"><span>体の揺れ</span><div class="bar"><i id="mSway"></i></div><span id="tSway">0°</span></div>
+          <div class="meter"><span>音の大きさ</span><div class="bar"><i id="mVol"></i></div><span id="tVol">0</span></div>
+          <div class="dual">
+            <div><b>FPS（実測）</b><em id="fps">–</em></div>
+            <div><b>ページ全体の容量</b><em id="kb">–</em></div>
+            <div><b>外部ライブラリ</b><em>0 KB</em></div>
+            <div><b>月額</b><em>0 円</em></div>
+          </div>
+        </div>
+        <p class="hint" id="status">「卵の声で喋らせる」を押してください。音と口は<b style="color:var(--ai)">同じ1本のタイムライン</b>から出ているので、原理的にズレません。「自分の声で」は、逆に<b style="color:var(--ai)">音を解析して</b>母音を当てています（上の7つのランプが反応します）。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 2. Tokkio 分解 ============ -->
+  <div class="sec">
+    <p class="secno">02 &mdash; お手本の分解</p>
+    <h2>NVIDIA は、何と何をつないでいるか</h2>
+    <p class="note">Tokkio は1つの製品ではなく、<b style="color:var(--ai)">3本のパイプラインの組み合わせ</b>です。重要なのは機能ではなく、<b style="color:var(--ai)">どこで切れているか</b>。ここが我々の設計図になります。</p>
+
+    <svg class="diagram" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NVIDIA ACE / Tokkio の構成図">
+      <defs>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 z" fill="#22304A" opacity=".5"/>
+        </marker>
+        <marker id="arS" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 z" fill="#C1442E"/>
+        </marker>
+      </defs>
+      <g font-family="ui-monospace,Menlo,monospace" font-size="9.5" fill="#22304A">
+        <!-- lanes -->
+        <text x="8" y="44" font-size="8" letter-spacing="2" fill="#C1442E">STREAMING</text>
+        <text x="8" y="134" font-size="8" letter-spacing="2" fill="#C1442E">ACE CONTROLLER</text>
+        <text x="8" y="234" font-size="8" letter-spacing="2" fill="#C1442E">ANIMATION</text>
+        <line x1="0" y1="72" x2="880" y2="72" stroke="#22304A" stroke-opacity=".12"/>
+        <line x1="0" y1="162" x2="880" y2="162" stroke="#22304A" stroke-opacity=".12"/>
+
+        <!-- row1 -->
+        <rect x="120" y="22" width="130" height="34" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <text x="185" y="43" text-anchor="middle">人の声（WebRTC）</text>
+        <line x1="250" y1="39" x2="316" y2="39" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <rect x="320" y="22" width="120" height="34" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <text x="380" y="43" text-anchor="middle">Riva ASR 文字に</text>
+        <line x1="440" y1="39" x2="506" y2="39" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <rect x="510" y="22" width="110" height="34" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <text x="565" y="43" text-anchor="middle">LLM 返事を作る</text>
+        <line x1="620" y1="39" x2="686" y2="39" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <rect x="690" y="22" width="120" height="34" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <text x="750" y="43" text-anchor="middle">TTS 声にする</text>
+
+        <!-- down -->
+        <path d="M750,56 L750,96 L440,96 L440,112" fill="none" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
+        <text x="596" y="90" text-anchor="middle" fill="#C1442E">音声データ</text>
+
+        <!-- row2 -->
+        <rect x="320" y="112" width="240" height="38" fill="#C1442E" fill-opacity=".07" stroke="#C1442E"/>
+        <text x="440" y="130" text-anchor="middle" fill="#C1442E" font-size="10">Audio2Face — 音 → 顔の数値</text>
+        <text x="440" y="144" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">口の形・目・表情を、ただの数の列にする</text>
+
+        <rect x="600" y="112" width="210" height="38" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <text x="705" y="130" text-anchor="middle">Audio2Emotion / Animation Graph</text>
+        <text x="705" y="144" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">感情・姿勢・体の揺れ</text>
+        <line x1="560" y1="131" x2="596" y2="131" stroke="#22304A" stroke-opacity=".5" marker-end="url(#ar)"/>
+
+        <!-- the cut -->
+        <line x1="60" y1="176" x2="820" y2="176" stroke="#C1442E" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="62" y="190" fill="#C1442E" font-size="9">★ ここが切れている ＝ 数値だけが下に渡る。だから絵は後から差し替えられる</text>
+
+        <!-- row3 -->
+        <path d="M440,150 L440,210" fill="none" stroke="#C1442E" marker-end="url(#arS)"/>
+        <rect x="200" y="210" width="150" height="40" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <text x="275" y="228" text-anchor="middle">A2F-2D</text>
+        <text x="275" y="242" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">写真1枚を喋らせる</text>
+
+        <rect x="368" y="210" width="150" height="40" fill="none" stroke="#22304A" stroke-opacity=".3"/>
+        <text x="443" y="228" text-anchor="middle">Omniverse Renderer</text>
+        <text x="443" y="242" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">3Dで描く（要GPU）</text>
+
+        <rect x="536" y="210" width="184" height="40" fill="#C1442E" fill-opacity=".07" stroke="#C1442E"/>
+        <text x="628" y="228" text-anchor="middle" fill="#C1442E">＝ ここに「卵」を置く</text>
+        <text x="628" y="242" text-anchor="middle" font-size="8.5" fill="#22304A" fill-opacity=".65">PNG層 → Live2D → 3D と差し替え可</text>
+        <path d="M440,190 L440,196 M350,230 L364,230 M518,230 L532,230" stroke="#22304A" stroke-opacity=".3"/>
+
+        <text x="60" y="278" font-size="9" fill="#22304A" fill-opacity=".6">上2段（声を聞く・返事を作る・声にする）は、既製品でいくらでも置き換わる。勝負はいつも3段目の「絵の実体」だけ。</text>
+      </g>
+    </svg>
+
+    <div class="callout">
+      分解して分かる一番大事なこと。<br>
+      NVIDIAの本体は「<b>音 → 顔の数値</b>」を作るところ（Audio2Face）で、<b>絵そのものは別部品</b>です。
+      だから同じ数値で2Dの写真も3Dモデルも動かせる。<br>
+      <span class="ok">我々もこの切り方をそのまま真似すれば、今日PNGで始めて、来年3Dに載せ替えても、上の仕組みは一切書き直さずに済みます。</span>
+    </div>
+  </div>
+
+  <!-- ============ 3. 比較 ============ -->
+  <div class="sec">
+    <p class="secno">03 &mdash; 手は5つある</p>
+    <h2>金をかけずに同じことをやっている実例</h2>
+    <div class="tw">
+      <table>
+        <tr>
+          <th>手</th><th>口が音に合うか</th><th>体の揺れ・呼吸</th><th>背景と馴染むか</th>
+          <th>スマホの重さ</th><th>月いくら</th><th>卵の絵は誰が</th>
+        </tr>
+        <tr class="pick">
+          <td><b>① PNG層＋Web Audio</b><br><span class="note">＝上の見本</span></td>
+          <td>音素で動く（日本語5母音）。<span class="ok">上で実演済み</span></td>
+          <td class="ok">あり。無言でも呼吸・瞬き・重心移動</td>
+          <td class="ok">絵と背景を同じ画材で作れば完全に馴染む</td>
+          <td class="ok">ランタイム0KB／60fps<br>絵のPNG分だけ</td>
+          <td class="ok">0円</td>
+          <td class="ok">画像生成でも手描きでも可。切って渡すだけ</td>
+        </tr>
+        <tr>
+          <td><b>② Live2D Cubism</b><br><span class="note">Web SDK / pixi-live2d-display</span></td>
+          <td>◎ 業界標準。口パク用パラメータが正式にある</td>
+          <td>◎ 揺れ物（髪・体）が標準機能</td>
+          <td>○ 2Dなので馴染ませやすい</td>
+          <td>△ WebGL必須。スマホで重くなる報告が多い<br>ランタイム数百KB</td>
+          <td>0円（小規模は無償。売上規模で有償）</td>
+          <td>△ Cubism Editorでモデル制作が必要。習得コスト大</td>
+        </tr>
+        <tr>
+          <td><b>③ Rive</b><br><span class="note">Duolingoが採用</span></td>
+          <td>○ ステートマシンで音素に対応づけ可</td>
+          <td>◎ 得意。Duolingoで実証</td>
+          <td>○ ベクターなので背景に溶けにくい面も</td>
+          <td>○ GPU描画で60fps<br>ランタイム約200KB(wasm)</td>
+          <td>無料枠あり／本格利用は有料</td>
+          <td>△ Riveエディタで組み直しが必要</td>
+        </tr>
+        <tr>
+          <td><b>④ three.js + VRM / TalkingHead</b><br><span class="note">met4citizen</span></td>
+          <td>◎ ARKit/Oculus visemeで本物の音素</td>
+          <td>◎ 全身モーション（Mixamo）</td>
+          <td>× 3Dキャラが2D背景から浮く。光と影を合わせ込むのが最難関</td>
+          <td>× スマホで発熱・クラッシュ報告。モデル数MB</td>
+          <td>0円（OSS）</td>
+          <td>× 卵を3Dモデル化＋ブレンドシェイプ整備が必要</td>
+        </tr>
+        <tr>
+          <td><b>⑤ HeyGen 等のAPI</b></td>
+          <td>◎ 完成度は最高</td>
+          <td>◎ 身体の揺れ込み</td>
+          <td>× 向こうが吐いた映像。背景を合わせにくい</td>
+          <td>○ 動画が降ってくるだけ</td>
+          <td class="ok" style="color:var(--shu)">約0.20ドル/分（約30円/分）<br>1日10分で月約9,000円</td>
+          <td>写真を渡す。ただし絵は向こうの解釈</td>
+        </tr>
+      </table>
+    </div>
+    <p class="note" style="margin-top:14px">
+      ※ ④で先に踏まれている地雷：three.js の3Dアバターはスマホで急に重くなる（Web3Dは最適化しないと発熱・クラッシュを招く、とpixiv系の解説が明記）。
+      ②も「Live2Dが重い」系の記事が日本語で山ほど出ている。<b style="color:var(--ai)">重さは後から直せない。最初の選択で決まります。</b>
+    </p>
+  </div>
+
+  <!-- ============ 4. 結論 ============ -->
+  <div class="sec">
+    <p class="secno">04 &mdash; 決めること</p>
+    <h2>おすすめは ①。理由は1行</h2>
+    <div class="callout">
+      <b>① PNG層＋Web Audio でいきます。</b><br>
+      理由：<span class="ok">絵の品質が上限を決める方式なので、たまごさんの絵がそのまま強みになる。</span>他の4つは全部、絵をツールの都合に作り直させる。
+    </div>
+
+    <h2 style="margin-top:38px">いま、やっておくべきこと（これを外すと全部やり直し）</h2>
+    <div class="callout">
+      <b>絵と「動かす数値」の間に線を引いておく。</b>
+      具体的には、卵を <code style="font-family:ui-monospace,Menlo,monospace;font-size:11px">setViseme(母音, 強さ) / setBreath(値) / setSway(値)</code> という<b>3つの数値だけを受け取る箱</b>として作る。
+      <span class="ok">この見本は既にそう作ってあります。</span>だから中身をPNG→Live2D→3Dと入れ替えても、音まわりは1行も書き直しません。NVIDIAが Audio2Face とレンダラを切っているのと、同じ切り方です。
+    </div>
+    <p class="note">
+      逆に、今これをやらずに「PNGを直接いじるコード」を書くと、3Dに移る日に<b style="color:var(--ai)">全部捨てることになります。</b>今日決めるべきは、絵でも道具でもなく、この線1本です。
+    </p>
+
+    <h2 style="margin-top:38px">次にやること</h2>
+    <ol>
+      <li><b>卵の絵を、体・目・口の3枚の透過PNGに分けて作る。</b>（上のドロップ枠に落とせば、その場で喋ります）</li>
+      <li>口は <b>あ／い／う／え／お／ん／閉</b> の7枚あると別格に良くなる。1枚でも成立します。</li>
+      <li>背景は<b>卵と同じ画材・同じ光</b>で描く。ここを分けた瞬間に「貼り付けた感」が出ます。</li>
+    </ol>
+    <p class="note" style="margin-top:26px;padding-top:18px;border-top:1px solid var(--line)">
+      出典：NVIDIA ACE / Tokkio アーキテクチャ（docs.nvidia.com・NVIDIA Technical Blog）、met4citizen/TalkingHead、wass08/wawa-lipsync、pixiv three-vrm、Live2D Cubism SDK for Web、Rive（Duolingo事例）、HeyGen 価格（2026年時点の公開情報）。
+    </p>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var KINARI="#F2EADB", KINARI_D="#E0D3B9", AI="#22304A", SHU="#C1442E";
+var W=320,H=400;
+var stage=document.getElementById('stage');
+function fitSize(){ var r=stage.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height); }
+fitSize();
+
+/* ---------- canvas helpers ---------- */
+var DPR=Math.min(window.devicePixelRatio||1,2);
+function prep(c){ c.width=W*DPR; c.height=H*DPR; var x=c.getContext('2d'); x.setTransform(DPR,0,0,DPR,0,0); return x; }
+var cShadow=document.getElementById('cShadow'), xShadow=prep(cShadow);
+var cBody  =document.getElementById('cBody'),   xBody  =prep(cBody);
+var cEyes  =document.getElementById('cEyes'),   xEyes  =prep(cEyes);
+var cMouth =document.getElementById('cMouth'),  xMouth =prep(cMouth);
+
+/* deterministic wobble so the outline doesn't look machine-perfect */
+function wob(t,s){ return Math.sin(t*3.1+s)*0.6 + Math.sin(t*7.7+s*2.3)*0.35 + Math.sin(t*13.3+s*0.7)*0.18; }
+var CX=W/2, CY=H*0.50, RX=W*0.315, RY=H*0.225;
+
+function eggPath(x,rx,ry,amp,seed){
+  x.beginPath();
+  for(var i=0;i<=120;i++){
+    var t=i/120*Math.PI*2;
+    var taper=1-0.13*Math.cos(t);              /* 上が細く、下がふくらむ */
+    var w=1+ (amp? wob(t,seed)*amp/100 :0);
+    var px=CX + Math.sin(t)*rx*taper*w;
+    var py=CY - Math.cos(t)*ry*w;
+    i? x.lineTo(px,py) : x.moveTo(px,py);
+  }
+  x.closePath();
+}
+
+/* paper grain — keeps it from reading as flat vector */
+var grain=document.createElement('canvas');
+function makeGrain(){
+  grain.width=W; grain.height=H;
+  var g=grain.getContext('2d'), d=g.createImageData(W,H), p=d.data;
+  for(var i=0;i<p.length;i+=4){
+    var n=200+Math.random()*55;
+    p[i]=p[i+1]=p[i+2]=n; p[i+3]=Math.random()*16;
+  }
+  g.putImageData(d,0,0);
+}
+makeGrain();
+
+function drawShadow(){
+  var x=xShadow; x.clearRect(0,0,W,H);
+  var gy=CY+RY*1.02;
+  var g=x.createRadialGradient(CX,gy,2,CX,gy,RX*1.15);
+  g.addColorStop(0,'rgba(34,48,74,.22)'); g.addColorStop(1,'rgba(34,48,74,0)');
+  x.fillStyle=g; x.save(); x.translate(CX,gy); x.scale(1,0.19); x.beginPath();
+  x.arc(0,0,RX*1.15,0,7); x.fill(); x.restore();
+}
+function drawBody(){
+  var x=xBody; x.clearRect(0,0,W,H);
+  /* watercolor: three offset translucent passes */
+  var tints=[['rgba(238,229,208,.95)',1.0,0],['rgba(226,212,184,.45)',0.985,11],['rgba(205,186,150,.22)',0.965,23]];
+  for(var k=0;k<tints.length;k++){
+    eggPath(x,RX*tints[k][1],RY*tints[k][1],1.6,tints[k][2]);
+    x.fillStyle=tints[k][0]; x.fill();
+  }
+  var g=x.createLinearGradient(0,CY-RY,0,CY+RY);
+  g.addColorStop(0,'rgba(255,252,244,.55)'); g.addColorStop(.55,'rgba(255,252,244,0)');
+  g.addColorStop(1,'rgba(34,48,74,.10)');
+  eggPath(x,RX,RY,1.6,0); x.fillStyle=g; x.fill();
+  /* ink outline, several light passes */
+  for(var p=0;p<3;p++){
+    eggPath(x,RX-p*0.35,RY-p*0.35,1.6+p*0.5,p*7.1);
+    x.strokeStyle='rgba(34,48,74,'+(0.16+p*0.05)+')'; x.lineWidth=1.05; x.stroke();
+  }
+  x.globalAlpha=.55; x.drawImage(grain,0,0,W,H); x.globalAlpha=1;
+}
+function drawEyes(){
+  var x=xEyes; x.clearRect(0,0,W,H);
+  var ey=CY-RY*0.18, dx=RX*0.36;
+  x.strokeStyle='rgba(34,48,74,.78)'; x.lineCap='round';
+  for(var s=-1;s<=1;s+=2){
+    for(var p=0;p<2;p++){
+      x.lineWidth=2.3-p*0.9; x.globalAlpha=p?0.45:0.9;
+      x.beginPath();
+      x.moveTo(CX+s*dx-7, ey+1.5+p*0.3);
+      x.quadraticCurveTo(CX+s*dx, ey-4.2-p*0.3, CX+s*dx+7, ey+1.5+p*0.3);
+      x.stroke();
+    }
+  }
+  x.globalAlpha=1;
+}
+/* mouth is redrawn every frame from two numbers */
+function drawMouth(open,wide){
+  var x=xMouth; x.clearRect(0,0,W,H);
+  var my=CY+RY*0.30;
+  var w=(RX*0.20)*(0.55+wide*0.85);
+  var h=(RY*0.30)*open;
+  x.save(); x.translate(CX,my);
+  if(h<1.1){
+    x.strokeStyle='rgba(34,48,74,.72)'; x.lineWidth=2; x.lineCap='round';
+    x.beginPath(); x.moveTo(-w*0.75,0); x.quadraticCurveTo(0,1.6,w*0.75,0); x.stroke();
+  } else {
+    x.beginPath();
+    x.moveTo(-w,0);
+    x.quadraticCurveTo(-w*0.45,-h*0.72, 0,-h*0.62);
+    x.quadraticCurveTo(w*0.45,-h*0.72, w,0);
+    x.quadraticCurveTo(w*0.5, h*1.05, 0, h*1.15);
+    x.quadraticCurveTo(-w*0.5, h*1.05, -w,0);
+    x.closePath();
+    x.fillStyle='rgba(34,48,74,.80)'; x.fill();
+    x.fillStyle='rgba(193,68,46,.35)';
+    x.beginPath(); x.ellipse(0,h*0.30,w*0.52,h*0.42,0,0,7); x.fill();
+  }
+  x.restore();
+}
+function redrawAll(){ drawShadow(); drawBody(); drawEyes(); }
+redrawAll();
+
+/* ---------- THE INTERFACE (this is the whole point) ----------
+   卵は、この3つの数値しか受け取らない。
+   中身がPNGでもLive2DでもVRMでも、ここだけ同じにしておけば全部差し替えられる。 */
+var Avatar = {
+  viseme:'x', vTarget:{o:0,w:0.4}, vNow:{o:0,w:0.4},
+  breath:0, sway:0, blink:1, bob:0,
+  setViseme:function(v,strength){
+    this.viseme=v;
+    var S=SHAPE[v]||SHAPE.x, k=(strength===undefined?1:strength);
+    this.vTarget={o:S.o*k, w:S.w};
+  },
+  setBreath:function(v){ this.breath=v; },
+  setSway:function(v){ this.sway=v; }
+};
+var SHAPE={
+  a:{o:1.00,w:0.78}, i:{o:0.22,w:1.00}, u:{o:0.42,w:0.24},
+  e:{o:0.58,w:0.88}, o:{o:0.82,w:0.46}, n:{o:0.14,w:0.62}, x:{o:0.00,w:0.40}
+};
+
+/* ---------- render loop ---------- */
+var breathOn=true, t0=performance.now(), frames=0, fpsT=performance.now();
+var nextBlink=1500+Math.random()*3000, blinkStart=-99;
+var els={
+  mOpen:document.getElementById('mOpen'),tOpen:document.getElementById('tOpen'),
+  mWide:document.getElementById('mWide'),tWide:document.getElementById('tWide'),
+  mBre:document.getElementById('mBre'),tBre:document.getElementById('tBre'),
+  mSway:document.getElementById('mSway'),tSway:document.getElementById('tSway'),
+  mVol:document.getElementById('mVol'),tVol:document.getElementById('tVol'),
+  fps:document.getElementById('fps')
+};
+var visEls=[].slice.call(document.querySelectorAll('#vis span'));
+var lastVis='';
+var groupB=[cBody,document.getElementById('slotBody')];
+var groupF=[cEyes,cMouth,document.getElementById('slotEyes'),document.getElementById('slotMouth')];
+
+function frame(now){
+  var t=(now-t0)/1000;
+  /* --- idle life: 見て分かる速度で動かす --- */
+  if(breathOn){
+    Avatar.setBreath(Math.sin(t*2*Math.PI/2.9));             /* 2.9秒周期 */
+    Avatar.setSway(Math.sin(t*2*Math.PI/4.6)*0.75 + Math.sin(t*2*Math.PI/1.7)*0.25);
+  } else { Avatar.setBreath(0); Avatar.setSway(0); }
+  if(now-blinkStart>nextBlink){ blinkStart=now; nextBlink=1600+Math.random()*3400; }
+  var bt=(now-blinkStart)/120;
+  Avatar.blink = bt<1 ? Math.max(0.06,Math.abs(bt*2-1)) : 1;
+
+  /* --- mouth easing (coarticulation) --- */
+  Avatar.vNow.o += (Avatar.vTarget.o-Avatar.vNow.o)*0.34;
+  Avatar.vNow.w += (Avatar.vTarget.w-Avatar.vNow.w)*0.28;
+  drawMouth(Avatar.vNow.o, Avatar.vNow.w);
+
+  /* --- apply to layers --- */
+  var b=Avatar.breath, s=Avatar.sway;
+  var bodyT='translateY('+(-b*7 - Avatar.bob*9).toFixed(2)+'px) rotate('+(s*2.3).toFixed(2)+'deg) scaleY('+(1+b*0.036).toFixed(4)+') scaleX('+(1-b*0.026).toFixed(4)+')';
+  var faceT='translateY('+(-b*11 - Avatar.bob*13).toFixed(2)+'px) translateX('+(s*4.2).toFixed(2)+'px) rotate('+(s*2.3).toFixed(2)+'deg)';
+  for(var i=0;i<groupB.length;i++){ groupB[i].style.transformOrigin='50% 74%'; groupB[i].style.transform=bodyT; }
+  for(var j=0;j<groupF.length;j++){ groupF[j].style.transformOrigin='50% 74%'; groupF[j].style.transform=faceT; }
+  cEyes.style.opacity = Avatar.blink<0.3 ? 0.15 : 1;
+  var se=document.getElementById('slotEyes');
+  se.style.opacity = Avatar.blink<0.3 ? 0.15 : 1;
+  Avatar.bob *= 0.86;
+
+  /* --- HUD --- */
+  els.mOpen.style.width=(Avatar.vNow.o*100)+'%'; els.tOpen.textContent=Math.round(Avatar.vNow.o*100)+'%';
+  els.mWide.style.width=(Avatar.vNow.w*100)+'%'; els.tWide.textContent=Math.round(Avatar.vNow.w*100)+'%';
+  els.mBre.style.width=((b+1)/2*100)+'%';        els.tBre.textContent=Math.round((b+1)/2*100)+'%';
+  els.mSway.style.width=((s+1)/2*100)+'%';       els.tSway.textContent=(s*2.3).toFixed(1)+'°';
+  if(Avatar.viseme!==lastVis){
+    lastVis=Avatar.viseme;
+    for(var k=0;k<visEls.length;k++) visEls[k].classList.toggle('hot', visEls[k].dataset.v===lastVis);
+  }
+  frames++;
+  if(now-fpsT>500){ els.fps.textContent=Math.round(frames*1000/(now-fpsT)); frames=0; fpsT=now; }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ---------- audio ---------- */
+var AC=null, analyser=null, master=null, freqData=null;
+function audio(){
+  if(AC) { if(AC.state==='suspended') AC.resume(); return AC; }
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  master=AC.createGain(); master.gain.value=0.9;
+  analyser=AC.createAnalyser(); analyser.fftSize=2048; analyser.smoothingTimeConstant=0.55;
+  freqData=new Float32Array(analyser.frequencyBinCount);
+  master.connect(analyser); analyser.connect(AC.destination);
+  return AC;
+}
+
+/* 日本語かな → 母音。日本語は母音が5つしかないので当てやすい。 */
+var AROW="あかさたなはまやらわがざだばぱぁゃゎア カサタナハマヤラワ";
+var VOWEL_OF={};
+(function(){
+  var rows={
+    a:"あかさたなはまやらわがざだばぱぁゃゎ", i:"いきしちにひみりぎじぢびぴぃ",
+    u:"うくすつぬふむゆるぐずづぶぷぅゅ",      e:"えけせてねへめれげぜでべぺぇ",
+    o:"おこそとのほもよろをごぞどぼぽぉょ",    n:"ん"
+  };
+  for(var v in rows){
+    var s=rows[v];
+    for(var i=0;i<s.length;i++){
+      VOWEL_OF[s[i]]=v;
+      VOWEL_OF[String.fromCharCode(s.charCodeAt(i)+0x60)]=v; /* カタカナ */
+    }
+  }
+})();
+function toMora(text){
+  var out=[], prev='a';
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(c==='ー'){ out.push({v:prev,d:1.0}); continue; }
+    if(c==='っ'||c==='ッ'){ out.push({v:'x',d:0.55}); continue; }
+    if(c==='、'||c==='，'||c===' '||c==='　'){ out.push({v:'x',d:0.85}); continue; }
+    if(c==='。'||c==='！'||c==='？'){ out.push({v:'x',d:1.5}); continue; }
+    var v=VOWEL_OF[c];
+    if(v){
+      /* 小書きは直前と合成（きょ→ki+o ではなく ko 相当） */
+      if("ゃゅょぁぃぅぇぉャュョァィゥェォ".indexOf(c)>=0 && out.length){ out[out.length-1].v=v; continue; }
+      out.push({v:v,d:1.0}); prev=v; continue;
+    }
+    /* 漢字・英字など読みが取れないもの：口は動かすが、断定しない */
+    out.push({v:'?',d:1.0});
+  }
+  return out;
+}
+var FORMANT={a:[780,1200,2800],i:[300,2300,3000],u:[350,1250,2200],e:[520,1880,2600],o:[500,900,2500],n:[260,1000,2200],x:[400,1200,2400]};
+
+var playing=false, stopFn=null;
+function say(text){
+  if(playing){ if(stopFn) stopFn(); return; }
+  var ac=audio(); if(!ac) return;
+  var mora=toMora(text); if(!mora.length) return;
+  var MORA=0.145;
+  var t=ac.currentTime+0.06;
+  var osc=ac.createOscillator(); osc.type='sawtooth';
+  var vib=ac.createOscillator(); vib.frequency.value=5.2;
+  var vibG=ac.createGain(); vibG.gain.value=3.2; vib.connect(vibG); vibG.connect(osc.frequency);
+  var env=ac.createGain(); env.gain.value=0.0001;
+  var sum=ac.createGain(); sum.gain.value=0.5;
+  var f=[],g=[];
+  for(var i=0;i<3;i++){
+    f[i]=ac.createBiquadFilter(); f[i].type='bandpass'; f[i].Q.value=[9,11,9][i];
+    g[i]=ac.createGain(); g[i].gain.value=[1.0,0.55,0.22][i];
+    env.connect(f[i]); f[i].connect(g[i]); g[i].connect(sum);
+  }
+  osc.connect(env); sum.connect(master);
+  var base=192;
+  osc.frequency.setValueAtTime(base,t);
+  var tt=t, total=0;
+  for(var m=0;m<mora.length;m++){
+    var mo=mora[m], dur=MORA*mo.d;
+    var v = mo.v==='?' ? ['a','o','e','u','i'][m%5] : mo.v;
+    var F=FORMANT[v]||FORMANT.a;
+    for(var k=0;k<3;k++) f[k].frequency.setTargetAtTime(F[k],tt,0.022);
+    if(v==='x'){ env.gain.setTargetAtTime(0.0001,tt,0.02); }
+    else{
+      var amp=(v==='n')?0.16:0.30;
+      env.gain.setTargetAtTime(amp,tt,0.018);
+      env.gain.setTargetAtTime(amp*0.55,tt+dur*0.62,0.05);
+    }
+    osc.frequency.setTargetAtTime(base*(1-m/mora.length*0.16)*(1+(m%3===0?0.035:-0.02)),tt,0.08);
+    tt+=dur; total+=dur;
+  }
+  env.gain.setTargetAtTime(0.0001,tt,0.04);
+  osc.start(t); vib.start(t); osc.stop(tt+0.35); vib.stop(tt+0.35);
+
+  /* 口は、音と同じタイムラインから駆動する。だからズレようがない。 */
+  playing=true; setBtn(true);
+  var startAt=performance.now()+60, idx=0, acc=0, timer;
+  var bounds=[];
+  (function(){ var a=0; for(var m=0;m<mora.length;m++){ bounds.push([a,a+MORA*mora[m].d]); a+=MORA*mora[m].d; } })();
+  timer=setInterval(function(){
+    var el=(performance.now()-startAt)/1000;
+    if(el>total+0.2){ finish(); return; }
+    while(idx<bounds.length-1 && el>bounds[idx][1]) { idx++; Avatar.bob=0.55; }
+    var mo=mora[idx];
+    var v = mo.v==='?' ? ['a','o','e','u','i'][idx%5] : mo.v;
+    var local=(el-bounds[idx][0])/(bounds[idx][1]-bounds[idx][0]);
+    var str = v==='x' ? 0 : Math.min(1, Math.sin(Math.max(0,Math.min(1,local))*Math.PI)*1.35+0.25);
+    Avatar.setViseme(v==='x'?'x':v, str);
+    readLevel();
+  },16);
+  function finish(){ clearInterval(timer); Avatar.setViseme('x',1); playing=false; setBtn(false); }
+  stopFn=function(){ try{osc.stop();vib.stop();}catch(e){} finish(); };
+  status('喋っています。上の7つのランプが、いま出している母音です。口の開き・横幅は、その母音に対応した数値。');
+}
+function setBtn(on){
+  var b=document.getElementById('bSay');
+  b.textContent = on ? '■ とめる' : '▶ 卵の声で喋らせる';
+  b.classList.toggle('on',on);
+}
+function readLevel(){
+  if(!analyser) return;
+  analyser.getFloatFrequencyData(freqData);
+  var sr=AC.sampleRate, n=freqData.length, sum=0, cnt=0;
+  for(var i=2;i<n/4;i++){ var d=Math.max(-100,freqData[i]); sum+=(d+100); cnt++; }
+  var lv=Math.max(0,Math.min(1,(sum/cnt)/45));
+  els.mVol.style.width=(lv*100)+'%'; els.tVol.textContent=lv.toFixed(2);
+  return lv;
+}
+
+/* ---- mic: 本当に音を解析して母音を当てる（フォルマント最近傍） ---- */
+var micStream=null, micTimer=null;
+function peakIn(lo,hi){
+  var sr=AC.sampleRate, n=freqData.length, best=-999, bf=lo;
+  var a=Math.floor(lo/(sr/2)*n), b=Math.ceil(hi/(sr/2)*n);
+  for(var i=a;i<b&&i<n;i++){ if(freqData[i]>best){best=freqData[i]; bf=i*(sr/2)/n;} }
+  return [bf,best];
+}
+function classify(){
+  var p1=peakIn(200,1100), p2=peakIn(900,3000);
+  var f1=p1[0], f2=p2[0], best='x', bd=1e9;
+  for(var v in FORMANT){
+    if(v==='x'||v==='n') continue;   /* 鼻音は低域に吸い込まれて誤判定を招くので候補から外す */
+    var F=FORMANT[v];
+    var d=Math.pow(Math.log(f1/F[0]),2)*1.6 + Math.pow(Math.log(f2/F[1]),2);
+    if(d<bd){ bd=d; best=v; }
+  }
+  return best;
+}
+function toggleMic(){
+  var btn=document.getElementById('bMic');
+  if(micStream){
+    micStream.getTracks().forEach(function(t){t.stop();});
+    micStream=null; clearInterval(micTimer); btn.classList.remove('on');
+    btn.textContent='自分の声でやってみる'; Avatar.setViseme('x',1);
+    status('マイクを切りました。'); return;
+  }
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ status('この環境ではマイクが使えません。「卵の声で喋らせる」でご確認ください。'); return; }
+  audio();
+  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}}).then(function(s){
+    micStream=s;
+    var src=AC.createMediaStreamSource(s); src.connect(analyser);  /* 出力には繋がない（ハウリング防止） */
+    btn.classList.add('on'); btn.textContent='■ マイクを切る';
+    status('マイクON。「あー」「いー」「うー」と伸ばしてみてください。音の形（フォルマント）から母音を判定して、口がその形になります。声を出していない間も、呼吸と瞬きは続きます。');
+    micTimer=setInterval(function(){
+      var lv=readLevel();
+      if(lv>0.30){ Avatar.setViseme(classify(), Math.min(1,(lv-0.28)*3.2)); Avatar.bob=Math.max(Avatar.bob,(lv-0.3)*0.5); }
+      else Avatar.setViseme('x',1);
+    },33);
+  }).catch(function(){ status('マイクが許可されませんでした。「卵の声で喋らせる」の方でご確認ください。'); });
+}
+
+/* ---- TTS（人の声）: 口はテキスト側のタイムラインで動かす ---- */
+function tts(text){
+  if(!window.speechSynthesis){ status('この環境では読み上げが使えません。'); return; }
+  speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(text);
+  var vs=speechSynthesis.getVoices();
+  for(var i=0;i<vs.length;i++) if(/ja|JP/i.test(vs[i].lang)){ u.voice=vs[i]; break; }
+  u.rate=1.0; u.pitch=1.05;
+  var mora=toMora(text), MORA=0.155, bounds=[], a=0;
+  for(var m=0;m<mora.length;m++){ bounds.push([a,a+MORA*mora[m].d]); a+=MORA*mora[m].d; }
+  var total=a, timer=null, st=0;
+  u.onstart=function(){
+    st=performance.now();
+    timer=setInterval(function(){
+      var el=(performance.now()-st)/1000;
+      if(el>total){ Avatar.setViseme('x',1); return; }
+      var idx=0; while(idx<bounds.length-1&&el>bounds[idx][1]) idx++;
+      var mo=mora[idx], v= mo.v==='?'?['a','o','e','u','i'][idx%5]:mo.v;
+      var local=(el-bounds[idx][0])/(bounds[idx][1]-bounds[idx][0]);
+      Avatar.setViseme(v, v==='x'?0:Math.min(1,Math.sin(local*Math.PI)*1.3+0.25));
+    },16);
+  };
+  u.onend=u.onerror=function(){ clearInterval(timer); Avatar.setViseme('x',1); };
+  speechSynthesis.speak(u);
+  status('端末の日本語音声で読ませています。こちらは「音」ではなく「文字」から口を作る方式（NVIDIAで言えばテキスト側の経路）。かなで書くほど正確になります。');
+}
+
+function status(s){ document.getElementById('status').textContent=s; }
+
+/* ---------- UI ---------- */
+document.getElementById('bSay').onclick=function(){ say(document.getElementById('txt').value||'たまご'); };
+document.getElementById('bTts').onclick=function(){ audio(); tts(document.getElementById('txt').value||'たまご'); };
+document.getElementById('bMic').onclick=toggleMic;
+document.getElementById('bGuide').onclick=function(){
+  document.getElementById('root').classList.toggle('guides');
+  this.classList.toggle('on');
+  status(document.getElementById('root').classList.contains('guides')
+    ? 'これが答えです。1枚の絵ではなく、4つの層が別々の数値で動いています。「PNGが貼ってあるだけ」に見えて、実際は切ってある。ここを切っていない絵は、何をしても喋りません。'
+    : '');
+};
+document.getElementById('bBreath').onclick=function(){
+  breathOn=!breathOn; this.classList.toggle('on',breathOn);
+  this.textContent='呼吸・揺れ '+(breathOn?'ON':'OFF');
+  status(breathOn?'':'呼吸を止めました。喋っていない時に完全に静止した人形が、いちばん不気味に見えます。だから無言時こそ動かします。');
+};
+/* drop slots */
+function slot(btnId,layerId,hideCanvas){
+  var b=document.getElementById(btnId), L=document.getElementById(layerId), C=document.getElementById(hideCanvas);
+  function load(file){
+    var r=new FileReader();
+    r.onload=function(e){
+      L.innerHTML=''; var im=new Image(); im.src=e.target.result; L.appendChild(im);
+      C.style.display='none'; b.classList.add('filled'); b.textContent='差し替え済み';
+      status('差し替わりました。仕組みは絵を一切見ていないので、どんな絵でもそのまま喋ります。');
+    };
+    r.readAsDataURL(file);
+  }
+  b.addEventListener('dragover',function(e){e.preventDefault();b.classList.add('over');});
+  b.addEventListener('dragleave',function(){b.classList.remove('over');});
+  b.addEventListener('drop',function(e){e.preventDefault();b.classList.remove('over');
+    if(e.dataTransfer.files[0]) load(e.dataTransfer.files[0]);});
+  b.addEventListener('click',function(){
+    var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+    inp.onchange=function(){ if(inp.files[0]) load(inp.files[0]); }; inp.click();
+  });
+}
+slot('dBody','slotBody','cBody');
+slot('dEyes','slotEyes','cEyes');
+slot('dMouth','slotMouth','cMouth');
+
+/* page weight, measured */
+try{
+  var bytes=new Blob([document.documentElement.outerHTML]).size;
+  document.getElementById('kb').textContent=(bytes/1024).toFixed(0)+' KB';
+}catch(e){ document.getElementById('kb').textContent='–'; }
+
+window.addEventListener('resize',function(){
+  var w=W;
+  fitSize(); if(W===w) return;
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  xShadow=prep(cShadow); xBody=prep(cBody); xEyes=prep(cEyes); xMouth=prep(cMouth);
+  CX=W/2; CY=H*0.50; RX=W*0.315; RY=H*0.225; makeGrain(); redrawAll();
+});
+})();
+</script>
+</body>
+</html>

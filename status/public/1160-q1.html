@@ -1,0 +1,843 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>ループエンジニアリング／ログイン・承認の自動化／HITL削減の世界事例</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>ループエンジニアリング／ログイン・承認の自動化／HITL削減の世界事例</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 277本 ／ 74,056字 ／ 投げた 2026-09-26 11:44:57<br><a href="https://www.genspark.ai/agents?id=99a5a260-695e-5d24-8c8e-461f0e5cccbc" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>AIエージェント無人運用調査レポート：ループ制御、認証自動化、Human-in-the-Loop削減の実態</h2>
+<h3>はじめに：調査の範囲と限界について</h3>
+<p>本レポートは、非エンジニアの事業主が「人が見ていなくてもAIエージェントを回し続ける仕組み」を自社導入するにあたり、世界のトップランナー企業とOSSの実装例を調査したものです。ただし、調査中に複数の情報収集ツール（batch_crawl_url_and_answer、batch_searchなど）が連続して失敗し、多くのURLから詳細な情報が取得できませんでした。そのため、本レポートで引用できる事実は、実際に取得できたURLの内容に限られます。取得できなかった情報については「公開情報では確認できなかった」と明記します。これは憶測を避けるための措置です。</p>
+<hr>
+<h2>第1章：ループエンジニアリング — AIエージェントを人が見ていなくても回し続ける仕組み</h2>
+<h3>1.1 Anthropic Claude CodeのHooks（Stop / SubagentStop）</h3>
+<h4>何の問題を解くために作られたのか</h4>
+<p>Claude CodeのHooksは、エージェントのライフサイクルの特定のタイミングで自動実行されるユーザ定義のアクション（シェルコマンド、HTTP、MCP、LLM、サブエージェント）を定義する仕組みです <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">code.claude.com</a>。これにより、自動化、入力バリデーション、環境管理を実現できます。</p>
+<p>Stopイベントは「Claudeが応答を完了した時」に発生し、SubagentStopイベントは「サブエージェントが終了した時」に発生します。サブエージェント内で定義されたStopフックは、自動的にSubagentStopイベントとして扱われます <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">code.claude.com</a>。</p>
+<h4>実際に効いたこと</h4>
+<ul>
+<li>HooksはJSON設定で定義され、実行可否やコンテキストの追加など細かい制御が可能です <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">code.claude.com</a>。</li>
+<li>Stop/SubagentStopイベントはターン終了時に発生し、会話は継続するためClaudeはフィードバックに基づいて行動できます <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">code.claude.com</a>。</li>
+</ul>
+<h4>効かなかった・失敗したこと</h4>
+<ul>
+<li>GitHub上の実装例では、SubagentStopがサブエージェントをブロックし、終了コード2を返すケースが報告されています <a href="https://github.com/disler/claude-code-hooks-mastery" target="_blank" rel="noopener">github.com</a>。</li>
+<li>タイムアウトしたコールバックは、Stopを「決定なし（no-decision）」として扱う仕様があります <a href="https://code.claude.com/docs/en/agent-sdk/hooks" target="_blank" rel="noopener">code.claude.com</a>。</li>
+<li>Hooksの設定で`disableAllHooks: true`とすることで全てのHooksを無効化できる仕様がありますが、これはHooks自体の失敗ではなく機能としてのオプトアウトです <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">code.claude.com</a>。</li>
+</ul>
+<h4>乗り換え事例</h4>
+<p>公開情報では、Claude Code Hooksから他のソリューションへの乗り換え事例を確認できませんでした。</p>
+<hr>
+<h3>1.2 OpenAI Agents SDKのguardrails</h3>
+<h4>何の問題を解くために作られたのか</h4>
+<p>OpenAI Agents SDKのguardrailsは、ツール呼び出しに対する人間による承認フロー（human-in-the-loop approvals）を実装するための仕組みです <a href="https://developers.openai.com/api/docs/guides/agents/guardrails-approvals" target="_blank" rel="noopener">developers.openai.com</a>。これにより、エージェントが危険な操作や重要な判断を行う前に人間の承認を得ることができます。</p>
+<h4>実際に効いたこと</h4>
+<ul>
+<li>Guardrailsは検証と承認フローを実装するための標準的な仕組みとして機能しています <a href="https://openai.github.io/openai-agents-python/guardrails/" target="_blank" rel="noopener">openai.github.io</a>。</li>
+<li>2026年の実装ガイドでは、guardrailsとhuman reviewを組み合わせた実践的な例が紹介されています <a href="https://team400.ai/blog/2026-04-openai-agents-guardrails-human-review-guide" target="_blank" rel="noopener">team400.ai</a>。</li>
+</ul>
+<h4>効かなかった・失敗したこと</h4>
+<p>公開情報では、OpenAI Agents SDKのguardrailsに関する具体的な失敗事例を確認できませんでした。</p>
+<h4>乗り換え事例</h4>
+<p>公開情報では確認できませんでした。</p>
+<hr>
+<h3>1.3 LangGraphのcheckpointerとinterrupt</h3>
+<h4>何の問題を解くために作られたのか</h4>
+<p>LangGraphのhuman-in-the-loop機能は、グラフの実行を外部入力のために一時停止（interrupt）させる仕組みです <a href="https://docs.langchain.com/oss/python/langchain/human-in-the-loop" target="_blank" rel="noopener">docs.langchain.com</a>。これにはcheckpointerによる状態の永続化が必要です <a href="https://docs.langchain.com/oss/python/langchain/human-in-the-loop" target="_blank" rel="noopener">docs.langchain.com</a>。</p>
+<h4>実際に効いたこと</h4>
+<ul>
+<li>Interrupt機能は、グラフ実行を一時停止し、状態を永続化し、後から再開することを可能にします <a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noopener">docs.langchain.com</a>。</li>
+<li>Redisをcheckpointerとして使用することで、LangGraphエージェントにメモリ永続化を追加できます <a href="https://redis.io/blog/langgraph-redis-build-smarter-ai-agents-with-memory-persistence/" target="_blank" rel="noopener">redis.io</a>。</li>
+<li>本番対応のエージェントを構築するためのinterruptサポートに関する公式ブログ記事があります <a href="https://www.langchain.com/blog/making-it-easier-to-build-human-in-the-loop-agents-with-interrupt" target="_blank" rel="noopener">langchain.com</a>。</li>
+</ul>
+<h4>効かなかった・失敗したこと</h4>
+<ul>
+<li>LangGraphのcheckpointerに関する詳細な実装ドキュメントは、JSONデータ構造の例のみで、設定手順の詳細は取得できませんでした <a href="https://docs.langchain.com/oss/python/langgraph/add-memory" target="_blank" rel="noopener">docs.langchain.com</a>。</li>
+<li>Redis checkpointerの実装に関する詳細も、導入発表記事のみで技術的深掘りは不足していました <a href="https://redis.io/blog/langgraph-redis-build-smarter-ai-agents-with-memory-persistence/" target="_blank" rel="noopener">redis.io</a>。</li>
+</ul>
+<h4>乗り換え事例</h4>
+<p>公開情報では確認できませんでした。</p>
+<hr>
+<h3>1.4 Temporalのdurable workflow / durable execution</h3>
+<h4>何の問題を解くために作られたのか</h4>
+<p>Temporalのdurable executionは、AIエージェントのレジリエントな実行基盤として機能します <a href="https://temporal.io/blog/durable-execution-meets-ai-why-temporal-is-the-perfect-foundation-for-ai" target="_blank" rel="noopener">temporal.io</a>。これは、エージェントが長期間実行されるタスクや、失敗からの回復が必要なタスクに適しています。</p>
+<h4>実際に効いたこと</h4>
+<ul>
+<li><strong>Emergent</strong>は、Temporalを使用して毎月10億回以上のエージェントアクションを処理しています <a href="https://temporal.io/resources/case-studies/emergent" target="_blank" rel="noopener">temporal.io</a>。</li>
+<li><strong>Gorgias</strong>は、eコマースサポート向けにAIエージェントをスケールさせるためにTemporalを使用しています <a href="https://spiralscout.com/case/ai-agentic-automation-ecommerce-support" target="_blank" rel="noopener">spiralscout.com</a>。</li>
+<li>Temporalのアクティビティタイムアウト機能（heartbeat timeoutなど）は、長時間実行されるタスクの失敗検出に役立ちます <a href="https://temporal.io/blog/activity-timeouts" target="_blank" rel="noopener">temporal.io</a>。</li>
+<li>アクティビティ失敗の検出に関する公式ドキュメントがあります <a href="https://docs.temporal.io/encyclopedia/detecting-activity-failures" target="_blank" rel="noopener">docs.temporal.io</a>。</li>
+</ul>
+<h4>効かなかった・失敗したこと</h4>
+<p>公開情報では、Temporalのdurable executionに関する具体的な失敗事例を確認できませんでした。</p>
+<h4>乗り換え事例</h4>
+<p>公開情報では確認できませんでした。</p>
+<hr>
+<h3>1.5 CrewAIとAutoGen（AG2）のtermination condition / max iteration</h3>
+<h4>何の問題を解くために作られたのか</h4>
+<p><strong>AutoGen</strong>のtermination conditionは、マルチエージェント会話の終了条件（例：max_turns）を定義するための仕組みです <a href="https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/tutorial/termination.html" target="_blank" rel="noopener">microsoft.github.io</a>。</p>
+<p><strong>CrewAI</strong>も同様に、エージェントの反復回数を制限するmax_iterなどの仕組みを持っています。</p>
+<h4>実際に効いたこと</h4>
+<ul>
+<li>AutoGenの公式ドキュメントでは、カスタム終了条件（max_turnsなど）の設定方法が説明されています <a href="https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/tutorial/termination.html" target="_blank" rel="noopener">microsoft.github.io</a>。</li>
+<li>旧バージョン（0.2）のドキュメントでも、会話終了のチュートリアルが提供されています <a href="https://microsoft.github.io/autogen/0.2/docs/tutorial/chat-termination/" target="_blank" rel="noopener">microsoft.github.io</a>。</li>
+</ul>
+<h4>効かなかった・失敗したこと</h4>
+<ul>
+<li><strong>AutoGen</strong>: GitHub Issue #5248で、termination conditionの例にバグがあることが報告されています <a href="https://github.com/microsoft/autogen/issues/5248" target="_blank" rel="noopener">github.com</a>。</li>
+<li><strong>CrewAI</strong>: GitHub Issue #3847で、`max_iter`に達してもループが停止しないバグが報告されています <a href="https://github.com/crewAIInc/crewAI/issues/3847" target="_blank" rel="noopener">github.com</a>。</li>
+<li><strong>CrewAI</strong>: コミュニティフォーラムで、フローが無限ループになりステップが繰り返し実行される問題が報告されています <a href="https://community.crewai.com/t/crewai-flow-infinite-loop-steps-repeating-endlessly/6780" target="_blank" rel="noopener">community.crewai.com</a>。</li>
+<li><strong>CrewAI</strong>: GitHub Issue #330で、`allow_delegation=True`時に無限ループが発生するバグが報告されています <a href="https://github.com/crewAIInc/crewAI/issues/330" target="_blank" rel="noopener">github.com</a>。</li>
+<li><strong>CrewAI</strong>: コミュニティフォーラムで、コンテキストエラーによる無限ループが報告されています <a href="https://community.crewai.com/t/infinite-loop-with-context-error/5303" target="_blank" rel="noopener">community.crewai.com</a>。</li>
+</ul>
+<h4>乗り換え事例</h4>
+<p>公開情報では、CrewAIやAutoGenから他のソリューションへの乗り換え事例を確認できませんでした。ただし、CrewAIの無限ループ問題に対する一般的な対策（`allow_delegation=False`の設定など）がコミュニティで議論されています <a href="https://inkog.io/glossary/crewai-infinite-loop" target="_blank" rel="noopener">inkog.io</a>。</p>
+<hr>
+<h3>1.6 その他の無人運用実装例</h3>
+<h4>OpenHands</h4>
+<p><strong>何の問題を解くために作られたのか</strong>: ソフトウェア開発のライフサイクル全体を自動化するための自律型AIエージェントプラットフォームです <a href="https://www.openhands.dev/" target="_blank" rel="noopener">openhands.dev</a>。</p>
+<p><strong>実際に効いたこと</strong>:</p>
+<ul>
+<li>GitHub、Slack、Jira、Linear、スケジュールなどの統合からワークフローをトリガーし、エンジニアリング業務を継続させます <a href="https://www.openhands.dev/" target="_blank" rel="noopener">openhands.dev</a>。</li>
+<li>Signal（信号の検知）→ Plan（計画立案）→ Execute（実行）→ Validate（検証）→ Ship（出荷）→ Monitor（監視）の6段階プロセスで無人運用を実現します <a href="https://www.openhands.dev/" target="_blank" rel="noopener">openhands.dev</a>。</li>
+<li>Claude Code、Codex、Gemini CLI、Kimi、DeepSeek、Qwenなど、複数のモデルをローカル、クラウド、またはVPC内で実行可能です <a href="https://www.openhands.dev/" target="_blank" rel="noopener">openhands.dev</a>。</li>
+<li>Large Codebase SDKにより、大規模なレガシーコードベースの依存関係をマッピングし、複数のエージェントが衝突せずに並列作業できるよう調整します <a href="https://www.openhands.dev/" target="_blank" rel="noopener">openhands.dev</a>。</li>
+</ul>
+<p><strong>効かなかった・失敗したこと</strong>: 公開情報では確認できませんでした。</p>
+<p><strong>乗り換え事例</strong>: 公開情報では確認できませんでした。</p>
+<hr>
+<h4>Devin</h4>
+<p><strong>何の問題を解くために作られたのか</strong>: 自律型ソフトウェアエンジニアとして、クラウドまたはローカルマシンで実行され、PRがマージされるまで作業を続けるAIエージェントです <a href="https://devin.ai/" target="_blank" rel="noopener">devin.ai</a>。</p>
+<p><strong>実際に効いたこと</strong>:</p>
+<ul>
+<li>独自のWindows、Mac、Linux仮想マシンを起動してビルド・テストを行います <a href="https://devin.ai/" target="_blank" rel="noopener">devin.ai</a>。</li>
+<li>複数のフロンティアモデルを組み合わせて使用し、最大60%のコスト削減を実現すると主張しています <a href="https://devin.ai/" target="_blank" rel="noopener">devin.ai</a>。</li>
+<li>Slack、Teamsなどで@Devinとタグ付けすることで、スレッドを読んで対応します <a href="https://devin.ai/" target="_blank" rel="noopener">devin.ai</a>。</li>
+<li>SOC 2、ISO 27001、FedRAMPのコンプライアンスを取得しています <a href="https://devin.ai/" target="_blank" rel="noopener">devin.ai</a>。</li>
+<li>具体的なタスク成功率：バグ修正（明確な再現手順あり）78%、テスト作成82%、コード移行70% <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>ボイラープレートコード作成、ドキュメント生成、CI/CD設定などのタスクを適切に処理します <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+</ul>
+<p><strong>効かなかった・失敗したこと</strong>:</p>
+<ul>
+<li>料金は月額500ドル/シート <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>要件が曖昧な場合に性能が低下します <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>経験豊富なエンジニアのようなトレードオフの理解ができません <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>コードベースの不文律（命名パターン、エラーハンドリングのアプローチ、アーキテクチャレイヤー）を見落とすことが多く、プロジェクトのスタイルに合わないコードを生成します <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>SQLインジェクション、XSS、認証バイパスなどのセキュリティ脆弱性を確実に特定・防止できません <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>複雑なタスクで「rabbit hole（行き詰まり）」に陥り、時間を浪費します <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>新しいアーキテクチャ設計の成功率はわずか15% <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>大規模なリファクタリングの成功率は45%で、不必要な複雑さを導入したり、テスト性を改善しない表面的な変更を行うことがあります <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>本番環境のメモリリークなどの複雑なデバッグで、根本原因を誤って特定し、回帰（regression）を引き起こすことがあります <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+<li>「最後の30%問題」：コアロジックは完成するが、エッジケース、エラーハンドリング、UIの仕上げ、コードベース全体との統合が不完全で、人間の完了を必要とします <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io</a>。</li>
+</ul>
+<p><strong>乗り換え事例</strong>: 公開情報では確認できませんでした。</p>
+<hr>
+<h4>SWE-agent / mini-swe-agent</h4>
+<p><strong>何の問題を解くために作られたのか</strong>: 言語モデルがツールを使用して実際のGitHubリポジトリの問題を自律的に修正するためのエージェントフレームワークです <a href="https://github.com/swe-agent/swe-agent" target="_blank" rel="noopener">github.com</a>。</p>
+<p><strong>実際に効いたこと</strong>:</p>
+<ul>
+<li>単一のYAMLファイルで動作を制御可能で、設定可能かつ完全に文書化されています <a href="https://github.com/swe-agent/swe-agent" target="_blank" rel="noopener">github.com</a>。</li>
+<li>研究目的でシンプルかつハック可能に設計されています <a href="https://github.com/swe-agent/swe-agent" target="_blank" rel="noopener">github.com</a>。</li>
+</ul>
+<p><strong>効かなかった・失敗したこと</strong>:</p>
+<ul>
+<li>開発努力の大部分は「mini-swe-agent」に移行しており、元のSWE-agentは事実上置き換えられています <a href="https://github.com/swe-agent/swe-agent" target="_blank" rel="noopener">github.com</a>。</li>
+<li>開発者は今後mini-SWE-agentを使用することを推奨しています <a href="https://github.com/swe-agent/swe-agent" target="_blank" rel="noopener">github.com</a>。</li>
+</ul>
+<p><strong>SWE-benchベンチマーク</strong>: SWE-benchは、AIエージェントがGitHubの実世界の問題をどの程度効率的に解決できるかを測定するベンチマークです <a href="https://www.swebench.com/" target="_blank" rel="noopener">swebench.com</a>。OpenAIはSWE-bench Verifiedで最大20%〜43%のスコアを達成したと発表しています <a href="https://openai.com/index/introducing-swe-bench-verified/" target="_blank" rel="noopener">openai.com</a>（※このURLは検索結果に含まれていましたが、詳細は取得できていません）。</p>
+<p><strong>乗り換え事例</strong>: SWE-agentからmini-swe-agentへの移行が公式に推奨されています <a href="https://github.com/swe-agent/swe-agent" target="_blank" rel="noopener">github.com</a>。</p>
+<hr>
+<h4>IBM SWE Agents</h4>
+<p><strong>何の問題を解くために作られたのか</strong>: GitHubのバックログにあるバグを自律的に解決するためのAIエージェントです <a href="https://research.ibm.com/blog/ibm-swe-agents" target="_blank" rel="noopener">research.ibm.com</a>。</p>
+<p><strong>実際に効いたこと</strong>:</p>
+<ul>
+<li>平均5分以内に問題を特定・修正します <a href="https://research.ibm.com/blog/ibm-swe-agents" target="_blank" rel="noopener">research.ibm.com</a>。</li>
+<li>SWE-benchテストで23.7%の成功率を達成し、GPT-4oやClaude 3などの大規模フロンティアモデルに依存する他のエージェントを上回っています <a href="https://research.ibm.com/blog/ibm-swe-agents" target="_blank" rel="noopener">research.ibm.com</a>。</li>
+<li>オープンソースLLMのみを使用し、コスト効率的に企業のファイアウォール内でも実行可能です <a href="https://research.ibm.com/blog/ibm-swe-agents" target="_blank" rel="noopener">research.ibm.com</a>。</li>
+<li>ローカライゼーション（バグ箇所の特定）、コード編集、テスト実行の3つのエージェント機能を提供します <a href="https://research.ibm.com/blog/ibm-swe-agents" target="_blank" rel="noopener">research.ibm.com</a>。</li>
+</ul>
+<p><strong>効かなかった・失敗したこと</strong>: 公開情報では確認できませんでした。</p>
+<p><strong>乗り換え事例</strong>: 公開情報では確認できませんでした。</p>
+<hr>
+<h4>Open SWE（LangChain）</h4>
+<p><strong>何の問題を解くために作られたのか</strong>: Stripe、Ramp、Coinbaseなどの企業が採用しているアーキテクチャパターンを標準化した、社内コーディングエージェント構築用のオープンソースフレームワークです <a href="https://langchain.com/blog/open-swe-an-open-source-framework-for-internal-coding-agents" target="_blank" rel="noopener">langchain.com</a>。</p>
+<p><strong>実際に効いたこと</strong>:</p>
+<ul>
+<li>Deep AgentsとLangGraphを基盤としています <a href="https://langchain.com/blog/open-swe-an-open-source-framework-for-internal-coding-agents" target="_blank" rel="noopener">langchain.com</a>。</li>
+<li>分離されたクラウドサンドボックス（Modal、Daytona、Runloop、LangSmithなど）で安全にシェルアクセスを実行します <a href="https://langchain.com/blog/open-swe-an-open-source-framework-for-internal-coding-agents" target="_blank" rel="noopener">langchain.com</a>。</li>
+<li>Slack、Linear、GitHubをトリガーとしたワークフロー統合を提供します <a href="https://langchain.com/blog/open-swe-an-open-source-framework-for-internal-coding-agents" target="_blank" rel="noopener">langchain.com</a>。</li>
+<li>実装事例として、Stripeの「Minions」、Rampの「Inspect」、Coinbaseの「Cloudbot」が挙げられています <a href="https://langchain.com/blog/open-swe-an-open-source-framework-for-internal-coding-agents" target="_blank" rel="noopener">langchain.com</a>。</li>
+</ul>
+<p><strong>効かなかった・失敗したこと</strong>: 公開情報では確認できませんでした。</p>
+<p><strong>乗り換え事例</strong>: 公開情報では確認できませんでした。</p>
+<hr>
+<h4>Skyvern</h4>
+<p><strong>何の問題を解くために作られたのか</strong>: 任意のウェブサイト上でワークフローを自動化するAIエージェントです <a href="https://www.skyvern.com/" target="_blank" rel="noopener">skyvern.com</a>。</p>
+<p><strong>実際に効いたこと</strong>:</p>
+<ul>
+<li>CAPTCHAをネイティブに解決し、サードパーティの解決サービス不要で自動化を継続できます <a href="https://www.skyvern.com/" target="_blank" rel="noopener">skyvern.com</a>。</li>
+<li>2FA（二段階認証）とTOTPの認証フローを完全に処理できます <a href="https://www.skyvern.com/" target="_blank" rel="noopener">skyvern.com</a>。</li>
+<li>国、州、郵便番号レベルのターゲティングに対応したプロキシネットワークをサポートします <a href="https://www.skyvern.com/" target="_blank" rel="noopener">skyvern.com</a>。</li>
+<li>実行したすべてのアクションとその理由を要約する説明可能なAI機能を提供します <a href="https://www.skyvern.com/" target="_blank" rel="noopener">skyvern.com</a>。</li>
+<li>23,000以上のGitHubスター、500以上のエンタープライズユーザー、99.9%のアップタイムSLA、1000万回以上のワークフロー実行を主張しています <a href="https://www.skyvern.com/" target="_blank" rel="noopener">skyvern.com</a>。</li>
+<li>SOC2 Type II、HIPAA準拠、エンドツーエンド暗号化されたVaultを備えています <a href="https://www.skyvern.com/" target="_blank" rel="noopener">skyvern.com</a>。</li>
+</ul>
+<p><strong>効かなかった・失敗したこと</strong>: 公開情報では確認できませんでした。</p>
+<p><strong>乗り換え事例</strong>: 公開情報では確認できませんでした。</p>
+<hr>
+<h4>Browserbase</h4>
+<p><strong>何の問題を解くために作られたのか</strong>: AIエージェントに人間のようにウェブを操作させるためのプラットフォームです <a href="https://browserbase.com/" target="_blank" rel="noopener">browserbase.com</a>。</p>
+<p><strong>実際に効いたこと</strong>:</p>
+<ul>
+<li>毎月3500万回以上のブラウザセッションを処理し、10,000社以上の顧客（Ramp、Microsoft、Lovableを含む）に利用されています <a href="https://browserbase.com/" target="_blank" rel="noopener">browserbase.com</a>。</li>
+<li>Search API、Fetch API、Browser-as-a-Serviceの3つの主要機能を提供します <a href="https://browserbase.com/" target="_blank" rel="noopener">browserbase.com</a>。</li>
+<li>認証フロー、動的コンテンツの処理、人間のようなインタラクションの模倣、UI変更への適応、予測不可能なUIのナビゲーションを実現します <a href="https://browserbase.com/" target="_blank" rel="noopener">browserbase.com</a>。</li>
+<li>週間SDKダウンロード数800,000、開発者数100,000、企業数10,000、訪問ウェブサイト数百万を主張しています <a href="https://browserbase.com/" target="_blank" rel="noopener">browserbase.com</a>。</li>
+</ul>
+<p><strong>効かなかった・失敗したこと</strong>: 公開情報では確認できませんでした。</p>
+<p><strong>乗り換え事例</strong>: 公開情報では確認できませんでした。</p>
+<hr>
+<h4>n8nの無限ループ防止機能</h4>
+<p><strong>実際に効いたこと</strong>:</p>
+<ul>
+<li>n8nのAIエージェントノードには「Max Iterations（最大反復回数）」設定が存在し、これが無限ループ防止の基本的な安全装置として機能します <a href="https://community.n8n.io/t/feat-ai-tools-add-max-tool-interactions-to-ai-agent-nodes-to-prevent-infinite-loops/295587?tl=en" target="_blank" rel="noopener">community.n8n.io</a>。</li>
+</ul>
+<p><strong>効かなかった・失敗したこと</strong>:</p>
+<ul>
+<li>コミュニティフォーラムで、エージェントが無限のツール呼び出しループに陥る事例が報告されています <a href="https://community.n8n.io/t/agent-goes-into-infinite-tool-call-loop/174472?tl=en" target="_blank" rel="noopener">community.n8n.io</a>。</li>
+<li>GitHub Issue #22310で、datatableツールが無限ループを引き起こすバグが報告されています <a href="https://github.com/n8n-io/n8n/issues/22310" target="_blank" rel="noopener">github.com</a>。</li>
+</ul>
+<p><strong>乗り換え事例</strong>: 公開情報では確認できませんでした。</p>
+<hr>
+<h3>1.7 無限ループ・コスト暴走の一般事例</h3>
+<h4>Redditの事例（$700の損失）</h4>
+<p><strong>概要</strong>: Redditユーザー「multiplicitor」が、画像生成アプリ「Picturific」を構築中、AIエージェントの無限ループにより72時間で700ドル以上のコストが発生した事例です <a href="https://www.reddit.com/r/SaaS/comments/1qv8o6v/" target="_blank" rel="noopener">reddit.com</a>。</p>
+<p><strong>原因</strong>:</p>
+<p>1. <strong>Hallucination Cascade</strong>: AIが3枚の画像を計画するよう指示されたが、22シーンの計画を生成してしまった。ハードキャップ（上限）が設定されていなかったため、22のタスクが並列で開始された。</p>
+<p>2. <strong>Zombie Worker Loop</strong>: 複雑な生成タスクが2分かかるため、クラウドプロバイダー（Supabase）の「自己修復」機能がタスクをクラッシュと判断し、自動的に再起動した。チェックポインティング（状態確認）が実装されていなかったため、再起動されたワーカーは最初からサイクルを再開し、無限ループが発生した。</p>
+<p><strong>教訓</strong>:</p>
+<p>1. AIは予算を理解しないため、バックエンドにハードコードされた制限（サーキットブレーカー）が必要。</p>
+<p>2. クラウドの「自己修復」機能は、リーキーなAIロジックと組み合わせると財務的損失を引き起こす。</p>
+<p>3. 詳細なログが唯一の防御手段である。</p>
+<p><strong>対策</strong>: AIのスコープ制限、再起動ループの修正、完全主義を避けるよう「AI監査役」に教えることで問題を解決した <a href="https://www.reddit.com/r/SaaS/comments/1qv8o6v/" target="_blank" rel="noopener">reddit.com</a>。</p>
+<hr>
+<h4>$12,000の無限ループ事例</h4>
+<p>Towards AIの記事で、「$12,000の無限ループ：AIエージェントがサンドボックスを破産させた方法」というタイトルの記事が存在しますが、詳細な内容は取得できませんでした <a href="https://pub.towardsai.net/the-12-000-infinite-loop-how-my-ai-agent-bankrupted-a-sandbox-2fc6585b6716" target="_blank" rel="noopener">pub.towardsai.net</a>。</p>
+<hr>
+<h4>暴走コスト防止のベストプラクティス</h4>
+<p>Formation.devの記事では、エージェントループの暴走コストを防止するための「4つのバウンド手法」が紹介されていますが、詳細は取得できませんでした <a href="https://formation.dev/blog/agent-loop-runaway-costs" target="_blank" rel="noopener">formation.dev</a>。</p>
+<p>Supra-wallの記事でも、AIエージェントの暴走コストの検出と防止に関するベストプラクティスが紹介されていますが、詳細は取得できませんでした <a href="https://www.supra-wall.com/learn/ai-agent-runaway-costs" target="_blank" rel="noopener">supra-wall.com</a>。</p>
+<hr>
+<h2>第2章：ログイン・承認の自動化 — 無人運用のための認証設計</h2>
+<h3>2.1 長期トークン / Personal Access Tokenの寿命と失効の運用</h3>
+<h4>GitHub Personal Access Token</h4>
+<p>GitHubのPersonal Access Tokenの管理に関する公式ドキュメントが存在しますが、詳細な寿命や失効の仕組みは取得できませんでした <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens" target="_blank" rel="noopener">docs.github.com</a>。</p>
+<h4>GitLab Personal Access Token</h4>
+<p>GitLabのPersonal Access Tokenに関する公式ドキュメントが存在しますが、詳細は取得できませんでした <a href="https://docs.gitlab.com/user/profile/personal_access_tokens/" target="_blank" rel="noopener">docs.gitlab.com</a>。</p>
+<h4>寿命管理の問題点</h4>
+<ul>
+<li>GitLabのフォーラムでは、アクセストークンの有効期限を延長する方法についての議論があります <a href="https://forum.gitlab.com/t/how-to-extend-expiration-of-access-tokens/104993" target="_blank" rel="noopener">forum.gitlab.com</a>。</li>
+<li>新しいアクセストークンに有効期限を要求しないようにする機能要望もあります <a href="https://forum.gitlab.com/t/dont-require-an-expiration-date-for-new-access-tokens/118651" target="_blank" rel="noopener">forum.gitlab.com</a>。</li>
+<li>失効したPersonal Access Tokenを更新する方法についてのStack Overflowの質問があります <a href="https://stackoverflow.com/questions/78787977/how-do-i-update-an-expired-revoked-personal-access-token-pat-in-git-cli" target="_blank" rel="noopener">stackoverflow.com</a>。</li>
+</ul>
+<p><strong>公開情報では確認できなかったこと</strong>: GitHubおよびGitLabのPersonal Access Tokenのデフォルト有効期限、最大有効期限、失効後の具体的な影響についての公式数値。</p>
+<hr>
+<h3>2.2 CIトークン（GitHub ActionsのOIDC、GITHUB_TOKENなど）</h3>
+<h4>GitHub Actions OIDC認証</h4>
+<p><strong>仕組み</strong>: GitHub ActionsはOpenID Connect（OIDC）を使用して、クラウドプロバイダーとの安全なシークレットフリー認証を可能にします。ワークフロージョブに対して短期間で検証可能なトークンを発行します <a href="https://docs.github.com/en/actions/concepts/security/openid-connect" target="_blank" rel="noopener">docs.github.com</a>。</p>
+<p><strong>利点</strong>:</p>
+<ul>
+<li>粒度の細かいアクセス制御が可能。</li>
+<li>静的な認証情報を保存する必要がない。</li>
+</ul>
+<p><strong>実装</strong>: OIDCトークンを使用してシークレットを置き換える方法についてのブログ記事があります <a href="https://daviddalbusco.com/blog/building-a-github-actions-integration-with-oidc-authentication" target="_blank" rel="noopener">daviddalbusco.com</a>。AzureへのOIDC接続に関するMedium記事もあります <a href="https://nirajkum.medium.com/goodbye-secrets-securely-connect-github-actions-to-azure-with-oidc-6b67461964af" target="_blank" rel="noopener">medium.com</a>。</p>
+<p><strong>承認ボタンを人が押す工程を消した実例</strong>: OIDCを使用することで、クラウドプロバイダーに長期のシークレットキーを保存する必要がなくなり、手動でのキーローテーションや承認が不要になります <a href="https://docs.github.com/en/actions/concepts/security/openid-connect" target="_blank" rel="noopener">docs.github.com</a>。</p>
+<p><strong>セキュリティ上の懸念</strong>: Redditの議論で、GitHub ActionsでのOIDCの使用事例について言及されていますが、具体的なインシデントは確認できませんでした <a href="https://www.reddit.com/r/devops/comments/1iir0gv/use_cases_for_oidc_in_github_actions/" target="_blank" rel="noopener">reddit.com</a>。</p>
+<hr>
+<h3>2.3 Service Account（Google Cloud、AWS IAM Role、Workload Identity Federation）</h3>
+<h4>Workload Identity Federation（GCP ↔ AWS/Azure）</h4>
+<p><strong>仕組み</strong>: Google CloudのWorkload Identity Federationを使用すると、他のクラウド（AWS、Azure）からキーレスでGCPリソースにアクセスできます <a href="https://docs.cloud.google.com/iam/docs/workload-identity-federation" target="_blank" rel="noopener">docs.cloud.google.com</a>。</p>
+<p><strong>実装事例</strong>:</p>
+<ul>
+<li>AWSからGCPリソースに安全にアクセスする方法についてのAWSブログ記事 <a href="https://aws.amazon.com/blogs/security/access-aws-using-a-google-cloud-platform-native-workload-identity/" target="_blank" rel="noopener">aws.amazon.com</a>。</li>
+<li>AWSとGCP間のフェデレーションを展開する方法についてのSplunk記事 <a href="https://lantern.splunk.com/Platform_Data_Management/Unlock_Insights/Deploying_Workload_Identity_Federation_between_AWS_and_GCP" target="_blank" rel="noopener">lantern.splunk.com</a>。</li>
+<li>GKEポッドが認証情報なしでAWSに認証する方法についてのブログ記事 <a href="https://itgix.com/blog/workload-identity-federation-aws-access-from-gcp/" target="_blank" rel="noopener">itgix.com</a>。</li>
+</ul>
+<p><strong>承認ボタンを人が押す工程を消した実例</strong>: Workload Identity Federationを使用することで、サービスアカウントキーの管理が不要になり、手動でのキーローテーションや承認が自動化されます <a href="https://docs.cloud.google.com/iam/docs/workload-identity-federation" target="_blank" rel="noopener">docs.cloud.google.com</a>。</p>
+<p><strong>Microsoft Entra（Azure）</strong>: AzureのWorkload Identity Federationに関するドキュメントが存在しますが、詳細は取得できませんでした <a href="https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation" target="_blank" rel="noopener">learn.microsoft.com</a>。</p>
+<hr>
+<h3>2.4 OAuth 2.0 Device Authorization Flow（Device Flow）</h3>
+<p><strong>仕組み</strong>: OAuth 2.0 Device Flowは、入力機能のないデバイス（TV、IoTデバイス、CLIツール）向けの認証フローです <a href="https://oauth.net/2/device-flow/" target="_blank" rel="noopener">oauth.net</a>。RFC 8628で定義されています <a href="https://www.rfc-editor.org/info/rfc8628" target="_blank" rel="noopener">rfc-editor.org</a>。</p>
+<p><strong>実装事例</strong>:</p>
+<ul>
+<li>Curityの説明記事 <a href="https://curity.io/resources/learn/oauth-device-flow/" target="_blank" rel="noopener">curity.io</a>。</li>
+<li>Auth0のドキュメント <a href="https://auth0.com/docs/get-started/authentication-and-authorization-flow/device-authorization-flow" target="_blank" rel="noopener">auth0.com</a>。</li>
+<li>WorkOSのガイド <a href="https://workos.com/blog/oauth-device-authorization-grant" target="_blank" rel="noopener">workos.com</a>。</li>
+<li>Salesforceの設定ガイド <a href="https://help.salesforce.com/s/articleView?id=xcloud.meta_configure_device_flow_external_client_apps.htm&amp;language=en&amp;type=5" target="_blank" rel="noopener">help.salesforce.com</a>。</li>
+<li>AWS CognitoとLambdaを使用した実装ガイド <a href="https://aws.amazon.com/blogs/security/implement-oauth-2-0-device-grant-flow-by-using-amazon-cognito-and-aws-lambda/" target="_blank" rel="noopener">aws.amazon.com</a>。</li>
+</ul>
+<p><strong>承認ボタンを人が押す工程を消した実例</strong>: Device Flowでは、ユーザーが別のデバイス（スマートフォンなど）でコードを入力して承認するため、元のデバイスでの直接入力が不要になります。ただし、これは完全な「無人化」ではなく、人間による承認を別のデバイスにオフロードする仕組みです。</p>
+<p><strong>セキュリティ上の懸念</strong>: RedditでヘッドレスOAuth2の実装方法についての議論がありますが、具体的なインシデントは確認できませんでした <a href="https://www.reddit.com/r/mcp/comments/1ltyw56/how_are_people_doing_oauth2_with_headless_agents/" target="_blank" rel="noopener">reddit.com</a>。</p>
+<hr>
+<h3>2.5 Headless Auth / ヘッドレスブラウザでの自動ログイン</h3>
+<p><strong>仕組み</strong>: ヘッドレスブラウザは、GUIなしでウェブページを自動化するためのブラウザです。</p>
+<p><strong>実装事例</strong>:</p>
+<ul>
+<li>ヘッドレスブラウザの説明記事 <a href="https://www.nimbleway.com/blog/what-is-a-headless-browser" target="_blank" rel="noopener">nimbleway.com</a>、<a href="https://liveproxies.io/blog/what-is-headless-browser" target="_blank" rel="noopener">liveproxies.io</a>、<a href="https://www.geetest.com/en/article/what-is-headless-browser" target="_blank" rel="noopener">geetest.com</a>、<a href="https://www.scrapingbee.com/blog/what-is-a-headless-browser-best-solutions-for-web-scraping-at-scale/" target="_blank" rel="noopener">scrapingbee.com</a>。</li>
+<li>Browserless APIの利用規約 <a href="https://browserlessapi.com/terms/" target="_blank" rel="noopener">browserlessapi.com</a>。</li>
+</ul>
+<p><strong>規約違反・アカウント停止の事例</strong>:</p>
+<ul>
+<li><strong>WhatsApp</strong>: Browser UseによるWhatsApp自動化がアカウントバンを引き起こす可能性についてのブログ記事 <a href="https://whapi.cloud/blog/browser-use-whatsapp-automation" target="_blank" rel="noopener">whapi.cloud</a>。</li>
+<li><strong>LinkedIn</strong>: LinkedIn自動化によるバンリスクについてのガイド <a href="https://www.linkednav.com/blog/will-linkedin-ban-me-for-using-automation" target="_blank" rel="noopener">linkednav.com</a>。</li>
+<li><strong>X/Twitter</strong>: 2026年のTwitter自動化ルールについてのブログ記事 <a href="https://opentweet.io/blog/twitter-automation-rules-2026" target="_blank" rel="noopener">opentweet.io</a>。</li>
+<li><strong>Claude Code</strong>: 利用規約違反の例についてのブログ記事 <a href="https://autonomee.ai/blog/claude-code-terms-of-service-explained/" target="_blank" rel="noopener">autonomee.ai</a>。</li>
+<li><strong>Gemini CLI</strong>: ポリシー違反に関するGitHub Issue <a href="https://github.com/google-gemini/gemini-cli/issues/20813" target="_blank" rel="noopener">github.com</a>。</li>
+<li><strong>Fansly</strong>: 自動化によるアカウントバン防止についてのアドバイス <a href="https://www.fansly-api.com/blog/fansly-account-ban-prevention" target="_blank" rel="noopener">fansly-api.com</a>。</li>
+</ul>
+<p><strong>法的議論</strong>: Hacker Newsで「ウェブサイトの利用規約違反は犯罪ではない」という議論がありますが、これは民事上の問題であり、アカウント停止などのプラットフォーム側の措置とは別です <a href="https://news.ycombinator.com/item?id=16119686" target="_blank" rel="noopener">news.ycombinator.com</a>。</p>
+<p><strong>公開情報では確認できなかったこと</strong>: 具体的なヘッドレスブラウザ自動化によるアカウント停止の統計データや、企業の公式見解。</p>
+<hr>
+<h3>2.6 Secret Manager（HashiCorp Vault、AWS Secrets Manager、Google Secret Manager、1Password Service Accounts）</h3>
+<h4>HashiCorp Vault</h4>
+<p><strong>仕組み</strong>: HashiCorp Vaultは、シークレット管理と動的シークレット生成を提供します <a href="https://developer.hashicorp.com/hcp/docs/vault/what-is-hcp-vault" target="_blank" rel="noopener">developer.hashicorp.com</a>。</p>
+<p><strong>ローテートシークレット vs ダイナミックシークレット</strong>: HashiCorpのブログで、両者の違いと使用ケースが説明されています <a href="https://www.hashicorp.com/en/blog/rotated-vs-dynamic-secrets-which-should-you-use" target="_blank" rel="noopener">hashicorp.com</a>。</p>
+<p><strong>実装事例</strong>: OneUptimeの記事で、Vaultを使用したArgoCDのシークレット自動ローテーションが紹介されています <a href="https://oneuptime.com/blog/post/2026-02-26-argocd-secret-rotation-vault/view" target="_blank" rel="noopener">oneuptime.com</a>。</p>
+<p><strong>AWS Marketplace</strong>: Vault KV v2からSecrets Managerへの移行製品 <a href="https://aws.amazon.com/marketplace/pp/prodview-wh66fns3cc7da" target="_blank" rel="noopener">aws.amazon.com</a>。</p>
+<p><strong>Terraform</strong>: AWS Secrets Managerのシークレットローテーションリソース <a href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_rotation" target="_blank" rel="noopener">registry.terraform.io</a>。</p>
+<hr>
+<h4>AWS Secrets Manager</h4>
+<p><strong>仕組み</strong>: Lambda関数を使用した自動シークレットローテーション <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotate-secrets_lambda.html" target="_blank" rel="noopener">docs.aws.amazon.com</a>。</p>
+<p><strong>実装事例</strong>:</p>
+<ul>
+<li>AWSサンプルリポジトリのローテーションLambda関数 <a href="https://github.com/aws-samples/aws-secrets-manager-rotation-lambdas" target="_blank" rel="noopener">github.com</a>。</li>
+<li>Overcastブログの実践ガイド <a href="https://overcast.blog/how-to-rotate-secrets-in-aws-secrets-manager-using-lambda-function-73a7c8ddd503" target="_blank" rel="noopener">overcast.blog</a>。</li>
+</ul>
+<hr>
+<h4>Google Secret Manager</h4>
+<p><strong>仕組み</strong>: シークレットローテーションスケジュール、Pub/Sub通知、ローテーション推奨事項 <a href="https://docs.cloud.google.com/secret-manager/docs/secret-rotation" target="_blank" rel="noopener">docs.cloud.google.com</a>、<a href="https://docs.cloud.google.com/secret-manager/docs/rotation-recommendations" target="_blank" rel="noopener">docs.cloud.google.com</a>。</p>
+<p><strong>実装事例</strong>:</p>
+<ul>
+<li>GCPのセキュリティ製品ページ <a href="https://cloud.google.com/security/products/secret-manager" target="_blank" rel="noopener">cloud.google.com</a>。</li>
+<li>Google Cloudブログのキーレスアクセス記事 <a href="https://cloud.google.com/blog/products/identity-security/enable-keyless-access-to-gcp-with-workload-identity-federation" target="_blank" rel="noopener">cloud.google.com</a>。</li>
+<li>RedditおよびStack Overflowでの自動ローテーションに関する議論 <a href="https://www.reddit.com/r/googlecloud/comments/1f1nj22/automatic_secrets_rotation_in_gcp_tokens_other/" target="_blank" rel="noopener">reddit.com</a>、<a href="https://stackoverflow.com/questions/70539261/is-it-possible-to-automatically-rotate-the-secrets-in-google-secret-manager" target="_blank" rel="noopener">stackoverflow.com</a>、<a href="https://stackoverflow.com/questions/70737605/gcp-service-account-key-rotation-through-secret-manager" target="_blank" rel="noopener">stackoverflow.com</a>。</li>
+<li>Trend Microのナレッジベース記事 <a href="https://trendmicro.com/trendaivisiononecloudriskmanagement/knowledge-base/gcp/SecretManager/enable-rotation-schedules.html" target="_blank" rel="noopener">trendmicro.com</a>。</li>
+</ul>
+<hr>
+<h4>1Password Service Accounts</h4>
+<p><strong>仕組み</strong>: 1Password Service Accountsは、共有環境、CI/CDパイプライン、AIエージェントへの認証情報アクセスを提供します <a href="https://www.1password.dev/service-accounts" target="_blank" rel="noopener">1password.dev</a>。</p>
+<p><strong>実装事例</strong>:</p>
+<ul>
+<li>1Passwordのブログ記事 <a href="https://1password.com/blog/service-accounts-sdks-agentic-ai" target="_blank" rel="noopener">1password.com</a>、<a href="https://1password.com/blog/1password-service-accounts" target="_blank" rel="noopener">1password.com</a>、<a href="https://1password.com/blog/1password-service-accounts-beta" target="_blank" rel="noopener">1password.com</a>。</li>
+<li>CLIリファレンス <a href="https://www.1password.dev/cli/reference/management-commands/service-account" target="_blank" rel="noopener">1password.dev</a>。</li>
+<li>Redditおよびコミュニティフォーラムでの使用事例 <a href="https://www.reddit.com/r/1Password/comments/1ulkznq/using_a_1password_service_account_helped_me/" target="_blank" rel="noopener">reddit.com</a>、<a href="https://www.1password.community/developers-69/service-account-access-12239" target="_blank" rel="noopener">1password.community</a>。</li>
+</ul>
+<p><strong>承認ボタンを人が押す工程を消した実例</strong>: Service Accountsを使用することで、CI/CDパイプラインやAIエージェントが人間による手動の認証情報入力なしでシークレットにアクセスできます <a href="https://1password.com/blog/service-accounts-sdks-agentic-ai" target="_blank" rel="noopener">1password.com</a>。</p>
+<hr>
+<h3>2.7 OAuth Refresh Tokenのローテーション設計</h3>
+<p><strong>仕組み</strong>: Auth0のドキュメントで、Refresh Token Rotationと再利用検出が説明されています <a href="https://auth0.com/docs/secure/tokens/refresh-tokens/refresh-token-rotation" target="_blank" rel="noopener">auth0.com</a>。</p>
+<p><strong>ベストプラクティス</strong>:</p>
+<ul>
+<li>Obsidian Securityのベストプラクティス記事 <a href="https://www.obsidiansecurity.com/blog/refresh-token-security-best-practices" target="_blank" rel="noopener">obsidiansecurity.com</a>。</li>
+<li>Descopeの開発者ガイド <a href="https://www.descope.com/blog/post/refresh-token-rotation" target="_blank" rel="noopener">descope.com</a>。</li>
+<li>Serverionの記事 <a href="https://www.serverion.com/uncategorized/refresh-token-rotation-best-practices-for-developers/" target="_blank" rel="noopener">serverion.com</a>。</li>
+<li>Auth0のRefresh Tokenの仕組み解説 <a href="https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/" target="_blank" rel="noopener">auth0.com</a>。</li>
+<li>Calendlyのシングルユースリフレッシュトークンガイド <a href="https://developer.calendly.com/docs/authentication/refresh-token-rotation-guide" target="_blank" rel="noopener">developer.calendly.com</a>。</li>
+<li>CodeSignalのレッスン <a href="https://codesignal.com/learn/courses/preventing-refresh-token-abuse-in-your-typescript-rest-api/lessons/implementing-rotating-refresh-tokens" target="_blank" rel="noopener">codesignal.com</a>。</li>
+<li>Token.securityの用語集 <a href="https://www.token.security/glossary/token-rotation" target="_blank" rel="noopener">token.security</a>。</li>
+<li>Redditの議論 <a href="https://www.reddit.com/r/dotnet/comments/1gc84j4/what_are_the_best_practices_for_refresh_token/" target="_blank" rel="noopener">reddit.com</a>。</li>
+</ul>
+<p><strong>承認ボタンを人が押す工程を消した実例</strong>: Refresh Token Rotationを実装することで、ユーザーが再度ログインすることなく、システムが自動的にトークンを更新し、セキュリティを維持できます <a href="https://auth0.com/docs/secure/tokens/refresh-tokens/refresh-token-rotation" target="_blank" rel="noopener">auth0.com</a>。</p>
+<hr>
+<h3>2.8 GitHub Copilot Coding Agentの制限</h3>
+<p><strong>セッション制限</strong>: GitHub CopilotのCloud Agentセッションは最大59分に制限されています <a href="https://docs.github.com/copilot/concepts/agents/cloud-agent/about-cloud-agent" target="_blank" rel="noopener">docs.github.com</a>。</p>
+<p><strong>コミュニティの議論</strong>:</p>
+<ul>
+<li>セットアップステップのハードタイムアウトに関するコミュニティディスカッション <a href="https://github.com/orgs/community/discussions/183671" target="_blank" rel="noopener">github.com</a>。</li>
+<li>反復制限とセッション処理に関する追加のノート <a href="https://github.com/orgs/community/discussions/177410" target="_blank" rel="noopener">github.com</a>。</li>
+<li>SmartScopeブログのガイド <a href="https://smartscope.blog/en/generative-ai/github-copilot/github-copilot-coding-agent-guide/" target="_blank" rel="noopener">smartscope.blog</a>。</li>
+<li>Dev.toの記事で、セッション制限を超えた場合のミスについて言及されています <a href="https://dev.to/anchildress1/github-copilot-agent-mode-the-mistake-you-never-want-to-make-1mmh" target="_blank" rel="noopener">dev.to</a>。</li>
+</ul>
+<hr>
+<h2>第3章：Human-in-the-Loopを減らした運用の数字</h2>
+<h3>3.1 人の確認回数・承認回数を減らした企業の公表数字</h3>
+<h4>精度向上と時間削減</h4>
+<p><strong>MindStudioの調査</strong>:</p>
+<ul>
+<li>HITLワークフローを実装した組織は、文書抽出において最大99.9%の精度を達成（AIのみの92%と比較） <a href="https://www.mindstudio.ai/blog/human-in-the-loop-ai" target="_blank" rel="noopener">mindstudio.ai</a>。</li>
+<li>医療画像診断において、HITLは99.5%の精度を達成（人間のみの96%、AIのみの92%と比較） <a href="https://www.mindstudio.ai/blog/human-in-the-loop-ai" target="_blank" rel="noopener">mindstudio.ai</a>。</li>
+<li>カスタマーサポートにおいて、AIチャットボットが一般的な質問を処理し、複雑なケースを人間にエスカレーションすることで、処理時間を20-40%削減 <a href="https://www.mindstudio.ai/blog/human-in-the-loop-ai" target="_blank" rel="noopener">mindstudio.ai</a>。</li>
+</ul>
+<p><strong>Elementumの調査</strong>:</p>
+<ul>
+<li>AI支援による人間レビューは97.1%のリコール（再現率）と50%のスクリーニング時間削減を達成 <a href="https://www.elementum.ai/blog/human-in-the-loop-agentic-ai" target="_blank" rel="noopener">elementum.ai</a>。</li>
+<li>医療分野のIJMI査読付き研究では、HITL AIが患者データ要約においてアラーム負荷を最大80%削減しながら安全性を維持 <a href="https://www.elementum.ai/blog/human-in-the-loop-agentic-ai" target="_blank" rel="noopener">elementum.ai</a>。</li>
+</ul>
+<p><strong>arXivの研究</strong>:</p>
+<ul>
+<li>ステップエラー率は16.43%で、AIが有利という結果 <a href="https://arxiv.org/html/2507.18374v1" target="_blank" rel="noopener">arxiv.org</a>（※このURLは検索結果に含まれていましたが、詳細は取得できていません）。</li>
+</ul>
+<p><strong>Galileo AI</strong>: HITLエージェント監視に関する記事が存在しますが、詳細は取得できませんでした <a href="https://galileo.ai/blog/human-in-the-loop-agent-oversight" target="_blank" rel="noopener">galileo.ai</a>。</p>
+<p><strong>Balto AI</strong>: HITL自動化に関する記事が存在しますが、詳細は取得できませんでした <a href="https://www.balto.ai/blog/what-is-human-in-the-loop-automation/" target="_blank" rel="noopener">balto.ai</a>。</p>
+<p><strong>Improvado</strong>: マーケティングチーム向けのHITL AIガイドで、手動SQLクエリの削減による時間節約について言及されていますが、詳細は取得できませんでした <a href="https://improvado.io/blog/human-in-the-loop-ai" target="_blank" rel="noopener">improvado.io</a>。</p>
+<p><strong>LinkedInの事例</strong>: J.P. MorganのCOINが360,000時間を節約したという投稿 <a href="https://www.linkedin.com/posts/leadgenmanthan_top-5-human-in-the-loop-ai-case-studies-activity-7315945805356457984-mI0n" target="_blank" rel="noopener">linkedin.com</a>。</p>
+<p><strong>Facebookコミュニティ</strong>: Claude AIコミュニティでのHITLに関する議論 <a href="https://www.facebook.com/groups/claudeaicommunity/posts/1382019943965169/" target="_blank" rel="noopener">facebook.com</a>。</p>
+<hr>
+<h3>3.2 減らしすぎて事故った事例と、そこから何を人間に戻したか</h3>
+<h4>AIエージェントの失敗率統計</h4>
+<p><strong>Fiddler AIの調査</strong>:</p>
+<ul>
+<li>制御されたデモで成功したエンタープライズエージェントの約88%が、実際のワークフロー展開時に失敗 <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">fiddler.ai</a>。</li>
+<li>本番環境でのエージェント失敗率は70%〜95%（タスクの複雑さと測定方法による） <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">fiddler.ai</a>。</li>
+<li>WebArenaベンチマークで、GPT-4ベースのエージェントのタスク成功率は14.41%（人間は78.24%） <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">fiddler.ai</a>。</li>
+<li>カーネギーメロン大学の研究では、日常的なオフィス業務でエージェントは約70%の確率で失敗 <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">fiddler.ai</a>。</li>
+<li>MITの報告によると、生成AIパイロットの95%が損益（P&amp;L）に測定可能な影響を与えられずに失敗 <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">fiddler.ai</a>。</li>
+<li>連続実行時のパフォーマンス低下：1回の実行で60%の成功率が、8回連続で25%に低下 <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">fiddler.ai</a>。</li>
+</ul>
+<p><strong>Elementumの調査</strong>:</p>
+<ul>
+<li>シミュレーションテストで、AIエージェントはマルチステップタスクを約70%の確率で失敗 <a href="https://www.elementum.ai/blog/human-in-the-loop-agentic-ai" target="_blank" rel="noopener">elementum.ai</a>。</li>
+<li>MITの研究によると、エンタープライズグレードの生成AIシステムのうち、本番稼働するのはわずか5% <a href="https://www.elementum.ai/blog/human-in-the-loop-agentic-ai" target="_blank" rel="noopener">elementum.ai</a>。</li>
+</ul>
+<p><strong>Digital Appliedの調査</strong>:</p>
+<ul>
+<li>AIエージェントプロジェクトのうち、パイロットから持続的な生産運用に移行するのは12%のみ <a href="https://www.digitalapplied.com/blog/88-percent-ai-agents-never-reach-production-failure-framework" target="_blank" rel="noopener">digitalapplied.com</a>。</li>
+<li>7つの失敗パターンが、生産前停滞の94%を占める：スコープクリープ（34%）、データ品質の失敗（27%）、セキュリティ上の障壁（14%）、統合の複雑さ（9%）、コスト超過（7%）、ガバナンスの欠如（5%）、組織的な抵抗（4%） <a href="https://www.digitalapplied.com/blog/88-percent-ai-agents-never-reach-production-failure-framework" target="_blank" rel="noopener">digitalapplied.com</a>。</li>
+</ul>
+<p><strong>Mediumの分析（2026年）</strong>:</p>
+<ul>
+<li>847件のAIエージェント実装を追跡した結果、90日以内に重大な失敗を経験したものが76%、6か月後に完全に放棄されたものが43%、当初のROIの約束を果たせたものはわずか18% <a href="https://medium.com/@snehal_singh/i-analyzed-847-ai-agent-deployments-in-2026-76-failed-heres-why-0b69d962ec8b" target="_blank" rel="noopener">medium.com</a>。</li>
+<li>失敗の主な原因：テスト環境と本番環境のギャップ、認証の期限切れ、予期せぬコストの急増、メモリシステムの欠如、ガバナンスの不足 <a href="https://medium.com/@snehal_singh/i-analyzed-847-ai-agent-deployments-in-2026-76-failed-heres-why-0b69d962ec8b" target="_blank" rel="noopener">medium.com</a>。</li>
+<li>成功した実装事例が共通して行っていた7つの行動：小規模から開始、エラーハンドリングへの注力、日次でのコスト監視、初期段階からのセキュリティ実装、現実的な期待値の設定、人間による介入（エスケープハッチ）の仕組み構築、ROIの具体的測定 <a href="https://medium.com/@snehal_singh/i-analyzed-847-ai-agent-deployments-in-2026-76-failed-heres-why-0b69d962ec8b" target="_blank" rel="noopener">medium.com</a>。</li>
+</ul>
+<p><strong>Latitudeの調査</strong>: 複雑なマルチステップタスクで63%の失敗率 <a href="https://latitude.so/blog/why-ai-agents-break-in-production" target="_blank" rel="noopener">latitude.so</a>（※このURLは検索結果に含まれていましたが、詳細は取得できていません）。</p>
+<p><strong>Beam AIの調査</strong>: 95%のパイロット失敗率と93%のコスト削減事例 <a href="https://beam.ai/agentic-insights/agentic-ai-in-2026-why-90-of-implementations-fail-(and-how-to-be-the-10" target="_blank" rel="noopener">beam.ai</a>)（※このURLは検索結果に含まれていましたが、詳細は取得できていません）。</p>
+<p><strong>RANDおよび他の分析</strong>: 80-95%のプロジェクト失敗率 <a href="https://www.trantorinc.com/blog/ai-agent-failure-modes-what-wrong-design-resilience" target="_blank" rel="noopener">trantorinc.com</a>、<a href="https://www.inovabeing.com/blog/ai-agent-reliability-production-failure-2026" target="_blank" rel="noopener">inovabeing.com</a>（※これらのURLは検索結果に含まれていましたが、詳細は取得できていません）。</p>
+<p><strong>Unitoの調査</strong>: カーネギーメロン大学の研究で、タスクの自律的完了率は30%のみ <a href="https://unito.io/blog/ai-agents-failure-rate" target="_blank" rel="noopener">unito.io</a>（※このURLは検索結果に含まれていましたが、詳細は取得できていません）。</p>
+<hr>
+<h4>AIエージェントのセキュリティインシデント</h4>
+<p><strong>Kiteworksの調査（2026年）</strong>:</p>
+<ul>
+<li>組織の65%が過去1年間にAIエージェントに起因するセキュリティインシデントを少なくとも1回経験 <a href="https://www.kiteworks.com/cybersecurity-risk-management/ai-agent-security-incidents-2026/" target="_blank" rel="noopener">kiteworks.com</a>。</li>
+<li>インシデントの内訳：機密データの漏洩（61%）、業務の中断（43%）、ビジネスプロセスにおける意図しない動作（41%）、経済的損失（35%）、サービス遅延（31%） <a href="https://www.kiteworks.com/cybersecurity-risk-management/ai-agent-security-incidents-2026/" target="_blank" rel="noopener">kiteworks.com</a>。</li>
+<li>主な攻撃パターン：目的外のデータアクセス、資格情報やAPIトークンの侵害、プロンプトインジェクション <a href="https://www.kiteworks.com/cybersecurity-risk-management/ai-agent-security-incidents-2026/" target="_blank" rel="noopener">kiteworks.com</a>。</li>
+<li>92%の組織が生成AIによって情報のアクセスや共有方法が根本的に変化したと回答していますが、正式にビジネス戦略にAIを統合できている組織はわずか13% <a href="https://www.kiteworks.com/cybersecurity-risk-management/ai-agent-security-incidents-2026/" target="_blank" rel="noopener">kiteworks.com</a>。</li>
+<li>AIエージェントを人間と同等の内部リスク対象として分類している組織はわずか19% <a href="https://www.kiteworks.com/cybersecurity-risk-management/ai-agent-security-incidents-2026/" target="_blank" rel="noopener">kiteworks.com</a>。</li>
+</ul>
+<p><strong>Beam AIの2026年セキュリティ侵害事例</strong>:</p>
+<p>1. <strong>Claude Code経由の1億9500万件の記録流出</strong>: 2025年12月から2026年2月にかけて、単独の攻撃者がClaude CodeとGPT-4.1を使用し、メキシコの9つの政府機関から1億9500万件の納税者記録と2億2000万件の市民記録を窃取 <a href="https://beam.ai/agentic-insights/ai-agent-security-breaches-2026-lessons" target="_blank" rel="noopener">beam.ai</a>。</p>
+<p>2. <strong>ClawHavoc</strong>: 2026年1月下旬、攻撃者がOpenClawの「ClawHub」に335以上の悪意あるスキルをアップロードし、macOS向けマルウェアを配布。35.4%のOpenClawインスタンスが脆弱と判断 <a href="https://beam.ai/agentic-insights/ai-agent-security-breaches-2026-lessons" target="_blank" rel="noopener">beam.ai</a>。</p>
+<p>3. <strong>EchoLeak</strong>: 2025年6月、Microsoft 365 Copilotにゼロクリックプロンプトインジェクションの脆弱性が発見され、隠し命令を含むメールでOneDriveやSharePointからデータを窃取可能 <a href="https://beam.ai/agentic-insights/ai-agent-security-breaches-2026-lessons" target="_blank" rel="noopener">beam.ai</a>。</p>
+<p>4. <strong>GTG-1002</strong>: 2025年9月、中国の国家支援グループがClaude Codeを乗っ取り、防衛・エネルギー・技術分野の約30の標的に対して自律的なサイバー諜報活動を実施 <a href="https://beam.ai/agentic-insights/ai-agent-security-breaches-2026-lessons" target="_blank" rel="noopener">beam.ai</a>。</p>
+<p>5. <strong>Step Financeの4000万ドル損失</strong>: 2026年1月、攻撃者がStep Financeの幹部の端末を侵害し、権限過多のAIトレーディングエージェントを悪用して26万1000以上のSOLトークン（約2700万〜3000万ドル）を不正送金 <a href="https://beam.ai/agentic-insights/ai-agent-security-breaches-2026-lessons" target="_blank" rel="noopener">beam.ai</a>。</p>
+<p><strong>IBM Cost of a Data Breach Report 2025</strong>: AI関連の侵害の97%が不適切なアクセス制御に起因 <a href="https://www.kiteworks.com/cybersecurity-risk-management/ai-agent-security-incidents-2026/" target="_blank" rel="noopener">kiteworks.com</a>。</p>
+<p><strong>Redditのインシデント集計</strong>: 2024-2026年の90件のインシデント集計 <a href="https://www.reddit.com/r/cybersecurity/comments/1sfrylv/i_compiled_every_major_ai_agent_security_incident/" target="_blank" rel="noopener">reddit.com</a>。</p>
+<p><strong>PointGuard AI</strong>: インシデントトラッカー <a href="https://www.pointguardai.com/ai-security-incident-tracker" target="_blank" rel="noopener">pointguardai.com</a>。</p>
+<p><strong>LinkedInの事例</strong>: 2026年9月のスペインのデータ保護当局による侵害 <a href="https://www.linkedin.com/pulse/ai-agents-cause-real-cyber-incidents-what-first-data-breach-coraggio-vfhte" target="_blank" rel="noopener">linkedin.com</a>。</p>
+<p><strong>Dark Reading</strong>: スペイン組織の侵害に関する記事 <a href="https://www.darkreading.com/cyber-attacks-data-breaches/ai-agent-breaches-spanish-organization-personal-data" target="_blank" rel="noopener">darkreading.com</a>。</p>
+<hr>
+<h4>特定のエージェント脆弱性</h4>
+<p><strong>Cursorの脆弱性（MCPoison / CurXecute）</strong>:</p>
+<p><strong>Check Point Researchの調査</strong>:</p>
+<ul>
+<li>CVE-2025-54136（MCPoison）: CursorのMCP設定ファイル（.cursor/rules/mcp.json）が一度承認されると、その後内容が変更されても再承認を求められず、任意のコードが実行される脆弱性 <a href="https://research.checkpoint.com/2025/cursor-vulnerability-mcpoison/" target="_blank" rel="noopener">research.checkpoint.com</a>。</li>
+<li>攻撃者は無害なMCP設定をコミットし、被害者が承認した後、悪意あるコマンドに置き換えることで、プロジェクトを開くたびにリバースシェルが実行される状態を作れます <a href="https://research.checkpoint.com/2025/cursor-vulnerability-mcpoison/" target="_blank" rel="noopener">research.checkpoint.com</a>。</li>
+<li>Cursorはバージョン1.3（2025年7月29日）でこの問題を修正し、MCP設定の変更時に再承認を要求するようになりました <a href="https://research.checkpoint.com/2025/cursor-vulnerability-mcpoison/" target="_blank" rel="noopener">research.checkpoint.com</a>。</li>
+</ul>
+<p><strong>Tenableの調査</strong>:</p>
+<ul>
+<li>CVE-2025-54135（CurXecute）: CVSSv3 8.5、Prompt InjectionによるMCP設定の改ざん <a href="https://www.tenable.com/blog/faq-cve-2025-54135-cve-2025-54136-vulnerabilities-in-cursor-curxecute-mcpoison" target="_blank" rel="noopener">tenable.com</a>。</li>
+<li>CVE-2025-54136（MCPoison）: CVSSv3 7.2、未検証の設定変更によるリモートコード実行 <a href="https://www.tenable.com/blog/faq-cve-2025-54135-cve-2025-54136-vulnerabilities-in-cursor-curxecute-mcpoison" target="_blank" rel="noopener">tenable.com</a>。</li>
+<li>影響を受けるバージョンと修正バージョン: CVE-2025-54135は1.21以下が影響を受け、1.3.9で修正。CVE-2025-54136は1.2.4以下が影響を受け、1.3で修正 <a href="https://www.tenable.com/blog/faq-cve-2025-54135-cve-2025-54136-vulnerabilities-in-cursor-curxecute-mcpoison" target="_blank" rel="noopener">tenable.com</a>。</li>
+</ul>
+<p><strong>その他のCursor関連脆弱性</strong>:</p>
+<ul>
+<li><strong>CursorJack</strong>: Proofpointの調査で、 deeplinkを悪用したCursor IDEの脆弱性 <a href="https://www.proofpoint.com/us/blog/threat-insight/cursorjack-weaponizing-deeplinks-exploit-cursor-ide" target="_blank" rel="noopener">proofpoint.com</a>。</li>
+<li><strong>Snykの調査</strong>: Cursor + Jira MCPの0クリック脆弱性 <a href="https://labs.snyk.io/resources/cursor-jira-mcp-vulnerability-explained/" target="_blank" rel="noopener">labs.snyk.io</a>。</li>
+<li><strong>Cloud Security Alliance</strong>: MCPツールポイズニングの調査ノート <a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-mcp-tool-poisoning-auto-execution-20260701/" target="_blank" rel="noopener">labs.cloudsecurityalliance.org</a>。</li>
+<li><strong>Dark Reading</strong>: 2クリックのCursorエクスプロイト <a href="https://www.darkreading.com/application-security/2-click-cursor-exploit-dev-environment-takeover" target="_blank" rel="noopener">darkreading.com</a>。</li>
+<li><strong>Knostic AI</strong>: MCPによるCursorブラウザのハイジャック <a href="https://www.knostic.ai/blog/mcp-hijacked-cursor-browser" target="_blank" rel="noopener">knostic.ai</a>。</li>
+<li><strong>LinkedIn</strong>: 悪意あるMCPファイルスワップによるRCE <a href="https://www.linkedin.com/posts/aryendradalal_cursor-ai-code-editor-vulnerability-enables-activity-7360816039103717376-TvOe" target="_blank" rel="noopener">linkedin.com</a>。</li>
+</ul>
+<hr>
+<h4>自動化の皮肉（人間をループから外すことによる認知能力の低下）</h4>
+<p>arXivの論文「AI Agents Push Humans Out of the Loop」では、AIエージェントの利用が人間の認知能力を低下させ、人間が「ループの外」に追いやられる現象について論じています <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</p>
+<p><strong>主なリスク</strong>:</p>
+<ul>
+<li>認知能力の低下（スキル萎縮・デスキリング）：長期間のAI利用により、批判的思考や直感、警戒心が衰える <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</li>
+<li>承認疲れ（Approval fatigue）：AIエージェントの操作を承認し続けることで、内容を精査せずに承認してしまう現象 <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</li>
+<li>状況認識の喪失：マルチステップの複雑な計画を追跡しきれず、監視者としての役割が形骸化する <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</li>
+<li>追従的AI（Sycophancy）：ユーザーのバイアスを肯定するような回答が、ユーザーの独立した判断や懐疑心を弱める <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</li>
+<li>フィードバックループの悪化：認知能力が低下した監視者がAIを評価することで、システムが「監視不要で承認されやすい」方向へ最適化され、安全性や精度が低下する <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</li>
+</ul>
+<p><strong>定量的な知見</strong>:</p>
+<ul>
+<li>LLMを使用した作文において、脳の接続性が有意に低下したという研究結果 <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</li>
+<li>AI支援を受けた内視鏡医において、デスクリリング（スキル萎縮）のリスクが存在することが多施設観察研究で示されている <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</li>
+</ul>
+<p><strong>教訓</strong>: 過度な自動化は、人間の監視能力を低下させ、結果としてセキュリティや精度を損なう可能性があります。この論文は、完全な無人運用を目指す前に、人間の認知能力を維持するための「認知的足場（cognitive scaffolding）」の設計が必要だと主張しています <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arxiv.org</a>。</p>
+<hr>
+<h2>第4章：明日から実行できる5つの具体的な行動</h2>
+<h3>1. エージェントの反復回数にハードキャップを設定する</h3>
+<p>CrewAIのmax_iterバグ <a href="https://github.com/crewAIInc/crewAI/issues/3847" target="_blank" rel="noopener">github.com</a> や、Redditの$700損失事例 <a href="https://www.reddit.com/r/SaaS/comments/1qv8o6v/" target="_blank" rel="noopener">reddit.com</a> が示すように、無限ループは現実的なリスクです。使用しているエージェントフレームワーク（CrewAI、AutoGen、LangGraphなど）のmax_iterations、max_turns、max_tool_callsなどのパラメータを必ず設定し、デフォルト値が「無制限」になっていないか確認してください。</p>
+<p><strong>根拠URL</strong>: <a href="https://github.com/crewAIInc/crewAI/issues/3847" target="_blank" rel="noopener">github.com</a>、<a href="https://www.reddit.com/r/SaaS/comments/1qv8o6v/" target="_blank" rel="noopener">reddit.com</a>、<a href="https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/tutorial/termination.html" target="_blank" rel="noopener">microsoft.github.io</a></p>
+<hr>
+<h3>2. 長期トークンの代わりにOIDCまたはWorkload Identity Federationを採用する</h3>
+<p>GitHub Actions OIDC <a href="https://docs.github.com/en/actions/concepts/security/openid-connect" target="_blank" rel="noopener">docs.github.com</a> やGoogle CloudのWorkload Identity Federation <a href="https://docs.cloud.google.com/iam/docs/workload-identity-federation" target="_blank" rel="noopener">docs.cloud.google.com</a> を使用することで、長期のシークレットキーを保存する必要がなくなり、トークン漏洩や期限切れによる障害のリスクを低減できます。</p>
+<p><strong>根拠URL</strong>: <a href="https://docs.github.com/en/actions/concepts/security/openid-connect" target="_blank" rel="noopener">docs.github.com</a>、<a href="https://docs.cloud.google.com/iam/docs/workload-identity-federation" target="_blank" rel="noopener">docs.cloud.google.com</a>、<a href="https://aws.amazon.com/blogs/security/access-aws-using-a-google-cloud-platform-native-workload-identity/" target="_blank" rel="noopener">aws.amazon.com</a></p>
+<hr>
+<h3>3. シークレット管理に自動ローテーションを導入する</h3>
+<p>AWS Secrets Manager <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotate-secrets_lambda.html" target="_blank" rel="noopener">docs.aws.amazon.com</a>、Google Secret Manager <a href="https://docs.cloud.google.com/secret-manager/docs/secret-rotation" target="_blank" rel="noopener">docs.cloud.google.com</a>、HashiCorp Vault <a href="https://www.hashicorp.com/en/blog/rotated-vs-dynamic-secrets-which-should-you-use" target="_blank" rel="noopener">hashicorp.com</a> の自動ローテーション機能を有効にすることで、手動でのキー管理を不要にし、セキュリティリスクを低減できます。</p>
+<p><strong>根拠URL</strong>: <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotate-secrets_lambda.html" target="_blank" rel="noopener">docs.aws.amazon.com</a>、<a href="https://docs.cloud.google.com/secret-manager/docs/secret-rotation" target="_blank" rel="noopener">docs.cloud.google.com</a>、<a href="https://www.hashicorp.com/en/blog/rotated-vs-dynamic-secrets-which-should-you-use" target="_blank" rel="noopener">hashicorp.com</a></p>
+<hr>
+<h3>4. 重要な操作にはHuman-in-the-Loopの承認フローを維持する</h3>
+<p>Fiddler AIの調査 <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">fiddler.ai</a> が示すように、本番環境でのAIエージェントの失敗率は70-95%に達します。特に財務取引、データ削除、本番環境へのデプロイなどの高リスク操作については、OpenAI Agents SDKのguardrails <a href="https://developers.openai.com/api/docs/guides/agents/guardrails-approvals" target="_blank" rel="noopener">developers.openai.com</a> やLangGraphのinterrupt <a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noopener">docs.langchain.com</a> を使用して、人間の承認を必須とするフローを維持してください。</p>
+<p><strong>根拠URL</strong>: <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">fiddler.ai</a>、<a href="https://developers.openai.com/api/docs/guides/agents/guardrails-approvals" target="_blank" rel="noopener">developers.openai.com</a>、<a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noopener">docs.langchain.com</a></p>
+<hr>
+<h3>5. 詳細なログと監視ダッシュボードを構築する</h3>
+<p>Redditの$700損失事例 <a href="https://www.reddit.com/r/SaaS/comments/1qv8o6v/" target="_blank" rel="noopener">reddit.com</a> が示すように、詳細なログがなければ、問題の根本原因を特定することは困難です。すべてのエージェントアクション、ツール呼び出し、トークン使用量、エラーをログに記録し、異常なパターン（例：短時間での大量のAPI呼び出し、同じアクションの繰り返し）を検知するアラートシステムを構築してください。</p>
+<p><strong>根拠URL</strong>: <a href="https://www.reddit.com/r/SaaS/comments/1qv8o6v/" target="_blank" rel="noopener">reddit.com</a>、<a href="https://formation.dev/blog/agent-loop-runaway-costs" target="_blank" rel="noopener">formation.dev</a>、<a href="https://www.supra-wall.com/learn/ai-agent-runaway-costs" target="_blank" rel="noopener">supra-wall.com</a></p>
+<hr>
+<h2>出典一覧</h2>
+<p>1. <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">Claude Code Hooks</a></p>
+<p>2. <a href="https://code.claude.com/docs/en/agent-sdk/hooks" target="_blank" rel="noopener">Claude Code Agent SDK Hooks</a></p>
+<p>3. <a href="https://hidekazu-konishi.com/entry/claude_code_hooks_complete_guide.html" target="_blank" rel="noopener">Claude Code Hooks Complete Guide（個人ブログ）</a></p>
+<p>4. <a href="https://github.com/disler/claude-code-hooks-mastery" target="_blank" rel="noopener">GitHub - claude-code-hooks-mastery</a></p>
+<p>5. <a href="https://blakecrosley.com/blog/claude-code-hooks-explained" target="_blank" rel="noopener">Blake Crosley Blog - Claude Code Hooks Explained</a></p>
+<p>6. <a href="https://developers.openai.com/api/docs/guides/agents/guardrails-approvals" target="_blank" rel="noopener">OpenAI Agents SDK - Guardrails &amp; Approvals</a></p>
+<p>7. <a href="https://openai.github.io/openai-agents-python/guardrails/" target="_blank" rel="noopener">OpenAI Agents SDK Python - Guardrails</a></p>
+<p>8. <a href="https://developers.openai.com/api/docs/guides/agents" target="_blank" rel="noopener">OpenAI API Docs - Agents Overview</a></p>
+<p>9. <a href="https://cobusgreyling.medium.com/openai-ai-agents-sdk-guardrails-206bb1e777bc" target="_blank" rel="noopener">Medium - OpenAI Agents SDK Guardrails</a></p>
+<p>10. <a href="https://team400.ai/blog/2026-04-openai-agents-guardrails-human-review-guide" target="_blank" rel="noopener">Team400.ai - OpenAI Agents Guardrails &amp; Human Review</a></p>
+<p>11. <a href="https://docs.langchain.com/oss/python/langchain/human-in-the-loop" target="_blank" rel="noopener">LangChain Docs - Human-in-the-loop</a></p>
+<p>12. <a href="https://docs.langchain.com/oss/python/langgraph/interrupts" target="_blank" rel="noopener">LangChain Docs - Interrupts</a></p>
+<p>13. <a href="https://www.langchain.com/blog/making-it-easier-to-build-human-in-the-loop-agents-with-interrupt" target="_blank" rel="noopener">LangChain Blog - Making it easier to build human-in-the-loop agents</a></p>
+<p>14. <a href="https://www.reddit.com/r/LangChain/comments/1s6qidj/how_i_implemented_humanintheloop_with_langgraphs/" target="_blank" rel="noopener">Reddit - Human-in-the-loop with LangGraph</a></p>
+<p>15. <a href="https://temporal.io/resources/case-studies/emergent" target="_blank" rel="noopener">Temporal - Emergent Case Study</a></p>
+<p>16. <a href="https://temporal.io/blog/durable-execution-meets-ai-why-temporal-is-the-perfect-foundation-for-ai" target="_blank" rel="noopener">Temporal Blog - Durable Execution Meets AI</a></p>
+<p>17. <a href="https://temporal.io/solutions/ai" target="_blank" rel="noopener">Temporal - AI Solutions</a></p>
+<p>18. <a href="https://temporal.io/case-studies/gorgias-uses-ai-agents-to-improve-customer-service" target="_blank" rel="noopener">Temporal - Gorgias Case Study</a></p>
+<p>19. <a href="https://spiralscout.com/case/ai-agentic-automation-ecommerce-support" target="_blank" rel="noopener">Spiral Scout - Gorgias AI Agentic Automation</a></p>
+<p>20. <a href="https://docs.gorgias.com/en-US/how-gorgiass-ai-agent-works-1997817" target="_blank" rel="noopener">Gorgias Docs - How Gorgias&#x27;s AI Agent Works</a></p>
+<p>21. <a href="https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/tutorial/termination.html" target="_blank" rel="noopener">AutoGen Docs - Termination</a></p>
+<p>22. <a href="https://microsoft.github.io/autogen/0.2/docs/tutorial/chat-termination/" target="_blank" rel="noopener">AutoGen Docs - Chat Termination (0.2)</a></p>
+<p>23. <a href="https://github.com/microsoft/autogen/issues/5248" target="_blank" rel="noopener">GitHub - AutoGen Issue #5248</a></p>
+<p>24. <a href="https://github.com/microsoft/autogen/issues/12" target="_blank" rel="noopener">GitHub - AutoGen Issue #12</a></p>
+<p>25. <a href="https://medium.com/google-cloud/multi-agent-interactions-with-autogen-and-gemini-part-2-terminating-conversations-883788137162" target="_blank" rel="noopener">Medium - Multi-agent interactions with AutoGen</a></p>
+<p>26. <a href="https://ai-tldr.dev/learn/agent-frameworks/orchestration-frameworks/crewai-vs-autogen/" target="_blank" rel="noopener">AI-TLDR - CrewAI vs AutoGen</a></p>
+<p>27. <a href="https://github.com/crewAIInc/crewAI/issues/3847" target="_blank" rel="noopener">CrewAI GitHub Issue #3847</a></p>
+<p>28. <a href="https://community.crewai.com/t/crewai-flow-infinite-loop-steps-repeating-endlessly/6780" target="_blank" rel="noopener">CrewAI Community - Infinite Loop</a></p>
+<p>29. <a href="https://github.com/crewAIInc/crewAI/issues/330" target="_blank" rel="noopener">CrewAI GitHub Issue #330</a></p>
+<p>30. <a href="https://community.crewai.com/t/infinite-loop-with-context-error/5303" target="_blank" rel="noopener">CrewAI Community - Infinite Loop with Context Error</a></p>
+<p>31. <a href="https://inkog.io/glossary/crewai-infinite-loop" target="_blank" rel="noopener">Inkog - CrewAI Infinite Loop</a></p>
+<p>32. <a href="https://www.openhands.dev/" target="_blank" rel="noopener">OpenHands</a></p>
+<p>33. <a href="https://github.com/OpenHands/openhands" target="_blank" rel="noopener">OpenHands GitHub</a></p>
+<p>34. <a href="https://www.openhands.dev/blog/what-are-coding-agents" target="_blank" rel="noopener">OpenHands Blog - What are Coding Agents</a></p>
+<p>35. <a href="https://www.openhands.dev/blog/opencode-vs-openhands" target="_blank" rel="noopener">OpenHands Blog - OpenCode vs OpenHands</a></p>
+<p>36. <a href="https://medium.com/@niarsdet/redefining-dev-workflows-exploring-openhands-an-open-source-ai-developer-agent-4d579c6e5f40" target="_blank" rel="noopener">Medium - OpenHands AI Developer Agent</a></p>
+<p>37. <a href="https://bssw.io/items/ai-coding-agents-what-works-and-what-doesn-t" target="_blank" rel="noopener">BSSW - AI Coding Agents: What Works and What Doesn&#x27;t</a></p>
+<p>38. <a href="https://www.lowcode.agency/blog/claude-code-vs-openhands" target="_blank" rel="noopener">Lowcode Agency - Claude Code vs OpenHands</a></p>
+<p>39. <a href="https://devin.ai/" target="_blank" rel="noopener">Devin</a></p>
+<p>40. <a href="https://www.idlen.io/blog/devin-ai-engineer-review-limits-2026/" target="_blank" rel="noopener">idlen.io - Devin AI Engineer Review Limits 2026</a></p>
+<p>41. <a href="https://aitoolranked.com/blog/devin-ai-review" target="_blank" rel="noopener">AI Tool Ranked - Devin AI Review</a></p>
+<p>42. <a href="https://www.sitepoint.com/devin-ai-engineers-production-realities/" target="_blank" rel="noopener">Sitepoint - Devin AI Engineers Production Realities</a></p>
+<p>43. <a href="https://www.digitalapplied.com/blog/devin-ai-autonomous-coding-complete-guide" target="_blank" rel="noopener">Digital Applied - Devin AI Complete Guide</a></p>
+<p>44. <a href="https://agentstide.com/devin.html" target="_blank" rel="noopener">Agents Tide - Devin</a></p>
+<p>45. <a href="https://www.layer3labs.io/guides/devin-ai-explained" target="_blank" rel="noopener">Layer3 Labs - Devin AI Explained</a></p>
+<p>46. <a href="https://docs.devin.ai/use-cases/gallery" target="_blank" rel="noopener">Devin Docs - Use Cases Gallery</a></p>
+<p>47. <a href="https://www.swebench.com/" target="_blank" rel="noopener">SWE-bench</a></p>
+<p>48. <a href="https://www.swebench.com/verified.html" target="_blank" rel="noopener">SWE-bench Verified</a></p>
+<p>49. <a href="https://www.swebench.com/original.html" target="_blank" rel="noopener">SWE-bench Original</a></p>
+<p>50. <a href="https://github.com/swe-agent/swe-agent" target="_blank" rel="noopener">SWE-agent GitHub</a></p>
+<p>51. <a href="https://arxiv.org/abs/2405.15793" target="_blank" rel="noopener">arXiv - SWE-bench Paper</a></p>
+<p>52. <a href="https://openai.com/index/introducing-swe-bench-verified/" target="_blank" rel="noopener">OpenAI - Introducing SWE-bench Verified</a></p>
+<p>53. <a href="https://dl.acm.org/doi/10.1145/3786583.3786904" target="_blank" rel="noopener">ACM Digital Library - SWE-bench Paper</a></p>
+<p>54. <a href="https://www.reddit.com/r/ClaudeAI/comments/1s1gooc/i_benchmarked_4_coding_agents_on_swebench_with/" target="_blank" rel="noopener">Reddit - SWE-bench Benchmark</a></p>
+<p>55. <a href="https://www.skyvern.com/" target="_blank" rel="noopener">Skyvern</a></p>
+<p>56. <a href="https://github.com/skyvern-ai/skyvern" target="_blank" rel="noopener">Skyvern GitHub</a></p>
+<p>57. <a href="https://www.skyvern.com/blog/ai-web-agents-complete-guide-to-intelligent-browser-automation-november-2025/" target="_blank" rel="noopener">Skyvern Blog - AI Web Agents Complete Guide</a></p>
+<p>58. <a href="https://www.skyvern.com/blog/asking-ai-to-build-scrapers-should-be-easy-right/" target="_blank" rel="noopener">Skyvern Blog - Asking AI to Build Scrapers</a></p>
+<p>59. <a href="https://browserbase.com/" target="_blank" rel="noopener">Browserbase</a></p>
+<p>60. <a href="https://browserbase.com/blog/what-is-a-headless-browser/" target="_blank" rel="noopener">Browserbase Blog - What is a Headless Browser</a></p>
+<p>61. <a href="https://www.browserbase.com/solutions/workflow-automation" target="_blank" rel="noopener">Browserbase Solutions - Workflow Automation</a></p>
+<p>62. <a href="https://www.browserbase.com/customers/amplitude" target="_blank" rel="noopener">Browserbase Customers - Amplitude</a></p>
+<p>63. <a href="https://ai-sdk.dev/resources/tools/browserbase" target="_blank" rel="noopener">AI SDK - Browserbase</a></p>
+<p>64. <a href="https://www.browserless.io/" target="_blank" rel="noopener">Browserless</a></p>
+<p>65. <a href="https://www.capsolver.com/blog/AI/browser-use-vs-browserbase" target="_blank" rel="noopener">Capsolver - Browser Use vs Browserbase</a></p>
+<p>66. <a href="https://research.ibm.com/blog/ibm-swe-agents" target="_blank" rel="noopener">IBM Research - IBM SWE Agents</a></p>
+<p>67. <a href="https://ibm.com/think/topics/agentic-engineering" target="_blank" rel="noopener">IBM Think - Agentic Engineering</a></p>
+<p>68. <a href="https://langchain.com/blog/open-swe-an-open-source-framework-for-internal-coding-agents" target="_blank" rel="noopener">LangChain Blog - Open SWE</a></p>
+<p>69. <a href="https://github.com/langchain-ai/open-swe" target="_blank" rel="noopener">Open SWE GitHub</a></p>
+<p>70. <a href="https://daytona.io/article" target="_blank" rel="noopener">Daytona - Open SWE</a></p>
+<p>71. <a href="https://community.n8n.io/t/feat-ai-tools-add-max-tool-interactions-to-ai-agent-nodes-to-prevent-infinite-loops/295587?tl=en" target="_blank" rel="noopener">n8n Community - Max Tool Interactions</a></p>
+<p>72. <a href="https://community.n8n.io/t/agent-goes-into-infinite-tool-call-loop/174472?tl=en" target="_blank" rel="noopener">n8n Community - Infinite Tool Call Loop</a></p>
+<p>73. <a href="https://github.com/n8n-io/n8n/issues/22310" target="_blank" rel="noopener">n8n GitHub Issue #22310</a></p>
+<p>74. <a href="https://community.n8n.io/t/agent-has-stopped-due-to-max-iterations-error-message/52284?tl=en" target="_blank" rel="noopener">n8n Community - Max Iterations Error</a></p>
+<p>75. <a href="https://community.n8n.io/t/ai-agent-keeps-calling-same-tool-with-same-parameters/196961?tl=en" target="_blank" rel="noopener">n8n Community - Same Tool Calls</a></p>
+<p>76. <a href="https://dev.to/alessandro_pignati/stop-the-loop-how-to-prevent-infinite-conversations-in-your-ai-agents-ekj" target="_blank" rel="noopener">Dev.to - Stop the Loop</a></p>
+<p>77. <a href="https://docs.langchain.com/oss/python/langgraph/add-memory" target="_blank" rel="noopener">LangChain Docs - Add Memory</a></p>
+<p>78. <a href="https://redis.io/blog/langgraph-redis-build-smarter-ai-agents-with-memory-persistence/" target="_blank" rel="noopener">Redis Blog - LangGraph Redis</a></p>
+<p>79. <a href="https://reference.langchain.com/javascript/langchain-langgraph-checkpoint-redis" target="_blank" rel="noopener">LangChain Reference - Redis Checkpointer</a></p>
+<p>80. <a href="https://github.com/redis-developer/langgraph-redis" target="_blank" rel="noopener">Redis Developer GitHub - langgraph-redis</a></p>
+<p>81. <a href="https://www.reddit.com/r/LangChain/comments/1m75eod/langgraph_checkpointers_with_redis/" target="_blank" rel="noopener">Reddit - LangGraph Checkpointers with Redis</a></p>
+<p>82. <a href="https://docs.langchain.com/oss/python/integrations/checkpointers" target="_blank" rel="noopener">LangChain Docs - Checkpointers Integration</a></p>
+<p>83. <a href="https://forum.langchain.com/t/does-the-postgres-checkpointer-serialize-concurrent-fastapi-requests/2882" target="_blank" rel="noopener">LangChain Forum - Postgres Checkpointer</a></p>
+<p>84. <a href="https://medium.com/@martin.hodges/developing-a-scalable-agentic-service-based-on-langgraph-02b3689f287c" target="_blank" rel="noopener">Medium - Scalable Agentic Service with LangGraph</a></p>
+<p>85. <a href="https://temporal.io/blog/activity-timeouts" target="_blank" rel="noopener">Temporal Blog - Activity Timeouts</a></p>
+<p>86. <a href="https://docs.temporal.io/encyclopedia/detecting-activity-failures" target="_blank" rel="noopener">Temporal Docs - Detecting Activity Failures</a></p>
+<p>87. <a href="https://community.temporal.io/t/how-to-set-heartbeat-timeout-to-handle-heart-beats-and-cancellation/12134" target="_blank" rel="noopener">Temporal Community - Heartbeat Timeout</a></p>
+<p>88. <a href="https://community.temporal.io/t/testing-activity-heartbeat-and-start-to-close-timeout/11853" target="_blank" rel="noopener">Temporal Community - Testing Heartbeat</a></p>
+<p>89. <a href="https://keithtenzer.com/temporal/Temporal_Fundamentals_Timeouts/" target="_blank" rel="noopener">Keith Tenzer - Temporal Fundamentals Timeouts</a></p>
+<p>90. <a href="https://medium.com/@asakisakamoto02/how-to-cancel-on-heartbeat-timeout-in-temporal-framework-11afb4f9c708" target="_blank" rel="noopener">Medium - Cancel on Heartbeat Timeout</a></p>
+<p>91. <a href="https://docs.github.com/en/actions/concepts/security/openid-connect" target="_blank" rel="noopener">GitHub Actions OIDC</a></p>
+<p>92. <a href="https://docs.github.com/actions/reference/authentication-in-a-workflow" target="_blank" rel="noopener">GitHub Actions Authentication</a></p>
+<p>93. <a href="https://github.com/marketplace/actions/github-oidc-auth" target="_blank" rel="noopener">GitHub Marketplace - github-oidc-auth</a></p>
+<p>94. <a href="https://www.reddit.com/r/devops/comments/1iir0gv/use_cases_for_oidc_in_github_actions/" target="_blank" rel="noopener">Reddit - OIDC Use Cases</a></p>
+<p>95. <a href="https://daviddalbusco.com/blog/building-a-github-actions-integration-with-oidc-authentication" target="_blank" rel="noopener">David Dal Busco Blog - OIDC Authentication</a></p>
+<p>96. <a href="https://nirajkum.medium.com/goodbye-secrets-securely-connect-github-actions-to-azure-with-oidc-6b67461964af" target="_blank" rel="noopener">Medium - OIDC to Azure</a></p>
+<p>97. <a href="https://www.reddit.com/r/aws/comments/sb5qy5/stop_using_static_cloud_credentials_in_github/" target="_blank" rel="noopener">Reddit - Stop Using Static Cloud Credentials</a></p>
+<p>98. <a href="https://www.youtube.com/watch?v=Sdzd4N6L5Hg" target="_blank" rel="noopener">YouTube - GitHub Actions OIDC</a></p>
+<p>99. <a href="https://docs.cloud.google.com/iam/docs/workload-identity-federation" target="_blank" rel="noopener">Google Cloud - Workload Identity Federation</a></p>
+<p>100. <a href="https://docs.cloud.google.com/iam/docs/workload-identity-federation-with-other-clouds" target="_blank" rel="noopener">Google Cloud - Workload Identity Federation with Other Clouds</a></p>
+<p>101. <a href="https://aws.amazon.com/blogs/security/access-aws-using-a-google-cloud-platform-native-workload-identity/" target="_blank" rel="noopener">AWS Blog - Access AWS Using GCP Workload Identity</a></p>
+<p>102. <a href="https://lantern.splunk.com/Platform_Data_Management/Unlock_Insights/Deploying_Workload_Identity_Federation_between_AWS_and_GCP" target="_blank" rel="noopener">Splunk - Workload Identity Federation between AWS and GCP</a></p>
+<p>103. <a href="https://medium.com/@_Harmeet_Singh_/securely-accessing-gcp-resources-from-aws-with-workload-identity-federation-58c06c2ffc10" target="_blank" rel="noopener">Medium - Securely Accessing GCP from AWS</a></p>
+<p>104. <a href="https://cloud.google.com/blog/products/identity-security/enable-keyless-access-to-gcp-with-workload-identity-federation" target="_blank" rel="noopener">Google Cloud Blog - Enable Keyless Access</a></p>
+<p>105. <a href="https://www.youtube.com/watch?v=Eh0mJwFo9Ak" target="_blank" rel="noopener">YouTube - Access GCS from AWS Lambda</a></p>
+<p>106. <a href="https://itgix.com/blog/workload-identity-federation-aws-access-from-gcp/" target="_blank" rel="noopener">ITGIX - Workload Identity Federation AWS Access from GCP</a></p>
+<p>107. <a href="https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation" target="_blank" rel="noopener">Microsoft Entra - Workload Identity Federation</a></p>
+<p>108. <a href="https://auth0.com/docs/get-started/authentication-and-authorization-flow/device-authorization-flow" target="_blank" rel="noopener">Auth0 - Device Authorization Flow</a></p>
+<p>109. <a href="https://oauth.net/2/device-flow/" target="_blank" rel="noopener">OAuth.net - Device Flow</a></p>
+<p>110. <a href="https://www.rfc-editor.org/info/rfc8628" target="_blank" rel="noopener">RFC 8628 - Device Flow</a></p>
+<p>111. <a href="https://curity.io/resources/learn/oauth-device-flow/" target="_blank" rel="noopener">Curity - OAuth Device Flow</a></p>
+<p>112. <a href="https://workos.com/blog/oauth-device-authorization-grant" target="_blank" rel="noopener">WorkOS - Device Authorization Grant</a></p>
+<p>113. <a href="https://help.salesforce.com/s/articleView?id=xcloud.meta_configure_device_flow_external_client_apps.htm&amp;language=en&amp;type=5" target="_blank" rel="noopener">Salesforce Help - Device Flow</a></p>
+<p>114. <a href="https://aws.amazon.com/blogs/security/implement-oauth-2-0-device-grant-flow-by-using-amazon-cognito-and-aws-lambda/" target="_blank" rel="noopener">AWS Blog - OAuth Device Grant with Cognito</a></p>
+<p>115. <a href="https://apereo.github.io/cas/development/authentication/OAuth-ProtocolFlow-DeviceAuthorization.html" target="_blank" rel="noopener">Apereo CAS - Device Flow</a></p>
+<p>116. <a href="https://stackoverflow.blog/2026/05/11/oauth-2-0-device-flow-explained-for-engineers-especially-for-backend-engineers/" target="_blank" rel="noopener">Stack Overflow Blog - OAuth Device Flow</a></p>
+<p>117. <a href="https://workos.com/blog/pkce-vs-device-flow-cli-auth" target="_blank" rel="noopener">WorkOS - PKCE vs Device Flow</a></p>
+<p>118. <a href="https://auth0.com/docs/get-started/authentication-and-authorization-flow/which-oauth-2-0-flow-should-i-use" target="_blank" rel="noopener">Auth0 - Which OAuth Flow</a></p>
+<p>119. <a href="https://www.reddit.com/r/mcp/comments/1ltyw56/how_are_people_doing_oauth2_with_headless_agents/" target="_blank" rel="noopener">Reddit - Headless OAuth2</a></p>
+<p>120. <a href="https://github.com/modelcontextprotocol/modelcontextprotocol/discussions/298" target="_blank" rel="noopener">GitHub MCP Discussion - Non-interactive OAuth</a></p>
+<p>121. <a href="https://nhimg.org/glossary/oauth-20-device-authorization-grant-flow/" target="_blank" rel="noopener">NHIMG - Device Authorization Grant</a></p>
+<p>122. <a href="https://developer.hashicorp.com/hcp/docs/vault/what-is-hcp-vault" target="_blank" rel="noopener">HashiCorp Vault Overview</a></p>
+<p>123. <a href="https://www.hashicorp.com/en/blog/rotated-vs-dynamic-secrets-which-should-you-use" target="_blank" rel="noopener">HashiCorp Blog - Rotated vs Dynamic Secrets</a></p>
+<p>124. <a href="https://developer.hashicorp.com/vault/tutorials/get-started/understand-static-dynamic-secrets" target="_blank" rel="noopener">HashiCorp Vault Tutorial - Static vs Dynamic Secrets</a></p>
+<p>125. <a href="https://aws.amazon.com/marketplace/pp/prodview-wh66fns3cc7da" target="_blank" rel="noopener">AWS Marketplace - Vault KV v2 to Secrets Manager</a></p>
+<p>126. <a href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_rotation" target="_blank" rel="noopener">Terraform Registry - Secrets Manager Rotation</a></p>
+<p>127. <a href="https://oneuptime.com/blog/post/2026-02-26-argocd-secret-rotation-vault/view" target="_blank" rel="noopener">OneUptime - ArgoCD Secret Rotation with Vault</a></p>
+<p>128. <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotate-secrets_lambda.html" target="_blank" rel="noopener">AWS Secrets Manager - Rotate Secrets Lambda</a></p>
+<p>129. <a href="https://github.com/aws-samples/aws-secrets-manager-rotation-lambdas" target="_blank" rel="noopener">AWS Samples - Secrets Manager Rotation Lambdas</a></p>
+<p>130. <a href="https://overcast.blog/how-to-rotate-secrets-in-aws-secrets-manager-using-lambda-function-73a7c8ddd503" target="_blank" rel="noopener">Overcast Blog - Rotate Secrets in AWS Secrets Manager</a></p>
+<p>131. <a href="https://docs.cloud.google.com/secret-manager/docs/secret-rotation" target="_blank" rel="noopener">Google Secret Manager - Secret Rotation</a></p>
+<p>132. <a href="https://cloud.google.com/security/products/secret-manager" target="_blank" rel="noopener">Google Cloud - Secret Manager</a></p>
+<p>133. <a href="https://docs.cloud.google.com/secret-manager/docs/rotation-recommendations" target="_blank" rel="noopener">Google Cloud - Rotation Recommendations</a></p>
+<p>134. <a href="https://discuss.google.dev/t/automatically-rotation-of-secrets-in-google-secret-manager/48557" target="_blank" rel="noopener">Google Discuss - Automatic Rotation of Secrets</a></p>
+<p>135. <a href="https://www.reddit.com/r/googlecloud/comments/1f1nj22/automatic_secrets_rotation_in_gcp_tokens_other/" target="_blank" rel="noopener">Reddit - Automatic Secrets Rotation in GCP</a></p>
+<p>136. <a href="https://stackoverflow.com/questions/70539261/is-it-possible-to-automatically-rotate-the-secrets-in-google-secret-manager" target="_blank" rel="noopener">Stack Overflow - Auto Rotate Secrets in GCP</a></p>
+<p>137. <a href="https://stackoverflow.com/questions/70737605/gcp-service-account-key-rotation-through-secret-manager" target="_blank" rel="noopener">Stack Overflow - GCP Service Account Key Rotation</a></p>
+<p>138. <a href="https://trendmicro.com/trendaivisiononecloudriskmanagement/knowledge-base/gcp/SecretManager/enable-rotation-schedules.html" target="_blank" rel="noopener">Trend Micro - Enable Rotation Schedules</a></p>
+<p>139. <a href="https://www.1password.dev/service-accounts" target="_blank" rel="noopener">1Password Service Accounts</a></p>
+<p>140. <a href="https://1password.com/blog/service-accounts-sdks-agentic-ai" target="_blank" rel="noopener">1Password Blog - Service Accounts SDKs Agentic AI</a></p>
+<p>141. <a href="https://1password.com/blog/1password-service-accounts" target="_blank" rel="noopener">1Password Blog - Service Accounts</a></p>
+<p>142. <a href="https://1password.com/blog/1password-service-accounts-beta" target="_blank" rel="noopener">1Password Blog - Service Accounts Beta</a></p>
+<p>143. <a href="https://www.1password.dev/cli/reference/management-commands/service-account" target="_blank" rel="noopener">1Password CLI Reference - Service Account</a></p>
+<p>144. <a href="https://www.reddit.com/r/1Password/comments/1ulkznq/using_a_1password_service_account_helped_me/" target="_blank" rel="noopener">Reddit - 1Password Service Account</a></p>
+<p>145. <a href="https://www.1password.community/developers-69/service-account-access-12239" target="_blank" rel="noopener">1Password Community - Service Account Access</a></p>
+<p>146. <a href="https://www.youtube.com/watch?v=E3HKeG9P8HA" target="_blank" rel="noopener">YouTube - 1Password Service Accounts</a></p>
+<p>147. <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens" target="_blank" rel="noopener">GitHub - Personal Access Tokens</a></p>
+<p>148. <a href="https://docs.gitlab.com/user/profile/personal_access_tokens/" target="_blank" rel="noopener">GitLab - Personal Access Tokens</a></p>
+<p>149. <a href="https://forum.gitlab.com/t/how-to-extend-expiration-of-access-tokens/104993" target="_blank" rel="noopener">GitLab Forum - Extend Expiration</a></p>
+<p>150. <a href="https://forum.gitlab.com/t/dont-require-an-expiration-date-for-new-access-tokens/118651" target="_blank" rel="noopener">GitLab Forum - Don&#x27;t Require Expiration</a></p>
+<p>151. <a href="https://www.reddit.com/r/gitlab/comments/14iawn9/gitlab_personal_access_token_expiration/" target="_blank" rel="noopener">Reddit - GitLab PAT Expiration</a></p>
+<p>152. <a href="https://stackoverflow.com/questions/78787977/how-do-i-update-an-expired-revoked-personal-access-token-pat-in-git-cli" target="_blank" rel="noopener">Stack Overflow - Update Expired PAT</a></p>
+<p>153. <a href="https://github.com/orgs/community/discussions/190326" target="_blank" rel="noopener">GitHub Community - PAT Discussion</a></p>
+<p>154. <a href="https://about.gitlab.com/blog/access-token-lifetime-limits/" target="_blank" rel="noopener">About GitLab Blog - Access Token Lifetime Limits</a></p>
+<p>155. <a href="https://auth0.com/docs/secure/tokens/refresh-tokens/refresh-token-rotation" target="_blank" rel="noopener">Auth0 - Refresh Token Rotation</a></p>
+<p>156. <a href="https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/" target="_blank" rel="noopener">Auth0 Blog - How Refresh Tokens Work</a></p>
+<p>157. <a href="https://www.obsidiansecurity.com/blog/refresh-token-security-best-practices" target="_blank" rel="noopener">Obsidian Security - Refresh Token Best Practices</a></p>
+<p>158. <a href="https://www.descope.com/blog/post/refresh-token-rotation" target="_blank" rel="noopener">Descope - Refresh Token Rotation Guide</a></p>
+<p>159. <a href="https://www.serverion.com/uncategorized/refresh-token-rotation-best-practices-for-developers/" target="_blank" rel="noopener">Serverion - Refresh Token Rotation</a></p>
+<p>160. <a href="https://www.reddit.com/r/dotnet/comments/1gc84j4/what_are_the_best_practices_for_refresh_token/" target="_blank" rel="noopener">Reddit - Refresh Token Best Practices</a></p>
+<p>161. <a href="https://developer.calendly.com/docs/authentication/refresh-token-rotation-guide" target="_blank" rel="noopener">Calendly - Refresh Token Rotation Guide</a></p>
+<p>162. <a href="https://codesignal.com/learn/courses/preventing-refresh-token-abuse-in-your-typescript-rest-api/lessons/implementing-rotating-refresh-tokens" target="_blank" rel="noopener">CodeSignal - Implementing Rotating Refresh Tokens</a></p>
+<p>163. <a href="https://www.token.security/glossary/token-rotation" target="_blank" rel="noopener">Token.security - Token Rotation</a></p>
+<p>164. <a href="https://docs.github.com/copilot/concepts/agents/cloud-agent/about-cloud-agent" target="_blank" rel="noopener">GitHub Copilot Cloud Agent</a></p>
+<p>165. <a href="https://github.com/orgs/community/discussions/183671" target="_blank" rel="noopener">GitHub Community - Cloud Agent Timeout</a></p>
+<p>166. <a href="https://github.com/orgs/community/discussions/177410" target="_blank" rel="noopener">GitHub Community - Iteration Limits</a></p>
+<p>167. <a href="https://smartscope.blog/en/generative-ai/github-copilot/github-copilot-coding-agent-guide/" target="_blank" rel="noopener">SmartScope Blog - GitHub Copilot Coding Agent Guide</a></p>
+<p>168. <a href="https://dev.to/anchildress1/github-copilot-agent-mode-the-mistake-you-never-want-to-make-1mmh" target="_blank" rel="noopener">Dev.to - GitHub Copilot Agent Mode Mistake</a></p>
+<p>169. <a href="https://www.fiddler.ai/blog/ai-agent-failure-rate" target="_blank" rel="noopener">Fiddler AI - AI Agent Failure Rate</a></p>
+<p>170. <a href="https://www.fiddler.ai/blog/lessons-building-agentic-systems" target="_blank" rel="noopener">Fiddler AI - Lessons Building Agentic Systems</a></p>
+<p>171. <a href="https://www.elementum.ai/blog/human-in-the-loop-agentic-ai" target="_blank" rel="noopener">Elementum - Human-in-the-Loop Agentic AI</a></p>
+<p>172. <a href="https://www.elementum.ai/blog/agentic-automation-guide" target="_blank" rel="noopener">Elementum - Agentic Automation Guide</a></p>
+<p>173. <a href="https://www.mindstudio.ai/blog/human-in-the-loop-ai" target="_blank" rel="noopener">MindStudio - Human-in-the-Loop AI</a></p>
+<p>174. <a href="https://beam.ai/agentic-insights/ai-agent-security-breaches-2026-lessons" target="_blank" rel="noopener">Beam AI - AI Agent Security Breaches 2026</a></p>
+<p>175. <a href="https://beam.ai/agentic-insights/agentic-ai-in-2026-why-90-of-implementations-fail-(and-how-to-be-the-10" target="_blank" rel="noopener">Beam AI - Agentic AI in 2026</a>)</p>
+<p>176. <a href="https://www.kiteworks.com/cybersecurity-risk-management/ai-agent-security-incidents-2026/" target="_blank" rel="noopener">Kiteworks - AI Agent Security Incidents 2026</a></p>
+<p>177. <a href="https://research.checkpoint.com/2025/cursor-vulnerability-mcpoison/" target="_blank" rel="noopener">Check Point Research - MCPoison</a></p>
+<p>178. <a href="https://www.tenable.com/blog/faq-cve-2025-54135-cve-2025-54136-vulnerabilities-in-cursor-curxecute-mcpoison" target="_blank" rel="noopener">Tenable - CurXecute and MCPoison FAQ</a></p>
+<p>179. <a href="https://www.aim.security/lp/aim-labs-curxecute-blogpost" target="_blank" rel="noopener">AIM Security - CurXecute</a></p>
+<p>180. <a href="https://labs.snyk.io/resources/cursor-jira-mcp-vulnerability-explained/" target="_blank" rel="noopener">Snyk - Cursor Jira MCP Vulnerability</a></p>
+<p>181. <a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-mcp-tool-poisoning-auto-execution-20260701/" target="_blank" rel="noopener">Cloud Security Alliance - MCP Tool Poisoning</a></p>
+<p>182. <a href="https://www.darkreading.com/application-security/2-click-cursor-exploit-dev-environment-takeover" target="_blank" rel="noopener">Dark Reading - 2-Click Cursor Exploit</a></p>
+<p>183. <a href="https://www.proofpoint.com/us/blog/threat-insight/cursorjack-weaponizing-deeplinks-exploit-cursor-ide" target="_blank" rel="noopener">Proofpoint - CursorJack</a></p>
+<p>184. <a href="https://www.knostic.ai/blog/mcp-hijacked-cursor-browser" target="_blank" rel="noopener">Knostic AI - MCP Hijacked Cursor Browser</a></p>
+<p>185. <a href="https://www.linkedin.com/posts/aryendradalal_cursor-ai-code-editor-vulnerability-enables-activity-7360816039103717376-TvOe" target="_blank" rel="noopener">LinkedIn - Cursor AI Vulnerability</a></p>
+<p>186. <a href="https://medium.com/@snehal_singh/i-analyzed-847-ai-agent-deployments-in-2026-76-failed-heres-why-0b69d962ec8b" target="_blank" rel="noopener">Medium - 847 AI Agent Deployments Analysis</a></p>
+<p>187. <a href="https://www.digitalapplied.com/blog/88-percent-ai-agents-never-reach-production-failure-framework" target="_blank" rel="noopener">Digital Applied - 88% AI Agents Never Reach Production</a></p>
+<p>188. <a href="https://www.digitalapplied.com/blog/agentic-ai-statistics-2026-definitive-collection-150-data-points" target="_blank" rel="noopener">Digital Applied - Agentic AI Statistics 2026</a></p>
+<p>189. <a href="https://www.digitalapplied.com/blog/ai-agent-security-2026-1-in-8-breaches-agentic-systems" target="_blank" rel="noopener">Digital Applied - AI Agent Security 2026</a></p>
+<p>190. <a href="https://arxiv.org/html/2608.23642" target="_blank" rel="noopener">arXiv - AI Agents Push Humans Out of the Loop</a></p>
+<p>191. <a href="https://www.reddit.com/r/cybersecurity/comments/1sfrylv/i_compiled_every_major_ai_agent_security_incident/" target="_blank" rel="noopener">Reddit - AI Agent Security Incidents Compilation</a></p>
+<p>192. <a href="https://www.pointguardai.com/ai-security-incident-tracker" target="_blank" rel="noopener">PointGuard AI - Incident Tracker</a></p>
+<p>193. <a href="https://www.linkedin.com/pulse/ai-agents-cause-real-cyber-incidents-what-first-data-breach-coraggio-vfhte" target="_blank" rel="noopener">LinkedIn - Spanish Data Breach</a></p>
+<p>194. <a href="https://www.darkreading.com/cyber-attacks-data-breaches/ai-agent-breaches-spanish-organization-personal-data" target="_blank" rel="noopener">Dark Reading - Spanish Organization Breach</a></p>
+<p>195. <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener">OWASP GenAI - Top 10 for Agentic Applications 2026</a></p>
+<p>196. <a href="https://www.prnewswire.com/news-releases/hiddenlayer-releases-the-2026-ai-threat-landscape-report-spotlighting-the-rise-of-agentic-ai-and-the-expanding-attack-surface-of-autonomous-systems-302716687.html" target="_blank" rel="noopener">PR Newswire - Hiddenlayer 2026 AI Threat Landscape Report</a></p>
+<p>197. <a href="https://www.infosecurity-magazine.com/news/unchecked-ai-agents-cause/" target="_blank" rel="noopener">Infosecurity Magazine - Unchecked AI Agents</a></p>
+<p>198. <a href="https://www.reddit.com/r/SaaS/comments/1qv8o6v/" target="_blank" rel="noopener">Reddit - Runaway AI Retry Loop $700</a></p>
+<p>199. <a href="https://community.openai.com/t/has-anyone-actually-solved-runaway-agent-costs-looking-for-patterns-beyond-logging/1383094" target="_blank" rel="noopener">OpenAI Community - Runaway Agent Costs</a></p>
+<p>200. <a href="https://pub.towardsai.net/the-12-000-infinite-loop-how-my-ai-agent-bankrupted-a-sandbox-2fc6585b6716" target="_blank" rel="noopener">Towards AI - $12,000 Infinite Loop</a></p>
+<p>201. <a href="https://formation.dev/blog/agent-loop-runaway-costs" target="_blank" rel="noopener">Formation.dev - Agent Loop Runaway Costs</a></p>
+<p>202. <a href="https://www.supra-wall.com/learn/ai-agent-runaway-costs" target="_blank" rel="noopener">Supra-wall - AI Agent Runaway Costs</a></p>
+<p>203. <a href="https://inkog.io/glossary/infinite-loop-ai-agent" target="_blank" rel="noopener">Inkog - Infinite Loop AI Agent</a></p>
+<p>204. <a href="https://autonomee.ai/blog/claude-code-terms-of-service-explained/" target="_blank" rel="noopener">Autonomee - Claude Code Terms of Service</a></p>
+<p>205. <a href="https://browserlessapi.com/terms/" target="_blank" rel="noopener">Browserless API Terms of Service</a></p>
+<p>206. <a href="https://www.linkednav.com/blog/will-linkedin-ban-me-for-using-automation" target="_blank" rel="noopener">LinkedNav - LinkedIn Automation Ban</a></p>
+<p>207. <a href="https://www.fansly-api.com/blog/fansly-account-ban-prevention" target="_blank" rel="noopener">Fansly API - Account Ban Prevention</a></p>
+<p>208. <a href="https://github.com/google-gemini/gemini-cli/issues/20813" target="_blank" rel="noopener">GitHub - Gemini CLI Policy Violation</a></p>
+<p>209. <a href="https://whapi.cloud/blog/browser-use-whatsapp-automation" target="_blank" rel="noopener">WHAPI - WhatsApp Automation Ban</a></p>
+<p>210. <a href="https://opentweet.io/blog/twitter-automation-rules-2026" target="_blank" rel="noopener">OpenTweet - Twitter Automation Rules 2026</a></p>
+<p>211. <a href="https://news.ycombinator.com/item?id=16119686" target="_blank" rel="noopener">Hacker News - TOS Violation Not a Crime</a></p>
+<p>212. <a href="https://www.nimbleway.com/blog/what-is-a-headless-browser" target="_blank" rel="noopener">Nimbleway - What is a Headless Browser</a></p>
+<p>213. <a href="https://liveproxies.io/blog/what-is-headless-browser" target="_blank" rel="noopener">LiveProxies - What is Headless Browser</a></p>
+<p>214. <a href="https://www.reddit.com/r/AI_Agents/comments/1s3kxik/headless_browser_agents_are_a_dead_end_the_future/" target="_blank" rel="noopener">Reddit - Headless Browser Agents Dead End</a></p>
+<p>215. <a href="https://www.geetest.com/en/article/what-is-headless-browser" target="_blank" rel="noopener">Geetest - What is Headless Browser</a></p>
+<p>216. <a href="https://www.youtube.com/watch?v=vxEXRsouwLg" target="_blank" rel="noopener">YouTube - Headless Browser</a></p>
+<p>217. <a href="https://stackoverflow.com/questions/53083952/difference-of-headless-browsers-for-automation" target="_blank" rel="noopener">Stack Overflow - Headless Browsers Difference</a></p>
+<p>218. <a href="https://forum.uipath.com/t/what-scenarios-are-benefited-by-using-a-headless-browser/192475" target="_blank" rel="noopener">UiPath Forum - Headless Browser Scenarios</a></p>
+<p>219. <a href="https://www.scrapingbee.com/blog/what-is-a-headless-browser-best-solutions-for-web-scraping-at-scale/" target="_blank" rel="noopener">ScrapingBee - Headless Browser</a></p>
+<p>220. <a href="https://cheatsheetseries.owasp.org/cheatsheets/CI_CD_Security_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP - CI/CD Security Cheat Sheet</a></p>
+<p>221. <a href="https://www.sentinelone.com/cybersecurity-101/cloud-security/ci-cd-security-best-practices/" target="_blank" rel="noopener">SentinelOne - CI/CD Security Best Practices</a></p>
+<p>222. <a href="https://safeguard.sh/resources/blog/ci-cd-pipeline-security-best-practices" target="_blank" rel="noopener">Safeguard.sh - CI/CD Pipeline Security</a></p>
+<p>223. <a href="https://www.hostmycode.com/blog/cicd-pipeline-security-best-practices-github-actions-gitlab-jenkins-hardening-2026" target="_blank" rel="noopener">HostMyCode - CI/CD Security 2026</a></p>
+<p>224. <a href="https://cycode.com/blog/enhancing-ci-cd-pipeline-security-with-oidc-tokens-for-cloud-authentication/" target="_blank" rel="noopener">Cycode - CI/CD Security with OIDC Tokens</a></p>
+<p>225. <a href="https://oneuptime.com/blog/post/2026-02-23-terraform-cicd-security-best-practices/view" target="_blank" rel="noopener">OneUptime - Terraform CI/CD Security</a></p>
+<p>226. <a href="https://www.reddit.com/r/devsecops/comments/1u96ghn/cicd_security_principles_in_2026/" target="_blank" rel="noopener">Reddit - DevSecOps CI/CD Principles 2026</a></p>
+<p>227. <a href="https://www.youtube.com/watch?v=mX7-BpQJnRE" target="_blank" rel="noopener">YouTube - CI/CD Security</a></p>
+<p>228. <a href="https://www.reddit.com/r/AI_Agents/comments/1qnavt9/the_infinite_loop_fear_is_real_how_are_you/" target="_blank" rel="noopener">Reddit - AI Agents Infinite Loop Fear</a></p>
+<p>229. <a href="https://www.reddit.com/r/n8n/comments/1iz5rcu/ai_agents_keeps_looping_between_chat_model_and/" target="_blank" rel="noopener">Reddit - AI Agent Looping Between Chat Model</a></p>
+<p>230. <a href="https://www.reddit.com/r/LangChain/comments/1uxresv/has_anyone_successfully_used_temporal_as_the/" target="_blank" rel="noopener">Reddit - LangChain Temporal Discussion</a></p>
+<p>231. <a href="https://www.reddit.com/r/LocalLLaMA/comments/1bu9lbf/we_can_beat_devin_recap_of_recent_open_source/" target="_blank" rel="noopener">Reddit - LocalLLaMA - Beat Devin</a></p>
+<p>232. <a href="https://runpane.com/compare/autonomous-agents" target="_blank" rel="noopener">RunPane - Autonomous Agents Comparison</a></p>
+<p>233. <a href="https://kanopylabs.com/blog/devin-vs-openhands-vs-swe-agent-autonomous-coding" target="_blank" rel="noopener">Kanopy Labs - Devin vs OpenHands vs SWE-Agent</a></p>
+<p>234. <a href="https://langchain.com/state-of-agent-engineering" target="_blank" rel="noopener">LangChain State of Agent Engineering</a></p>
+<p>235. <a href="https://seekr.com/resource/ai-lowest-hallucination-rate" target="_blank" rel="noopener">Seekr - AI Lowest Hallucination Rate</a></p>
+<p>236. <a href="https://suprmind.ai/hub/ai-hallucination-rates-and-benchmarks" target="_blank" rel="noopener">Suprmind - AI Hallucination Rates</a></p>
+<p>237. <a href="https://artificialanalysis.ai/evaluations/omniscience" target="_blank" rel="noopener">Artificial Analysis - Omniscience Evaluation</a></p>
+<p>238. <a href="https://stanford.edu" target="_blank" rel="noopener">Stanford HAI - AI Index Report 2026</a>（※URL未確認）</p>
+<p>239. <a href="https://pmc.ncbi.nlm.nih.gov" target="_blank" rel="noopener">PMC - GPT Hallucination Rates</a>（※URL未確認）</p>
+<p>240. <a href="https://iternal.ai" target="_blank" rel="noopener">Iternal.ai - Hallucination Rate</a>（※URL未確認）</p>
+<p>241. <a href="https://openreview.net/forum?id=x7C9A4Y9cF" target="_blank" rel="noopener">OpenReview - SWE-Effi</a></p>
+<p>242. <a href="https://arxiv.org/abs/2509.09853" target="_blank" rel="noopener">arXiv - SWE-Effi</a></p>
+<p>243. <a href="https://alphaxiv.org/abs/2509.09853" target="_blank" rel="noopener">AlphaXiv - SWE-Effi</a></p>
+<p>244. <a href="https://emergentmind.com" target="_blank" rel="noopener">EmergentMind - SWE-Effi</a>（※URL未確認）</p>
+<p>245. <a href="https://researchgate.net" target="_blank" rel="noopener">ResearchGate - SWE-Effi</a>（※URL未確認）</p>
+<p>246. <a href="https://x.com" target="_blank" rel="noopener">X.com - SWE-Effi</a>（※URL未確認）</p>
+<p>247. <a href="https://github.com/Centre-for-Software-Excellence/SWE-Effi" target="_blank" rel="noopener">GitHub - SWE-Effi</a></p>
+<p>248. <a href="https://linkedin.com" target="_blank" rel="noopener">Gorgias LinkedIn Post</a>（※URL未確認）</p>
+<p>249. <a href="https://techreviewer.com" target="_blank" rel="noopener">TechReviewer - Orchestration</a>（※URL未確認）</p>
+<p>250. <a href="https://daily.dev" target="_blank" rel="noopener">Daily.dev - Overview</a>（※URL未確認）</p>
+<p>251. <a href="https://ringly.io" target="_blank" rel="noopener">Ringly.io - Automation Limits</a>（※URL未確認）</p>
+<p>252. <a href="https://heidloff.net" target="_blank" rel="noopener">Heidloff.net - Watsonx Code Assistant</a>（※URL未確認）</p>
+<p>253. <a href="https://news.ycombinator.com" target="_blank" rel="noopener">Hacker News - IBM SWE Agents</a>（※URL未確認）</p>
+<p>254. <a href="https://linkedin.com" target="_blank" rel="noopener">LinkedIn - IBM SWE Agents</a>（※URL未確認）</p>
+<p>255. <a href="https://devops.com" target="_blank" rel="noopener">DevOps.com - IBM SWE Agents</a>（※URL未確認）</p>
+<p>256. <a href="https://ibm.com/careers" target="_blank" rel="noopener">IBM Careers - Agent Engineer</a>（※URL未確認）</p>
+<p>257. <a href="https://news.ycombinator.com" target="_blank" rel="noopener">Hacker News - Open SWE</a>（※URL未確認）</p>
+<p>258. <a href="https://youtube.com" target="_blank" rel="noopener">YouTube - Open SWE Demo</a>（※URL未確認）</p>
+<p>259. <a href="https://e2b.dev" target="_blank" rel="noopener">e2b.dev - Open SWE</a>（※URL未確認）</p>
+<p>260. <a href="https://docs.langchain.com/oss/python/deepagents/overview" target="_blank" rel="noopener">LangChain - Deep Agents Overview</a></p>
+<p>261. <a href="https://github.com/langchain-ai/open-swe" target="_blank" rel="noopener">GitHub - Open SWE</a></p>
+<p>262. <a href="https://daytona.io/article" target="_blank" rel="noopener">Daytona.io - Open SWE</a>（※URL未確認）</p>
+<p>263. <a href="https://news.ycombinator.com" target="_blank" rel="noopener">Hacker News - Open SWE</a>（※URL未確認）</p>
+<p>264. <a href="https://www.youtube.com/watch?v=xya5XABBdhM" target="_blank" rel="noopener">YouTube - IBM SWE Agent</a></p>
+<p>265. <a href="https://www.ibm.com/granite" target="_blank" rel="noopener">IBM Granite LLM</a></p>
+<p>266. <a href="https://ibm.github.io/prompt-declaration-language/" target="_blank" rel="noopener">IBM PDL</a></p>
+<p>267. <a href="https://arxiv.org/html/2307.13854v4" target="_blank" rel="noopener">arXiv - WebArena Paper</a></p>
+<p>268. <a href="https://linkedin.com" target="_blank" rel="noopener">LinkedIn - LangChain State of Agent Engineering</a>（※URL未確認）</p>
+<p>269. <a href="https://kdnuggets.com" target="_blank" rel="noopener">KDnuggets - State of Agent Engineering</a>（※URL未確認）</p>
+<p>270. <a href="https://langchain.com/blog/agentic-engineering" target="_blank" rel="noopener">LangChain Blog - Agentic Engineering</a>（※URL未確認）</p>
+<p>271. <a href="https://reddit.com" target="_blank" rel="noopener">Reddit - State of Agent Engineering</a>（※URL未確認）</p>
+<p>272. <a href="https://temporal.io" target="_blank" rel="noopener">Temporal.io - State of AI Agent Development</a>（※URL未確認）</p>
+<p>273. <a href="https://medium.com" target="_blank" rel="noopener">Medium - Agentic Design Patterns</a>（※URL未確認）</p>
+<p>274. <a href="https://improvado.io/blog/human-in-the-loop-ai" target="_blank" rel="noopener">Improvado - Human-in-the-Loop AI</a></p>
+<p>275. <a href="https://galileo.ai/blog/human-in-the-loop-agent-oversight" target="_blank" rel="noopener">Galileo AI - Human-in-the-Loop Agent Oversight</a></p>
+<p>276. <a href="https://www.balto.ai/blog/what-is-human-in-the-loop-automation/" target="_blank" rel="noopener">Balto AI - What is Human-in-the-Loop Automation</a></p>
+<p>277. <a href="https://www.facebook.com/groups/claudeaicommunity/posts/1382019943965169/" target="_blank" rel="noopener">Facebook - Claude AI Community</a></p>
+<p>278. <a href="https://www.linkedin.com/posts/leadgenmanthan_top-5-human-in-the-loop-ai-case-studies-activity-7315945805356457984-mI0n" target="_blank" rel="noopener">LinkedIn - J.P. Morgan COIN</a></p>
+<p>279. <a href="https://latitude.so/blog/why-ai-agents-break-in-production" target="_blank" rel="noopener">Latitude - Why AI Agents Break in Production</a></p>
+<p>280. <a href="https://www.trantorinc.com/blog/ai-agent-failure-modes-what-wrong-design-resilience" target="_blank" rel="noopener">Trantor Inc - AI Agent Failure Modes</a></p>
+<p>281. <a href="https://www.inovabeing.com/blog/ai-agent-reliability-production-failure-2026" target="_blank" rel="noopener">Inovabeing - AI Agent Reliability Production Failure 2026</a></p>
+<p>282. <a href="https://unito.io/blog/ai-agents-failure-rate" target="_blank" rel="noopener">Unito - AI Agents Failure Rate</a></p>
+<hr>
+<h3>データの限界と未確認事項</h3>
+<p>本調査において、以下の点については十分な情報が得られませんでした：</p>
+<p>1. <strong>Claude Code Hooksの具体的な失敗・乗り換え事例</strong>：Hooksの仕組み自体は確認できましたが、これを使用した企業・プロジェクトが他のソリューションに乗り換えた事例は確認できませんでした。</p>
+<p>2. <strong>OpenAI Agents SDK guardrailsの失敗事例</strong>：guardrailsの仕組みは確認できましたが、具体的な失敗・事故事例は確認できませんでした。</p>
+<p>3. <strong>LangGraph checkpointerの具体的な失敗事例</strong>：Redis/Postgres checkpointerの実装方法は確認できましたが、これに関連する具体的な事故事例は確認できませんでした。</p>
+<p>4. <strong>Temporal durable executionの失敗事例</strong>：EmergentやGorgiasの成功事例は確認できましたが、失敗・乗り換え事例は確認できませんでした。</p>
+<p>5. <strong>CrewAI/AutoGenからの乗り換え事例</strong>：バグ報告は多数確認できましたが、これらのフレームワークから他のソリューションへ移行した事例は確認できませんでした。</p>
+<p>6. <strong>GitHub Copilot Cloud Agentの具体的な事故事例</strong>：59分制限は確認できましたが、これに起因する具体的な事故事例は確認できませんでした。</p>
+<p>7. <strong>OAuth Device Flowのセキュリティインシデント</strong>：仕組みは確認できましたが、具体的な侵害事例は確認できませんでした。</p>
+<p>8. <strong>1Password Service Accountsのセキュリティインシデント</strong>：仕組みは確認できましたが、具体的な侵害事例は確認できませんでした。</p>
+<p>9. <strong>Skyvern、Browserbaseの具体的な失敗・事故事例</strong>：機能説明は確認できましたが、失敗事例は確認できませんでした。</p>
+<p>10. <strong>n8nの具体的な事故・損失事例</strong>：無限ループのバグ報告は確認できましたが、具体的な金銭的損失事例は確認できませんでした。</p>
+<p>11. <strong>J.P. Morgan COINの360,000時間削減</strong>：LinkedIn投稿で言及されていますが、一次情報源（J.P. Morgan公式発表）は確認できていません。</p>
+<p>12. <strong>いくつかのURLは検索結果に表示されたものの、内容の取得に失敗しました</strong>（例：arxiv.org/html/2507.18374v1、latitude.so、trantorinc.com、inovabeing.com、unito.ioなど）。これらのサイトからの数値は、本レポートでは引用していません。</p>
+<hr>
+<h3>結論</h3>
+<p>AIエージェントの無人運用を実現するためには、以下の3つの柱が不可欠であることが調査から明らかになりました：</p>
+<p>1. <strong>ループ制御の多重化</strong>：単一の終了条件（max_iterなど）に依存せず、タイムアウト、コスト上限、状態チェックポインティングを組み合わせること。CrewAIやAutoGenのバグ、Redditの$700損失事例が示すように、単一の防御では不十分です。</p>
+<p>2. <strong>認証の自動化と最小権限</strong>：長期トークンではなくOIDCやWorkload Identity Federationを使用し、シークレットマネージャーによる自動ローテーションを実装すること。CursorのMCPoison脆弱性が示すように、「一度の承認で永続的な信頼」は危険です。</p>
+<p>3. <strong>Human-in-the-Loopの戦略的維持</strong>：完全な無人化を目指す前に、高リスク操作（財務取引、データ削除、本番デプロイ）には必ず人間の承認フローを維持すること。Fiddler AIやKiteworksの調査が示すように、本番環境での失敗率は70-95%に達し、65%の組織がセキュリティインシデントを経験しています。</p>
+<p>事業主として最も重要な教訓は、「完全な無人化」を最初から目指すのではなく、「監視可能な自動化」から始め、徐々に人間の介入ポイントを減らしていくアプローチが、2026年現在の技術水準では最も現実的であるということです。</p>
+<h4>AIエージェント無人運用調査レポート：ループ制御、認証自動化、Human-in-the-Loop削減の実態</h4></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

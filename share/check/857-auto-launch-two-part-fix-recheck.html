@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#857 857号: 発車(auto_launch)dead誤検知の根本原因コミットを訂正して再確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #857 857号: 発車(auto_launch)dead誤検知の根本原因コミットを訂正して再確認</div>
+<h1>#857 857号: 発車(auto_launch)dead誤検知の根本原因コミットを訂正して再確認</h1>
+<div class="date">2026-09-18 02:06 実測・前回1回目の検品で証拠コミットの取り違えを指摘され訂正</div>
+
+<div class="fix">
+857番は799番の生死表が旧判定(.last_launch_atのmtimeだけを見る一本判定)だった時に55.4分沈黙を検知して発行された。旧判定は、走行が上限いっぱいで正当に見送っている時も着火が無いことをdead扱いしてしまう欠陥だった。**根本原因を直したコミットは 809d2d64c9 (2026-09-17 09:54 JST、機械の定期status更新コミットに相乗りしているためタイトルは「status: Mac負荷 09:54」で内容と一致しない)。** tools/shikumi.pyのcheck_auto_launch()を、①発車係そのものの生死＝status/auto_launch.logのmtime、②着火間隔＝status/.last_launch_atのmtime(ただし空き枠がある時だけ異常扱い・genzaichi._launch_has_room()を再利用)の二本立てに書き換えた。前回1回目の検品では、この809d2d64c9の代わりに無関係な843号コミット(7865264dd・heartbeat側の別のdead誤検知を直したコミット)を根本原因として提示してしまい、証拠と主張が食い違うとして不合格になった。今回、証拠コミットを809d2d64c9に訂正し、tools/shikumi.pyを今この場で再実行して実測した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>shikumi.py 11項目中のdead件数(deadCount・今回再実行)</span></div>
+  <div class="num"><b>alive</b><span>auto_launchの判定(verdict・今回再実行)</span></div>
+  <div class="num"><b>0.2分</b><span>①発車係ログ(auto_launch.log)の沈黙時間(alive基準10分以内)</span></div>
+  <div class="num"><b>6.5分</b><span>②着火(.last_launch_at)の沈黙時間・上限いっぱいで正当に見送り中のため異常扱いされない</span></div>
+  <div class="num"><b>32件</b><span>本日のauto_launch.log内『🚀 自動発車』行数(countToday)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>根本原因を直したコミット809d2d64c9(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/809d2d64c9704ac988ba2329b4eb7cca13986426" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/809d2d64c9704ac988ba2329b4eb7cca13986426</a></li>
+  <li><b>前回誤って提示した843号コミット7865264dd(heartbeat側・auto_launchとは別件・参考)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/7865264dd82904f225c57e963c0dd8c0b9f7d982" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/7865264dd82904f225c57e963c0dd8c0b9f7d982</a></li>
+  <li><b>進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>shikumi.py再実行でdeadCount=0・auto_launch=alive</td><td class="yes">yes</td></tr>
+<tr><td>根本原因コミットが809d2d64c9(2本立て判定の実装差分)であることをdiffで確認</td><td class="yes">yes</td></tr>
+<tr><td>809d2d64c9がorigin/mainの祖先である(既にpush済み)</td><td class="yes">yes</td></tr>
+<tr><td>前回不合格の理由(7865264dd誤引用)を本ページで訂正した</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+このページは #857 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

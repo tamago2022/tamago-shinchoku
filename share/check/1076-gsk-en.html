@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Ano Hi ni Kaeritai — Yumi Arai</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #fdf8f2;
+      --warm: #f5ede0;
+      --rust: #c4623a;
+      --rust-light: #e8845e;
+      --rust-dark: #8b3a1e;
+      --gold: #d4a84b;
+      --ink: #1e1612;
+      --ink-soft: #4a3728;
+      --ink-muted: #8a7060;
+      --line: #e8d8c8;
+      --white: #ffffff;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: Georgia, 'Times New Roman', serif;
+      max-width: 430px;
+      margin: 0 auto;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      position: relative;
+      background: var(--ink);
+      padding: 0;
+      overflow: hidden;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .hero-art {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .vinyl-wrap {
+      position: absolute;
+      right: -30px;
+      top: -20px;
+      width: 260px;
+      height: 260px;
+      opacity: 0.18;
+      animation: spin 40s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .wave-lines {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      opacity: 0.12;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 56px 24px 28px;
+    }
+
+    .pill {
+      display: inline-block;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      opacity: 0.9;
+    }
+
+    .hero h1 {
+      font-size: 28px;
+      font-weight: normal;
+      color: var(--white);
+      line-height: 1.25;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    .hero-romaji {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 12px;
+      color: var(--ink-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+
+    .hero-byline {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.5;
+    }
+
+    .hero-byline strong {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .hook {
+      background: var(--rust);
+      color: var(--white);
+      padding: 22px 24px;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .hook p + p { margin-top: 10px; }
+    .hook strong { color: var(--gold); }
+
+    section {
+      padding: 32px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-of-type { border-bottom: none; }
+
+    .section-label {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--rust);
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: normal;
+      color: var(--ink);
+      margin-bottom: 14px;
+      line-height: 1.3;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .stat-box {
+      flex: 1;
+      background: var(--warm);
+      border-radius: 10px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .stat-box .num {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--rust);
+      line-height: 1;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-box .label {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+      line-height: 1.3;
+    }
+
+    .musician-list {
+      list-style: none;
+      margin-top: 4px;
+    }
+
+    .musician-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .musician-list li:last-child { border-bottom: none; }
+
+    .musician-list .role {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      color: var(--ink-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 78px;
+    }
+
+    .musician-list .name {
+      color: var(--ink);
+      font-style: italic;
+    }
+
+    .trivia {
+      background: var(--ink);
+      color: var(--white);
+      border-radius: 12px;
+      padding: 20px 20px 16px;
+      margin: 20px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trivia::before {
+      content: '✦';
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 22px;
+      color: var(--gold);
+      opacity: 0.6;
+    }
+
+    .trivia p {
+      font-size: 14px;
+      line-height: 1.65;
+      margin-bottom: 10px;
+    }
+
+    .trivia .source-link {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      color: var(--gold);
+      text-decoration: none;
+      opacity: 0.8;
+    }
+
+    .trivia .source-link:hover { opacity: 1; }
+
+    .cover-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .cover-card:last-child { margin-bottom: 0; }
+
+    .cover-card .year-tag {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--rust);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .cover-card h3 {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--ink);
+      margin-bottom: 3px;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .cover-card .album-line {
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-style: italic;
+      margin-bottom: 6px;
+    }
+
+    .cover-card .note {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    .cover-card .src {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      color: var(--gold);
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 6px;
+      opacity: 0.8;
+    }
+
+    .cover-highlight {
+      border-color: var(--rust-light);
+      border-width: 2px;
+    }
+
+    .cover-highlight::after {
+      content: '★';
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      color: var(--gold);
+      font-size: 16px;
+    }
+
+    .cover-compact { margin-top: 8px; }
+
+    .cover-compact-item {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .cover-compact-item:last-child { border-bottom: none; }
+
+    .cover-compact-item .cy {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      color: var(--rust);
+      font-weight: 700;
+      min-width: 32px;
+      flex-shrink: 0;
+    }
+
+    .cover-compact-item .cn {
+      color: var(--ink);
+      font-style: italic;
+    }
+
+    .cover-compact-item .ca {
+      color: var(--ink-muted);
+      font-size: 12px;
+    }
+
+    .cover-compact-item .cs {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      color: var(--gold);
+      text-decoration: none;
+      margin-left: auto;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    .sky-box {
+      background: linear-gradient(135deg, #1a2a3a 0%, #0d1a26 100%);
+      color: var(--white);
+      border-radius: 14px;
+      padding: 22px 20px;
+      margin: 4px 0 0;
+    }
+
+    .sky-box .sky-title {
+      font-size: 17px;
+      font-weight: bold;
+      color: var(--gold);
+      margin-bottom: 10px;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .sky-box p {
+      font-size: 13px;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .sky-box .sky-src {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      color: var(--gold);
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+
+    .next-songs { list-style: none; }
+
+    .next-songs li {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .next-songs li:last-child { border-bottom: none; }
+
+    .next-songs .num-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--rust);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: bold;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .next-songs .song-info .s-title {
+      font-style: italic;
+      font-size: 15px;
+      color: var(--ink);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .next-songs .song-info .s-artist {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    footer {
+      background: var(--ink);
+      color: rgba(255,255,255,0.45);
+      padding: 24px;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    footer a {
+      color: var(--gold);
+      text-decoration: none;
+      opacity: 0.7;
+    }
+
+    .src-inline {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      color: var(--rust);
+      text-decoration: none;
+      opacity: 0.7;
+    }
+
+    .src-inline:hover { opacity: 1; }
+
+    p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--ink-soft);
+    }
+
+    p + p { margin-top: 10px; }
+
+    .divider {
+      width: 40px;
+      height: 2px;
+      background: var(--rust);
+      margin: 14px 0;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-art" aria-hidden="true">
+    <svg class="vinyl-wrap" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="130" cy="130" r="128" fill="#222" stroke="#fff" stroke-width="1"/>
+      <circle cx="130" cy="130" r="100" fill="none" stroke="#fff" stroke-width="0.6"/>
+      <circle cx="130" cy="130" r="80"  fill="none" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="130" cy="130" r="60"  fill="none" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="130" cy="130" r="40"  fill="none" stroke="#fff" stroke-width="0.5"/>
+      <circle cx="130" cy="130" r="24"  fill="#555"/>
+      <circle cx="130" cy="130" r="8"   fill="#111"/>
+    </svg>
+    <svg class="wave-lines" viewBox="0 0 430 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 40 Q54 20 108 40 T216 40 T324 40 T430 40" fill="none" stroke="#fff" stroke-width="1.5"/>
+      <path d="M0 50 Q54 30 108 50 T216 50 T324 50 T430 50" fill="none" stroke="#fff" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <div class="hero-content">
+    <div class="pill">Japanese Pop · 1975</div>
+    <h1>Ano Hi ni<br><em>Kaeritai</em></h1>
+    <p class="hero-romaji">あの日にかえりたい</p>
+    <p class="hero-byline">
+      Written &amp; sung by <strong>Yumi Arai (荒井由実)</strong><br>
+      later known as Matsutoya Yumi (松任谷由実)
+    </p>
+  </div>
+</header>
+
+<div class="hook">
+  <p>Before <strong>"City Pop"</strong> became a global label, Japan had something quieter and sharper. In 1975, a 21-year-old named Yumi Arai wrote a song about nostalgia so precise it hurt.</p>
+  <p>Fifty years later, dozens of artists—from enka singers to jazz guitarists—still reach for this one first.</p>
+</div>
+
+<section>
+  <p class="section-label">The Song</p>
+  <h2>What it is</h2>
+  <p>A quiet plea to return to a moment already gone — the feeling of youth slipping away before you realized it was happening. No drama, just a hollow ache. It works in any language, which is exactly why so many people keep covering it.</p>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="num">#1</span>
+      <span class="label">Oricon chart peak</span>
+    </div>
+    <div class="stat-box">
+      <span class="num">35</span>
+      <span class="label">weeks on chart</span>
+    </div>
+    <div class="stat-box">
+      <span class="num">615k</span>
+      <span class="label">copies sold</span>
+    </div>
+  </div>
+  <p style="font-size:11px; color:var(--ink-muted); font-family:'Helvetica Neue',Arial,sans-serif; margin-top:-4px;">
+    Source: <a class="src-inline" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+  </p>
+
+  <div class="divider"></div>
+
+  <p>Released <strong>October 5, 1975</strong> on Toshiba EMI. Written as a theme for a TBS drama called <em>Katei no Himitsu</em> ("Family Secrets") — the lyrics were actually rewritten once, because the first version didn't fit the story.</p>
+  <p style="font-size:11px; color:var(--ink-muted); font-family:'Helvetica Neue',Arial,sans-serif; margin-top:6px;">
+    <a class="src-inline" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+  </p>
+</section>
+
+<section>
+  <p class="section-label">The Recording</p>
+  <h2>Who played on it</h2>
+  <p>The band on this record is essentially half of Japan's future music industry. In 1975 they were all session players nobody outside Tokyo had heard of.</p>
+
+  <ul class="musician-list">
+    <li>
+      <span class="role">Drums</span>
+      <span class="name">Hayashi Tatsuo (林立夫)</span>
+    </li>
+    <li>
+      <span class="role">Bass / guitar</span>
+      <span class="name">Hosono Haruomi (細野晴臣)</span>
+    </li>
+    <li>
+      <span class="role">Guitar</span>
+      <span class="name">Suzuki Shigeru (鈴木茂)</span>
+    </li>
+    <li>
+      <span class="role">Keys / arr.</span>
+      <span class="name">Matsutoya Masataka (松任谷正隆)</span>
+    </li>
+    <li>
+      <span class="role">Chorus</span>
+      <span class="name">Yamamoto Junko (山本潤子)</span>
+    </li>
+    <li>
+      <span class="role">Producer</span>
+      <span class="name">Murai Kunihiko (村井邦彦)</span>
+    </li>
+  </ul>
+  <p style="font-size:11px; color:var(--ink-muted); font-family:'Helvetica Neue',Arial,sans-serif; margin-top:10px;">
+    <a class="src-inline" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+  </p>
+
+  <div class="trivia">
+    <p>During the recording session, drummer Hayashi Tatsuo dropped his stick — and the sound is still in the final master. Arranger Matsutoya liked the take's feel so much he kept it. Years later, Hayashi admitted: <em>"That wasn't dramatic tension. That was a mistake."</em></p>
+    <p>Matsutoya later said he still wonders: <em>"If we'd done it again, would it have sold more — or less?"</em></p>
+    <a class="source-link" href="https://www.nettam.jp/column/mobility-culture/5/">nettam.jp</a>
+    &nbsp;·&nbsp;
+    <a class="source-link" href="https://ytanaca.com/yuming_drum/">ytanaca.com</a>
+  </div>
+</section>
+
+<section>
+  <p class="section-label">Cover Versions · Featured</p>
+  <h2>The versions worth finding</h2>
+  <p>This is the part that keeps growing. Every decade, a different generation of Japanese musicians comes back to this song.</p>
+
+  <div style="margin-top: 20px;">
+
+    <div class="cover-card cover-highlight">
+      <span class="year-tag">2003</span>
+      <h3>Michael Franks</h3>
+      <p class="album-line"><em>Over the Sky: Yuming International Cover Album</em></p>
+      <p class="note">Retitled <strong>"Somewhere in the Rain"</strong> — an English-language cover by the American jazz-pop songwriter. The only internationally known Western artist to record this song. If you listen to one cover first, make it this one.</p>
+      <a class="src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+    </div>
+
+    <div class="cover-card cover-highlight">
+      <span class="year-tag">2002</span>
+      <h3>Ono Lisa (小野リサ)</h3>
+      <p class="album-line"><em>Queen's Fellows: Yuming 30th Anniversary Cover Album</em></p>
+      <p class="note">The Brazilian-Japanese bossa nova singer turns it into something warm and unhurried. One of the most-cited covers in Japan — and easy to love without any context.</p>
+      <a class="src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+    </div>
+
+    <div class="cover-card cover-highlight">
+      <span class="year-tag">1999</span>
+      <h3>Moritaka Chisato (森高千里)</h3>
+      <p class="album-line"><em>Dear Yuming — Arai Yumi / Matsutoya Yumi Cover Collection</em></p>
+      <p class="note">A 1990s J-pop star doing a Yuming tribute album — it fits perfectly. Clean, direct, and surprisingly emotional.</p>
+      <a class="src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+      &nbsp;·&nbsp;
+      <a class="src" href="https://www.moritaka-chisato.com/discography/?type=other">moritaka-chisato.com</a>
+    </div>
+
+    <div class="cover-card cover-highlight">
+      <span class="year-tag">2009</span>
+      <h3>Sakamoto Fuyumi (坂本冬美)</h3>
+      <p class="album-line"><em>Love Songs — Mata Kimi ni Koishiteru</em></p>
+      <p class="note">Japan's top enka (traditional ballad) singer covering 1970s pop — and it works completely. Her phrasing turns every pause into something deliberate.</p>
+      <a class="src" href="https://www.youtube.com/watch?v=CBizmVobFPU">YouTube</a>
+      &nbsp;·&nbsp;
+      <a class="src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+    </div>
+
+    <div class="cover-card cover-highlight">
+      <span class="year-tag">2008</span>
+      <h3>Inagaki Jun'ichi (稲垣潤一)</h3>
+      <p class="album-line"><em>Otoko to Onna — Two Hearts Two Voices</em> · duet with Tsuyuzaki Harume (露崎春女)</p>
+      <p class="note">Sung as a duet — which changes the meaning entirely. Where the original is a solo ache, this version sounds like two people trying to remember the same thing.</p>
+      <a class="src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+    </div>
+
+    <div class="cover-card cover-highlight">
+      <span class="year-tag">2006</span>
+      <h3>Tokunaga Hideaki (徳永英明)</h3>
+      <p class="album-line"><em>Vocalist 2</em></p>
+      <p class="note">His <em>Vocalist</em> series — male singer covering female pop classics — was a phenomenon in mid-2000s Japan. This is one of the standout tracks: his falsetto strips the song down to the bone.</p>
+      <a class="src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+    </div>
+
+    <div class="cover-card cover-highlight">
+      <span class="year-tag">2013</span>
+      <h3>Imai Miki (今井美樹)</h3>
+      <p class="album-line"><em>Dialogue — Miki Imai Sings Yuming Classics</em></p>
+      <p class="note">A full album dedicated to Yuming's songbook. Imai is one of Japan's most gifted ballad singers; her version is measured, careful, and deeply felt.</p>
+      <a class="src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+    </div>
+
+    <div class="cover-card">
+      <span class="year-tag">2009</span>
+      <h3>Kuwata Keisuke (桑田佳祐)</h3>
+      <p class="album-line"><em>Showa 83-nendo! Hitori Kohaku Utagassen</em> (live video)</p>
+      <p class="note">Frontman of Southern All Stars — Japan's equivalent of The Rolling Stones — performing it solo at a year-end tribute concert. Rough and warm.</p>
+      <a class="src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <p class="section-label">Cover Versions · Full List</p>
+  <h2>Everyone else</h2>
+  <p>Fifty years, one song, no end in sight.</p>
+
+  <div class="cover-compact">
+    <div class="cover-compact-item">
+      <span class="cy">1976</span>
+      <span>
+        <span class="cn">Uchiyamada Hiroshi &amp; Cool Five (内山田洋とクールファイブ)</span>
+        <span class="ca"> — album <em>Fureai no Toki</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">1978</span>
+      <span>
+        <span class="cn">Yamagata Sumiko (やまがたすみこ)</span>
+        <span class="ca"> — omnibus album</span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">1982</span>
+      <span>
+        <span class="cn">Saito Keiko (斉藤慶子)</span>
+        <span class="ca"> — album <em>Keiko, Monoomoi…</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">1991</span>
+      <span>
+        <span class="cn">Kosaka Miyuki (香坂みゆき)</span>
+        <span class="ca"> — album <em>Cantos 1</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2001</span>
+      <span>
+        <span class="cn">Ichii Sayaka (市井紗耶香)</span>
+        <span class="ca"> — album <em>Folk Songs</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2006</span>
+      <span>
+        <span class="cn">Wada Akiko (和田アキ子)</span>
+        <span class="ca"> — album <em>Kyo made Soshite Ashita kara</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2007</span>
+      <span>
+        <span class="cn">Saera (サエラ)</span>
+        <span class="ca"> — album <em>Ano Hi ni Kaeritai</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2009</span>
+      <span>
+        <span class="cn">Ohashi Junko (大橋純子)</span>
+        <span class="ca"> — album <em>TERRA2</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2009</span>
+      <span>
+        <span class="cn">Fuse Akira (布施明)</span>
+        <span class="ca"> — album <em>Ballade II</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2012</span>
+      <span>
+        <span class="cn">John-Hoon</span>
+        <span class="ca"> — album <em>Voice</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2013</span>
+      <span>
+        <span class="cn">Mori Megumi (森恵)</span>
+        <span class="ca"> — album <em>RE:MAKE 1</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2014</span>
+      <span>
+        <span class="cn">Toyama Mirei (當山みれい)</span>
+        <span class="ca"> — single <em>Memories</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2014</span>
+      <span>
+        <span class="cn">Yoshii Kazuya (吉井和哉)</span>
+        <span class="ca"> — album <em>Yoshi Funk Jr.</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2017</span>
+      <span>
+        <span class="cn">Yuki Saori (由紀さおり)</span>
+        <span class="ca"> — album <em>Utautai no Ballad</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">2020</span>
+      <span>
+        <span class="cn">Hanzaki Yoshiko (半﨑美子)</span>
+        <span class="ca"> — album <em>Utaben Cover</em></span>
+      </span>
+      <a class="cs" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">src</a>
+    </div>
+    <div class="cover-compact-item">
+      <span class="cy">also</span>
+      <span>
+        <span class="cn">Maruyama Keiko (丸山圭子)</span>
+        <span class="ca"> — album <em>Now &amp; Then</em></span>
+      </span>
+      <a class="cs" href="https://ameblo.jp/nekobus0629/entry-11769919143.html">src</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="section-label">Hidden Connection</p>
+  <h2>The song that almost was</h2>
+
+  <div class="sky-box">
+    <div class="sky-title">"Sky Restaurant" (スカイレストラン) — Hi-Fi Set, 1975</div>
+    <p>The <em>original</em> draft lyrics for this melody were given to another group instead — Hi-Fi Set (ハイ・ファイ・セット), who released them as a separate song called "Sky Restaurant" on November 5, 1975. Same tune, different words.</p>
+    <p style="margin-top:10px;">That song later found a second life when it was sampled by <strong>J. Cole</strong> on "January 28th" (2014) and by <strong>Chris Brown</strong> on <em>11:11</em> in "Moonlight."</p>
+    <a class="sky-src" href="https://www.sonymusic.co.jp/artist/HiFiSet/info/562278">sonymusic.co.jp</a>
+    &nbsp;·&nbsp;
+    <a class="sky-src" href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">Wikipedia (ja)</a>
+  </div>
+</section>
+
+<section>
+  <p class="section-label">What to hear next</p>
+  <h2>If you liked this, try these</h2>
+  <p>All from the same world — Yumi Arai, same era, same band.</p>
+
+  <ul class="next-songs" style="margin-top:18px;">
+    <li>
+      <div class="num-circle">1</div>
+      <div class="song-info">
+        <span class="s-title">"Yasashisa ni Tsutsumaretanara"<br><em style="font-size:12px; color:var(--ink-muted)">優しさに包まれたなら</em></span>
+        <span class="s-artist">Yumi Arai (荒井由実) · 1974</span>
+      </div>
+    </li>
+    <li>
+      <div class="num-circle">2</div>
+      <div class="song-info">
+        <span class="s-title">"Sotsugyou Shashin"<br><em style="font-size:12px; color:var(--ink-muted)">卒業写真</em></span>
+        <span class="s-artist">Yumi Arai (荒井由実) · 1975</span>
+      </div>
+    </li>
+    <li>
+      <div class="num-circle">3</div>
+      <div class="song-info">
+        <span class="s-title">"Sky Restaurant"<br><em style="font-size:12px; color:var(--ink-muted)">スカイレストラン</em></span>
+        <span class="s-artist">Hi-Fi Set (ハイ・ファイ・セット) · 1975</span>
+      </div>
+    </li>
+    <li>
+      <div class="num-circle">4</div>
+      <div class="song-info">
+        <span class="s-title">"Dozo Kono Mama"<br><em style="font-size:12px; color:var(--ink-muted)">どうぞこのまま</em></span>
+        <span class="s-artist">Maruyama Keiko (丸山圭子) · 1977</span>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<footer>
+  <p>All facts on this page come from sources cited inline.</p>
+  <p style="margin-top:6px;">Wikipedia (ja): <a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">あの日にかえりたい</a></p>
+  <p style="margin-top:6px; opacity:0.4;">No lyrics reproduced on this page.</p>
+</footer>
+
+</body>
+</html>

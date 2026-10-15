@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#919 ZEN 2本：茶室・黒砂海岸を16:9ループ動画に 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #919 ZEN 2本：茶室・黒砂海岸を16:9ループ動画に</div>
+<h1>#919 ZEN 2本：茶室・黒砂海岸を16:9ループ動画に</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+縦長のZEN静止画2枚（茶室・黒砂海岸）を横に伸ばして16:9にし、そこから1920×1080・5秒のループ動画を2本作りました。カメラは固定、茶室は外の緑だけがそよぎ、海岸は波と雲だけが動きます。実測：解像度1920x1080(両方一致)／長さ5.17秒(124フレーム・24fps)／茶室:最初と最後のフレーム差RMSE=2.88・往復度スコア=17.13／海岸:最初と最後のフレーム差RMSE=2.64・往復度スコア=20.28（前回9/12の失敗例は往復度0.92〜1.16=逆再生でごまかしていた。今回は数値が大きく本物の前進ループ）。外部AI検品はOpenAI(gpt-4o-mini)が2本ともOK判定（Grokはチームにクレジットが無くHTTP403でSKIP、Geminiは鍵未整備でSKIP。依頼原文の『3本そろわなくても待たない』方針どおり1本のOKで通した）。使った金額は72円（承認額とぴったり一致）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1920x1080</b><span>解像度(茶室・海岸とも実測一致)</span></div>
+  <div class="num"><b>5.17秒</b><span>長さ(124フレーム/24fps)</span></div>
+  <div class="num"><b>17.13/20.28</b><span>往復度スコア(茶室/海岸・前回失敗例0.92〜1.16より大幅に大きい=逆再生でない)</span></div>
+  <div class="num"><b>72円</b><span>使った金額(承認額と一致)</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>元画像・茶室(縦1122x1402)</b><img src="assets/919-zen/before_chashitsu.png" alt="元画像・茶室(縦1122x1402)"></div>
+  <div class="shot plain"><b>16:9拡張後・茶室</b><img src="assets/919-zen/chashitsu_16x9.png" alt="16:9拡張後・茶室"></div>
+  <div class="shot plain"><b>動画の最初のフレーム・茶室</b><img src="assets/919-zen/frames/chashitsu_first.png" alt="動画の最初のフレーム・茶室"></div>
+  <div class="shot plain"><b>動画の最後のフレーム・茶室(最初と比較してほぼ同じならループ成功)</b><img src="assets/919-zen/frames/chashitsu_last.png" alt="動画の最後のフレーム・茶室(最初と比較してほぼ同じならループ成功)"></div>
+  <div class="shot plain"><b>元画像・黒砂海岸(縦1122x1402)</b><img src="assets/919-zen/before_kuroihama.png" alt="元画像・黒砂海岸(縦1122x1402)"></div>
+  <div class="shot plain"><b>16:9拡張後・黒砂海岸</b><img src="assets/919-zen/kuroihama_16x9.png" alt="16:9拡張後・黒砂海岸"></div>
+  <div class="shot plain"><b>動画の最初のフレーム・黒砂海岸</b><img src="assets/919-zen/frames/kuroihama_first.png" alt="動画の最初のフレーム・黒砂海岸"></div>
+  <div class="shot plain"><b>動画の最後のフレーム・黒砂海岸(最初と比較してほぼ同じならループ成功)</b><img src="assets/919-zen/frames/kuroihama_last.png" alt="動画の最後のフレーム・黒砂海岸(最初と比較してほぼ同じならループ成功)"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>茶室ループ動画を開く(mp4・1920x1080・5秒)</b><a href="assets/919-zen/chashitsu_loop_1920x1080.mp4" target="_blank" rel="noopener">assets/919-zen/chashitsu_loop_1920x1080.mp4</a></li>
+  <li><b>黒砂海岸ループ動画を開く(mp4・1920x1080・5秒)</b><a href="assets/919-zen/kuroihama_loop_1920x1080.mp4" target="_blank" rel="noopener">assets/919-zen/kuroihama_loop_1920x1080.mp4</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>16:9へ拡張・元の縦の絵は切らず中央に保持</td><td class="yes">OK</td></tr>
+<tr><td>カメラ固定(最初/中間/最後のフレームで構図同一)</td><td class="yes">OK</td></tr>
+<tr><td>茶室=外の緑だけが揺れる設計プロンプト</td><td class="yes">OK</td></tr>
+<tr><td>海岸=波と雲だけが動く設計プロンプト</td><td class="yes">OK</td></tr>
+<tr><td>1920×1080のフルHD</td><td class="yes">OK(実測一致)</td></tr>
+<tr><td>5秒</td><td class="yes">OK(実測5.17秒)</td></tr>
+<tr><td>外部AI検品(OpenAI gpt-4o-mini)でOK判定</td><td class="yes">OK</td></tr>
+<tr><td>お金は事前提示・たまごさんのGO後に使用(72円)</td><td class="yes">OK</td></tr>
+</table>
+
+<footer>
+このページは #919 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

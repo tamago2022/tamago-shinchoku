@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34978 SupabaseへのSQL適用：CLIか人間のWeb画面か 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34978 SupabaseへのSQL適用：CLIか人間のWeb画面か</div>
+<h1>#34978 SupabaseへのSQL適用：CLIか人間のWeb画面か</h1>
+<div class="date">2026-10-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+結論：<b>AI側はSupabase CLIで本番にSQLを実行できません。人間がWeb画面（Supabase SQL Editor）に貼るか、Lovableのチャット経由で流すしかありません。</b>理由は「権限」ではなく「手元に鍵が無い」ことです。Supabase CLI自体はこのMacで動かせます（<code>npx supabase --version</code> → 2.120.0 で起動成功）。しかし本番につなぐには<code>SUPABASE_ACCESS_TOKEN</code>か、パスワード入りのDB接続文字列、または<code>SUPABASE_SERVICE_ROLE_KEY</code>のどれかが必要で、そのどれもこの作業環境には置かれていません（<code>.env</code>にあるのは誰でも読み書き制限付きで使える公開キー<code>SUPABASE_PUBLISHABLE_KEY</code>だけ。値は見ずに変数名だけ確認しました）。GitHub Actions側のSecretsにも同じ鍵は登録されていません（過去のセッションが<code>gh secret list</code>で実測済み）。つまりAIは「流す」道具（CLI）は持てても、「鍵」が無いので実行できません。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>AI側で実行できた本番SQL適用（今回・過去とも）</span></div>
+  <div class="num"><b>1件</b><span>現在も本番に未適用のテーブル（henshin_orders）</span></div>
+  <div class="num"><b>2通り</b><span>唯一の実行経路（①店主がSQL Editorへ貼る②Lovableチャットに頼む）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番サイト（ごきげん補給所／このRLSロックダウンの対象サイト）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Supabase CLIはこのMacで起動できるか</td><td class="yes">できる（npx supabase 2.120.0）</td></tr>
+<tr><td>本番DBに接続する鍵（ACCESS_TOKEN／DB接続文字列／SERVICE_ROLE_KEY）がこの環境にあるか</td><td class="no">無い（.envの変数名を確認。あるのは公開キーのみ）</td></tr>
+<tr><td>本番の実データで欠けを見回った結果</td><td class="yes">henshin_ordersテーブルのみ未適用、他8項目は適用済み（node scripts/patrol/check-db-schema.mjs を実行）</td></tr>
+</table>
+
+<footer>
+実測内容（2026-10-12・このセッションで実際に実行）：①<code>npx supabase --version</code>→起動成功（2.120.0）、CLI自体は動くが本番への接続情報は別問題。②<code>.env</code>の変数名だけをマスクして確認→<code>SUPABASE_URL</code>と<code>SUPABASE_PUBLISHABLE_KEY</code>（公開キー）のみで、書き込み・DDL権限を持つ鍵は無し。③<code>node scripts/patrol/check-db-schema.mjs</code>を実行→公開キーで本番の実データへ接続し、8項目は適用済み・henshin_ordersの1テーブルだけ未適用と判明、スクリプト自身も「AIはSQLを流せません。店主がSupabaseのSQL Editorへ貼る必要があります」と出力。<br>根拠（リポジトリ内の正本 docs/operations/rls-lockdown.md より転記。このファイルはたまごさんが開けない非公開リポジトリ内にあるため、リンクではなく本文に引用します）：「適用できるのは次の2経路だけで、どちらも店主のログインが要る。1. Supabase の SQL Editor へ貼って実行する　2. Lovable 側で流す。AI側にはDB接続情報もSupabase CLIも無いため、AIはSQLを書くことはできても流すことはできない。」
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

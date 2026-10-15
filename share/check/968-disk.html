@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>968｜ハードディスクの空きはどこから戻ったのか</title>
+<style>
+:root{--ink:#1b1a17;--sub:#6b6357;--line:#ddd6c8;--paper:#f7f3ea;--red:#a8331f;--ok:#2f6b4f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:56px 24px 96px}
+.kicker{font-family:"Hiragino Sans","Helvetica Neue",sans-serif;font-size:12px;letter-spacing:.22em;
+ color:var(--sub);text-transform:uppercase}
+h1{font-size:34px;line-height:1.35;margin:10px 0 6px;font-weight:600}
+.date{font-family:"Hiragino Sans",sans-serif;font-size:12px;color:var(--sub);letter-spacing:.06em}
+.lead{border:1px solid var(--line);border-left:5px solid var(--red);background:#fffdf8;
+ padding:22px 24px;margin:32px 0 40px}
+.lead .q{font-family:"Hiragino Sans",sans-serif;font-size:11px;letter-spacing:.2em;color:var(--red);margin-bottom:8px}
+.lead p{margin:0;font-size:19px;line-height:1.75}
+h2{font-size:20px;margin:48px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+p{margin:0 0 14px}
+ul{margin:0 0 16px;padding-left:1.3em}
+li{margin-bottom:7px}
+table{width:100%;border-collapse:collapse;margin:18px 0 8px;
+ font-family:"Hiragino Sans",sans-serif;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
+th{font-size:11px;letter-spacing:.12em;color:var(--sub);font-weight:600;border-bottom:1.5px solid #bbb2a0}
+td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.grow{color:var(--red);font-weight:600}
+.cap{color:var(--ok)}
+.note{font-family:"Hiragino Sans",sans-serif;font-size:13px;color:var(--sub);line-height:1.8}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.88em;background:#efe9dc;padding:1px 5px;border-radius:3px}
+.foot{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+ font-family:"Hiragino Sans",sans-serif;font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="kicker">968 ／ Mac ディスク実測</div>
+<h1>ハードディスクの空きは<br>どこから戻ったのか</h1>
+<div class="date">実測 2026-09-20 02:53〜03:19（JST）／このセッションでは何も削除していません</div>
+
+<div class="lead">
+  <div class="q">170GBが空いた理由</div>
+  <p><strong>分かりませんでした。</strong>いま170GBと出る画面は見つかりません。今の実測は、起動ディスク＝<strong>空き113.6GB</strong>、古いシステム側のボリューム＝<strong>空き271.7GB</strong>の2つです。</p>
+</div>
+
+<p class="note">
+※ 進捗表と <code>machine.json</code> は「ディスク空き 252GB」と表示していました。これは測る場所を間違えていた数字です（下の「直した箇所」）。
+</p>
+
+<h2>実際に起きたこと（記録に残っている分）</h2>
+<p><code>status/disk_guardian.log</code> に9/6から888回分の空き容量が15分おきに残っていました。そこから拾った増加はこうです。</p>
+<ul>
+  <li><strong>9/15 19:09 — 空き24.1GB</strong>（この日の底は19.5GB。工場の同時走行が2本に絞られていた）</li>
+  <li><strong>9/16 03:26→03:56 で +38.5GB</strong>（31.7→70.2GB）。30分で増えている。工場の自動掃除ログにはこの分の記録がない。</li>
+  <li><strong>9/18 07:28→9/19 00:27 で +67.8GB</strong>（45.5→113.3GB）。<span class="grow">この17時間、見張り自体が止まっていて記録が1行もありません</span>。9/19 00:21にMacが再起動しています。</li>
+  <li><strong>9/19 00:27→00:43 で +12.0GB</strong>（再起動の直後）</li>
+  <li>そこから今日までは<strong>ずっと微減</strong>（129.3GB → 106.1GB、24時間で -22.8GB）</li>
+</ul>
+<p>つまり <strong>9/15の19.5GB から 今日の113.6GB まで、+94GB 戻っています。</strong>ただし<strong>いつ・何が空けたのかは、記録が残っていない2回の跳ね上がりの中にあります。</strong></p>
+
+<h2>心当たりを1つずつ潰した結果</h2>
+<table>
+<tr><th>疑ったもの</th><th>実測</th><th>判定</th></tr>
+<tr><td>Google Drive の同期待ちキュー <code>.tmp.driveupload</code><br><span class="note">9/15に12GB・19万件・増え続けと実測されていたもの</span></td><td>今は存在しない</td><td class="cap">消えている</td></tr>
+<tr><td>Google Drive のローカル実体（9/15はミラー69GB）</td><td>ローカルキャッシュ 3.4GB</td><td class="cap">ストリーミングになっている</td></tr>
+<tr><td>Time Machine のローカルスナップショット</td><td><strong>0個</strong></td><td>原因ではない</td></tr>
+<tr><td>スリープイメージ</td><td>2.0GB（9/19 00:26のまま）</td><td>原因ではない</td></tr>
+<tr><td>スワップ</td><td>再起動で0→いま15.2GB使用</td><td>再起動で一時的に空く</td></tr>
+<tr><td>worktree（作業場）52件を自動で片づけている</td><td>ゴミ箱へ<strong>移すだけ</strong></td><td>空きは増えない</td></tr>
+</table>
+<p class="note">
+一番大きいのは Google Drive 由来の分（キュー12GB＋ミラー69GB＝約81GB）で、<strong>どちらも今は無いことを実測で確認しました</strong>。ただし「それが9/16と9/18〜19の跳ね上がりの正体だ」とまでは、記録が無いので言えません。
+</p>
+
+<h2>いま、どこに何GB溜まっているか</h2>
+<table>
+<tr><th>場所</th><th style="text-align:right">今</th><th>増え続けるか</th></tr>
+<tr><td><code>~/Documents/AI作業/2026-09-02</code></td><td class="n">17.2GB</td><td class="grow">上限なし</td></tr>
+<tr><td><code>~/Library/Application Support/Claude/vm_bundles</code><br><span class="note">Coworkが使うLinuxのディスクイメージ</span></td><td class="n">12.1GB</td><td class="grow">上限なし</td></tr>
+<tr><td><code>~/Library/Caches</code>（アプリ全般）</td><td class="n">8.2GB</td><td class="cap">自動掃除あり</td></tr>
+<tr><td><code>~/Documents/AI作業/.worktrees</code>（52件）</td><td class="n">5.3GB</td><td class="cap">自動でゴミ箱へ</td></tr>
+<tr><td><code>~/.claude/projects</code>（会話の記録・壺）</td><td class="n">5.2GB</td><td class="grow">上限なし</td></tr>
+<tr><td><code>~/Documents/AI作業/tools_local</code></td><td class="n">3.2GB</td><td class="grow">上限なし</td></tr>
+<tr><td><code>~/.Trash</code>（うちworktreeの退避2.8GB）</td><td class="n">3.4GB</td><td class="grow">自動では空にしない</td></tr>
+<tr><td><code>~/Library/.../Google/DriveFS</code></td><td class="n">3.4GB</td><td class="cap">上限あり</td></tr>
+<tr><td><code>~/Desktop/tamago-shinchoku</code>（工場本体。falの生成物は <code>share/check/assets/</code>）</td><td class="n">2.9GB</td><td class="grow">上限なし</td></tr>
+<tr><td><code>~/Desktop/joy-relief-station</code></td><td class="n">1.8GB</td><td class="grow">上限なし</td></tr>
+<tr><td><code>~/Library/.../Claude/local-agent-mode-sessions</code><br><span class="note">Coworkのセッションの作業場・受け渡しファイル</span></td><td class="n">1.6GB</td><td class="grow">上限なし</td></tr>
+<tr><td><code>~/.tamago</code></td><td class="n">1.6GB</td><td class="grow">上限なし</td></tr>
+</table>
+<p class="note">
+AI関連の合計は<strong>約57GB</strong>。起動ディスクの使用量386GBのうちの15%で、<strong>容量の主犯ではありません。</strong>
+ダウンロードしたものの置き場所は <code>~/Desktop</code> と <code>~/Downloads</code>、falで作った画像・動画は工場リポジトリの <code>share/check/assets/</code> に入ります。どれもこのMacの内蔵ディスクです。
+</p>
+
+<h2>たまごさんのルールが守られていない場所</h2>
+<p>ルール：<strong>AIの作業ファイルをデスクトップに置かない。記録はVault、作業用は <code>Documents/AI作業/</code>。</strong></p>
+<ul>
+  <li><strong>デスクトップ 5.4GB</strong>。工場そのものが2つ載っています（<code>tamago-shinchoku</code> 2.9GB、<code>joy-relief-station</code> 1.8GB）。ほかに <code>joy-relief-station-worktrees</code>、<code>tamago-dispatch-log</code>、生成画像・スクリーンショット約40枚。</li>
+  <li><code>Documents/AI作業/</code> は正しく使われています（25.8GB）。</li>
+</ul>
+
+<h2>直した箇所</h2>
+<p><strong>工場が見ていたディスクの数字が間違っていました。</strong><code>tools/machine_load.sh</code> が <code>df /</code>（システム側のボリューム）を読んでいて、本当の置き場所である <code>/System/Volumes/Data</code> を見ていませんでした。</p>
+<ul>
+  <li>実測 03:04：<code>df /</code> → 270GB ／ <code>df /System/Volumes/Data</code> → 114GB</li>
+  <li>＝ machine.json も進捗表も、ずっと<strong>156GB多い数字</strong>を出していた（「ディスク空き 252GB」）</li>
+  <li>測る場所を <code>/System/Volumes/Data</code> に直しました。これで見張り（disk_guardian）と数字が一致します。<strong>削除は一切していません。</strong></li>
+</ul>
+
+<h2>上限を付けたい場所（許可待ち・まだ何もしていません）</h2>
+<ul>
+  <li><code>~/.Trash/worktree_reaper_backups</code>（2.8GB）— 作業場を片づけるたびにゴミ箱へ溜まり続けます。<strong>30日より古いものを自動で捨てる</strong>形にしたい。作り直せるもの（落ち葉）です。</li>
+  <li><code>~/Library/.../Claude/vm_bundles</code>（12.1GB）— 使い終わったセッションのLinuxイメージ。<strong>合計8GBを超えたら古い順に消す</strong>形にしたい。</li>
+  <li><code>~/.claude/projects</code>（5.2GB）— <strong>これは記録（壺）なので触りません。</strong>名指しの許可が出るまで残します。</li>
+</ul>
+
+<div class="foot">
+実測方法：Mac上で <code>df -k</code>／<code>system_profiler SPStorageDataType</code>／<code>diskutil apfs list</code>／<code>tmutil listlocalsnapshots</code>／<code>du -sxm</code>。
+時系列は <code>status/disk_guardian.log</code>（9/6〜今日・888サンプル）と <code>status/disk_daily_history.json</code>。
+968番・2026-09-20
+</div>
+
+</div>
+</body>
+</html>

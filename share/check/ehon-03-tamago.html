@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>卵が割れて中から光</title>
+<style>
+  html,body{margin:0;height:100%;background:#1B2A41;overflow:hidden}
+  body{-webkit-tap-highlight-color:transparent}
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation}
+  h1{position:fixed;left:7%;bottom:5.6%;margin:0;z-index:2;pointer-events:none;
+     font-family:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+     font-weight:400;font-size:13px;letter-spacing:7px;color:#E8DFCB;opacity:.8}
+  h1 span{display:block;margin-top:7px;font-size:9.5px;letter-spacing:4.2px;color:#D0703A;opacity:.95}
+  @media(min-width:760px){h1{font-size:15px;letter-spacing:8px}h1 span{font-size:10px}}
+</style>
+</head><body>
+<canvas id="c"></canvas>
+<h1>卵が割れて中から光<span>THE EGG OPENS</span></h1>
+<script>
+var DURATION=4.8;
+
+/* ===== 共通エンジン：手の震え・紙の粒・ノイズ・ease-out ===== */
+var C = {
+  night:'#1B2A41',
+  deep :'#16233A',
+  paper:'#E8DFCB',
+  dim  :'#B9AE93',
+  fire :'#D0703A',
+  moss :'#2E4034',
+  ink  :'#0D121C'
+};
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* Perlin 2D。Math.random だけだとザラザラ、ノイズだと自然な揺らぎになる */
+function makeNoise(seed){
+  var rnd=mulberry32(seed), perm=[], i;
+  for(i=0;i<256;i++)perm[i]=i;
+  for(i=255;i>0;i--){var j=Math.floor(rnd()*(i+1)),t=perm[i];perm[i]=perm[j];perm[j]=t;}
+  var p=new Uint8Array(512);
+  for(i=0;i<512;i++)p[i]=perm[i&255];
+  function fade(t){return t*t*t*(t*(t*6-15)+10)}
+  function lerp(a,b,t){return a+(b-a)*t}
+  function grad(h,x,y){switch(h&3){case 0:return x+y;case 1:return -x+y;case 2:return x-y;default:return -x-y}}
+  return function(x,y){
+    y=y||0;
+    var X=Math.floor(x)&255, Y=Math.floor(y)&255;
+    x-=Math.floor(x); y-=Math.floor(y);
+    var u=fade(x), v=fade(y);
+    var aa=p[p[X]+Y], ab=p[p[X]+Y+1], ba=p[p[X+1]+Y], bb=p[p[X+1]+Y+1];
+    return lerp(lerp(grad(aa,x,y),grad(ba,x-1,y),u), lerp(grad(ab,x,y-1),grad(bb,x-1,y-1),u), v);
+  };
+}
+var N = makeNoise(20260923);
+
+function outCubic(t){return 1-Math.pow(1-t,3)}
+function outQuint(t){return 1-Math.pow(1-t,5)}
+function clamp01(t){return t<0?0:t>1?1:t}
+var U = 1;   /* 画面サイズから決める線の単位。resize で入れ直す */
+
+function densify(pts, step){
+  var out=[], i, j;
+  for(i=0;i<pts.length-1;i++){
+    var a=pts[i], b=pts[i+1];
+    var d=Math.hypot(b[0]-a[0], b[1]-a[1]);
+    var n=Math.max(1, Math.round(d/step));
+    for(j=0;j<n;j++){ var t=j/n; out.push([a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t]); }
+  }
+  out.push(pts[pts.length-1]);
+  return out;
+}
+
+/* 各点を乱す。低い周波数（うねり）＋高い周波数（ふるえ）の二段 */
+function jitter(pts, amp, seed){
+  var o=[], i;
+  for(i=0;i<pts.length;i++){
+    var q=i*0.34+seed;
+    var dx = N(q, seed*0.31)*amp + N(q*3.7+11, seed*0.7)*amp*0.55;
+    var dy = N(q+37.7, seed*0.31+9.1)*amp + N(q*3.7+61, seed*0.7+4)*amp*0.55;
+    o.push([pts[i][0]+dx, pts[i][1]+dy]);
+  }
+  return o;
+}
+
+function pathOf(ctx, pts, close){
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for(var i=1;i<pts.length-1;i++){
+    var mx=(pts[i][0]+pts[i+1][0])/2, my=(pts[i][1]+pts[i+1][1])/2;
+    ctx.quadraticCurveTo(pts[i][0], pts[i][1], mx, my);
+  }
+  var l=pts.length-1;
+  ctx.quadraticCurveTo(pts[l][0], pts[l][1], pts[l][0], pts[l][1]);
+  if(close) ctx.closePath();
+}
+
+/* 鉛筆で2〜3回なぞった線。1本も直線を引かない */
+function hand(ctx, pts, o){
+  o=o||{};
+  var amp   = o.amp==null   ? 2.6*U : o.amp,
+      w     = o.w==null     ? 1.2*U : o.w,
+      passes= o.passes==null? 3 : o.passes,
+      col   = o.color||C.paper,
+      close = !!o.close,
+      alpha = o.alpha==null ? 0.5 : o.alpha,
+      seed  = o.seed==null  ? 7 : o.seed,
+      step  = o.step==null  ? 9*U : o.step;
+  var base=densify(pts, step);
+  ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle=col;
+  for(var k=0;k<passes;k++){
+    ctx.globalAlpha=alpha*(1-k*0.22);
+    ctx.lineWidth=w*(0.7+0.45*(k/Math.max(1,passes-1)));
+    pathOf(ctx, jitter(base, amp*(0.7+0.5*k), seed+k*23.1), close);
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+
+/* 面。輪郭が揺れ、縁に鉛筆が重なる。グラデーションは使わない */
+function handFill(ctx, pts, o){
+  o=o||{};
+  var amp  = o.amp==null  ? 3.0*U : o.amp,
+      col  = o.color||C.ink,
+      seed = o.seed==null ? 3 : o.seed,
+      step = o.step==null ? 10*U : o.step,
+      alpha= o.alpha==null? 1 : o.alpha,
+      edge = o.edge==null ? 0.45 : o.edge,
+      ecol = o.edgeColor||col;
+  var base=densify(pts, step);
+  ctx.globalAlpha=alpha; ctx.fillStyle=col;
+  pathOf(ctx, jitter(base, amp, seed), true);
+  ctx.fill();
+  ctx.globalAlpha=1;
+  if(edge>0){
+    ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle=ecol;
+    for(var k=0;k<2;k++){
+      ctx.globalAlpha=alpha*edge*(1-k*0.3);
+      ctx.lineWidth=(1.0+k*0.7)*U;
+      pathOf(ctx, jitter(base, amp*(1.1+0.5*k), seed+41.7+k*19.3), true);
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+}
+
+/* 稜線に短い線を刺す。版画の手 */
+function hatch(ctx, pts, o){
+  o=o||{};
+  var col=o.color||C.ink, len=o.len||9*U, n=o.n||26, alpha=o.alpha==null?0.5:o.alpha,
+      seed=o.seed||5, dir=o.dir==null?1:o.dir, w=o.w||1.1*U;
+  var base=densify(pts, 6*U), i;
+  ctx.strokeStyle=col; ctx.lineCap='round';
+  for(i=0;i<n;i++){
+    var t=(i+0.5)/n;
+    var idx=Math.min(base.length-2, Math.floor(t*(base.length-1)));
+    var a=base[idx], b=base[idx+1];
+    var ang=Math.atan2(b[1]-a[1], b[0]-a[0]) + Math.PI/2*dir + N(i*0.8+seed, seed)*0.7;
+    var L=len*(0.5+0.9*(0.5+0.5*N(i*1.3+seed+7, seed+2)));
+    ctx.globalAlpha=alpha*(0.5+0.5*(0.5+0.5*N(i*2.1+seed,seed+5)));
+    ctx.lineWidth=w*(0.7+0.6*(0.5+0.5*N(i*0.6+seed+3,seed)));
+    ctx.beginPath();
+    ctx.moveTo(a[0], a[1]);
+    ctx.quadraticCurveTo(a[0]+Math.cos(ang)*L*0.5+N(i,seed)*2*U, a[1]+Math.sin(ang)*L*0.5+N(i+5,seed)*2*U,
+                         a[0]+Math.cos(ang)*L, a[1]+Math.sin(ang)*L);
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+
+/* 顔は点2つと線1つ。描き込まないほうがかわいい */
+function face(ctx, x, y, s, col, a){
+  ctx.globalAlpha=a; ctx.fillStyle=col;
+  ctx.beginPath(); ctx.arc(x-s*0.42, y-s*0.20, s*0.12, 0, 6.2832); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+s*0.42, y-s*0.20, s*0.12, 0, 6.2832); ctx.fill();
+  ctx.strokeStyle=col; ctx.lineWidth=Math.max(1.3*U, s*0.085); ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(x, y+s*0.06, s*0.38, 0.40, Math.PI-0.40); ctx.stroke();
+  ctx.globalAlpha=1;
+}
+
+/* 紙の粒 */
+function grainTile(size, seed){
+  var c=document.createElement('canvas'); c.width=c.height=size;
+  var g=c.getContext('2d'), id=g.createImageData(size,size), rnd=mulberry32(seed), i;
+  for(i=0;i<size*size;i++){
+    var v=rnd(), a=0, dark=rnd()<0.5;
+    if(v>0.38) a=Math.floor((v-0.38)*255*0.9);
+    id.data[i*4]   = dark? 8:240;
+    id.data[i*4+1] = dark? 14:233;
+    id.data[i*4+2] = dark? 24:212;
+    id.data[i*4+3] = a;
+  }
+  g.putImageData(id,0,0);
+  return c;
+}
+
+/* ===== 画面まわり ===== */
+var cv=document.getElementById('c'), ctx=cv.getContext('2d');
+var stat=document.createElement('canvas'), sx=stat.getContext('2d');
+var grainCv=null, grainFull=null, W=0, H=0, DPR=1;
+
+function resize(){
+  DPR=Math.min(2, window.devicePixelRatio||1);
+  W=cv.clientWidth; H=cv.clientHeight;
+  U = Math.max(0.85, Math.min(W,H)/620);
+  cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  stat.width=cv.width; stat.height=cv.height;
+  sx.setTransform(DPR,0,0,DPR,0,0);
+  grainCv=grainTile(150, 4242);
+  /* 紙の粒を1枚に焼いておく。毎フレームの模様塗りは重い */
+  grainFull=document.createElement('canvas');
+  grainFull.width=cv.width; grainFull.height=cv.height;
+  var gg=grainFull.getContext('2d');
+  gg.fillStyle=gg.createPattern(grainCv,'repeat');
+  gg.fillRect(0,0,grainFull.width,grainFull.height);
+  buildStatic();
+  sx.globalAlpha=0.16; sx.drawImage(grainFull,0,0,W,H); sx.globalAlpha=1;
+  paint(0);
+}
+
+var fpsOn = location.hash.indexOf('fps')>=0;
+var fpsEl=null, frames=0, fpsT0=0;
+window.__fps=0; window.__fpsMin=999;
+if(fpsOn){
+  fpsEl=document.createElement('div');
+  fpsEl.style.cssText='position:fixed;left:8px;top:8px;z-index:9;color:#E8DFCB;font:12px monospace;background:rgba(0,0,0,.5);padding:2px 6px';
+  document.body.appendChild(fpsEl);
+}
+
+var running=false, t0=0;
+function loop(now){
+  if(!t0) t0=now;
+  var t=(now-t0)/1000;
+  paint(t);
+  frames++; if(!fpsT0)fpsT0=now;
+  if(now-fpsT0>400){
+    window.__fps=Math.round(frames*1000/(now-fpsT0));
+    if(t>0.6 && window.__fps<window.__fpsMin) window.__fpsMin=window.__fps;
+    if(fpsEl) fpsEl.textContent='fps '+window.__fps+' min '+window.__fpsMin;
+    frames=0; fpsT0=now;
+  }
+  if(t<DURATION) requestAnimationFrame(loop);
+  else { running=false; paint(DURATION); }
+}
+function fire(){ if(running) return; running=true; t0=0; frames=0; fpsT0=0; onFire(); requestAnimationFrame(loop); }
+window.__fire=fire;
+cv.addEventListener('pointerdown', fire);
+window.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter') fire(); });
+window.addEventListener('resize', function(){ clearTimeout(window.__rt); window.__rt=setTimeout(resize,180); });
+
+
+/* ===== 夜空・星・押す場所の印 ===== */
+function drawSky(g, seed){
+  g.fillStyle=C.night; g.fillRect(0,0,W,H);
+  /* 藍のムラ。面ではなく、太い鉛筆の掃きで作る */
+  var r=mulberry32(seed), i, k;
+  for(i=0;i<26;i++){
+    var y0=H*(0.02+r()*0.80);
+    var x0=-W*0.1+r()*W*0.4;
+    var len=W*(0.45+r()*0.75);
+    var pts=[];
+    for(k=0;k<=5;k++){
+      var t=k/5;
+      pts.push([x0+len*t, y0+N(t*2.2+i, i)*H*0.045]);
+    }
+    hand(g, pts, {color: r()<0.5? C.deep : '#223353', amp:6*U, w:(14+r()*30)*U, passes:1, alpha:0.32, seed:i*7+3, step:34*U});
+  }
+}
+
+function starField(seed, n){
+  var r=mulberry32(seed), out=[], i;
+  for(i=0;i<n;i++) out.push({x:r()*W, y:r()*H*0.66, s:0.7+r()*1.4, p:r()*6.2832, big:r()<0.07});
+  return out;
+}
+function drawStars(g, list, t){
+  var i;
+  for(i=0;i<list.length;i++){
+    var s=list[i];
+    var tw=0.40+0.60*(0.5+0.5*Math.sin(t*1.25+s.p));
+    g.globalAlpha=tw*0.8;
+    g.strokeStyle=C.paper; g.fillStyle=C.paper; g.lineCap='round';
+    if(s.big){
+      var L=s.s*2.9*U;
+      g.lineWidth=1.05*U;
+      g.beginPath();
+      g.moveTo(s.x-L,s.y+N(s.p,1)*1.2); g.quadraticCurveTo(s.x,s.y,s.x+L,s.y+N(s.p+3,1)*1.2);
+      g.moveTo(s.x+N(s.p+7,1)*1.2,s.y-L); g.quadraticCurveTo(s.x,s.y,s.x+N(s.p+9,1)*1.2,s.y+L);
+      g.stroke();
+    } else {
+      g.beginPath(); g.arc(s.x,s.y,s.s*0.68*U,0,6.2832); g.fill();
+    }
+  }
+  g.globalAlpha=1;
+}
+
+/* 押す場所の印。文字は載せない */
+function drawMark(g, x, y, rr, seed){
+  var pts=[],k;
+  for(k=0;k<=15;k++){ var a=k/15*6.2832; pts.push([x+Math.cos(a)*rr, y+Math.sin(a)*rr*0.92]); }
+  hand(g, pts, {color:C.paper, amp:1.6*U, w:1.0*U, passes:2, alpha:0.26, seed:seed, step:5*U});
+}
+
+function drawGrain(g){ /* 粒は静止画層に焼き済み */ }
+
+var stars=[], cracks=[], shards=[], rays=[], EG={};
+
+function eggPts(cx, cy, rx, ry){
+  var pts=[], k;
+  for(k=0;k<=34;k++){
+    var a=k/34*6.2832 - Math.PI/2, s=Math.sin(a);
+    var taper=1-0.22*Math.max(0,-s);
+    pts.push([cx+Math.cos(a)*rx*taper, cy+s*ry]);
+  }
+  return pts;
+}
+
+function buildCracks(){
+  cracks.length=0;
+  var r=mulberry32(8080), i, j;
+  var start=[EG.cx+EG.rx*0.04, EG.cy-EG.ry*0.74];
+  for(i=0;i<5;i++){
+    var pts=[start.slice()];
+    var ang=Math.PI/2+(i-2)*0.60+(r()-0.5)*0.30;
+    var len=EG.ry*(0.60+r()*0.55), seg=7, px=start[0], py=start[1];
+    for(j=1;j<=seg;j++){
+      ang+=(r()-0.5)*0.9;
+      var st=len/seg;
+      px+=Math.cos(ang)*st; py+=Math.sin(ang)*st;
+      var dx=(px-EG.cx)/EG.rx, dy=(py-EG.cy)/EG.ry, d=Math.hypot(dx,dy);
+      if(d>0.92){ px=EG.cx+dx/d*0.92*EG.rx; py=EG.cy+dy/d*0.92*EG.ry; }
+      pts.push([px,py]);
+    }
+    cracks.push({pts:pts, delay:i*0.26+r()*0.08, seed:r()*500});
+  }
+}
+
+function buildStatic(){
+  sx.clearRect(0,0,W,H);
+  drawSky(sx, 606);
+  var m=Math.min(W,H), GY=H*0.775;
+  EG.rx=Math.min(W*0.22, m*0.185);
+  EG.ry=EG.rx*1.34;
+  EG.cx=W*0.445; EG.cy=GY-EG.ry;
+
+  hand(sx, [[W*0.05,GY+1*U],[W*0.5,GY-4*U],[W*0.95,GY+2*U]], {color:C.dim, amp:3.0*U, w:1.3*U, passes:2, alpha:0.22, seed:71, step:20*U});
+  hand(sx, [[EG.cx-EG.rx*0.72, EG.cy+EG.ry+3*U],[EG.cx+EG.rx*0.78, EG.cy+EG.ry+3*U]], {color:C.ink, amp:2.0*U, w:4.5*U, passes:2, alpha:0.38, seed:33, step:11*U});
+
+  var pts=eggPts(EG.cx,EG.cy,EG.rx,EG.ry);
+  handFill(sx, pts, {color:C.paper, amp:1.9*U, seed:47, step:9*U, alpha:0.95, edge:0.55, edgeColor:'#A2967C'});
+  hatch(sx, pts.slice(17,33), {color:'#C4B79C', len:11*U, n:20, alpha:0.32, seed:6, dir:1, w:1.1*U});
+  hatch(sx, pts.slice(2,9), {color:'#D3C8B1', len:8*U, n:9, alpha:0.20, seed:16, dir:1, w:0.9*U});
+
+  var r=mulberry32(313), i;
+  for(i=0;i<11;i++){
+    var a=r()*6.2832, d=Math.sqrt(r())*0.72;
+    var xx=EG.cx+Math.cos(a)*EG.rx*d, yy=EG.cy+Math.sin(a)*EG.ry*d;
+    var rad=EG.rx*(0.016+r()*0.022), sp=[], k;
+    for(k=0;k<=10;k++){ var aa=k/10*6.2832; sp.push([xx+Math.cos(aa)*rad, yy+Math.sin(aa)*rad*0.85]); }
+    handFill(sx, sp, {color:'#A2967C', amp:0.9*U, seed:i*9, step:3*U, alpha:0.20, edge:0});
+  }
+  stars=starField(12, Math.round(W*H/13000));
+  drawMark(sx, W*0.5, H*0.945, Math.min(W,H)*0.019, 15);
+  buildCracks();
+}
+
+function onFire(){
+  shards.length=0; rays.length=0;
+  var r=mulberry32(Math.floor(Math.random()*99999)), i;
+  var n=W<520?64:98;
+  for(i=0;i<n;i++)
+    shards.push({a:-Math.PI/2+(r()-0.5)*2.0, sp:EG.ry*(0.30+r()*1.25), delay:1.40+r()*1.0,
+                 sz:(0.7+r()*1.5)*U, c:r()<0.26?C.fire:C.paper, sw:(r()-0.5)*0.9});
+  /* 光条は引かない。粒だけであふれさせる */
+}
+
+function paint(t){
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(stat,0,0,W,H);
+  drawStars(ctx, stars, t);
+  var i;
+  var ox=EG.cx+EG.rx*0.04, oy=EG.cy-EG.ry*0.74;
+
+  for(i=0;i<cracks.length;i++){
+    var c=cracks[i], lt=t-c.delay;
+    if(lt<0) continue;
+    var u=outQuint(clamp01(lt/0.40));
+    var nseg=Math.max(2, Math.round(u*(c.pts.length-1))+1);
+    var sub=c.pts.slice(0,nseg);
+    if(nseg<c.pts.length){
+      var f=(u*(c.pts.length-1))%1, a=c.pts[nseg-1], b=c.pts[Math.min(nseg,c.pts.length-1)];
+      sub.push([a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]);
+    }
+    hand(ctx, sub, {color:'#6C5E48', amp:1.6*U, w:1.2*U, passes:1, alpha:0.60, seed:c.seed, step:9*U});
+    if(t>1.5){
+      var gl=clamp01((t-1.5)/0.5);
+      hand(ctx, sub, {color:C.fire, amp:1.2*U, w:1.5*U*gl, passes:1, alpha:0.50*gl, seed:c.seed+3, step:9*U});
+    }
+  }
+
+  /* 殻の口が開く。小さく1つだけ */
+  if(t>1.42){
+    var ou=outCubic(clamp01((t-1.42)/0.9));
+    var ow=EG.rx*0.36*ou, oh=EG.ry*0.050*ou;
+    var op=[], k2;
+    for(k2=0;k2<=12;k2++){
+      var aa2=k2/12*6.2832;
+      op.push([ox+Math.cos(aa2)*ow*(0.75+0.35*(0.5+0.5*N(k2*0.9,3))), oy+3*U+Math.sin(aa2)*oh*(aa2>Math.PI?1.9:1)]);
+    }
+    handFill(ctx, op, {color:C.fire, amp:1.4*U, seed:29, step:4*U, alpha:0.62*ou, edge:0.45, edgeColor:'#8C4E28'});
+  }
+  for(i=0;i<shards.length;i++){
+    var s=shards[i], lt3=t-s.delay;
+    if(lt3<0) continue;
+    var u3=clamp01(lt3/2.2);
+    if(u3>=1) continue;
+    var e=outQuint(u3), d=s.sp*e;
+    var px=ox+Math.cos(s.a+s.sw*e)*d, py=oy+Math.sin(s.a+s.sw*e)*d+Math.pow(u3,2.6)*EG.ry*0.5;
+    ctx.globalAlpha=(1-Math.pow(u3,1.6))*0.88; ctx.fillStyle=s.c;
+    ctx.beginPath(); ctx.arc(px,py,s.sz*(1-u3*0.4),0,6.2832); ctx.fill();
+    ctx.globalAlpha=1;
+  }
+  drawGrain(ctx);
+}
+
+resize();
+</script></body></html>

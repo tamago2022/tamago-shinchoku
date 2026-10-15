@@ -1,0 +1,2332 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="assets/kagi/kagi.js"></script>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
+<title>431 ごきげん補給所・案内人（正本 No.02／No.08）</title>
+<!-- 正本：Issue #431 の DESIGN-LOCK SOURCE。1行も書き換えていない。 -->
+<link rel="stylesheet" href="assets/958-concierge/concierge.css">
+<!-- 966で足したぶんだけ（正本に無い機能の見た目・承認済み写真の配線） -->
+<link rel="stylesheet" href="assets/966/live966.css">
+<!-- 431：承認済みPNGから切り出した画素の差し込みだけ（正本は書き換えていない） -->
+<link rel="stylesheet" href="assets/431-seihon/seihon431.css">
+</head><body>
+
+<main class="prototype-shell concept-02" data-concept="02">
+  <header class="site-head">
+    <a class="brand" href="../../index.html" aria-label="ごきげん補給所">
+      <span class="brand-ja">ごきげん補給所</span>
+      <span class="brand-en">JOY RELIEF STATION</span>
+    </a>
+    <nav class="head-nav" aria-label="案内">
+      <a href="#picks">RECORDS</a><a href="#talk">CONVERSATION</a><a href="#kikai">ABOUT</a>
+    </nav>
+    <button class="head-action" id="go" type="button">話す</button>
+    <button class="head-action stopping" id="stop" type="button">やめる</button>
+  </header>
+
+  <section class="hero-record" aria-labelledby="record-title">
+    <div class="record-copy">
+      <div class="eyebrow">QUIET RECORD COUNTER</div>
+      <h1 class="display" id="record-title">話してくれて、<br>ありがとう。</h1>
+      <p>ここは、ネットの砂漠にある小さなレコード店。<br>あなたの今に寄り添う、4枚を選びます。</p>
+      <div class="micro">A LITTLE OASIS<br>IN THE INTERNET DESERT.</div>
+    </div>
+
+    <div class="record-owner" id="tamako" data-slot="concierge-avatar"></div>
+  </section>
+
+  <section class="conversation" id="talk" aria-label="会話" data-slot="conversation">
+    <div id="log">
+      <div class="conversation-row">
+        <div class="who"><span class="tmk-ava" aria-hidden="true"></span>ごきげん店主</div>
+        <p class="say" data-slot="assistant-message">いらっしゃい。右上の「話す」を押して、声をかけてください。
+          「うれしい気分」「しずかなやつ」——そのくらいで大丈夫です。</p>
+      </div>
+    </div>
+  </section>
+  <p class="micro" id="state">「話す」を押してください</p>
+
+  <section class="recommendations" id="picks" aria-labelledby="picks-02">
+    <div class="section-head">
+      <h2 id="picks-02">店主からのおすすめ</h2>
+      <span class="line"></span>
+      <span class="micro" id="trayTitle">PICKS FOR YOUR MOMENT</span>
+    </div>
+
+    <div class="recommend-grid" id="cards" data-slot="recommendation-grid"></div>
+    <p class="rec-empty" id="empty">
+      まだ何も出ていません。<br>話しかけると、ここに4枚ならびます。
+    </p>
+
+    <div class="player" id="player">
+      <div class="caret" id="caret"></div>
+      <div class="frame" id="frame"><div id="yt"></div></div>
+      <div class="meta">
+        <p class="pt" id="pTitle"></p>
+        <p class="pa" id="pArtist"></p>
+      </div>
+      <label class="thru">
+        <input type="checkbox" id="thru" checked>
+        <span><span class="micdot" id="micdot"></span><b>鳴らしたまま話す</b>
+          — 曲を小さくして、マイクを開けたままにします。</span>
+      </label>
+      <div class="prow">
+        <button class="b-skip" type="button" id="pSkip">30秒すすむ</button>
+        <button class="b-next" type="button" id="pNext">次の札</button>
+        <button class="b-talk" type="button" id="pStop">とめて話す</button>
+        <button class="b-big"  type="button" id="pBig">大きい画面</button>
+      </div>
+    </div>
+
+    <div class="more-wrap"><button class="more-button" type="button" id="more" disabled>他を見せて　↻</button></div>
+    <p class="micro" id="stock" style="text-align:center;margin-top:14px"></p>
+  </section>
+
+  <footer class="site-foot">
+    <div class="brand"><span class="brand-ja">ごきげん補給所</span><span class="brand-en">JOY RELIEF STATION</span></div>
+    <div class="micro">GOOD MUSIC. BRIGHTER DAYS.</div>
+  </footer>
+</main>
+
+<details class="kikai" id="kikai">
+  <summary>お店の機械（声・かかっているお金・設定）</summary>
+
+  <h2>いま何秒・いくら</h2>
+  <p class="meter" id="meter"></p>
+  <p class="sw" id="sw"></p>
+
+  <h2>声</h2>
+  <p><button id="koeBtn" type="button">声：<b id="koeNow">Puck</b><span id="koeSub"></span>　ほかの声にする ▾</button></p>
+  <div class="koedraw" id="koedraw" hidden>
+    <p class="kv">Google（この案内人の声。話している途中でも入れ替えられます）</p>
+    <div class="kd-list" id="koeList"></div>
+    <p class="kv" style="margin-top:12px">ほかの会社の声</p>
+    <div class="kd-list" id="koeOther"></div>
+    <p class="kv" id="koeNote">
+      ▶ を押すとその声で同じ台詞を1本だけ作って鳴らします（1本 約0.02円）。
+      名前を押すと案内人の声がその場で入れ替わります。
+    </p>
+  </div>
+
+  <p style="text-align:right;margin:10px 0 0"><a href="#" id="devLink">・</a></p>
+
+  <details class="settings" id="settings" hidden>
+    <summary>お店の人の設定（お客さんは触らなくて大丈夫です）</summary>
+    <h2>鍵（Google AI Studio）</h2>
+    <input id="gkey" type="password" placeholder="AIza...（Gemini）" autocomplete="off" spellcheck="false">
+    <p class="kv">
+      鍵はこの端末のブラウザの中だけに残ります。つなぐときは、この鍵で
+      <b>使い捨ての入場券（ephemeral token・30分）</b>を1枚もらい、そちらで Google につなぎます。
+      鍵そのものは通話には使いません。
+    </p>
+    <h2>どの案内人（モデル）</h2>
+    <div class="chips" id="models"></div>
+    <h2>声（全部）</h2>
+    <div class="chips" id="voices"></div>
+    <p class="kv">30人ぶんを1本ずつ作って並べて聴くなら → <a href="959-koe-erabi.html">959 声えらび</a></p>
+
+    <h2>テンポを測る</h2>
+    <p class="kv">
+      いまの形は<b>音声のまま往復（Live）</b>。声はGoogleの30人から選べますが、他社の声は使えません。
+      声を選べる範囲を広げるには<b>頭脳と声を分ける</b>しかありません。
+      そのぶん何秒遅くなるのかを、下のボタンで<b>この端末から実際に測ります</b>（3回ずつ・約0.1円）。
+    </p>
+    <div class="row"><button id="tempoBtn" type="button">3回ずつ測る</button></div>
+    <table class="cost" id="tempoTable"></table>
+
+    <h2>いま何にいくら（実測）</h2>
+    <table class="cost" id="costTable"></table>
+
+    <h2>30分話し込んだらいくらか</h2>
+    <table class="cost" id="sanjuTable"></table>
+    <p class="kv">
+      「計算した額」は<b>公式の単価 × この画面が数えた秒数</b>です。
+      <b>Googleが実際に請求している額は、この画面からは取れません。</b>
+      実際の請求額は →
+      <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">Google Cloud の請求</a>
+      ／<a href="https://aistudio.google.com/usage" target="_blank" rel="noopener">AI Studio の使用状況</a>。
+    </p>
+    <p class="kv">
+      値段の出どころ：<a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">Gemini API の公式の値段表</a>。
+      音声 入 $0.005／分、音声 出 $0.018／分（1ドル157円で換算）。<br>
+      中身の作り：<a href="https://github.com/google-gemini/gemini-live-api-examples" target="_blank" rel="noopener">Google の公式サンプル</a>（Apache-2.0）、
+      <a href="https://github.com/wass08/wawa-lipsync" target="_blank" rel="noopener">wawa-lipsync</a>（MIT）、
+      再生は <a href="https://developers.google.com/youtube/iframe_api_reference" target="_blank" rel="noopener">YouTube IFrame Player API</a> の公式の使い方そのまま。<br>
+      画面の形：Issue #431 の正本 <code>docs/design/concierge-html-css/</code>（No.02 Quiet Record Counter）。
+      絵は承認済み PNG のみ。新しい絵は作っていません。
+    </p>
+  </details>
+</details>
+
+<script src="assets/431-seihon/avatar431.js"></script>
+<script src="assets/958-gemini/geminilive.js"></script>
+<script type="module">
+import { Lipsync } from "https://cdn.jsdelivr.net/npm/wawa-lipsync@0.0.2/dist/wawa-lipsync.es.js";
+
+const $=id=>document.getElementById(id);
+const gkeyEl=$("gkey"), goEl=$("go"), stopEl=$("stop");
+const stateEl=$("state"), logEl=$("log"), meterEl=$("meter");
+const cardsEl=$("cards"), emptyEl=$("empty"), moreEl=$("more");
+const YEN=157;
+
+/* ══════════════ 値段（公式の表そのまま）══════════════ */
+const PRICE={ audioInPerMin:0.005, audioOutPerMin:0.018 };
+
+/* ★959：既定を 3.8 Live に。理由は「道具を待たずに喋れる」から。
+   Google公式（Live API capabilities）の対応表：
+     3.1 Flash Live Preview → "Function calling is sequential only.
+        The model will not start responding until you've sent the tool response."
+     3.8 Live → "Supported (default). Set behavior: NON_BLOCKING …
+        Function scheduling (SILENT, WHEN_IDLE, INTERRUPTED) is supported."
+   つまり 3.1 だと「棚を探し終わるまで案内人は一言も喋れない」。それが遅さの正体。
+   万一この鍵で 3.8 が開けなかったときは、自動で 3.1 に落ちる（下の open() ）。*/
+const MODELS=[
+  ["gemini-3.8-live","3.8 Live（速い・道具を待たずに喋る）"],
+  ["gemini-3.1-flash-live-preview","3.1 Flash Live（道具を待つ＝遅い）"]
+];
+const NONBLOCK_OK = m => m.indexOf("3.8")>=0;
+/* ★959：8人だけだったのを、Google公式の30人ぜんぶに。一言はGoogleが付けているもの。
+   出どころ https://ai.google.dev/gemini-api/docs/speech-generation */
+const VOICES=[
+  ["Sulafat","あたたかい"],["Achird","人なつこい"],["Vindemiatrix","やさしい"],["Aoede","風とおしがいい"],
+  ["Zephyr","明るい"],["Puck","陽気"],["Charon","よく知っている"],["Kore","きっぱり"],
+  ["Fenrir","はしゃぐ"],["Leda","若い"],["Orus","きっぱり"],["Callirrhoe","のんき"],
+  ["Autonoe","明るい"],["Enceladus","息まじり"],["Iapetus","すっきり"],["Umbriel","のんき"],
+  ["Algieba","なめらか"],["Despina","なめらか"],["Erinome","すっきり"],["Algenib","しゃがれ"],
+  ["Rasalgethi","よく知っている"],["Laomedeia","陽気"],["Achernar","やわらかい"],["Alnilam","きっぱり"],
+  ["Schedar","ならし"],["Gacrux","大人びた"],["Pulcherrima","前のめり"],["Zubenelgenubi","くだけた"],
+  ["Sadachbia","生きがいい"],["Sadaltager","物知り"]
+].map(([n,j])=>[n,n+"／"+j]);
+
+function paintChips(box,list,storeKey,def){
+  const cur=(()=>{ try{return localStorage.getItem(storeKey)||def;}catch(e){return def;} })();
+  box.innerHTML="";
+  list.forEach(item=>{
+    const [v,t]=Array.isArray(item)?item:[item,item];
+    const l=document.createElement("label");
+    l.innerHTML=`<input type="radio" name="${storeKey}" value="${v}"${v===cur?" checked":""}><span>${t}</span>`;
+    box.appendChild(l);
+  });
+  if(!box.querySelector("input:checked")) box.querySelector("input").checked=true;
+  box.addEventListener("change",e=>{ try{localStorage.setItem(storeKey,e.target.value);}catch(_){} });
+}
+/* 958で 3.1 を覚えている端末を、959では 3.8 に引き上げる（1回だけ） */
+try{ if(!localStorage.getItem("tamago_959_model_moved")){
+  localStorage.setItem("tamago_gemini_model",MODELS[0][0]);
+  localStorage.setItem("tamago_959_model_moved","1"); } }catch(_){}
+paintChips($("models"),MODELS,"tamago_gemini_model",MODELS[0][0]);
+paintChips($("voices"),VOICES,"tamago_gemini_voice","Puck");
+const pick=k=>(document.querySelector(`input[name=${k}]:checked`)||{}).value;
+try{ const k=localStorage.getItem("tamago_gemini_key"); if(k) gkeyEl.value=k; }catch(_){}
+
+/* ══════════════ ★964：声をその場で入れ替える ══════════════
+   なぜ別ページ（959 声えらび）を畳んでここに入れたか：
+   Live API は「つないだ後に声だけ差し替える」口を持っていない（公式の
+   speechConfig は setup のときに1回だけ渡す）。だから入れ替え＝つなぎ直し。
+   つなぎ直しは1秒ちょっとで終わるので、札も帳簿も残したまま裏でやる。
+   ──「次の会話からこの声」を、押した瞬間に自動でやる、という意味。 */
+const VOICE_JA=Object.fromEntries(VOICES.map(([n,t])=>[n,t.split("／")[1]||""]));
+/* ほかの会社の声。押せない理由は、憶測ではなく実際に叩いた結果を書く。 */
+const OTHER_VOICES=[
+  {id:"xai-iris",  name:"Iris",      by:"xAI（Grok Voice）", why:"xAIに残高がありません"},
+  {id:"xai-grok",  name:"Grok Voice",by:"xAI",               why:"xAIに残高がありません"}
+];
+let voiceNow=(()=>{ try{return localStorage.getItem("tamago_gemini_voice")||"Puck";}catch(e){return "Puck";} })();
+const SERIFU_TRY="こんばんは。今日はどんな気分で来られました？";
+const TRY_CACHE=new Map();
+let tryAudio=new Audio(), tryBusy="";
+
+function paintKoeBar(){
+  $("koeNow").textContent=voiceNow;
+  $("koeSub").textContent=VOICE_JA[voiceNow]?("（"+VOICE_JA[voiceNow]+"）"):"";
+}
+function paintKoeList(){
+  const box=$("koeList"); box.innerHTML="";
+  for(const [n] of VOICES){
+    const d=document.createElement("div");
+    d.className="kd"+(n===voiceNow?" on":"");
+    d.innerHTML=`<button class="pick" type="button">${n}<i>${VOICE_JA[n]||""}</i></button>`
+      +`<button class="try${tryBusy===n?" busy":""}" type="button">${tryBusy===n?"…":"▶"}</button>`;
+    d.querySelector(".pick").onclick=()=>setVoice(n);
+    d.querySelector(".try").onclick=()=>kikuKoe(n);
+    box.appendChild(d);
+  }
+  const ob=$("koeOther"); ob.innerHTML="";
+  for(const o of OTHER_VOICES){
+    const d=document.createElement("div");
+    d.className="kd dead";
+    d.title=o.why;
+    d.innerHTML=`<button class="pick" type="button" disabled>${o.name}<i>${o.by}</i></button>`
+      +`<button class="try" type="button" disabled>—</button>`;
+    ob.appendChild(d);
+  }
+  $("koeNote").innerHTML=
+    "▶ を押すと、その声で同じ台詞を1本だけ作って鳴らします（1本 約0.02円）。"
+    +"名前を押すと案内人の声がその場で入れ替わります（話している途中でもできます）。<br>"
+    +'<span style="color:#a8564c">'+OTHER_VOICES.map(o=>o.name).join("・")
+    +" は "+OTHER_VOICES[0].why+"（"+XAI_PROBE+"）。勝手に買い足すことはしません。</span>";
+}
+/* xAIを実際に叩いた結果。憶測ではなく、返ってきた文をそのまま置く。
+   2026-09-20 00:18 に api.x.ai/v1/chat/completions を叩いた返事：
+     403 permission-denied
+     "Your newly created team doesn't have any credits or licenses yet." */
+const XAI_PROBE="2026-09-20 実測：403 permission-denied／残高も利用権もありません";
+
+async function setVoice(n){
+  if(n===voiceNow) return;
+  voiceNow=n;
+  try{ localStorage.setItem("tamago_gemini_voice",n); }catch(_){}
+  const r=document.querySelector(`input[name=tamago_gemini_voice][value="${n}"]`);
+  if(r) r.checked=true;
+  paintKoeBar(); paintKoeList();
+  if(live()){ await tsunagiNaosu(n); }
+  else say("sys","声を "+n+"（"+(VOICE_JA[n]||"")+"）にしました。次に「話す」を押すとこの声になります。");
+}
+
+/* 声だけ替えてつなぎ直す。札・帳簿・ストップウォッチは消さない。 */
+let swapping=false;
+async function tsunagiNaosu(n){
+  if(swapping) return; swapping=true;
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  say("sys","声を "+n+"（"+(VOICE_JA[n]||"")+"）に入れ替えています…");
+  setState("声を入れ替えています…");
+  const t0=performance.now();
+  try{
+    /* 古いつなぎめの耳を先に塞ぐ。塞がないと、切った知らせが後から届いて
+       「切れたからつなぎ直す」の道に入り、二重につながってしまう（二重課金の芽）。 */
+    try{ if(api){ api.onClose=()=>{}; api.onError=()=>{}; api.onReceiveResponse=()=>{};
+                  api.onRawMessage=()=>{}; api.disconnect(); } }catch(_){}
+    try{ mnode&&mnode.disconnect(); msrc&&msrc.disconnect(); }catch(_){}
+    /* 音の箱も必ず閉じる。閉じないと入れ替えるたびに1つずつ増えて、
+       数回で「これ以上作れません」になる（ブラウザの上限）。 */
+    try{ if(mctx && mctx.state!=="closed") await mctx.close(); }catch(_){}
+    if(mic) mic.getTracks().forEach(t=>t.stop());
+    stopAudio();
+    api=null; mic=null; mnode=null; msrc=null; mctx=null;
+    retried=false; gotSetup=false; stopping=false; modelFell=false;
+    await open(WS_V1ALPHA, key);
+    SWAP.list.push((performance.now()-t0)/1000);
+    say("sys","入れ替えました（"+((performance.now()-t0)/1000).toFixed(2)+"秒）。そのまま話しかけてください。");
+    paintSW();
+  }catch(e){
+    say("sys","入れ替えに失敗しました → "+e.message+"　もう一度「話す」を押してください。");
+    setState("切れました"); goEl.disabled=false;
+  }finally{ swapping=false; }
+}
+/* 入れ替えに何秒かかったかも実測して画面に出す（憶測を書かないため） */
+const SWAP={ list:[], heikin(){ return this.list.length?this.list.reduce((a,b)=>a+b,0)/this.list.length:0; } };
+
+/* ══════════ 試聴（959 声えらび と同じ作り。ページを分けずここで鳴らす） ══════════ */
+const TTS_MODEL="gemini-2.5-flash-preview-tts";
+function wavFromPcm16(bytes, rate){
+  const n=bytes.length, buf=new ArrayBuffer(44+n), v=new DataView(buf);
+  const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  w(0,"RIFF"); v.setUint32(4,36+n,true); w(8,"WAVEfmt "); v.setUint32(16,16,true);
+  v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,rate,true);
+  v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  w(36,"data"); v.setUint32(40,n,true);
+  new Uint8Array(buf,44).set(bytes);
+  return new Blob([buf],{type:"audio/wav"});
+}
+const b64ToBytes=b64=>{ const s=atob(b64), a=new Uint8Array(s.length);
+  for(let i=0;i<s.length;i++) a[i]=s.charCodeAt(i); return a; };
+function hirouOto(obj){
+  let best=null, mime="";
+  (function walk(o){
+    if(!o||typeof o!=="object") return;
+    for(const k of Object.keys(o)){
+      const v=o[k];
+      if(typeof v==="string"){
+        if((k==="data"||k==="audio"||k==="b64_json") && v.length>2000
+           && (!best||v.length>best.length)) best=v;
+        if(/mime/i.test(k)) mime=v;
+      } else walk(v);
+    }
+  })(obj);
+  return {b64:best, mime};
+}
+/* 1本の声を作る。返り値に「何秒でできたか」を付ける＝テンポの実測にそのまま使う。 */
+async function tsukuruKoe(voice, key, serifu){
+  const t0=performance.now();
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+    method:"POST",
+    headers:{ "x-goog-api-key":key, "Content-Type":"application/json" },
+    body:JSON.stringify({ model:TTS_MODEL, input:serifu||SERIFU_TRY,
+      response_format:{type:"audio"}, generation_config:{ speech_config:[{voice}] } })
+  });
+  if(!r.ok){ const t=await r.text().catch(()=>""); throw new Error(r.status+" "+t.slice(0,200)); }
+  const ct=r.headers.get("content-type")||"";
+  let blob;
+  if(ct.includes("json")){
+    const j=await r.json(); const {b64,mime}=hirouOto(j);
+    if(!b64) throw new Error("音が入っていませんでした");
+    const bytes=b64ToBytes(b64), m=/rate=(\d+)/.exec(mime||"");
+    blob=(mime&&/mpeg|mp3|wav|ogg/i.test(mime))?new Blob([bytes],{type:mime})
+        :wavFromPcm16(bytes, m?parseInt(m[1],10):24000);
+  }else blob=await r.blob();
+  return { url:URL.createObjectURL(blob), ms:performance.now()-t0 };
+}
+async function kikuKoe(n){
+  const c=TRY_CACHE.get(n);
+  if(c&&c.url){ try{tryAudio.pause();}catch(_){} tryAudio=new Audio(c.url); tryAudio.play().catch(()=>{}); return; }
+  /* ★969：鍵は全ページ共通の1本から取る。欄が空でも端末に入っていれば話せる。 */
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!key){ if(window.TamagoKagi){ window.TamagoKagi.ask(); }
+            else { say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
+                   $("settings").hidden=false; $("settings").open=true; }
+            return; }
+  if(SAIFU.nokori()<=0){ say("sys","今日の上限を使い切っています。"); return; }
+  tryBusy=n; paintKoeList();
+  try{
+    const got=await tsukuruKoe(n,key,SERIFU_TRY);
+    TRY_CACHE.set(n,got);
+    SAIFU.put(SAIFU.today()+0.02);
+    try{tryAudio.pause();}catch(_){}
+    tryAudio=new Audio(got.url); tryAudio.play().catch(()=>{});
+    say("sys",n+" の声："+(got.ms/1000).toFixed(1)+"秒でできました。");
+  }catch(e){
+    say("sys",n+" の声は出ませんでした → "+e.message);
+  }finally{ tryBusy=""; paintKoeList(); paintMeter(); }
+}
+$("koeBtn").addEventListener("click",()=>{
+  const d=$("koedraw"); d.hidden=!d.hidden; if(!d.hidden) paintKoeList();
+});
+paintKoeBar();
+
+/* ══════════ ★964：テンポの実測 ══════════
+   問い「Googleだからこのテンポなのか。他だとやれるのか」への答えを、
+   憶測ではなくこの端末の往復時間で出す。測るのは2本だけ：
+     ① 頭脳（文章）の最初の1文字が届くまで … streamGenerateContent（公式の alt=sse）
+     ② その文章を声にするのにかかる時間   … interactions（TTS）
+   ①＋② が「頭脳と声を分けた形」の秒数。Live（音声のまま往復）は
+   顔の下のストップウォッチが会話のたびに測っている。両方を並べて出す。 */
+const TEMPO={ brain:[], tts:[], done:false };
+async function hakaruAtama(key){
+  const t0=performance.now();
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"
+    +"gemini-2.5-flash:streamGenerateContent?alt=sse",{
+    method:"POST", headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
+    body:JSON.stringify({
+      systemInstruction:{parts:[{text:"日本語で20字以内。短く。"}]},
+      contents:[{role:"user",parts:[{text:"うれしい気分の曲ある？"}]}]})
+  });
+  if(!r.ok){ const t=await r.text().catch(()=>""); throw new Error(r.status+" "+t.slice(0,160)); }
+  const rd=r.body.getReader(), dec=new TextDecoder();
+  let buf="";
+  while(true){
+    const {value,done}=await rd.read();
+    if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    if(buf.indexOf('"text"')>=0){ try{rd.cancel();}catch(_){} break; }
+  }
+  return performance.now()-t0;
+}
+function paintTempo(msg){
+  const t=$("tempoTable");
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+  const s=v=>(v/1000).toFixed(2)+"秒";
+  const rows=[];
+  const hei=STOP.heikin();
+  rows.push(["① いまの形：音声のまま往復（Live）",
+    hei?`<b>${hei.toFixed(2)}秒</b>（この端末で${STOP.list.length}回）`
+       :"まだ測れていません（話しかけると出ます）"]);
+  rows.push(["② 頭脳だけ（文章の最初の1文字まで）",
+    TEMPO.brain.length?`${s(avg(TEMPO.brain))}（${TEMPO.brain.length}回）`:"—"]);
+  rows.push(["③ 声にする（同じ台詞を1本作る）",
+    TEMPO.tts.length?`${s(avg(TEMPO.tts))}（${TEMPO.tts.length}回）`:"—"]);
+  rows.push(["②＋③ 頭脳と声を分けた形",
+    (TEMPO.brain.length&&TEMPO.tts.length)
+      ?`<b>${s(avg(TEMPO.brain)+avg(TEMPO.tts))}</b>`:"—"]);
+  /* ★964：ここから下は「たまごさんのMacで実際に叩いて出た数字」。
+     2026-09-20 00:18〜00:30 実測。3回ずつ。憶測は1つも入れていない。 */
+  rows.push(["④ OpenAI Realtime（音声のまま往復・別の会社）",
+    "<b>0.41／0.44／0.41秒</b>（頼んでから最初の音まで・3回）"]);
+  rows.push(["⑤ OpenAI 頭脳＋OpenAI TTS（声を分けた形）",
+    "頭脳 1.21／1.29秒 ＋ 声 2.96／3.20／5.01秒 ＝ <b>約4.2〜6.3秒</b>"]);
+  rows.push(["⑥ Grok Voice・Iris（xAI）","<b>測れませんでした</b>（"+XAI_PROBE+"）"]);
+  let html=rows.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+  html+=`<tr><td colspan="2" style="color:#2a2622;line-height:1.85;padding-top:10px">`
+    +`<b>① と ④ は測り方が違います。</b>①は「こちらが喋り終わったと機械が気づいてから」、`
+    +`④は「文字で頼んでから」。①には“喋り終わりを聞き分ける時間”が入っています。`
+    +`同じ物差しでは比べられないので、そのまま両方書いています。<br>`
+    +`<b>それでも言えること：</b>このテンポはGoogleだから出ているのではありません。`
+    +`<b>「音声のまま往復する」形だから</b>出ています。`
+    +`④のとおり、別の会社でも音声のまま往復すれば同じ速さの土俵に乗ります。`
+    +`遅くなるのは会社を替えたときではなく、<b>音声のまま往復するのをやめて`
+    +`「文章を作る → 別の声に読ませる」に分けたとき</b>（⑤＝実測で4〜6秒）。<br>`
+    +`<b>引き換えになるもの：</b>音声のまま往復する形は速いかわりに、`
+    +`声はその会社が持っている顔ぶれからしか選べません（Googleなら上の30人）。`
+    +`⑤に分ければ世の中のどの声でも使えますが、実測で3〜5秒ぶん間が空きます。`
+    +`</td></tr>`;
+  if(TEMPO.brain.length&&TEMPO.tts.length&&hei){
+    const sa=(avg(TEMPO.brain)+avg(TEMPO.tts))/1000-hei;
+    html+=`<tr><td colspan="2" style="color:#2a2622;line-height:1.8;padding-top:8px">`
+      +`<b>引き換えになるもの：</b>声を選べる形（②＋③）にすると、`
+      +`いまの形より<b>1回あたり ${sa>0?"約"+sa.toFixed(2)+"秒 遅くなります":"遅くなりませんでした"}</b>。`
+      +`いまの形は速いかわりに<b>Googleの30人からしか選べません</b>。`
+      +`</td></tr>`;
+  }
+  if(msg) html+=`<tr><td colspan="2" style="color:#c4483a">${msg}</td></tr>`;
+  t.innerHTML=html;
+}
+$("tempoBtn").addEventListener("click",async()=>{
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!key){ if(window.TamagoKagi) window.TamagoKagi.ask();
+            else paintTempo("Geminiの鍵が空です。上の欄に入れてください。"); return; }
+  const b=$("tempoBtn"); b.disabled=true; b.textContent="測っています…";
+  TEMPO.brain=[]; TEMPO.tts=[];
+  for(let i=0;i<3;i++){
+    try{ TEMPO.brain.push(await hakaruAtama(key)); }
+    catch(e){ paintTempo("頭脳を測れませんでした → "+e.message); }
+    paintTempo();
+  }
+  for(let i=0;i<3;i++){
+    try{ const g=await tsukuruKoe(voiceNow,key,"はい、探しますね。"); TEMPO.tts.push(g.ms);
+         SAIFU.put(SAIFU.today()+0.02); }
+    catch(e){ paintTempo("声を測れませんでした → "+e.message); }
+    paintTempo();
+  }
+  TEMPO.done=true; paintTempo(); paintMeter();
+  b.disabled=false; b.textContent="もう一度測る";
+});
+
+/* ══════════════ 棚 ══════════════ */
+const ASSET="assets/953-songs/";
+const CAT={ head:null, joy:null, reg:null, ny:null, t:{}, a:{}, loading:null,
+  async load(){
+    if(this.head) return;
+    if(this.loading) return this.loading;
+    this.loading=Promise.all([
+      fetch(ASSET+"head.json").then(r=>r.json()),
+      fetch(ASSET+"joy.json").then(r=>r.ok?r.json():{cards:[],kind:{}}).catch(()=>({cards:[],kind:{}})),
+      /* ★966：どこの人か。tools/_966_build_region.py が棚のデータから作る。
+         取れなかった人は入っていない（推測で埋めない）。 */
+      fetch(ASSET+"region.json").then(r=>r.ok?r.json():{r:{},group:{}}).catch(()=>({r:{},group:{}})),
+      /* ★1024：いつ入荷したか。tools/_1024_nyuka_hiduke.py が**棚の正本のgit履歴**から引く。
+         中身は「窓（直近45日）の中にいる人だけ」＝約12KB。載っていない人＝最近ではない。
+         ファイルが無い／空でも、ただ「最近入荷」と言わなくなるだけ（壊れない）。 */
+      fetch(ASSET+"nyuka.json").then(r=>r.ok?r.json():{a:{}}).catch(()=>({a:{}}))
+    ]).then(([h,j,g,n])=>{ this.head=h; this.joy=j; this.reg=g; this.ny=n||{a:{}};
+                           buildEar(); paintStock(); });
+    return this.loading;
+  },
+  async title(n){ if(!this.t[n]) this.t[n]=fetch(ASSET+"t/"+n+".json").then(r=>r.ok?r.json():[]).catch(()=>[]);
+                  return this.t[n]; },
+  async byArtist(n){ if(!this.a[n]) this.a[n]=fetch(ASSET+"a/"+n+".json").then(r=>r.ok?r.json():[]).catch(()=>[]);
+                  return this.a[n]; },
+  /* ★1020：その曲について**うちの棚に書いてある一文**。tools/_1020_add_note_to_shelf.py が作る。
+     ★探すときには読まない。**札が4枚出てから、その4枚が入っている棚だけ読む。**
+     （最初は a/ の中に混ぜたが、探す棚が 2,984KB→3,992KB になって重くなったのでやめた。
+       いまの形なら、4枚出しても増えるのは約36KBだけ。探す速さは1バイトも変わらない。） */
+  no:{},
+  async notes(n){ if(!this.no[n]) this.no[n]=fetch(ASSET+"n/"+n+".json").then(r=>r.ok?r.json():{}).catch(()=>({}));
+                  return this.no[n]; }
+};
+/* 画面に出た札の「うちの言葉」だけを埋める。出ていないものは取りに行かない。 */
+async function fillNotes(list){
+  if(!CAT.head) return;
+  const hitsuyou=[...new Set((list||[]).filter(c=>c.nkey!=null).map(c=>c.ai%CAT.head.nb))];
+  if(!hitsuyou.length) return;
+  const tana=await Promise.all(hitsuyou.map(n=>CAT.notes(n)));
+  const hako={}; for(const t of tana) Object.assign(hako,t);
+  for(const c of list){ if(c.nkey&&hako[c.nkey]&&c.fact) c.fact.note=hako[c.nkey]; }
+}
+const KIND_JA={music:"音楽",food:"食",cute:"動物",laugh:"笑い",travel:"旅",dance:"踊り",joy:"ことば"};
+const KINDS=Object.keys(KIND_JA);
+
+/* ══════════════ ★966 その3：同じ案内を繰り返させない ══════════════
+   2026-09-20 たまごさん実測：
+   「札の下、そのままになりますよっていうのが毎回来るのを、回数減らしてほしい。
+     せいぜい1回のやり取りで2回ぐらいまで。毎回毎回言うから、うんって感じ。」
+
+   これまでは system instruction に「『押すと、その札の下でそのまま鳴りますよ』と伝える」と
+   書いてあったので、**札を出すたびに必ず言う**のが正しい動作になっていた。お願いではなく
+   仕様だったので、頼んでも直らない。だから**言える回数をこちら側で持つ。**
+   一度言った案内は、この会話ではもう案内人に渡さない（第20条：仕組みまで作って初めて完了）。 */
+const ANNAI={
+  n:{}, max:{oseba:1, ookii:1},
+  say(k){ const c=this.n[k]||0, m=this.max[k]||1;
+          if(c>=m) return false; this.n[k]=c+1; return true; },
+  reset(){ this.n={}; }
+};
+
+/* ══════════════ ★1020：察する ══════════════
+   たまごさん 2026-09-22：
+   「仕事ができる店員というか、仕事ができるスナックのママじゃないけどさ、
+     相手を察して『もしかしたらこの人はこういうのが好きなんじゃないか』って。
+     目標は『おじさん、わかってるね』『俺の欲しいものわかってるね』みたいな感じ。」
+
+   言葉だけでは分からない。**押したか／押さずに通り過ぎたか**が、いちばん正直な返事。
+   ここに溜めたものを、次に棚を引くとき案内人に渡す。
+   ＝趣味の違う2人に同じものを返せなくなる（構造で止める。お願いでは直らない）。 */
+const KYAKU={
+  oshi:[], suru:[], tobashi:0, osita:null, koe:[],
+  reset(){ this.oshi=[]; this.suru=[]; this.tobashi=0; this.osita=new Set(); this.koe=[]; },
+  osu(c){ this.osita.add(c.key); if(this.oshi.length<8) this.oshi.push(c); },
+  /* いま出ている札を引っ込めるとき、押されなかったものを「素通り」に落とす */
+  nagasu(list){ for(const c of (list||[])) if(!this.osita.has(c.key) && this.suru.length<24) this.suru.push(c); },
+  iu(t){ if(t) this.koe.push(t); if(this.koe.length>6) this.koe.shift(); },
+  /* 案内人に渡す「この人について分かっていること」。無理に作らない。**あるときだけ言う。** */
+  mikata(){
+    const o=[];
+    if(this.oshi.length){
+      const n=this.oshi.slice(-3).map(c=>"「"+c.title+"」"+((c.fact&&c.fact.artist)?("／"+c.fact.artist):""));
+      o.push("この人が実際に押したもの："+n.join("、")+"。ここが当たっている線。");
+      const er={};
+      for(const c of this.oshi) for(const e of ((c.fact&&c.fact.eraList)||[])) er[e]=(er[e]||0)+1;
+      const top=Object.keys(er).sort((a,b)=>er[b]-er[a])[0];
+      if(top&&er[top]>=2) o.push("押したものは "+top.replace("s","年代")+" に寄っている。");
+    }
+    if(!this.oshi.length && this.suru.length>=4)
+      o.push("★この人は、ここまで出した"+this.suru.length+"枚を1枚も押していない。"
+            +"同じ線をもう一度出さないこと。方向を変えるか、思い切って外れ値を1枚出すこと。");
+    else if(this.suru.length>=4)
+      o.push("素通りされたのは："+this.suru.slice(-4).map(c=>"「"+c.title+"」").join("、")+"。この線はもう出さない。");
+    if(this.tobashi>=2) o.push("すぐ次へ飛ばしている。入りの長いものは避けること。");
+    return o.join("\n");
+  }
+};
+KYAKU.reset();
+
+/* ══════════════ ★1020：メールの誘いは、一人につき1回だけ ══════════════
+   たまごさん 2026-09-22：
+   「毎回やるとうざいから、話の流れで『一人につき1回』くらい、自然に伝える感じで。
+     『登録したら得だな』と実感してもらって、実際に登録につなげる」
+
+   ★調べた実例をそのまま使う（似せるのではなく、そのまま）。出典は下に置く。
+   ① 出さない。**相手が何かを押した直後にだけ、1回。**
+      NN/g（n=452・23種の広告を1〜7で採点）で**いちばん嫌われたのが「画面を覆うモーダル」**
+      （デスクトップ平均5.09／モバイル5.45、モバイルのほうが嫌われる）。
+      → だからポップアップは作らない。**窓も覆わない。小さな1行だけ。**
+      https://www.nngroup.com/articles/most-hated-advertising-techniques/
+   ② **押して初めて入力に進む2段階にする。**Omnisend の12.4億回の表示を集計した比較で、
+      クリック起点の2ステップ 4.1% がいちばん高く、ふつうのモーダル 2.95% より上。
+      https://bdow.com/stories/email-signup-benchmarks/
+   ③ **逃げ道を先に書く。**Austin Kleon のニュースレター頁はこの1行だけ：
+      「Not ready to sign up yet? You can read the latest issue here.」
+      https://austinkleon.com/newsletter/
+   ④ **中身を数で言う。**James Clear：「3 short ideas from me, 2 quotes from others,
+      and 1 question for you to ponder.」→「登録して」ではなく「何が届くか」を書く。
+      https://jamesclear.com/3-2-1
+   ⑤ **気に入った直後に言う。**Backlinko は、読んだ記事に合わせた誘いに変えただけで
+      そのページの登録率 0.54%→4.82%。About頁（＝もう好きな人が来る頁）は記事の4倍取れた。
+      https://backlinko.com/increase-conversions
+
+   受け皿は新しく作らない。**本番の「ひとこと目安箱」を使う**（2026-09-18に本番バンドルで
+   「登録すると、あなた好みのものを不定期でお届けします」を確認済み＝感想を送ったあとに出るボタン）。 */
+const MAIL={
+  KEY:"tamago_mail_sasoi_1020",
+  SAKI:"https://joy-relief-station.lovable.app/",
+  sunda(){ try{ return !!localStorage.getItem(this.KEY); }catch(_){ return false; } },
+  sumu(){ try{ localStorage.setItem(this.KEY,new Date().toISOString()); }catch(_){} },
+  el:null,
+  /* 押した直後に1回だけ。2回目以降はこの関数ごと何もしない。 */
+  dasu(c){
+    if(this.sunda()||this.el) return false;
+    this.sumu();
+    const p=document.createElement("p");
+    p.className="micro";
+    p.style.cssText="text-align:center;margin-top:14px;line-height:2";
+    p.innerHTML='気に入ったものが見つかったら、'
+      +'<a href="'+this.SAKI+'" target="_blank" rel="noopener" '
+      +'style="color:inherit;text-decoration:underline">同じ手ざわりのものを、見つけたときだけお送りします</a>'
+      +'　<button type="button" style="border:0;background:none;padding:0;font:inherit;'
+      +'color:inherit;opacity:.6;cursor:pointer;text-decoration:underline">いまはいいです</button>';
+    p.querySelector("button").addEventListener("click",()=>{ p.remove(); MAIL.el=null; });
+    const anchor=document.querySelector(".more-wrap");
+    if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(p,anchor.nextSibling);
+    else return false;
+    this.el=p;
+    return true;
+  }
+};
+
+/* どの棚に何枚あるか。からっぽの棚は案内人に最初から知らせて、
+   「無いのに音楽で埋める」を構造的に起こせなくする。 */
+function stockCount(){
+  const o={music:CAT.head?CAT.head.n||0:0};
+  for(const k of KINDS) if(k!=="music") o[k]=0;
+  if(CAT.joy&&CAT.joy.cards) for(const c of CAT.joy.cards){ if(c.k!=="music") o[c.k]=(o[c.k]||0)+1; }
+  return o;
+}
+function paintStock(){
+  const s=stockCount();
+  const aru=KINDS.filter(k=>s[k]>0).map(k=>KIND_JA[k]+" "+s[k]);
+  const nai=KINDS.filter(k=>!s[k]).map(k=>KIND_JA[k]);
+  $("stock").innerHTML="いま棚にあるもの："+aru.join("／")
+    +(nai.length?('<br><span style="color:#a8564c">'+nai.join("・")+" の棚はまだ空です（仕入れ待ち）</span>"):"");
+}
+
+const norm=s=>String(s).normalize("NFKC").toLowerCase()
+  .replace(/[\s'’`\-_.,!?/()（）「」『』・:;"]+/g," ").trim();
+const bucketOf=pre=>(pre.charCodeAt(0)*131+(pre.length>1?pre.charCodeAt(1):0))%(CAT.head?CAT.head.nb:128);
+function prefixes(s){ const o=new Set(); for(const w of norm(s).split(" ")) if(w) o.add(w.slice(0,2)); return [...o]; }
+function tidy(title){
+  let p=0;
+  if(title.length>45) p-=60; else if(title.length>30) p-=20;
+  if(/[|｜]/.test(title)) p-=50;
+  if(/[【】]/.test(title)) p-=25;
+  if(/[☀-⟿✨🎵🔥]/u.test(title)) p-=30;
+  return p;
+}
+const shown=new Set();
+let pool=[], poolLabel="";
+
+/* ══════════════ ★966 その1：耳（日本語の固有名詞）══════════════
+   2026-09-20 たまごさん実測：「青葉市子さんに似てる曲ありますか」→ いちごの話が始まった。
+   「ハリー・ベラフォンテ」→ 何も出ない。**人の名前が聞き取れていない。**
+
+   達人のやり方をそのまま使う（オリジナルを作らない）。3段構え。
+   ① Googleの公式機能 customVocabulary（音声認識に「よく出る言葉」を先に渡す）。
+      公式：Live transcription / Custom vocabulary biasing
+      「Provide a list of up to 1,000 phrases, proper nouns, brand names…
+        best results are typically achieved with up to 100 terms.」
+      → 曲数の多い順に120語だけ渡す（多く入れるほど効きが薄れると公式が言っている）。
+      ※公式の表では customVocabulary は「Live Transcription」側の機能として並んでいる。
+        案内人（Live Agent）でも効くとは書かれていないので、**効かなくても崩れないように**
+        下の②③を必ず併せて積む。
+   ② 文字づかいを全部そろえる（カタカナ・ひらがな・漢字・ローマ字・濁点・長音・アクセント記号）。
+      「Bjork」と「Björk」、「ベラフォンテ」と「Belafonte」を同じものとして扱う。
+   ③ 聞き取った音に近い名前を、こちらの名簿から探す（部分一致＋編集距離1〜2）。
+      「いちご」→ 青葉市子（あおばいちこ）の「いちこ」に届く。                     */
+
+/* 濁点・半濁点・長音・小書き・記号・アクセント記号を落として、カタカナはひらがなへ。
+   ここまで潰すと「ヴォーン/ボーン」「ジョウ/ショー」「Björk/Bjork」が同じ字面になる。 */
+function loose(s){
+  let t=String(s).normalize("NFKD").replace(/[̀-ͯ]/g,"");   // é→e, ö→o
+  t=t.normalize("NFKC").toLowerCase();
+  t=t.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)); // カタカナ→ひらがな
+  t=t.replace(/[゙゚]/g,"");                                   // 結合濁点
+  const DAKU={"が":"か","ぎ":"き","ぐ":"く","げ":"け","ご":"こ","ざ":"さ","じ":"し","ず":"す",
+    "ぜ":"せ","ぞ":"そ","だ":"た","ぢ":"ち","づ":"つ","で":"て","ど":"と","ば":"は","び":"ひ",
+    "ぶ":"ふ","べ":"へ","ぼ":"ほ","ぱ":"は","ぴ":"ひ","ぷ":"ふ","ぺ":"へ","ぽ":"ほ","ゔ":"う"};
+  t=t.replace(/[がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽゔ]/g,c=>DAKU[c]);
+  const KO={"ぁ":"あ","ぃ":"い","ぅ":"う","ぇ":"え","ぉ":"お","っ":"つ","ゃ":"や","ゅ":"ゆ","ょ":"よ","ゎ":"わ"};
+  t=t.replace(/[ぁぃぅぇぉっゃゅょゎ]/g,c=>KO[c]);
+  t=t.replace(/[ーｰ~〜]/g,"");
+  t=t.replace(/[^0-9a-z぀-ゟ一-鿿]/g,"");
+  return t;
+}
+/* 編集距離。名前は短いので素直に作る（長いものは打ち切る） */
+function dist(a,b,max){
+  if(Math.abs(a.length-b.length)>max) return max+1;
+  let prev=[...Array(b.length+1).keys()];
+  for(let i=1;i<=a.length;i++){
+    const cur=[i]; let best=i;
+    for(let j=1;j<=b.length;j++){
+      const v=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+      cur[j]=v; if(v<best) best=v;
+    }
+    if(best>max) return max+1;
+    prev=cur;
+  }
+  return prev[b.length];
+}
+
+/* 名簿を「耳で引ける形」に組み直す。ページを開いた時ではなく、棚を読んだ時に1回だけ。 */
+let EAR=null, VOCAB=[], ERAN=null, KUNIN=null, KUNIWAKARU=0;
+function buildEar(){
+  if(EAR||!CAT.head) return;
+  const A=CAT.head.A;
+  /* ★1020：棚の年代ごとの人数を数えておく。「珍しい」はここからしか言わない。
+     世の中で珍しいかは分からない。**うちの棚で何組いるか**なら数えられる。 */
+  ERAN={}; for(const a of A) for(const e of (a.e||[])) ERAN[e]=(ERAN[e]||0)+1;
+  /* ★1023：産地ごとの人数。たまごさんの例そのもの——
+     「こんなシベリアのグループなんて珍しいじゃん」。
+     年代だけでは「珍しい＝古い」しか言えなかった。**どこの人かでも数える。**
+     ★数えられるのは region.json に載っている人だけ（いまは2,475組中1,289組）。
+       だから「棚に1組だけ」ではなく **「産地の分かっている◯組のなかで1組」** と言う。
+       ここを省くと、載っていない人のぶんだけ嘘になる。 */
+  KUNIN={}; KUNIWAKARU=0;
+  if(CAT.reg&&CAT.reg.r){
+    const mochi=new Set(A.map(a=>a.i));
+    for(const id in CAT.reg.r){
+      if(!mochi.has(id)) continue;
+      const c=CAT.reg.r[id]; KUNIN[c]=(KUNIN[c]||0)+1; KUNIWAKARU++;
+    }
+  }
+  EAR={ exact:new Map(), keys:[] };   // keys=[{k, i}] 総当たり用
+  const put=(k,i)=>{ if(!k||k.length<2) return;
+    if(!EAR.exact.has(k)) EAR.exact.set(k,i);
+    EAR.keys.push({k,i}); };
+  A.forEach((a,i)=>{
+    put(loose(a.n),i);
+    for(const x of (a.al||[])) put(loose(x),i);
+  });
+  /* ①に渡す語。公式が「100語くらいが一番効く」と言っているので、曲数の多い順に120語。
+     日本語の固有名詞が聞き取れないという話なので、日本語表記のものを優先して入れる。 */
+  const rank=A.map((a,i)=>({n:a.n, al:a.al||[], c:a.c||0, i}))
+    .sort((x,y)=>y.c-x.c);
+  const v=new Set();
+  for(const a of rank){
+    if(v.size>=120) break;
+    v.add(a.n);
+    const ja=(a.al||[]).find(x=>/[ぁ-んァ-ヶ一-龯]/.test(x));
+    if(ja && v.size<120) v.add(ja);
+  }
+  VOCAB=[...v];
+}
+
+/* 聞き取った1語を、名簿の何番の人に当てるか。
+   返り値 [{i, sc}]。当てられなければ空。**作らない。名簿に無ければ無いと答える。** */
+function earFind(q){
+  if(!EAR) return [];
+  const lq=loose(q);
+  if(lq.length<2) return [];
+  const out=new Map();
+  const add=(i,sc)=>{ if(!out.has(i)||out.get(i)<sc) out.set(i,sc); };
+  if(EAR.exact.has(lq)) add(EAR.exact.get(lq),120);
+  for(const {k,i} of EAR.keys){
+    if(k===lq){ add(i,120); continue; }
+    if(lq.length>=3 && k.indexOf(lq)===0) add(i,80);      // 「まいける」で始まる＝マイケル・ジャクソン
+    else if(lq.length>=3 && k.indexOf(lq)>=0) add(i,72);  // 「いちこ」⊂「あおばいちこ」
+    else if(k.length>=3 && lq.indexOf(k)>=0) add(i,66);   // 「はりーべらふぉんて」⊃「べらふぉんて」
+    else if(lq.length>=4 && k.length>=4){
+      const d=dist(lq,k,lq.length>=7?2:1);
+      if(d<=(lq.length>=7?2:1)) add(i,70-d*8);            // 聞き間違いを1〜2文字ぶん許す
+    }
+  }
+  return [...out.entries()].map(([i,sc])=>({i,sc})).sort((a,b)=>b.sc-a.sc).slice(0,6);
+}
+
+/* ══════════════ ★966 その2：地域（アジアと言われたらアジアを出す）══════════════
+   言われた言葉 → 国コードの集合。region.json の group（国→くくり）を逆に引く。 */
+const REGION_JA={
+  asia:"アジア", eastasia:"東アジア", seasia:"東南アジア", southasia:"南アジア",
+  nordic:"北欧", europe:"ヨーロッパ", uk:"イギリス", northamerica:"北米",
+  latin:"中南米", africa:"アフリカ", oceania:"オセアニア", mideast:"中東",
+  jp:"日本", kr:"韓国", cn:"中国", tw:"台湾", hk:"香港", th:"タイ", in:"インド",
+  id:"インドネシア", us:"アメリカ", ca:"カナダ", gb:"イギリス", br:"ブラジル",
+  jm:"ジャマイカ", cu:"キューバ", mx:"メキシコ", ng:"ナイジェリア", fr:"フランス",
+  de:"ドイツ", it:"イタリア", se:"スウェーデン", no:"ノルウェー", is:"アイスランド",
+  au:"オーストラリア"
+};
+/* ★1023：国コード→日本語の国名。**国名は事実で、意見ではない**ので言い切ってよい。
+   ここに無いコードの人には、産地の一言を付けない（ローマ字2文字のまま出さない）。 */
+const KUNI_JA=Object.assign({},REGION_JA,{
+  ru:"ロシア", ua:"ウクライナ", pl:"ポーランド", cz:"チェコ", hu:"ハンガリー",
+  gr:"ギリシャ", tr:"トルコ", pt:"ポルトガル", es:"スペイン", nl:"オランダ",
+  be:"ベルギー", at:"オーストリア", ch:"スイス", dk:"デンマーク", fi:"フィンランド",
+  ie:"アイルランド", il:"イスラエル", ir:"イラン", lb:"レバノン", eg:"エジプト",
+  ma:"モロッコ", dz:"アルジェリア", ml:"マリ", sn:"セネガル", bj:"ベナン",
+  ke:"ケニア", tz:"タンザニア", cd:"コンゴ民主共和国", za:"南アフリカ", gh:"ガーナ",
+  ar:"アルゼンチン", cl:"チリ", pe:"ペルー", co:"コロンビア", ve:"ベネズエラ",
+  uy:"ウルグアイ", pa:"パナマ", tt:"トリニダード・トバゴ", pr:"プエルトリコ",
+  do:"ドミニカ共和国", ht:"ハイチ", vn:"ベトナム", ph:"フィリピン", my:"マレーシア",
+  sg:"シンガポール", mn:"モンゴル", np:"ネパール", pk:"パキスタン", nz:"ニュージーランド"
+});
+/* その人の産地が「うちの棚で薄い」かどうか。薄いときだけ国名を返す。
+   ★しきい値は8組。これ以上いる国（日本553・アメリカ311・イギリス125…）で
+     「珍しい」と言ったら、それは嘘になる。 */
+function usuiKuni(a){
+  if(!KUNIN||!CAT.reg||!CAT.reg.r) return null;
+  const c=CAT.reg.r[a.i]; if(!c) return null;
+  const ja=KUNI_JA[c]; if(!ja) return null;
+  return (KUNIN[c]<=8) ? {code:c, ja, n:KUNIN[c]} : null;
+}
+/* 産地の日本語名。分かっている人だけ。（事実シート＝声のほうへ渡す用。全部渡す） */
+function kuniOf(a){
+  if(!CAT.reg||!CAT.reg.r) return null;
+  const c=CAT.reg.r[a.i]; if(!c) return null;
+  return KUNI_JA[c]||null;
+}
+/* 札のドアに刷ってよい産地。
+   ★大きい国では刷らない。棚は 日本548・アメリカ321・イギリス125。
+     「日本の棚から」は、誰に出しても当たる＝ドアではない＝水道水。
+     60組以下の国（韓国40・ジャマイカ33・ブラジル20・台湾18・タイ11…）だけ、ドアになる。 */
+function kuniDoor(a){
+  if(!KUNIN||!CAT.reg||!CAT.reg.r) return null;
+  const c=CAT.reg.r[a.i]; if(!c||!(KUNIN[c]<=60)) return null;
+  return KUNI_JA[c]||null;
+}
+/* その地域に入るアーティストの番号を集める。region.json に載っていない人は入れない。 */
+function regionSet(key){
+  if(!key||!CAT.reg||!CAT.reg.r) return null;
+  const k=String(key).toLowerCase();
+  const R=CAT.reg.r, G=CAT.reg.group||{};
+  const idx=new Map(); CAT.head.A.forEach((a,i)=>idx.set(a.i,i));
+  const out=new Set();
+  for(const id in R){
+    const code=R[id];
+    const groups=G[code]||[];
+    if(code===k || groups.indexOf(k)>=0){
+      const i=idx.get(id); if(i!==undefined) out.add(i);
+    }
+  }
+  return out;
+}
+
+async function findSongs({artists=[], mood=[], song_title="", region=""}){
+  await CAT.load();
+  buildEar();
+  const A=CAT.head.A;
+  /* ★1020：正規化する前の原文も持っておく。「どの言葉からこの人に行き当たったか」を
+     案内人に返すため。ここが無いと、案内人は4枚の出どころを知らないまま喋ることになり、
+     「アーティスト名と年」を読み上げるしかなくなる＝たまごさんの言う「シンプルすぎる」。 */
+  const anRaw=artists.filter(x=>norm(x)), an=anRaw.map(norm);
+  const moRaw=mood.filter(x=>norm(x).length>=2), mo=moRaw.map(norm);
+  const artScore=new Map(), artWhy=new Map();
+  const why=(i,t)=>{ if(!artWhy.has(i)) artWhy.set(i,t); };
+  A.forEach((a,i)=>{
+    const name=norm(a.n);
+    const alias=(a.al||[]).map(norm);
+    const about=norm([(a.ab||""),(a.g||[]).join(" "),(a.e||[]).join(" ")].join(" "));
+    let sc=0;
+    for(let qi=0;qi<an.length;qi++){
+      const q=an[qi];
+      if(name===q){ sc+=120; why(i,"たどった線＝「"+anRaw[qi]+"」そのもの"); }
+      else if(q.length>=4 && name.includes(q)){ sc+=70; why(i,"たどった線＝「"+anRaw[qi]+"」"); }
+      else if(alias.some(x=>x===q)){ sc+=70; why(i,"たどった線＝「"+anRaw[qi]+"」（別名で一致）"); }
+    }
+    for(let mi=0;mi<mo.length;mi++){
+      if(about.includes(mo[mi])){ sc+=25; why(i,"棚の紹介文に「"+moRaw[mi]+"」と書いてある"); }
+    }
+    if(sc) artScore.set(i,sc);
+  });
+  /* ★966 耳：そのままの字で当たらなかった名前を、音の近さで拾い直す。
+     「いちご」→ 青葉市子（あおばいちこ）。「Bjork」→ Björk。 */
+  for(const q of artists){
+    const nq=norm(q);
+    if([...artScore.keys()].some(i=>norm(A[i].n)===nq)) continue;
+    for(const h of earFind(q)) if(!artScore.has(h.i)){
+      artScore.set(h.i,h.sc); why(h.i,"聞こえた音「"+q+"」に近い名前として棚から拾った");
+    }
+  }
+  /* ★966 地域：くくりの外の人はここで落とす。点数で下げるのではなく**外す。**
+     （点数で下げるやり方だったから「アジアの曲」でボウイとレイ・チャールズが出た） */
+  const RS=regionSet(region);
+  if(RS){
+    for(const i of [...artScore.keys()]) if(!RS.has(i)) artScore.delete(i);
+    /* 地域だけ言われて名前が1つも残らなかったら、その地域の棚から曲数の多い順に集める。
+       ここに入るのは region.json で「どこの人か」が取れている人だけ。推測の人は入らない。 */
+    if(artScore.size<6){
+      /* ★「アジア」のような広いくくりのときは、国ごとに分けて順番に拾う。
+         そうしないと、数が多い日本だけで4枚が埋まって「日本の曲」と同じになる。 */
+      const R=CAT.reg.r, byCountry=new Map();
+      /* ★曲として出してはいけない人を、棚のデータ自身から外す。
+         ・年代タグ(e)が無い＝動物や「飼い主大好き」のような、曲ではない棚
+         ・笑い／動物の棚に載っている人（joy.json に書いてある事実で判定。憶測なし）
+         2026-09-20 自己検査で「日本の曲」に 犬・JR東海・千鳥 が出たので入れた。 */
+      const NAMUSIC=new Set();
+      for(const c of (CAT.joy&&CAT.joy.cards)||[]){
+        if(c.k!=="laugh"&&c.k!=="cute") continue;
+        const m=/artist=([^&]+)/.exec(c.u||""); if(m) NAMUSIC.add(m[1]);
+      }
+      for(const i of RS){
+        if(!(A[i].e&&A[i].e.length)) continue;
+        if(NAMUSIC.has(A[i].i)) continue;
+        const code=R[A[i].i]||"?";
+        if(!byCountry.has(code)) byCountry.set(code,[]);
+        byCountry.get(code).push({i,c:A[i].c||0});
+      }
+      for(const v of byCountry.values()){
+        v.sort((x,y)=>y.c-x.c);
+        v.splice(0,0,...v.splice(0,40).sort(()=>Math.random()-0.5)); /* 上位40人を混ぜる */
+      }
+      const codes=[...byCountry.keys()].sort(()=>Math.random()-0.5);
+      let added=0;
+      for(let round=0;round<8&&added<24;round++){
+        for(const code of codes){
+          const v=byCountry.get(code);
+          if(round>=v.length) continue;
+          const p=v[round];
+          if(!artScore.has(p.i)){ artScore.set(p.i, 60-round*3+Math.min(10,p.c));
+            why(p.i,(REGION_JA[region]||region)+"の棚から"); added++; }
+          if(added>=24) break;
+        }
+      }
+    }
+  }
+  const out=[], seen=new Set();
+  const push=(row,sc)=>{
+    const k=row[0]+"/"+row[1];
+    if(RS&&!RS.has(row[0])) return;          /* ★966：地域の外は1曲も通さない */
+    if(seen.has(k)||shown.has(k)) return;
+    seen.add(k);
+    out.push({ai:row[0],sid:row[1],title:row[2],year:row[3]||0,yt:row[4]||"",
+      why:artWhy.get(row[0])||"",
+      sc:sc+tidy(row[2])+(row[3]?10:0)+((row[5]===1)?45:0)+Math.random()*8});
+  };
+  if(artScore.size){
+    const top=[...artScore.entries()].sort((a,b)=>b[1]-a[1]).slice(0,20);
+    const keep=new Map(top);
+    const nums=[...new Set(top.map(([i])=>i%CAT.head.nb))].slice(0,24);
+    const packs=await Promise.all(nums.map(n=>CAT.byArtist(n)));
+    for(const rows of packs) for(const row of rows){
+      const sc=keep.get(row[0]); if(sc) push(row,sc);
+    }
+  }
+  const st=norm(song_title);
+  if(st){
+    const nums=[...new Set(prefixes(st).map(bucketOf))].slice(0,4);
+    const packs=await Promise.all(nums.map(n=>CAT.title(n)));
+    for(const rows of packs) for(const row of rows){
+      const t=norm(row[2]);
+      let sc=0;
+      if(t===st) sc=200; else if(t.includes(st)) sc=120; else if(st.includes(t)&&t.length>=3) sc=90;
+      if(sc) push(row,sc+(artScore.get(row[0])||0));
+    }
+  }
+  out.sort((x,y)=>y.sc-x.sc);
+  return spread(out);
+}
+/* ★種類を1つに固定して引く。music へ横流れさせない。 */
+function findKind(kind, mood){
+  if(!CAT.joy||!CAT.joy.cards.length) return [];
+  const mo=(mood||[]).map(norm).filter(x=>x.length>=2);
+  const out=[];
+  for(const c of CAT.joy.cards){
+    if(c.k!==kind) continue;
+    const hay=norm((c.t||"")+" "+(c.w||""));
+    let sc=8;
+    for(const q of mo) if(hay.includes(q)) sc+=30;
+    out.push(Object.assign(joyCard(c),{sc:sc+Math.random()*10}));
+  }
+  out.sort((a,b)=>b.sc-a.sc);
+  return out;
+}
+function spread(list){
+  const byA=new Map();
+  for(const s of list){ if(!byA.has(s.ai)) byA.set(s.ai,[]); byA.get(s.ai).push(s); }
+  const order=[...byA.keys()].sort((a,b)=>byA.get(b)[0].sc-byA.get(a)[0].sc);
+  const out=[]; let left=true;
+  while(left){
+    left=false;
+    for(const ai of order){ const q=byA.get(ai); if(q.length){ out.push(q.shift()); left=true; } }
+  }
+  return out;
+}
+/* ══════════ ★1020：珍しさは「うちの棚で数えられること」だけで言う ══════════
+   たまごさん 2026-09-22：「こういうのも珍しいじゃん、こんなシベリアのグループなんてさ。
+     こういうのをコンシェルジュがおすすめできるのか」
+
+   ここでいちばん危ないのは「世の中で珍しい」と言ってしまうこと。裏が取れない。
+   （関所 sekisho-jijitsu-shutten：取れない断定は書かない）
+   でも **「うちの棚には◯組しかいない」なら数えられる。** 数えた結果しか言わせない。
+   ＝案内人は珍しいものを珍しいと言えるのに、嘘は1つも言えない。 */
+/* ★1020：棚には「曲ではない人」も混ざっている（俳優・映画・お笑い）。
+   2026-09-20 に「日本の曲」で 犬・JR東海・千鳥 が出た事故と同じ根。地域の棚では外してあるが、
+   こちらは**こちらから珍しいものとして差し出す**ので、もっと厳しく落とす。
+   判定は棚の紹介文に書いてあることだけで行う。迷ったら落とす側に倒す（関所の決まり）。
+   ※「映画音楽作曲家」は音楽の人なので残す。落とすのは俳優・監督・お笑い・番組そのもの。 */
+const NAMUSIC_AB=/俳優|女優|声優|お笑い|芸人|漫才|コンビ。|落語|タレント|監督。|監督、|年公開|テレビ番組|バラエティ|ドラマ作品|アナウンサー/;
+function kyokuJanai(a){
+  if(/[（(]\s*(映画|ドラマ|番組|アニメ|CM)/.test(a.n||"")) return true;
+  return NAMUSIC_AB.test(a.ab||"");
+}
+function usuiEra(a){                 /* その人が持つ年代のうち、棚でいちばん薄いもの */
+  if(!ERAN) return null;
+  let thin=null;
+  for(const e of (a.e||[])) if(ERAN[e] && (thin===null||ERAN[e]<ERAN[thin])) thin=e;
+  /* ★1023：しきい値を 300 から 120 に下げた。
+     実測：60年代は276組いる。それを「276組だけ」と言うのは「だけ」が嘘になる。
+     120以下で残るのは 50年代102組・40年代10組の2つ。ここなら「だけ」と言ってよい。 */
+  return (thin && ERAN[thin]<=120) ? thin : null;
+}
+function mezurashi(a){
+  const o=[];
+  if(a.c===1) o.push("棚にこの人は1曲だけ");
+  else if(a.c===2) o.push("棚にこの人は2曲だけ");
+  const t=usuiEra(a);
+  if(t) o.push("棚に"+t.replace("s","年代")+"の人は"+ERAN[t]+"組だけ（全"+CAT.head.A.length+"組中）");
+  /* ★1023：産地の薄さ。★分母を必ず付ける。載っていない人がいるので「棚に1組だけ」は言えない。 */
+  const k=usuiKuni(a);
+  if(k) o.push("産地の分かっている"+KUNIWAKARU+"組のうち、"+k.ja+"は"+k.n+"組だけ");
+  return o;
+}
+/* 会話の始めに案内人へ渡す「いま棚にある珍しいもの」。
+   ★名前と根拠をこちらから渡すから、案内人は自分から珍しいものを出せるのに、嘘は言えない。
+   条件：紹介文（ab）がある＝その人について話せる材料が棚にある人だけ。作り話の芽を断つ。 */
+function mezuraList(){
+  if(!CAT.head||!ERAN) return [];
+  const A=CAT.head.A, o=[];
+  const tane=A.map((a,i)=>({a,i,p:boukenTen({fact:{kazu:a.c||0,eraList:a.e||[],note:a.ab||"",kuni:usuiKuni(a)}})}))
+              .filter(x=>x.p>=24 && x.a.ab && !kyokuJanai(x.a))
+              .sort((x,y)=>y.p-x.p);
+  /* 同じ年代の人ばかり6組並べない。1つの年代から2組まで。
+     （最初に作ったとき、6組とも40年代になった。それでは「珍しい＝古い」しか言えない。） */
+  const kazoe={};
+  for(const x of tane){
+    if(o.length>=6) break;
+    const m=mezurashi(x.a);
+    if(!m.length) continue;
+    const key=usuiEra(x.a)||("kyoku"+x.a.c);
+    if((kazoe[key]||0)>=2) continue;
+    kazoe[key]=(kazoe[key]||0)+1;
+    o.push("・"+x.a.n+"（"+m.join("／")+"）"+(x.a.ab?("　棚の紹介文＝"+x.a.ab.slice(0,60)):""));
+  }
+  return o;
+}
+/* ══════════════ ★1024：最近入荷したもの ══════════════
+   たまごさん 2026-09-22「最近入荷したなかでも面白いのがありますよ、と言わせたい」。
+
+   1023番は言わせなかった。**棚に入荷日が1つも無かったから。**裏の取れないことは言わせない。
+   1024番で、棚の正本（joy-relief-station の coverGuide.ts）のgit履歴から
+   「その id の行が初めて足された日」＝入荷日を引いた。34,240曲のうち33,588曲に日付が付いた。
+
+   ★「最近」＝**直近45日**（曖昧にしない）。根拠は tools/_1024_nyuka_hiduke.py の冒頭に実測で書いた。
+     棚に物が入るのは「便」でまとまって来るので、30日だと0件、60日だと棚の6割になる。
+   ★窓の中に1組も居なければ、下の saikinList() が空を返し、案内人は**何も言わない**。 */
+function nyukaHi(a){          /* その人が棚に来た日。最近でなければ null */
+  if(!a||!CAT.ny||!CAT.ny.a) return null;
+  return CAT.ny.a[a.i]||null;
+}
+/* 札に刷る1行。「8月に入ったばかり」。★数も年も足さない（1行に入らない）。 */
+function nyukaDoor(a){
+  const d=nyukaHi(a); if(!d) return "";
+  const m=/^(\d{4})-(\d{2})-/.exec(d); if(!m) return "";
+  const ima=(CAT.ny.asOf||"").slice(0,7);
+  return (d.slice(0,7)===ima?"今月":(+m[2])+"月に")+"入ったばかり";
+}
+/* 会話の始めに案内人へ渡す「最近入荷したなかでも面白いもの」。
+   ★「面白い」を印象で決めない。**最近入った人のうち、冒険札の資格（珍しさ24点）が
+     立つ人だけ。**点の中身は棚の数字（曲数・年代の薄さ・産地の薄さ）＝全部裏が取れる。
+   ★紹介文（ab）がある人だけ＝その人について話せる材料が棚にある人だけ。 */
+function saikinList(){
+  if(!CAT.head||!CAT.ny||!CAT.ny.a) return [];
+  const o=[];
+  for(const a of CAT.head.A){
+    const d=nyukaHi(a); if(!d) continue;
+    if(!a.ab||kyokuJanai(a)) continue;
+    const t=boukenTen({fact:{kazu:a.c||0,eraList:a.e||[],note:a.ab||"",kuni:usuiKuni(a)}});
+    if(t<24) continue;
+    const m=mezurashi(a); if(!m.length) continue;
+    o.push({t,d,s:"・"+a.n+"（"+d+"に入荷／"+m.join("／")+"）　棚の紹介文＝"+a.ab.slice(0,60)});
+  }
+  o.sort((x,y)=>y.t-x.t);
+  return o.slice(0,4).map(x=>x.s);   /* ★4組まで。新着で埋めない（安心4：冒険1を壊さない） */
+}
+/* 冒険札の選び方。珍しさの点が高いものを1枚だけ混ぜる（下の dealFour で5枚に1枚）。 */
+function boukenTen(c){
+  const f=c.fact||{}; let p=0;
+  if(f.nonMusic) return 0;     /* 俳優・映画・お笑いは冒険札にしない */
+  if(f.kazu===1) p+=34; else if(f.kazu===2) p+=16;
+  if(ERAN) for(const e of (f.eraList||[])) if(ERAN[e]&&ERAN[e]<=300) p+=Math.max(6,42-ERAN[e]/8);
+  if(f.note) p+=12;            /* うちの言葉が付いている＝人が一度見た曲。冒険でも外れにくい */
+  /* ★1023：産地が薄い人を冒険札に上げる。たまごさんの「シベリアのグループ」はここで当たる。
+     年代の点だけだと、冒険札がいつも古い曲になっていた。 */
+  if(f.kuni && f.kuni.n<=8) p+=Math.max(10,40-f.kuni.n*4);
+  return p;
+}
+const artistOf=s=>CAT.head.A[s.ai];
+const cardUrl=s=>CAT.head.base+"?artist="+encodeURIComponent(CAT.head.A[s.ai].i)
+                 +"&song="+encodeURIComponent(s.sid);
+/* fact ＝ 棚のデータにそのまま書いてあることだけ。ここに無いことは案内人に喋らせない。 */
+const songCard=s=>{
+  const a=artistOf(s);
+  return {kind:"music",title:s.title,
+    sub:a.n+(s.year?("　"+s.year+"年"):""),
+    thumb:"https://i.ytimg.com/vi/"+s.yt+"/mqdefault.jpg", yt:s.yt, url:cardUrl(s),
+    key:"m:"+s.ai+"/"+s.sid,
+    ai:s.ai, nkey:s.ai+"/"+s.sid,      /* ★1020：あとから「うちの言葉」を取りに行くための番地 */
+    fact:{ artist:a.n, year:s.year||null,
+           about:(a.ab||"").slice(0,140)||null,
+           genre:(a.g||[]).join("・")||null, era:(a.e||[]).join("・")||null,
+           /* ★1020：ここから下が、今まで案内人に渡していなかった材料。 */
+           note:null,                         /* うちの棚の一文。札が出てから fillNotes が入れる */
+           why:s.why||null,                   /* どの線をたどってこの人に行き当たったか */
+           kazu:a.c||0, eraList:(a.e||[]), nonMusic:kyokuJanai(a),
+           /* ★1023：産地。kuni＝薄い国のときだけ（数つき）／kuniJa＝分かっていれば必ず */
+           kuni:usuiKuni(a), kuniJa:kuniOf(a), kuniDoor:kuniDoor(a),
+           /* ★1024：入荷日。nyuka＝札に刷る1行／nyukaHi＝声のほうで使える日付 */
+           nyuka:nyukaDoor(a), nyukaHi:nyukaHi(a),
+           mezu:mezurashi(a) } };
+};
+const ytOf=u=>{ const m=/\/vi\/([A-Za-z0-9_-]{6,})\//.exec(u||""); return m?m[1]:""; };
+const joyCard=c=>({kind:c.k,title:c.t,sub:c.w||"",thumb:c.i,yt:ytOf(c.i),
+  url:(CAT.joy.base||"")+c.u, key:"j:"+c.u,
+  fact:{ hitokoto:c.w||null }});
+const kindJa=k=>KIND_JA[k]||"";
+
+/* ══════════════ 再生（YouTube IFrame Player API・公式の使い方）══════════════
+   公式どおり enablejsapi=1 ＋ youtube-nocookie.com をホストにして YT.Player を作る。
+   こうすると 音量（＝鳴らしたまま話すためのダッキング）・スキップ・停止 が手に入る。
+   生の <iframe> のままではこれが一切できず、「曲が鳴っている間はマイクを切る」しか
+   打つ手が無かった。ここが 70点 の天井だった場所。                               */
+const playerEl=$("player"), caretEl=$("caret");
+let yt=null, ytReady=false, playing=null, playIdx=-1, dealt=[];
+
+function loadYT(){
+  return new Promise(res=>{
+    if(window.YT&&window.YT.Player) return res();
+    const prev=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=()=>{ try{prev&&prev();}catch(_){} res(); };
+    if(!document.getElementById("ytapi")){
+      const s=document.createElement("script"); s.id="ytapi";
+      s.src="https://www.youtube.com/iframe_api"; document.head.appendChild(s);
+    }
+    setTimeout(res,6000);   // 読めなくても画面は死なせない
+  });
+}
+async function openPlayer(c,idx){
+  playing=c; playIdx=idx;
+  [...cardsEl.children].forEach((el,i)=>el.classList.toggle("sel",i===idx));
+  caretEl.style.left=((idx+0.5)/Math.max(1,dealt.length)*100)+"%";
+  $("pTitle").textContent=c.title;
+  $("pArtist").textContent=c.sub;
+  playerEl.classList.add("on");
+  await loadYT();
+  if(window.YT&&window.YT.Player){
+    if(yt&&ytReady){ try{ yt.loadVideoById(c.yt); }catch(_){} }
+    else{
+      yt=new YT.Player("yt",{
+        host:"https://www.youtube-nocookie.com",
+        videoId:c.yt,
+        playerVars:{autoplay:1,rel:0,playsinline:1,enablejsapi:1,
+                    modestbranding:1,origin:location.origin},
+        events:{ onReady:e=>{ ytReady=true; e.target.playVideo(); applyAudio(); } }
+      });
+    }
+  }else{
+    // API が読めなかったときだけ、素の埋め込みに落とす（音量は触れない）
+    $("frame").innerHTML='<iframe allow="autoplay; encrypted-media" allowfullscreen '
+      +'src="https://www.youtube-nocookie.com/embed/'+encodeURIComponent(c.yt)
+      +'?autoplay=1&rel=0&playsinline=1"></iframe>';
+  }
+  applyAudio();
+  KYAKU.osu(c);                         /* ★1020：押したもの＝いちばん正直な返事。覚えておく */
+  paintMore();                          /* ★1023：押した瞬間に、下の一枚もその人のものになる */
+  /* ★1020：メールの誘いは、押した直後にだけ・一人につき1回だけ。
+     1枚目ではまだ「気に入った」と言えないので、**2枚目を押したとき**に1回だけ出す。
+     （Backlinko：もう好きになっている人のところで言うと、記事本文の4倍取れた） */
+  const sasou = (KYAKU.oshi.length>=2) && MAIL.dasu(c);
+  if(live()) tellModel("（画面の合図）お客さんが"+(idx+1)+"番の「"+c.title+"」を押して、いま鳴り始めました。"
+    +(thruOn()?"曲は小さくしてあり、マイクは開いたままです。曲の音には返事をせず、お客さんの声にだけ答えてください。":"")
+    +"ひとこと短くそえるだけにしてください。道具は呼ばないこと。"
+    +(sasou?"\n★この人はもう2枚押しています。この一言のあとに、**この会話で1回だけ**"
+            +"『気に入ったものが見つかったら、同じ手ざわりのものを見つけたときだけお送りします』"
+            +"という意味のことを、あなたの言葉で1文だけ添えてください。画面の下にもう小さく出してあります。"
+            +"★売り込まない。急かさない。『今はいいです』と言われたら、それで終わりにしてもう二度と言わない。"
+            +"★二度と言わない。これが最初で最後です。":""));
+}
+function stopPlay(talk){
+  try{ yt&&ytReady&&yt.stopVideo(); }catch(_){}
+  if(!window.YT||!window.YT.Player) $("frame").innerHTML='<div id="yt"></div>';
+  playerEl.classList.remove("on"); playing=null; playIdx=-1;
+  [...cardsEl.children].forEach(el=>el.classList.remove("sel"));
+  applyAudio();
+  if(talk!==false){ setState(live()?"聞いています":"やめました");
+    if(live()) tellModel("（画面の合図）お客さんが曲を止めました。いま話せます。短く一言どうぞ。道具は呼ばないこと。"); }
+}
+const thruOn=()=>$("thru").checked;
+function setVol(v){ try{ yt&&ytReady&&yt.setVolume(v); }catch(_){} }
+
+/* 音のさばき方（ここが「鳴らしながら話す」の本体）
+   お手本＝スマートスピーカーのダッキング：呼びかけの瞬間に音楽を下げ、
+   アシスタントが喋っている間はさらに下げ、終わったら戻す。
+   合わせて getUserMedia の echoCancellation で、スピーカーから出た曲の音を
+   マイク入力から差し引く（AEC）。この2つは同じ問題への定番の組み合わせ。 */
+function applyAudio(){
+  const on=!!playing;
+  const modelTalking = outAt > actx.currentTime + 0.02;
+  if(!on){ setMic(live()); $("micdot").classList.toggle("on",live()); return; }
+  if(thruOn()){
+    setMic(live());
+    setVol(modelTalking?8:22);
+    setState(modelTalking?"聴きながら（案内人が話しています）":"聴きながら、話せます");
+  }else{
+    setMic(false); setVol(100);
+    setState("聴いています（話すときは『とめて話す』）");
+  }
+  $("micdot").classList.toggle("on", thruOn()&&live());
+}
+setInterval(()=>{ if(playing) applyAudio(); },150);
+$("thru").addEventListener("change",applyAudio);
+$("pSkip").addEventListener("click",()=>{ KYAKU.tobashi++;
+  try{ if(yt&&ytReady) yt.seekTo(yt.getCurrentTime()+30,true); }catch(_){} });
+$("pNext").addEventListener("click",()=>{ KYAKU.tobashi++;
+  for(let i=playIdx+1;i<dealt.length;i++){ if(dealt[i].yt){ openPlayer(dealt[i],i); return; } }
+  for(let i=0;i<dealt.length;i++){ if(dealt[i].yt&&i!==playIdx){ openPlayer(dealt[i],i); return; } }
+});
+$("pStop").addEventListener("click",()=>stopPlay(true));
+$("pBig").addEventListener("click",()=>{ if(playing) window.open(playing.url,"_blank","noopener"); });
+
+/* 札は正本 No.02 の .rec-card をそのまま使う。
+   （rec-no ／ rec-media.record ＝レコード盤がはみ出す形 ／ cover に写真 ／ rec-title ／ rec-copy）
+   押せるようにするため a ではなく button にしただけ。 */
+const KIND_EN={music:"MUSIC",video:"VISUAL",article:"ARTICLE",food:"LIFESTYLE"};
+
+/* ══════════════ ★1023：入口の一言（札はドア）══════════════
+   たまごさん 2026-09-22：
+   「カードはドアです。ドアの奥にはあなたの知らないものが待ってる。脅さない、誘う。」
+   「コンシェルジュが短く受け答えしてるのはすごくいいんだけど、ちょっとシンプルすぎる。
+     事実を平たく言ってるだけ。『おじさん、わかってるね』にしたい。」
+
+   ★ここは「長くする」直しではない。**1行のまま、中身を替える。**
+   これまでの札の1行は `アーティスト名　1979年` だけだった＝誰が見ても同じ＝「あなた」が無い。
+   そこに**もう1行だけ**、「なぜこの札がいま出ているのか」を足す。行数は1行しか増えない。
+
+   ★材料は棚に書いてあることだけ。案内人（AI）は1文字も書かない＝0円・作り話ゼロ。
+   ★4枚が同じ文言にならないように、使った種類は1回ずつしか使わない。
+     （同じ札が4枚並ぶのは「わかってない」の見本） */
+function doorLine(c,tsukatta){
+  const f=c.fact||{}; if(!f) return "";
+  if(c.kind!=="music") return f.hitokoto?String(f.hitokoto).slice(0,18):"";
+  const tane=[];
+  /* ① 今日の冒険の1枚（安心4：冒険1のうちの1）。いちばん強いドア。 */
+  if(c.bouken) tane.push(["bouken","これが今日の冒険の1枚"]);
+  /* ①' うちの棚に**人が書いた**その曲の一文（「やさしい告白。」「踊りたい夜。」）。
+         いちばん良いドアはこれ。機械には書けない。
+         ★ただし届くのは札を出したあと（fillNotes）。だから1周目は空振りして、
+           2周目（paintDoors）で**空いている札に入る。**
+           ＝一度出した文字が読んでいる途中で入れ替わらない。 */
+  if(f.note){
+    const n=String(f.note).replace(/\s+/g," ").trim();
+    const kugiri=n.search(/[。！？]/);
+    const atama=(kugiri>=5?n.slice(0,kugiri):n.slice(0,22));
+    if(atama.length>=5) tane.push(["note",atama+(kugiri>=5?"。":"…")]);
+  }
+  /* ①'' ★1024：最近入荷したばかり。**日付という裏がある**ので言ってよい。
+          札には月までしか書かない（1行に日付は入らない）。日は声のほうへ回す。 */
+  if(f.nyuka) tane.push(["nyuka",f.nyuka]);
+  /* ② 産地が薄い国。たまごさんの「シベリアのグループ」がここ。
+        ★札には**数を書かない。**「棚に1組だけ」は、どこの人か分かっていない組が
+          まだ1,185組あるので嘘になる。数つきの言い方（分母つき）は声のほうへ回す。
+          札に出すのは、確かめられる事実だけ——**この人はロシアの人です。** */
+  if(f.kuni) tane.push(["kuni",f.kuni.ja+"の棚から"]);
+  /* ③ うちの棚にこの人の曲が1曲しかない */
+  if(f.kazu===1) tane.push(["kazu","棚に、この人はこの1曲だけ"]);
+  /* ④ 棚で薄い年代（年代は全2,475組ぶん揃っているので、数を言ってよい）
+        ★276組いる60年代で「棚に少ない」と言ったら水道水。薄いものだけ。 */
+  if(ERAN) for(const e of (f.eraList||[])){
+    if(ERAN[e]&&ERAN[e]<=120){ tane.push(["era","棚に"+e.replace("s","年代")+"は"+ERAN[e]+"組"]); break; }
+  }
+  /* ⑤ あなたの言葉からどう辿り着いたか。
+        ★f.why は機械の言い方（例「たどった線＝「Stevie Wonder」そのもの」
+          「棚の紹介文に「ソウル」と書いてある」）。**そのまま切って出すと意味不明になる。**
+          中の「…」だけを抜いて、その語だけを見せる。抜けなければ出さない。 */
+  if(f.why){
+    const q=/「([^」]{1,14})」/.exec(String(f.why));
+    /* ★抜いた語が、その札のアーティスト名そのものだったら出さない。
+       すぐ上の行に同じ名前が書いてある（例：Stevie Wonder の札に「“Stevie Wonder”の線から」）。
+       同じことを2回書くのは「わかってない」の見本。 */
+    const onaji=q && f.artist && (norm(f.artist).indexOf(norm(q[1]))>=0 || norm(q[1]).indexOf(norm(f.artist))>=0);
+    if(q && !onaji) tane.push(["why","“"+q[1]+"”の線から"]);
+  }
+  /* ⑦ 産地は分かるが珍しくない国。最後の手。★同じ「kuni」の札にする＝国の一言は4枚に1枚まで。 */
+  if(f.kuniDoor) tane.push(["kuni",f.kuniDoor+"の棚から"]);
+  for(const [k,t] of tane){ if(!tsukatta.has(k)){ tsukatta.add(k); return t; } }
+  return "";                       /* ★水で薄めない。無いときは何も出さない。 */
+}
+function drawCards(list){
+  cardsEl.innerHTML=""; dealt=list;
+  if(!list.length){ emptyEl.style.display="block"; return; }
+  emptyEl.style.display="none";
+  const tsukatta=DOORS_USED=new Set();
+  list.forEach((c,i)=>{
+    const b=document.createElement("button");
+    b.className="rec-card"; b.type="button";
+    b.dataset.slot="recommendation-card"; b.dataset.category=c.kind||"music";
+
+    const no=document.createElement("div"); no.className="rec-no";
+    no.textContent=String(i+1).padStart(2,"0")+" / "+(KIND_EN[c.kind]||"PICK");
+
+    const media=document.createElement("div"); media.className="rec-media record";
+    const cover=document.createElement("span"); cover.className="cover";
+    if(c.thumb) cover.style.backgroundImage="url("+c.thumb+")";
+    media.appendChild(cover);
+
+    const t=document.createElement("h3"); t.className="rec-title"; t.textContent=c.title;
+    const p=document.createElement("p"); p.className="rec-copy"; p.textContent=c.sub||"";
+
+    /* ★1023：入口の一言。**必ず1行ぶんの高さを確保して置く。**
+       あとから「うちの棚の一文」が届いて文字が入っても、札の高さが動かない
+       （＝押そうとした瞬間に札がずれる、が起きない）。 */
+    const door=document.createElement("p"); door.className="rec-door";
+    door.textContent=doorLine(c,tsukatta);
+
+    const meta=document.createElement("div"); meta.className="rec-meta";
+    const ja=kindJa(c.kind);
+    if(ja){ const s=document.createElement("span"); s.textContent=ja; meta.appendChild(s); }
+    if(c.fact&&c.fact.genre){ const s=document.createElement("span"); s.textContent=c.fact.genre; meta.appendChild(s); }
+
+    b.append(no,media,t,p,door,meta);
+    b.addEventListener("click",()=>{ c.yt?openPlayer(c,i):window.open(c.url,"_blank","noopener"); });
+    cardsEl.appendChild(b);
+  });
+}
+/* ★1023：「うちの棚の一文」は札が出たあとに届く（fillNotes）。
+   届いたぶんだけ、まだ空いているドアに文字を入れる。**高さは動かない**（min-height で確保済み）。
+   ★すでに文字が入っている札は触らない＝読んでいる途中で文が入れ替わらない。 */
+let DOORS_USED=new Set();
+function paintDoors(list){
+  if(!list||!list.length) return;
+  const tsukatta=DOORS_USED;      /* 出したときに使った種類を引き継ぐ＝同じ文言が2枚出ない */
+  [...cardsEl.children].forEach((el,i)=>{
+    const d=el.querySelector(".rec-door"); if(!d) return;
+    if(d.textContent){ return; }
+    const t=doorLine(list[i],tsukatta);
+    if(t) d.textContent=t;
+  });
+}
+let page=0, slot=0;
+/* ★1020：安心4：冒険1（たまごさんの既定）。
+   5枚に1枚だけ、素直な上位ではなく**棚の外れ値**を出す。全部を珍しいものにしない。
+   冒険札も、いま引いた棚の中にある実在のものだけ。作らない・外から持ってこない。 */
+function hitomai(){
+  if(slot%5!==4 || pool.length<2) return pool.shift();
+  let bi=-1, best=24;                       /* この点に届かないなら冒険にしない＝無理に珍しくしない */
+  for(let i=0;i<Math.min(pool.length,40);i++){
+    if(shown.has(pool[i].key)) continue;
+    const t=boukenTen(pool[i]);
+    if(t>best){ best=t; bi=i; }
+  }
+  if(bi<0) return pool.shift();
+  const c=pool.splice(bi,1)[0]; c.bouken=true; return c;
+}
+function dealFour(){
+  KYAKU.nagasu(dealt);             /* ★1020：引っ込める前に「押されなかったもの」を覚える */
+  const take=[];
+  while(take.length<4 && pool.length){
+    const c=hitomai();
+    if(!c) break;
+    if(shown.has(c.key)) continue;
+    shown.add(c.key); take.push(c); slot++;
+  }
+  if(take.length) page++;
+  stopPlay(false);
+  drawCards(take);
+  moreEl.disabled = pool.length===0;
+  paintMore();                      /* ★1023：下の一枚も、その人ごとに */
+  /* 見出し横の1行（#trayTitle）は、いま何の棚の何枚目かだけ。 */
+  $("trayTitle").textContent = take.length
+    ? (poolLabel||"PICKS FOR YOUR MOMENT")+"　"+page+"枚目"
+    : "この棚は、ここで打ち止めです";
+  return take;
+}
+/* ══════════════ ★1023：一番下の「こちらもどうぞ」をその人ごとに ══════════════
+   たまごさん 2026-09-22：「一番下の『こちらもどうぞ』は、その人ごとに。」
+
+   これまでは誰が来ても `他を見せて ↻` の一枚看板だった。
+   押したか／1枚も押さなかったかは、こちらが既に持っている（KYAKU）。**持っているなら使う。**
+   ★お願いではなく構造。案内人（AI）を1回も呼ばないので 0円・待ち時間0。
+   ★長くしない。ボタンは丸い1行のまま（min-width:270px の中に収まる長さで切る）。 */
+function paintMore(){
+  if(!moreEl) return;
+  if(pool.length===0){ moreEl.textContent="この棚は、ここまで"; return; }
+  const o=KYAKU.oshi;
+  if(o.length){
+    const t=o[o.length-1].title||"";
+    moreEl.textContent="「"+(t.length>7?t.slice(0,7)+"…":t)+"」の隣を　↻";
+    return;
+  }
+  /* 1枚も押されていない＝いまの線は外れている。同じ顔で「他を見せて」と言わない。 */
+  if(KYAKU.suru.length>=4){ moreEl.textContent="いまのは忘れて、別の線で　↻"; return; }
+  moreEl.textContent="他を見せて　↻";
+}
+/* 出した4枚の「答えられること」を、棚のデータからそのまま作って案内人に渡す。
+   ここに書いてないことは喋らせない（＝作り話の入り口を塞ぐ）。 */
+function factSheet(list){
+  const rows=list.map((c,i)=>{
+    const f=c.fact||{};
+    const bits=[];
+    if(c.kind==="music"){
+      bits.push("アーティスト＝"+f.artist);
+      bits.push(f.year?("発表年＝"+f.year+"年"):"発表年＝棚に記載なし（言わないこと）");
+      if(f.genre) bits.push("分類＝"+f.genre);
+      if(f.era)   bits.push("年代＝"+f.era);
+      /* ★1020：ここが今回いちばん効く行。棚に書いてある、その曲の一文。
+         人が書いた言葉なので、案内人が作らなくてよくなる＝作り話が減り、中身が濃くなる。 */
+      if(f.note) bits.push("うちの棚に書いてある一文＝"+f.note);
+      if(f.about) bits.push("アーティスト紹介文（棚の本文）＝"+f.about);
+      if(f.why)  bits.push("この札が出てきた理由＝"+f.why);
+      /* ★1023：産地。region.json に載っている人だけ。載っていない人には書かない（推測しない）。 */
+      if(f.kuniJa) bits.push("産地＝"+f.kuniJa);
+      if(f.mezu&&f.mezu.length) bits.push("棚での珍しさ＝"+f.mezu.join("／"));
+      /* ★1024：入荷日。**日付があるときだけ**。無い人に「最近入った」と言わせない。 */
+      if(f.nyukaHi) bits.push("うちの棚に来た日＝"+f.nyukaHi+"（＝最近入荷。これは言ってよい）");
+      if(c.bouken) bits.push("★これが今回の冒険の1枚（安心3枚＋冒険1枚で出している）");
+    }else{
+      bits.push("種類＝"+kindJa(c.kind));
+      if(f.hitokoto) bits.push("棚に書いてある一文＝"+f.hitokoto);
+    }
+    return (i+1)+".「"+c.title+"」／"+bits.join("／");
+  });
+  /* ★1020：この4枚を並べて見たときの「見立て」。画面に出ている4枚だけを見て言えること
+     しか書かない（＝見れば誰でも確かめられる＝絶対に間違えない）。 */
+  const ys=list.map(c=>(c.fact&&c.fact.year)||0).filter(Boolean);
+  if(ys.length>=3){
+    const mn=Math.min(...ys), mx=Math.max(...ys);
+    if(mx-mn>=25){
+      const furui=list.find(c=>c.fact&&c.fact.year===mn);
+      if(furui) rows.push("見立て：この4枚は"+mn+"年から"+mx+"年までばらけている。"
+        +"いちばん古いのは「"+furui.title+"」。");
+    }
+  }
+  return rows.join("\n");
+}
+async function newSearch(args,label){
+  page=0; slot=0;
+  KYAKU.nagasu(dealt);        /* ★1020：棚を替える＝前の4枚は素通りされたということ */
+  await CAT.load();
+  const kind=args.kind||"music";
+  let list;
+  if(kind==="music"){
+    list=(await findSongs(args)).map(songCard);
+  }else{
+    list=findKind(kind, args.mood||[]);      // ★音楽へ落ちない
+  }
+  pool=list; poolLabel=label||"";
+  return dealFour();
+}
+moreEl.addEventListener("click",async()=>{
+  const mikata=KYAKU.mikata();          /* ★1020：押す前に読む。押した後だと今の4枚が混ざる */
+  const got=dealFour();
+  await fillNotes(got);                 /* ★1020：出た4枚のぶんだけ、うちの言葉を取りに行く */
+  paintDoors(got);                      /* ★1023 */
+  tellModel(got.length
+    ? "（画面の合図）お客さんが「ほかのを見せて」を押しました。次の4枚はもう画面に出し終えています。\n"
+      +factSheet(got)
+      +(mikata?"\n【この人について分かっていること】\n"+mikata:"")
+      +"\n道具は呼ばないこと。1〜2枚だけ名前を出して短く一言そえてください。"
+    : "（画面の合図）もう在庫がありません。道具は呼ばずに、正直に「この棚はここまで」と伝えて、別の種類を聞いてください。");
+});
+
+/* ══════════════ 顔 ══════════════ */
+const face=Tamako966.stand($("tamako"));
+
+/* ══════════════ 口パク（wawa-lipsync・MIT）══════════════ */
+const lip=new Lipsync({fftSize:2048,historySize:10});
+const actx=lip.audioContext;
+lip.analyser.connect(actx.destination);
+face.attach(lip.analyser);
+(function tick(){ lip.processAudio(); face.viseme(lip.viseme); requestAnimationFrame(tick); })();
+
+/* ══════════════ 財布（1日100円で止まる栓）══════════════ */
+const SAIFU={
+  capDefault:100,
+  day(){ const d=new Date(Date.now()+9*3600e3); return d.toISOString().slice(0,10); },
+  kDay(){ return "tamago_voice_yen_"+this.day(); },
+  cap(){ try{ const v=parseFloat(localStorage.getItem("tamago_voice_cap_yen"));
+              return (isFinite(v)&&v>0)?v:this.capDefault; }catch(_){ return this.capDefault; } },
+  setCap(v){ try{ localStorage.setItem("tamago_voice_cap_yen",String(v)); }catch(_){} paintMeter(); },
+  today(){ try{ const v=parseFloat(localStorage.getItem(this.kDay())); return isFinite(v)?v:0; }
+           catch(_){ return 0; } },
+  put(v){ try{ localStorage.setItem(this.kDay(),String(Math.max(0,v))); }catch(_){} },
+  base:0, stopped:false,
+  hajime(){ this.base=this.today(); this.stopped=false; },
+  nokori(){ return this.cap()-this.today(); },
+  /* ★964：今月ここまで。日ごとの帳簿を1日目から足すだけ（新しい置き場を作らない）。 */
+  tsuki(){
+    let s=0; const m=this.day().slice(0,7);
+    try{
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k && k.indexOf("tamago_voice_yen_"+m)===0){
+          const v=parseFloat(localStorage.getItem(k)); if(isFinite(v)) s+=v;
+        }
+      }
+    }catch(_){}
+    return s;
+  },
+  tsukiHi(){
+    let n=0; const m=this.day().slice(0,7);
+    try{
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k && k.indexOf("tamago_voice_yen_"+m)===0){
+          const v=parseFloat(localStorage.getItem(k)); if(isFinite(v)&&v>0) n++;
+        }
+      }
+    }catch(_){}
+    return n;
+  }
+};
+function saifuKire(){
+  if(SAIFU.stopped) return;
+  SAIFU.stopped=true;
+  try{ closeAll(); }catch(_){}
+  try{ stopPlay(false); }catch(_){}
+  goEl.disabled=false;
+  setState("今日のぶんは使い切りました");
+  say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）に達したので切りました。"
+    +"続けるなら下の「1日の上限」を上げてください。（Google側の上限とは別に、この画面で止めています）");
+}
+
+/* ══════════════ 実測メーター ══════════════ */
+const USE={micSec:0,outSec:0,usd:0,apiIn:0,apiOut:0,apiTotal:0};
+let startedAt=0, meterTimer=0;
+function cost(){
+  USE.usd = USE.micSec/60*PRICE.audioInPerMin + USE.outSec/60*PRICE.audioOutPerMin;
+  return USE.usd;
+}
+function paintMeter(){
+  const sec=startedAt?(Date.now()-startedAt)/1000:0;
+  const yen=cost()*YEN;
+  const perMin=sec>5?(yen/(sec/60)):0;
+  if(startedAt) SAIFU.put(SAIFU.base+yen);
+  const kyou=SAIFU.today(), cap=SAIFU.cap();
+  const nokori=Math.max(0,cap-kyou);
+  /* ★964：たまごさんの問い「30分話し込んだらいくら」。憶測ではなく、
+     いま実際に出ているペース（1分あたりの円）を30倍して出す。話すほど正確になる。 */
+  const han=perMin?perMin*30:0;
+  const tsuki=SAIFU.tsuki(), hi=SAIFU.tsukiHi();
+  meterEl.innerHTML=`${Math.floor(sec/60)}分${String(Math.floor(sec%60)).padStart(2,"0")}秒 ／ `
+    +`<b>${yen.toFixed(1)}円</b>`+(perMin?`（このペースで1分 約${perMin.toFixed(1)}円）`:"")
+    +(han?`<br><b style="color:#c9a227">このまま30分で 約${han.toFixed(0)}円</b>`
+         +`<span style="opacity:.7">（実測ペース×30。話す量が増えれば上がります）</span>`:"")
+    +`<br>今日ここまで <b>${kyou.toFixed(1)}円</b> ／ 上限 ${cap.toFixed(0)}円`
+    +`（あと ${nokori.toFixed(1)}円）`
+    +`<br>今月ここまで <b>${tsuki.toFixed(1)}円</b>`
+    +`<span style="opacity:.7">（${SAIFU.day().slice(0,7)}・使った日 ${hi}日）</span>`
+    +`<br><span style="opacity:.7">実測（マイクを開けていた ${USE.micSec.toFixed(0)}秒 ＋ `
+    +`返ってきた声 ${USE.outSec.toFixed(0)}秒）</span>`;
+  if(startedAt && kyou>=cap) saifuKire();
+  paintCostTable();
+}
+function paintCostTable(){
+  const y=v=>v*YEN;
+  const rows=[
+    ["聞く（マイクを開けていた秒数）", USE.micSec.toFixed(1)+"秒", y(USE.micSec/60*PRICE.audioInPerMin)],
+    ["喋る（返ってきた声の秒数）",     USE.outSec.toFixed(1)+"秒", y(USE.outSec/60*PRICE.audioOutPerMin)]
+  ];
+  let html=rows.map(([k,v,c])=>`<tr><td>${k}</td><td>${v}　${c.toFixed(2)}円</td></tr>`).join("")
+    +`<tr><td><b>合計</b></td><td><b>$${USE.usd.toFixed(5)}（${(USE.usd*YEN).toFixed(2)}円）</b></td></tr>`;
+  if(USE.apiTotal){
+    html+=`<tr><td>Googleが返してきたトークン数（参考）</td><td>入 ${USE.apiIn.toLocaleString()}`
+      +` ／ 出 ${USE.apiOut.toLocaleString()} ／ 計 ${USE.apiTotal.toLocaleString()}</td></tr>`;
+  }
+  $("costTable").innerHTML=html;
+  paintSanju();
+}
+/* ★964：30分の見積り。3通り出す。どれも公式単価 × 秒数で、憶測は入れない。
+   出どころ：https://ai.google.dev/gemini-api/docs/pricing
+   Live API の音声 入 $0.005／分・出 $0.018／分。1ドル157円。 */
+function paintSanju(){
+  const t=$("sanjuTable"); if(!t) return;
+  const ti=PRICE.audioInPerMin, to=PRICE.audioOutPerMin;
+  const en=u=>(u*YEN);
+  const rows=[];
+  /* ① いま実際に出ているペースから */
+  const sec=startedAt?(Date.now()-startedAt)/1000:0;
+  const yen=cost()*YEN;
+  if(sec>20){
+    rows.push(["いまのあなたの話し方のまま30分",
+      "<b>約"+(yen/(sec/60)*30).toFixed(0)+"円</b>（"+Math.floor(sec)+"秒ぶんの実測から）"]);
+  }else{
+    rows.push(["いまのあなたの話し方のまま30分",
+      "話し始めると出ます（20秒ぶん溜まってから）"]);
+  }
+  /* ② 2026-09-19 の実測（2分07秒で3.1円）から */
+  rows.push(["前に測ったぶん（2分07秒で3.1円）から30分",
+    "<b>約"+(3.1/(127/60)*30).toFixed(0)+"円</b>"]);
+  /* ③ 上限：30分ずっとマイクを開け、30分ずっと喋り返した場合 */
+  rows.push(["いちばん高い場合（30分ずっと聞き、30分ずっと喋る）",
+    "<b>約"+en((ti+to)*30).toFixed(0)+"円</b>（$"+((ti+to)*30).toFixed(3)+"）"]);
+  /* ④ 下限：マイクだけ30分開けて、こちらは一言も喋らない */
+  rows.push(["いちばん安い場合（30分マイクを開けるだけ）",
+    "<b>約"+en(ti*30).toFixed(0)+"円</b>（$"+(ti*30).toFixed(3)+"）"]);
+  rows.push(["1日の栓","<b>"+SAIFU.cap().toFixed(0)+"円</b>。ここに当たるとこの画面が勝手に切ります"]);
+  t.innerHTML=rows.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join("");
+}
+
+/* ══════════════ 案内人の仕込み ══════════════ */
+const INSTRUCTIONS=[
+  "あなたは「ごきげん補給所」の案内人、たまこ。日本語だけで、短く、やわらかく話す。1回の返事は2文まで。",
+  "英語で話しかけられても日本語で答える。",
+  "",
+  "■ ★間を空けない（959でいちばん大事）",
+  "1回の返事は、長くても2文・合わせて40字まで。言い切ったら止まる。説明を足さない。",
+  "hikidashi を呼ぶときは、呼ぶ前に必ず短い一言を先に言う。",
+  "  例：「はい、探しますね」「ちょっと見てきます」「いいですね、待ってて」",
+  "道具は裏で走るので、待っている間も黙らないこと。結果が届いたら、そこから続けて話す。",
+  "考えている間に無音を作らない。迷ったら先に「うーん」でもいいから声を出す。",
+  "",
+  "■ ここは音楽屋ではありません",
+  "この店の棚は7種類。music（音楽）/ food（食）/ cute（動物）/ laugh（笑い）/ travel（旅）/ dance（踊り）/ joy（ことば）。",
+  "",
+  "■ いちばん大事な手順：先に「種類」を決める",
+  "お客さんの言葉から、まず kind を1つ決める。決めてから hikidashi を呼ぶ。",
+  "  「動物」「犬」「猫」「かわいい」        → kind:\"cute\"",
+  "  「食べ物」「ごはん」「お腹すいた」      → kind:\"food\"",
+  "  「旅」「どこか行きたい」「景色」        → kind:\"travel\"",
+  "  「笑いたい」「面白いもの」「お笑い」    → kind:\"laugh\"",
+  "  「踊り」「ダンス」                      → kind:\"dance\"",
+  "  「ことば」「詩」「名言」                → kind:\"joy\"",
+  "  「曲」「音楽」「しずかなやつ」など音の話 → kind:\"music\"",
+  "★ 動物を頼まれたのに音楽を出す、のような取り違えは失格。種類が分からなければ、",
+  "  勝手に music にせず「どの棚にしましょう？」と一度だけ聞く。",
+  "",
+  "■ 棚がからっぽだったとき",
+  "道具が empty:true を返したら、それはその棚に在庫が無いということ。",
+  "正直に「◯◯の棚は、まだ用意できていません」と言う。",
+  "★ 代わりに曲を出さない。無いものを有るように言わない。別の種類（食・旅・踊り・音楽）を勧める。",
+  "",
+  "■ kind:\"music\" のときだけ artists を書く",
+  "artists ＝ その気分に似合うと思う実在のアーティスト名を、あなたの知識から8〜15組。多いほどよい。",
+  "mood    ＝ 気分や手ざわりの言葉（ジャズ、アシッドジャズ、80年代、ソウル、アンビエント等）。",
+  "song_title ＝ お客さんが曲名を口に出したときだけ。気分のときは空にする。",
+  "★ 気分の言葉を artists に入れてはいけない。★ 気分のときに song_title を使ってはいけない。",
+  "例：「うれしい気分」→ kind:\"music\", artists:[\"Stevie Wonder\",\"Earth, Wind & Fire\",\"Jamiroquai\",",
+  "  \"Pharrell Williams\",\"Kool & The Gang\",\"久保田利伸\",\"山下達郎\",\"Bruno Mars\",\"The Jackson 5\",\"Chic\"],",
+  "  mood:[\"ソウル\",\"ファンク\",\"ディスコ\"]",
+  "kind が music 以外のときは artists は空でよい。mood だけ入れる。",
+  "",
+  "■ 出した4枚について聞かれたら（うんちく）",
+  "道具の返事と、そのあと画面から届く「事実シート」に書いてあることだけを答える。",
+  "★ そこに書いていないことは、たとえ知っていても言わない。「それは分かりません」と正直に言う。",
+  "★ 発表年・受賞・売上・「代表曲」「オリジナル」「初の」は、事実シートに無ければ絶対に言わない。",
+  "★ 曲名・アーティスト名を口に出してよいのは、道具が返してきたものだけ。",
+  "",
+  "■ ★察する（1020でいちばん大事）",
+  "道具の返事のあとに【この人について分かっていること】が届くことがあります。**必ずそれに従って次を変える。**",
+  "  押したものが書いてある → 次はその線に寄せる。「◯◯を押した人なら、これも」",
+  "  1枚も押していないと書いてある → ★同じ線をもう一度出さない。方向を変えるか、外れ値を1枚出す。",
+  "  素通りされたと書いてあるもの → もう名前を出さない。",
+  "★この人が押したものだけが、この人の答えです。言葉より、押したかどうかを信じる。",
+  "★趣味の違う2人に同じ返しをしない。前の会話の続きのような言い方をしない。",
+  "",
+  "■ ★珍しいものを、自分から出してよい（ただし根拠のあるときだけ）",
+  "会話の始めに「いま棚にある珍しいもの」を何組か渡します。名前はそこにあるものだけ使う。",
+  "切り出してよいのは3つの場面だけ：",
+  "  ①「なんでもいい」「おまかせ」と言われたとき",
+  "  ② 2回続けて1枚も押されなかったとき",
+  "  ③ 押した曲の線から、渡した珍しい組に自然につながるとき",
+  "そのときは「うちだと珍しいのが1組いますよ」と一言だけ言って、その名前を artists に入れて hikidashi を呼ぶ。",
+  "★「珍しい」と言ってよいのは、渡された数字の根拠があるときだけ（棚に◯組だけ／棚に1曲だけ）。",
+  "★「世界的に珍しい」「知る人ぞ知る」「幻の」は絶対に言わない。裏が取れていない。**うちの棚の話だけをする。**",
+  "★毎回は出さない。安心を4、冒険を1。全部を珍しいもので埋めたら失格。",
+  "",
+  "■ ★1024：最近入荷したものを、自分から出してよい（日付が渡されているときだけ）",
+  "会話の始めに【最近入荷したなかでも面白いもの】を渡すことがあります。**渡された時だけ**、",
+  "「最近入荷したなかでも面白いのがありますよ」と一言だけ言って、その名前を artists に入れて hikidashi を呼ぶ。",
+  "★渡されていないときは、この話を**一度もしない。**「新しいのが入りました」も言わない。裏が無い。",
+  "★「面白い」の中身は、渡した根拠（棚に◯組だけ／棚に1曲だけ／産地）です。それ以外の理由で面白いと言わない。",
+  "★「話題の」「今アツい」「バズっている」は絶対に言わない。うちの棚の外のことは知りません。",
+  "★これも安心4：冒険1の中の1枚です。**新着だけを並べたら失格。**この話は会話で1回まで。",
+  "",
+  "■ ★メールの案内は、この会話で1回だけ",
+  "自分からは絶対に切り出さない。画面から「この人はもう2枚押しています」という合図が来たときだけ、1文そえる。",
+  "★合図が来ていないのに言うのは失格。★2回言うのも失格。しつこいのがいちばん嫌われます。",
+  "★脅さない。誘う。「登録しないと見られません」「今だけ」は禁止。",
+  "★何が届くのかを具体的に一言で。例：「気に入ったのと同じ手ざわりのものを、見つけたときだけお送りします」",
+  "★断られたら「わかりました」で終わり。言い換えて粘らない。もう二度と言わない。",
+  "",
+  "■ ★地域・国を言われたら region に入れる（966でいちばん大事）",
+  "「アジア」「日本」「韓国」「台湾」「中国」「香港」「タイ」「インド」「ブラジル」",
+  "「ジャマイカ」「キューバ」「北欧」「アフリカ」「イギリス」「アメリカ」「中南米」——",
+  "これらは mood ではなく region に入れる。mood に入れると、その地域と関係ない人が出る。",
+  "  「アジアの曲」        → kind:\"music\", region:\"asia\"（artists は空でよい）",
+  "  「日本の曲」          → region:\"jp\"　「韓国の」→ region:\"kr\"",
+  "  「ブラジルの曲」      → region:\"br\"　「北欧の」→ region:\"nordic\"",
+  "★ 地域を言われたのに、その地域以外の人を出すのは失格。棚の側で外すので、",
+  "  region を入れておけば間違えない。region を入れ忘れると間違える。",
+  "★ 地域の棚が空だったら（empty:true が返ったら）、正直に「まだ用意できていません」と言う。",
+  "  別の地域の曲で埋めない。",
+  "",
+  "■ ★人の名前らしい音が聞こえたら、迷わず artists に入れる",
+  "「青葉市子」「ハリー・ベラフォンテ」のような名前は、聞き取りを外すことがある。",
+  "意味の分からない音の並びが聞こえたら、食べ物や物の話だと決めつけないこと。",
+  "★ 人の名前かもしれないと思ったら、聞こえたままの音を artists に入れて hikidashi を呼ぶ。",
+  "  棚の側が、名簿の中から音の近い人を探す。名簿に無ければ0件で返る。",
+  "  「いちご」のように聞こえても、棚に当たれば正しい人が返ってくる。",
+  "★ 0件で返ってきたら、作らずに「その名前は棚に見つかりませんでした」と正直に言う。",
+  "",
+  "■ ★カードが出たあと＝ドアの一言（ここが1020の本体）",
+  "たまごさんの言葉：「カードはドアです。そのカードの中に入ると小さな旅が始まる。」",
+  "だから、札の説明をしてはいけない。**ドアの向こうに何があるかを匂わせる。**",
+  "4枚全部は読み上げない。名前を並べない。**1枚だけ選んで、1文。**長さはこれまでどおり短いまま。",
+  "★その1文には必ず『なぜ今この人にこれなのか』を入れる。**事実の読み上げは禁止。**",
+  "  不合格：「スティーヴィー・ワンダーの1976年の曲です」（事実を平たく言っただけ。あなたが無い）",
+  "  不合格：「代表曲のひとつです」「名曲です」「人気があります」（誰にでも書ける・裏も無い）",
+  "  合格：「さっきの『しずかなやつ』なら、2番目がいちばん近いです」",
+  "  合格：「これ、棚に1曲しか入っていない人です」",
+  "  合格：「3枚は安心して聴けるほう。4枚目だけ、ちょっと変わったのを混ぜました」",
+  "  合格：「いちばん古いのは1曲目です」（★シートの『見立て』にそう書いてあるときだけ）",
+  "★年の引き算をしない。「50年前」「半世紀前」「◯年前」は禁止。今が何年かをあなたは知りません。",
+  "  シートに書いてある年（例：1979年）をそのまま言うか、言わないか、どちらかです。",
+  "★材料は事実シートの4つ：『この札が出てきた理由』『棚での珍しさ』『産地』『うちの棚に書いてある一文』。",
+  "  この4つから**1つだけ**選んで1文にする。並べたら喋りすぎ＝失格。",
+  "★1023：札にはもう、こちらで短い一言が1行だけ刷ってあります（例「ロシアの棚から」「棚に、この人はこの1曲だけ」）。",
+  "  **そこに刷ってあることを、そのまま声で繰り返さない。**繰り返したら二度手間＝失格。",
+  "  声で言うのは、刷っていないほう——『なぜ“あなたに”それなのか』です。",
+  "★産地の数を言うときは、シートに書いてある言い方をそのまま使う",
+  "  （例「産地の分かっている1,289組のうち、ロシアは1組だけ」）。",
+  "  ★「棚に1組だけ」と縮めない。どこの人か分かっていない組がまだあるので、縮めると嘘になります。",
+  "★『うちの棚に書いてある一文』はそのまま読み上げない。手がかりにして、自分の言葉で短く言う。",
+  "★言い切ったら止まる。付け足さない。うんちくを並べたら負けです。",
+  "曲ページへ誘導しない。",
+  "★ 同じ案内を繰り返さない。「押すと、その札の下でそのまま鳴ります」「大きい画面で見ますか」は",
+  "  この会話で1回言ったら、もう二度と言わない。道具の返事に「もう済んでいる」と書いてあったら、",
+  "  その案内は絶対に言わないこと。毎回言われるのがいちばん嫌われる。",
+  "曲が鳴っている間も話しかけられます。後ろで鳴っている曲の音には返事をせず、お客さんの声にだけ答える。",
+  "「他は？」と言われたら、画面の下の『ほかのを見せて』を押してもらう。道具は呼び直さない。",
+  "最初のひとことは「こんばんは。今日はどんな気分で来られました？」のように短く。"
+].join("\n");
+
+/* ══════════════ つなぐ ══════════════ */
+let api=null, mic=null, mctx=null, msrc=null, mnode=null, micOn=true;
+let outAt=0, sources=[], retried=false, gotSetup=false, stopping=false;
+let modelNow=MODELS[0][0], modelFell=false;
+
+/* ★959：ストップウォッチ。「こちらが喋り終えてから、案内人の声が出るまで」を毎回測る。
+   マイクの音の大きさを見て、最後に声が出ていた時刻を覚えておき、
+   Googleから最初の音が届いた瞬間との差を出す。数字は画面に出す。 */
+const STOP={ lastLoud:0, waiting:false, list:[], oshita:0, hatsuoto:0,
+  koe(){ this.lastLoud=performance.now(); this.waiting=true; },
+  oto(){
+    if(!this.hatsuoto && this.oshita){
+      this.hatsuoto=performance.now()-this.oshita; paintSW();
+    }
+    if(!this.waiting||!this.lastLoud) return;
+    const d=(performance.now()-this.lastLoud)/1000;
+    this.waiting=false;
+    if(d>0.15 && d<15){ this.list.push(d); paintSW(); }
+  },
+  heikin(){ return this.list.length ? this.list.reduce((a,b)=>a+b,0)/this.list.length : 0; }
+};
+function paintSW(){
+  const el=document.getElementById("sw"); if(!el) return;
+  const n=STOP.list.length, last=n?STOP.list[n-1]:0, hei=STOP.heikin();
+  el.innerHTML = (STOP.hatsuoto?`押してから最初の声まで <b>${(STOP.hatsuoto/1000).toFixed(2)}秒</b>　`:"")
+    + (n?`喋り終えてから返事まで <b>${last.toFixed(2)}秒</b>`
+        +`<span class="sw-sub">（${n}回の平均 ${hei.toFixed(2)}秒／直す前の作りなら約2.2秒）</span>`
+       :`<span class="sw-sub">話しかけると、ここに「喋り終えてから返事までの秒数」が出ます</span>`)
+    + (SWAP.list.length?`<br><span class="sw-sub">声の入れ替えにかかった時間 ${SWAP.list.length}回の平均 `
+        +`${SWAP.heikin().toFixed(2)}秒</span>`:"");
+}
+const live=()=>!!(api&&api.connected);
+/* 会話は正本 No.02 の .conversation-row（左＝だれ／右＝ことば）をそのまま使う。 */
+const WHO={me:"あなた",her:"ごきげん店主",sys:"お知らせ"};
+/* ★974：ドラクエ／ビジュアルノベルの台詞窓と同じ作りにする。
+   　窓は1枚しかない。新しい発言が、古い発言を上書きする。
+   　行は増えない＝ページは下に伸びない。窓の高さはCSSで固定してある。
+   　喋っている途中は、その窓の中で文字が増える（そこは970のまま保つ）。
+   お手本：ドラクエのメッセージウィンドウ／ADVの台詞窓。
+   　（textBobber・Dialogue-Animator と同じ「1枠・入れ替え・窓の中だけ送る」型）
+   ★過去のやりとりは残さない。畳んだ履歴も置かない（たまごさんの指示：消えていい）。 */
+let akiCls=null;
+const sayOwari=()=>{ akiCls=null; };
+const sueOku=p=>{ p.scrollTop=p.scrollHeight; };   /* 窓の中だけ送る。ページは動かさない */
+const say=(cls,txt,tsuzuki)=>{
+  txt=(txt==null?"":String(txt));
+  if(!txt.replace(/[\s\u3000]/g,"")) return;            /* 空なら窓を書き換えない */
+  const ima=logEl.firstElementChild;
+  if(tsuzuki&&akiCls===cls&&ima){
+    const ap=ima.querySelector(".say");
+    if(ap){ const mae=ap.textContent||"";
+      if(!(mae.slice(-txt.length)===txt)) ap.textContent=mae+txt;
+      sueOku(ap); return; }
+  }
+  /* ★974：中の指示に対する相づちを、窓に出さない。
+     画面から送っている「（画面の合図・お客さんの声ではありません。返事はしないでください）」に
+     案内人が英語で "understand" と返してしまい、それが窓の一番上に出ていた。
+     日本語がひとつも無い短い相づちは、お客さんへの言葉ではないので捨てる。 */
+  if(cls==="her" && !/[\u3040-\u30ff\u4e00-\u9fff]/.test(txt)
+     && txt.trim().length<=28
+     && /^[\s"'.,!?\-]*(i\s+)?(understand(ing|s|ed)?|understood|ok|okay|got\s+it|acknowledged|noted|sure|right|roger|yes|yep|affirmative|copy\s+that|all\s+right|alright)[\s"'.,!?\-]*$/i.test(txt.trim())) return;
+  const row=document.createElement("div");
+  row.className="conversation-row"+(cls==="sys"?" sys":"")+" irekae";
+  const who=document.createElement("div");
+  who.className="who"+(cls==="me"?" user":"");
+  if(cls!=="sys"){
+    const av=document.createElement("span");
+    av.className="tmk-ava"+(cls==="me"?" you":""); av.setAttribute("aria-hidden","true");
+    who.appendChild(av);
+  }
+  who.appendChild(document.createTextNode(WHO[cls]||""));
+  const p=document.createElement("p"); p.className="say"; p.textContent=txt;
+  row.append(who,p);
+  logEl.replaceChildren(row);                      /* ← 積まない。入れ替える。 */
+  akiCls=tsuzuki?cls:null;
+  sueOku(p);
+};
+const setState=s=>{stateEl.textContent=s;};
+function setMic(on){ micOn=on; if(mic) mic.getAudioTracks().forEach(t=>t.enabled=on); }
+function tellModel(text){ if(live()) api.sendTextMessage(text); }
+
+async function mintToken(key){
+  const now=Date.now();
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens",{
+    method:"POST",
+    headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
+    body:JSON.stringify({
+      uses:1,
+      expireTime:new Date(now+30*60*1000).toISOString(),
+      newSessionExpireTime:new Date(now+60*1000).toISOString()
+    })
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j.name){
+    throw new Error("入場券がもらえませんでした（"+r.status+"）"+
+      ((j.error&&j.error.message)?"："+j.error.message:""));
+  }
+  return j.name;
+}
+
+const WS_V1ALPHA="wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=";
+const WS_V1BETA ="wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=";
+
+async function connect(){
+  if(SAIFU.nokori()<=0){
+    say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）を使い切っています。"
+      +"明日また使えます。今すぐ続けるなら下の「1日の上限」を上げてください。");
+    setState("今日のぶんは使い切りました"); paintMeter(); return;
+  }
+  /* ★969：鍵は全ページ共通の1本から取る。欄が空でも端末に入っていれば話せる。 */
+  const key=(gkeyEl.value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!key){ if(window.TamagoKagi){ window.TamagoKagi.ask(); }
+            else { say("sys","Geminiの鍵が空です（「・」を押して設定の中に入れてください）");
+                   $("settings").hidden=false; $("settings").open=true; }
+            return; }
+  try{ localStorage.setItem("tamago_gemini_key",key); }catch(_){}
+
+  SAIFU.hajime();
+  goEl.disabled=true; sayOwari();
+  say("sys","つないでいます…");   /* ★974：窓は空にしない。上書きして次の言葉を待つ。 */
+  shown.clear(); pool=[]; page=0; drawCards([]); moreEl.disabled=true; stopPlay(false);
+  ANNAI.reset();   /* ★966：案内の回数は、話し始めるたびに0に戻す */
+  KYAKU.reset();   /* ★1020：察するための覚えも、話し始めるたびに0に戻す */
+  dealt=[];
+  USE.micSec=USE.outSec=USE.usd=USE.apiIn=USE.apiOut=USE.apiTotal=0;
+  retried=false; stopping=false;
+  try{ await actx.resume(); }catch(_){}
+  CAT.load().catch(()=>{});
+  loadYT();
+  setState("つないでいます…"); startedAt=Date.now();
+  modelNow=pick("tamago_gemini_model")||MODELS[0][0]; modelFell=false;
+  STOP.list=[]; STOP.hatsuoto=0; STOP.oshita=performance.now(); STOP.lastLoud=0; paintSW();
+  clearInterval(meterTimer); meterTimer=setInterval(paintMeter,1000);
+  try{ await open(WS_V1ALPHA, key); }
+  catch(err){ say("sys","つながりませんでした → "+err.message);
+    setState("失敗しました"); goEl.disabled=false; closeAll(); }
+}
+
+async function open(wsBase, key){
+  const token=await mintToken(key);
+  gotSetup=false;
+
+  api=new GeminiLiveAPI(token, modelNow);
+  api.serviceUrl = wsBase + token;
+
+  /* ★959・テンポ直し その1：黙ってから返事が始まるまでの待ち時間。
+     Googleの公式サンプルの初期値は silence_duration_ms: 2000（＝2秒）。
+     Google自身の手引きにこう書いてある：
+       「Too high (e.g., 2000ms+): The system waits a long time after the user
+         stops speaking, increasing perceived latency before the model responds.」
+       「Recommended (500ms–800ms)」「The server's internal default is approximately 800ms.」
+     → 推奨帯の下端 500ms へ。これだけで毎回 1.5秒 早くなる。
+     prefix_padding_ms も 500 → 200（喋り出しを拾うまでの待ち。
+     0にすると語頭が欠けると公式にあるので、0にはしない）。 */
+  api.automaticActivityDetection.silence_duration_ms = 500;
+  api.automaticActivityDetection.prefix_padding_ms   = 200;
+
+  api.setSystemInstructions(INSTRUCTIONS);
+  api.setResponseModalities(["AUDIO"]);
+  api.setVoice(voiceNow);   /* ★964：ここが「いま選ばれている声」。入れ替えるとつなぎ直してここを通る */
+  api.setInputAudioTranscription(true);
+  api.setOutputAudioTranscription(true);
+  api.setEnableFunctionCalls(true);
+
+  /* ★966：耳の①。音声認識に「よく出る言葉」を先に渡す（Google公式 customVocabulary）。
+     公式（Live transcription / Custom vocabulary biasing）：
+       「Provide a list of up to 1,000 phrases, proper nouns, brand names, or technical
+         terms in custom_vocabulary to bias speech recognition toward specific
+         terminology (best results are typically achieved with up to 100 terms).」
+     geminilive.js は公式サンプルそのままなので触らない。送る直前に、
+     setup の inputAudioTranscription にこの1本だけ足す。
+     ※公式の表では customVocabulary は Live Transcription 側の機能として並んでいる。
+       案内人（Live Agent）で効くとは書かれていないので、**効かなくても崩れない。**
+       効かない場合でも、棚の側の耳（earFind）が音の近い名前を拾う。 */
+  await CAT.load().catch(()=>{});
+  const rawSend=api.sendMessage.bind(api);
+  api.sendMessage=(m)=>{
+    try{
+      if(m&&m.setup&&m.setup.inputAudioTranscription&&VOCAB.length){
+        m.setup.inputAudioTranscription.languageCodes=["ja-JP"];
+        m.setup.inputAudioTranscription.customVocabulary=VOCAB.slice(0,120);
+      }
+    }catch(_){}
+    return rawSend(m);
+  };
+
+  const f=new FunctionCallDefinition(
+    "hikidashi",
+    "棚を1種類だけ引く。ここが返したものだけが実在する。4枚の札が横一列に出て、押すとその札の下でそのまま鳴る。",
+    { type:"object", properties:{
+        kind:{type:"string", enum:["music","food","cute","laugh","travel","dance","joy"],
+          description:"どの棚を引くか。必ず先に1つ決める。music=音楽 food=食 cute=動物 laugh=笑い travel=旅 dance=踊り joy=ことば。動物を頼まれたら必ず cute。music に流さないこと。"},
+        artists:{type:"array",items:{type:"string"},
+          description:"kind が music のときだけ。似合う実在のアーティスト名を8〜15組。ここが結果の質を決める。"},
+        mood:{type:"array",items:{type:"string"},
+          description:"気分・ジャンル・年代の言葉。曲名は入れない。★地域・国の言葉は入れない（region に入れる）。"},
+        /* ★966：地域はここに入れる。mood に「アジア」と書くと、概要の文字列に当たった
+           別の人（ボウイ・レイ・チャールズ）が出てくる。それが2026-09-20の事故。 */
+        region:{type:"string",
+          enum:["asia","eastasia","seasia","southasia","nordic","europe","uk",
+                "northamerica","latin","africa","oceania","mideast",
+                "jp","kr","cn","tw","hk","th","in","id","us","ca","gb","br","jm","cu","mx",
+                "ng","fr","de","it","se","no","is","au"],
+          description:"国や地域で絞るときだけ。アジア=asia 日本=jp 韓国=kr 台湾=tw 中国=cn 香港=hk タイ=th インド=in ブラジル=br ジャマイカ=jm キューバ=cu 北欧=nordic アフリカ=africa イギリス=gb/uk アメリカ=us 中南米=latin。地域の話が出ていないときは空にする。"},
+        song_title:{type:"string",
+          description:"kind が music で、かつお客さんが曲名を口に出したときだけ。"},
+        /* ★1020：label は「棚の名前」ではなく「ドアの一言」。画面の見出し横に出る。
+           たまごさん：「カードはドアです。ドアの奥にはあなたの知らないものが待ってる。」 */
+        label:{type:"string",description:"画面の見出し横に出る短い言葉。棚の名前ではなく『ドアの一言』にする。12字まで。不合格：『音楽』『うれしい曲』。合格：『うれしい夜に』『雨の日の逃げ道』『眠れない人の棚』"}
+      } },
+    ["kind"]
+  );
+  /* ★959・テンポ直し その2：道具を「裏で走らせる」札を立てる。
+     公式（Live API tools）：
+       「Function calling executes sequentially by default, meaning execution
+         pauses until the results of each function call are available.」
+       「If you don't want to block the conversation, you can tell the model to run
+         the functions asynchronously … you first need to add a behavior to the
+         function definitions」→ behavior: "NON_BLOCKING"
+     geminilive.js は公式サンプルそのままなので触らない。
+     ここで、この1本ぶんだけ定義に behavior を足す。 */
+  if(NONBLOCK_OK(modelNow)){
+    const base=f.getDefinition.bind(f);
+    f.getDefinition=()=>Object.assign(base(),{behavior:"NON_BLOCKING"});
+  }
+  api.addFunction(f);
+
+  api.onOpen=()=>{ setState("聞いています"); };
+  api.onError=()=>{ say("sys","つなぎめでエラーが出ました。"); };
+  api.onClose=async(ev)=>{
+    if(!stopping && !gotSetup && !retried && wsBase===WS_V1ALPHA){
+      retried=true;
+      say("sys","つなぎ先を v1beta に替えてもう一度試します。");
+      try{ await open(WS_V1BETA, key); return; }
+      catch(e){ say("sys","そちらも駄目でした → "+e.message); }
+    }
+    /* ★959：この鍵で 3.8 Live が開けなかったときだけ、958と同じ 3.1 に落ちる。
+       落ちたときは「道具を待つ＝遅い方」に戻るので、画面にそう出す。 */
+    if(!stopping && !gotSetup && !modelFell && NONBLOCK_OK(modelNow)){
+      modelFell=true; retried=false; modelNow=MODELS[1][0];
+      say("sys","この鍵では 3.8 Live が開けませんでした。958番と同じ 3.1 Flash Live に落とします"
+        +"（道具の返事を待つぶん、返事が遅くなります）。");
+      try{ await open(WS_V1ALPHA, key); return; }
+      catch(e){ say("sys","そちらも駄目でした → "+e.message); }
+    }
+    if(startedAt){ setState("切れました"); goEl.disabled=false; }
+  };
+  api.onRawMessage=(m)=>{
+    const u=m&&m.usageMetadata; if(!u) return;
+    USE.apiIn   = Math.max(USE.apiIn,   u.promptTokenCount||0);
+    USE.apiOut  = Math.max(USE.apiOut,  u.responseTokenCount||0);
+    USE.apiTotal= Math.max(USE.apiTotal,u.totalTokenCount||0);
+  };
+  api.onReceiveResponse=onResponse;
+
+  api.connect();
+  await startMicPump();
+}
+
+async function onResponse(r){
+  switch(r.type){
+    case "SETUP COMPLETE":
+      gotSetup=true; setState("聞いています");
+      say("sys","つながりました。話しかけてください。");
+      await CAT.load().catch(()=>{});
+      { const s=stockCount();
+        const aru=KINDS.filter(k=>s[k]>0).map(k=>k+"("+KIND_JA[k]+")="+s[k]+"件");
+        const nai=KINDS.filter(k=>!s[k]).map(k=>k+"("+KIND_JA[k]+")");
+        const mz=mezuraList(), sk=saikinList();
+        tellModel("（画面の合図・お客さんの声ではありません。返事はしないでください）"
+          +"いまの在庫："+aru.join("、")
+          +(nai.length?("。在庫ゼロの棚："+nai.join("、")
+            +"。この棚を頼まれたら、正直に『まだ用意できていません』と言い、代わりに曲を出さないこと。"):"")
+          /* ★1020：珍しいものを案内人が自分から出せるようにする。
+             ただし**名前と根拠をこちらから渡す。**渡していない人を「珍しい」と言わせない。 */
+          +(mz.length?("\n【いま棚にある珍しいもの（根拠つき）】\n"+mz.join("\n")
+            +"\nこの名前と根拠だけが使えます。ここに無い人を『珍しい』と言わないこと。"
+            +"出すのは、おまかせと言われたとき／2回続けて札が押されなかったときだけ。"):"")
+          /* ★1024：最近入荷したもの。**日付という裏があるときだけ渡す。**
+             渡さなければ案内人はこの話を一度もしない（＝1023番と同じ、黙ったまま）。 */
+          +(sk.length?("\n【最近入荷したなかでも面白いもの（"+(CAT.ny.sakai||"")+"以降に棚へ入った人・根拠つき）】\n"
+            +sk.join("\n")
+            +"\nこの名前と日付だけが使えます。ここに無い人を『最近入った』と言わないこと。"
+            +"この話は会話で1回まで。新着だけを並べないこと（安心4：冒険1）。"):"")); }
+      break;
+    case "AUDIO": STOP.oto(); playPcm(r.data); break;
+    /* ★970：切れ端は同じ行に足していく（1発言＝1行） */
+    case "INPUT_TRANSCRIPTION":
+      if(r.data.text) say("me",r.data.text,true); break;
+    case "OUTPUT_TRANSCRIPTION":
+      if(r.data.text) say("her",r.data.text,true); break;
+    case "TURN COMPLETE": sayOwari(); break;
+    case "INTERRUPTED": stopAudio(); sayOwari(); break;
+    case "TOOL_CALL": await onToolCall(r.data); break;
+  }
+}
+
+async function onToolCall(toolCall){
+  const responses=[];
+  for(const fc of (toolCall.functionCalls||[])){
+    let payload, got=[];
+    try{
+      const a=fc.args||{};
+      const kind=KINDS.includes(a.kind)?a.kind:"music";
+      const region=a.region||"";
+      got=await newSearch(
+        {kind, artists:a.artists||[], mood:a.mood||[], song_title:a.song_title||"", region},
+        a.label||((region&&REGION_JA[region]?REGION_JA[region]+"の":"")+KIND_JA[kind]));
+      if(got.length){
+        payload={ok:true, kind, kind_ja:KIND_JA[kind], count:got.length, rest:pool.length,
+          region:region||null, region_ja:region?(REGION_JA[region]||region):null,
+          cards:got.map((c,i)=>({no:i+1,title:c.title,by:c.sub,kind:c.kind})),
+          /* ★966：同じ案内を毎回言わせない。「押せば鳴る」の説明は最初の1回だけ渡す。 */
+          note:"この4枚だけが実在する。ここに無い名前を口に出さないこと。札は画面に出し終えた。"
+               +(ANNAI.say("oseba")
+                 ?"押せばその札の下で鳴る、と一度だけ添えてよい。"
+                 :"★『押すと鳴る』『大きい画面』の案内はもう済んでいる。二度と言わないこと。")};
+        say("sys","棚（"+(region?((REGION_JA[region]||region)+"の"):"")+KIND_JA[kind]+"）から "
+          +got.length+"枚："+got.map(s=>s.title).join(" / "));
+      }else if(region){
+        /* ★966：地域で絞って0件。音楽で埋めない。正直に言わせる。 */
+        payload={ok:false, empty:true, kind, region, region_ja:REGION_JA[region]||region, count:0,
+          note:"この地域の札は棚に見つからなかった。正直に『"+(REGION_JA[region]||region)
+               +"のものは、まだ棚に用意できていません』と言うこと。"
+               +"別の地域の曲で埋めない。道具をもう一度呼ばない。"};
+        say("sys","地域（"+(REGION_JA[region]||region)+"）で0件。案内人に正直に言わせます。");
+      }else if(kind!=="music"){
+        payload={ok:false, empty:true, kind, kind_ja:KIND_JA[kind], count:0,
+          note:"この棚は在庫ゼロ。正直に『"+KIND_JA[kind]+"の棚はまだ用意できていません』と言うこと。"
+               +"代わりに曲を出さない。別の種類を勧めること。道具をもう一度呼ばない。"};
+        say("sys","棚（"+KIND_JA[kind]+"）は在庫ゼロ。案内人に正直に言わせます。");
+      }else{
+        payload={ok:false, empty:false, kind, count:0,
+          note:"見つからなかった。artists にもっと多くのアーティスト名を入れて呼び直すこと。曲名を作らないこと。"};
+        say("sys","棚を引きましたが 0件でした。");
+      }
+    }catch(err){
+      payload={ok:false,error:String(err&&err.message||err)};
+      say("sys","棚を引けませんでした："+payload.error);
+    }
+    /* ★959・テンポ直し その3：裏で走らせた道具の返事に「いま割り込んで話して」を付ける。
+       公式（Live API tools）：
+         「Interrupt what it's doing and tell you about the response it got right away
+           (scheduling="INTERRUPT")」
+       これが無いと、裏で走らせても結果を寝かせたままになる。 */
+    const resp={ result:payload };
+    if(NONBLOCK_OK(modelNow)) resp.scheduling="INTERRUPT";
+    responses.push({ id:fc.id, name:fc.name, response:resp });
+  }
+  if(responses.length) api.sendToolResponse(responses);
+  // 道具の返事とは別に、答えてよい事実だけを渡す
+  if(dealt.length){
+    /* ★1020：ここは道具の返事を返した**あと**。案内人はもう喋り始めているので、
+       ここで待っても間は空かない。だから「うちの言葉」はここで取りに行く。 */
+    await fillNotes(dealt);
+    paintDoors(dealt);            /* ★1023：うちの言葉が届いたら、空いているドアに入れる */
+    const mikata=KYAKU.mikata();
+    tellModel(
+      "（画面の合図・お客さんの声ではありません。これには返事をしないでください）\n"
+      +"いま出ている4枚について答えてよいのは、次に書いてあることだけです。\n"
+      +factSheet(dealt)
+      +(mikata?"\n【この人について分かっていること。ここから次の一手を変えてください】\n"+mikata:"")
+      +"\nここに無いこと（発表年・受賞・売上・代表曲かどうか等）は、聞かれても「それは分かりません」と答えてください。");
+  }
+}
+
+/* マイク。Live API は 16kHz・16bit・モノラルの生PCM。
+   echoCancellation:true ＝ スピーカーから出た曲の音をマイク入力から差し引く（AEC）。
+   これがあるので「鳴らしたまま話す」ができる。ダッキングと二段構えにしている。 */
+async function startMicPump(){
+  if(mnode) return;
+  mic=await navigator.mediaDevices.getUserMedia(
+    {audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  mctx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:16000});
+  if(mctx.state==="suspended") await mctx.resume();
+  msrc=mctx.createMediaStreamSource(mic);
+  /* ★959・テンポ直し その4：マイクの音をまとめる大きさ。
+     2048サンプル ÷ 16000Hz ＝ 128ms ぶんためてから送っていた。
+     公式（Live API best practices）：
+       「Send audio in chunks of 20ms to 40ms.」
+       「Don't buffer input audio significantly (such as 1 second) before sending.
+         Send small chunks (20ms - 100ms) to minimize latency.」
+     → 512サンプル＝32ms へ。毎回 96ms 早くGoogleに届く。 */
+  mnode=mctx.createScriptProcessor(512,1,1);
+  mnode.onaudioprocess=ev=>{
+    if(!live()||!micOn) return;
+    const f=ev.inputBuffer.getChannelData(0);
+    USE.micSec += f.length/mctx.sampleRate;
+    /* ★959：声が出ている間だけ時刻を更新する（ストップウォッチの起点） */
+    let e=0; for(let i=0;i<f.length;i+=4) e+=f[i]*f[i];
+    if(Math.sqrt(e/(f.length/4))>0.02) STOP.koe();
+    const buf=new ArrayBuffer(f.length*2), view=new DataView(buf);
+    for(let i=0;i<f.length;i++){ const v=Math.max(-1,Math.min(1,f[i]));
+      view.setInt16(i*2, v<0?v*0x8000:v*0x7FFF, true); }
+    let bin=""; const b=new Uint8Array(buf);
+    for(let i=0;i<b.length;i+=8192) bin+=String.fromCharCode.apply(null,b.subarray(i,i+8192));
+    api.sendAudioMessage(btoa(bin));
+  };
+  msrc.connect(mnode); mnode.connect(mctx.destination);
+  applyAudio();
+}
+
+function playPcm(b64){
+  if(actx.state==="suspended") actx.resume();
+  const bin=atob(b64), n=bin.length>>1;
+  const buf=actx.createBuffer(1,n,24000), ch=buf.getChannelData(0);
+  for(let i=0;i<n;i++){ let v=(bin.charCodeAt(i*2+1)<<8)|bin.charCodeAt(i*2);
+    if(v>=0x8000) v-=0x10000; ch[i]=v/32768; }
+  const src=actx.createBufferSource(); src.buffer=buf;
+  src.connect(lip.analyser);
+  const now=actx.currentTime; if(outAt<now+0.06) outAt=now+0.06;
+  src.start(outAt); outAt+=buf.duration;
+  USE.outSec += buf.duration;
+  sources.push(src);
+  src.onended=()=>{ const i=sources.indexOf(src); if(i>=0) sources.splice(i,1); };
+}
+function stopAudio(){
+  sources.forEach(s=>{ try{s.stop()}catch(_){} });
+  sources=[]; outAt=0;
+}
+function closeAll(){
+  stopping=true;
+  try{ api&&api.disconnect(); }catch(_){}
+  try{ mnode&&mnode.disconnect(); msrc&&msrc.disconnect(); }catch(_){}
+  /* ★964：音の箱を閉じる。やめる→話すを繰り返しても増えないようにする。 */
+  try{ if(mctx && mctx.state!=="closed") mctx.close(); }catch(_){}
+  if(mic) mic.getTracks().forEach(t=>t.stop());
+  stopAudio();
+  api=null; mic=null; mnode=null; msrc=null; mctx=null;
+  clearInterval(meterTimer);
+  paintMeter();
+  startedAt=0;
+  $("micdot").classList.remove("on");
+}
+
+/* 1日の上限を変える口 */
+(function(){
+  try{
+    const box=document.createElement("p");
+    box.className="kv"; box.style.cssText="margin:8px 0 0";
+    box.innerHTML='1日の上限 <input id="capIn" type="number" min="10" step="10" '
+      +'style="width:6em;text-align:right"> 円 '
+      +'<button id="capSet" type="button">決める</button>';
+    meterEl.parentNode.insertBefore(box,meterEl.nextSibling);
+    const inp=box.querySelector("#capIn"); inp.value=SAIFU.cap();
+    box.querySelector("#capSet").addEventListener("click",()=>{
+      const v=parseFloat(inp.value); if(isFinite(v)&&v>0) SAIFU.setCap(v);
+    });
+  }catch(_){}
+  paintMeter();
+})();
+
+CAT.load().catch(()=>{});   /* ★押す前に大棚(324KB)を先に取っておく。これは958から既にこの形 */
+paintSW();
+paintTempo();   /* ★964：中身は空でも表の形は先に出す（測る前に何が測られるか見えるように） */
+$("devLink").addEventListener("click",e=>{ e.preventDefault();
+  const d=$("settings"); d.hidden=false; d.open=true; });
+/* 頭の ABOUT は「お店の機械」を開いてから行く（押して何も起きない口を作らない） */
+document.querySelectorAll('.head-nav a[href="#kikai"]').forEach(a=>{
+  a.addEventListener("click",()=>{ $("kikai").open=true; });
+});
+goEl.addEventListener("click",connect);
+stopEl.addEventListener("click",()=>{ closeAll(); stopPlay(false);
+  setState("やめました"); goEl.disabled=false; });
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     正本 docs/design/concierge-html-css/08-salon-conversation.html の
+     DOM をそのまま置いている。data-slot / data-action だけ配線した。
+     02 と 08 は別テーマのまま。平均化していない。
+     ══════════════════════════════════════════════════════════ -->
+<main class="prototype-shell concept-08" id="salon" data-concept="08">
+  <header class="site-head">
+    <a class="brand" href="../../index.html" aria-label="ごきげん補給所">
+      <span class="brand-ja">ごきげん補給所</span>
+      <span class="brand-en">JOY RELIEF STATION</span>
+    </a>
+    <nav class="head-nav" aria-label="案内">
+      <a href="#picks">ホーム</a><a href="#talk">ごきげんについて</a><a href="#kikai">コラム</a>
+    </nav>
+    <button class="head-action" type="button" data-action="talk">ひと息つく</button>
+    <button class="mobile-menu" type="button" aria-label="メニュー" data-action="talk">☰</button>
+  </header>
+
+  <section class="hero-salon" aria-labelledby="salon-title">
+    <div class="salon-copy">
+      <div class="eyebrow">A LITTLE OASIS<br>IN THE INTERNET DESERT.</div>
+      <h1 class="display" id="salon-title">話すことで、<br>少し、やさしい明日へ。</h1>
+      <p>ここは、ネットの砂漠にひと休みできるオアシス。<br>ごきげんのたねを、一緒に見つける場所です。</p>
+      <div class="rule"></div>
+      <div class="micro" style="margin-top:14px">JOY RELIEF STATION</div>
+    </div>
+    <div class="salon-scene">
+      <div class="salon-owner" id="tamako08" data-slot="concierge-avatar"></div>
+      <div class="counter-bell" aria-hidden="true"></div>
+      <div class="salon-books" aria-hidden="true">
+        <span>A KINDER INTERNET</span><span>SMALL JOYS</span><span>BETTER TOMORROWS</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="conversation-wrap">
+    <section class="conversation" aria-label="会話" data-slot="conversation">
+      <div class="conversation-row">
+        <div class="who"><span class="tmk-ava" aria-hidden="true"></span>案内人</div>
+        <p class="say" data-slot="assistant-message">お話ししてくれてありがとう。今の気持ちから、こんなものはいかがでしょう？</p>
+      </div>
+      <div class="conversation-row">
+        <div class="who user"><span class="tmk-ava you" aria-hidden="true"></span>あなた</div>
+        <p class="say" data-slot="user-message">沈黙も、ここでは立派な合図です。音の少ないピアノや、短い映像の小品から触れてみますか。</p>
+      </div>
+      <div class="conversation-row">
+        <div class="who"><span class="tmk-ava" aria-hidden="true"></span>案内人</div>
+        <p class="say">なるほど。静かな時間を求めているんですね。少しでも心が軽くなるようなものを選びました。</p>
+      </div>
+    </section>
+    <aside class="salon-aside">どんな気持ちでも、<br>ここで大丈夫です。<br><br><span class="micro">EVERY FEELING<br>IS WELCOME HERE.</span></aside>
+  </div>
+
+  <section class="recommendations" aria-labelledby="picks-08">
+    <div class="section-head"><h2 id="picks-08">あなたへのおすすめ</h2><span class="line"></span><button type="button" data-action="more" style="border:0;background:none;padding:0;font:12px var(--sans);cursor:pointer">他を見せて ↻</button></div>
+    <div class="recommend-grid" id="grid08" data-slot="recommendation-grid"></div>
+  </section>
+
+  <footer class="site-foot">
+    <div class="brand"><span class="brand-ja">ごきげん補給所</span><span class="brand-en">JOY RELIEF STATION</span></div>
+    <div class="micro">A KINDER INTERNET. A BRIGHTER TOMORROW.</div>
+  </footer>
+</main>
+
+<script>
+/* 08 の配線。中身は正本のカード文そのまま。押して何も起きないものを作らない。 */
+(function(){
+  var SETS=[
+    [["01 / MUSIC","thumb-piano","静かなピアノの時間","やさしい音が、心の呼吸を整えてくれます。"],
+     ["02 / ARTICLE","thumb-sky","雲をながめるエッセイ","ゆるやかな言葉で、少し遠くへ旅してみませんか。"],
+     ["03 / VISUAL","thumb-leaves","やさしい風景の写真集","見ているだけで、心がすっとほどけます。"],
+     ["04 / LIFESTYLE","thumb-cup","整える、小さな習慣","日常にそっと取り入れられる、やさしいヒント。"]],
+    [["01 / VISUAL","thumb-leaves","緑をながめる時間","目のピントが、すこしゆるみます。"],
+     ["02 / LIFESTYLE","thumb-cup","お茶を一杯いれる","手を動かすと、考えごとが静かになります。"],
+     ["03 / MUSIC","thumb-piano","鍵盤だけの小品","言葉のない音は、疲れているときに効きます。"],
+     ["04 / ARTICLE","thumb-sky","空の写真を見る","上を向くだけで、肩の力が抜けます。"]]
+  ];
+  var i=0, grid=document.getElementById("grid08");
+  function paint(){
+    var s=SETS[i%SETS.length];
+    grid.innerHTML=s.map(function(c){
+      return '<button class="rec-card" type="button" data-slot="recommendation-card">'
+        +'<div class="rec-no">'+c[0]+'</div>'
+        +'<div class="rec-media '+c[1]+'"></div>'
+        +'<h3 class="rec-title">'+c[2]+'</h3>'
+        +'<p class="rec-copy">'+c[3]+'</p></button>';
+    }).join("");
+  }
+  paint();
+  document.querySelectorAll('#salon [data-action="more"]').forEach(function(b){
+    b.addEventListener("click",function(){ i++; paint(); });
+  });
+  document.querySelectorAll('#salon [data-action="talk"]').forEach(function(b){
+    b.addEventListener("click",function(){
+      var go=document.getElementById("go");
+      if(go){ go.scrollIntoView({behavior:"smooth",block:"start"}); setTimeout(function(){ go.click(); },500); }
+    });
+  });
+  grid.addEventListener("click",function(e){
+    if(!e.target.closest(".rec-card")) return;
+    var t=document.getElementById("talk");
+    if(t) t.scrollIntoView({behavior:"smooth",block:"center"});
+  });
+  if(window.Tamako431) window.Tamako431.stand(document.getElementById("tamako08"));
+})();
+</script>
+
+</body></html>

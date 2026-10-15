@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>あの日にかえりたい — C案：次の一曲まで連れていく</title>
+<style>
+:root{color-scheme:light;--ink:#1a1a1a;--bg:#fbfaf7;--sub:#7b756c;--line:#e6e1d8;--red:#b3402f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic",sans-serif;line-height:1.85}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px 110px}
+.top{padding:54px 0 0}
+.rule{font-family:Georgia,serif;font-size:10px;letter-spacing:.34em;color:var(--red)}
+h1{font-family:"Hiragino Mincho ProN",serif;font-size:clamp(34px,10vw,58px);line-height:1.18;margin:16px 0 14px;font-weight:600}
+.who{font-size:14px;color:var(--sub);letter-spacing:.05em;margin-bottom:34px}
+.hero{width:100%;aspect-ratio:3/2;object-fit:cover;display:block;margin:0 0 10px;filter:sepia(.12) contrast(1.04)}
+.cap{font-size:11.5px;color:var(--sub);line-height:1.8;margin:0 0 44px}
+.big{font-family:"Hiragino Mincho ProN",serif;font-size:clamp(20px,5.6vw,27px);line-height:1.8;font-weight:600;margin:0 0 26px}
+.body{font-size:15.5px;line-height:2.05;color:#33302b}
+.body p{margin:0 0 20px}
+.one{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;margin:40px 0;
+font-size:14.5px;line-height:1.95}
+.one b{color:var(--red);font-family:Georgia,serif;font-size:10px;letter-spacing:.24em;display:block;margin-bottom:7px}
+h2{font-size:12px;font-family:Georgia,serif;letter-spacing:.28em;color:var(--red);margin:70px 0 18px}
+h2 em{display:block;font-style:normal;font-family:"Hiragino Mincho ProN",serif;font-size:22px;letter-spacing:.04em;color:var(--ink);margin-top:9px}
+.next{display:grid;gap:12px}
+.card{display:flex;gap:14px;align-items:center;border:1px solid var(--line);background:#fff;padding:14px;
+text-decoration:none;color:inherit;transition:.15s}
+.card:hover{border-color:var(--ink)}
+.card .num{font-family:Georgia,serif;font-size:11px;color:var(--sub);width:34px;flex:none;letter-spacing:.1em}
+.card .t{font-size:15px;font-weight:700;line-height:1.5}
+.card .d{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.6}
+.card .go{margin-left:auto;color:var(--red);font-size:18px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:6px}
+.tile{border:1px solid var(--line);background:#fff;padding:16px}
+.tile .y{font-family:Georgia,serif;font-size:11px;color:var(--red);letter-spacing:.12em}
+.tile .n{font-size:16px;font-weight:700;margin:6px 0 5px}
+.tile .x{font-size:12.5px;color:var(--sub);line-height:1.7}
+.fact{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+.fact th,.fact td{border-bottom:1px solid var(--line);padding:11px 6px;text-align:left;vertical-align:top}
+.fact th{width:34%;color:var(--sub);font-weight:400;font-size:12.5px}
+.src{margin-top:60px;padding-top:16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--sub);line-height:2}
+.src a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="rule">1975 / SINGLE No.6</div>
+    <h1>あの日に<br>かえりたい</h1>
+    <div class="who">荒井由実　作詞・作曲：荒井由実／編曲：松任谷正隆</div>
+  </div>
+
+  <img class="hero" src="https://img.youtube.com/vi/TuN73HTW63k/maxresdefault.jpg" alt="荒井由実「あの日にかえりたい」1975年" onerror="this.style.display='none'">
+  <div class="cap">1975年10月5日、東芝EMIから発売。TBS系ドラマ『家庭の秘密』主題歌。</div>
+
+  <p class="big">戻れないと分かっている人だけが、<br>この曲を最後まで聴ける。</p>
+  <div class="body">
+    <p>オリコン週間1位。35週チャートに居座って、累計61.5万枚。ここまでは数字の話。</p>
+    <p>おもしろいのはその手前で、この曲の詞は一度、書き直されている。最初の詞はドラマの内容に合わないと判断されて外され、行き先を変えて、ハイ・ファイ・セット「スカイレストラン」になった。
+    さらに、テレビから流れた主題歌版は、2番のヴォーカルがイコライジングされていない別テイクだった。あの頃テレビで聴いた声と、レコードの声は、厳密には違う。</p>
+  </div>
+
+  <div class="one">
+    <b>ONE LINE</b>
+    ボツになった詞のほうも、別の名曲として世に出ている。
+  </div>
+
+  <h2>NEXT<em>ここから、次の一曲へ</em></h2>
+  <div class="next">
+    <a class="card" href="https://www.youtube.com/watch?v=TuN73HTW63k" target="_blank" rel="noopener">
+      <span class="num">01</span>
+      <span><span class="t">1975年の音源を聴く</span><span class="d">あの日にかえりたい（1975年）／荒井 由実</span></span>
+      <span class="go">→</span>
+    </a>
+    <a class="card" href="https://joy-relief-station.lovable.app/cover-guide?artist=yuming" target="_blank" rel="noopener">
+      <span class="num">02</span>
+      <span><span class="t">ユーミンの棚に戻る</span><span class="d">ごきげん補給所・名カバー案内所</span></span>
+      <span class="go">→</span>
+    </a>
+    <a class="card" href="https://music.apple.com/jp/album/those-were-the-days-anohi-ni-kaeritai-single/1436008601" target="_blank" rel="noopener">
+      <span class="num">03</span>
+      <span><span class="t">公式配信（英語題 Those Were the Days）</span><span class="d">Apple Music</span></span>
+      <span class="go">→</span>
+    </a>
+  </div>
+
+  <h2>COVERS<em>歌い直した人が、27人いる</em></h2>
+  <div class="grid3">
+    <div class="tile"><div class="y">2003</div><div class="n">マイケル・フランクス</div><div class="x">英語詞「SOMEWHERE IN THE RAIN」として。アルバム『OVER THE SKY: Yuming International Cover Album』</div></div>
+    <div class="tile"><div class="y">2009</div><div class="n">坂本冬美</div><div class="x">『Love Songs〜また君に恋してる〜』</div></div>
+    <div class="tile"><div class="y">2009</div><div class="n">桑田佳祐</div><div class="x">『昭和八十三年度!ひとり紅白歌合戦』</div></div>
+    <div class="tile"><div class="y">1976</div><div class="n">内山田洋とクールファイブ</div><div class="x">『ふれあいの時』。発売翌年、最初のカバー</div></div>
+    <div class="tile"><div class="y">2006</div><div class="n">徳永英明</div><div class="x">『VOCALIST 2』</div></div>
+    <div class="tile"><div class="y">2014</div><div class="n">吉井和哉</div><div class="x">『ヨシー・ファンクJr. 〜此レガ原点!!〜』</div></div>
+  </div>
+  <p class="cap" style="margin-top:14px">ほかに、やまがたすみこ／斉藤慶子／香坂みゆき／森高千里／市井紗耶香／小野リサ／高鈴／和田アキ子／サエラ／稲垣潤一（露崎春女とデュエット）／大橋純子／布施明／John-Hoon／森恵／今井美樹／中田裕二／當山みれい／由紀さおり／半﨑美子。本人によるセルフカバーも2種（1996年ライブ盤、2001年 小野リサとの共演）。</p>
+
+  <h2>DATA<em>この曲のこと</em></h2>
+  <table class="fact">
+    <tr><th>発売</th><td>1975年10月5日／東芝EMI／ETP-20174</td></tr>
+    <tr><th>タイアップ</th><td>TBS系ドラマ『家庭の秘密』主題歌</td></tr>
+    <tr><th>CMソング</th><td>1975年 三菱電機ダイヤトーンステレオ／1980年 旭光学アサヒペンタックス</td></tr>
+    <tr><th>チャート</th><td>オリコン週間1位／35週連続登場／累計61.5万枚</td></tr>
+    <tr><th>B面</th><td>少しだけ片想い（1980年アルファ盤では「卒業写真」に差し替え）</td></tr>
+    <tr><th>公式英語題</th><td>Those Were the Days</td></tr>
+    <tr><th>数字の食い違い</th><td>『映画情報』1976年4月号は「3か月で100万枚以上」と報じている。オリコン集計の61.5万枚とは一致しない。断定せず両方を残す。</td></tr>
+  </table>
+
+  <div class="src">出典：
+    <a href="https://ja.wikipedia.org/wiki/%E3%81%82%E3%81%AE%E6%97%A5%E3%81%AB%E3%81%8B%E3%81%88%E3%82%8A%E3%81%9F%E3%81%84">ウィキペディア「あの日にかえりたい」</a>／
+    <a href="https://music.apple.com/jp/album/those-were-the-days-anohi-ni-kaeritai-single/1436008601">Apple Music</a>／
+    オリコン・シングル・チャートブック(完全版) 1968-2010, p.731
+  </div>
+</div>
+</body>
+</html>

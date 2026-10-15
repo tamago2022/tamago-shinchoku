@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34564 Spotify仕入れ担当「正式指令」の恒久ルール統合・確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34564 Spotify仕入れ担当「正式指令」の恒久ルール統合・確認</div>
+<h1>#34564 Spotify仕入れ担当「正式指令」の恒久ルール統合・確認</h1>
+<div class="date">2026-10-07 調査・確認（統合作業そのものは2026-08-06に完了済みだったことを確認）</div>
+
+<div class="fix">
+判定日赤34564番は「2026-08-06 06:23に言われた指令が1ヶ月以上未着手」という内容だったが、調べた結果<b>当日06:27（4分後）に既に恒久ルールへ統合済み</b>だった。統合先は <code>.claude/manuals/01-ingest-linking.md</code> の「Spotify仕入れ・つなげる担当 正式指令」節（26〜67行目）で、チャットの正式指令（中核原則10項目・用語区分6種・仕入れ候補4分類A〜D・店主のSpotify/Musicデータの扱い）が丸ごと恒久ルールとして書き起こされており、以後の仕入れ担当マニュアルから常時参照される状態になっている（現在も本番のドキュメントに残っている＝下の実測ログで確認済み）。今回は新規コードを書く必要がなく、誤って「未着手」と判定されていた赤信号を実測で解除する調査作業だった。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>06:23 → 06:27</b><span>指示を受けた時刻 → 恒久ルールへ統合した時刻（同日・4分後）</span></div>
+  <div class="num"><b>42行</b><span>統合された恒久ルール節の行数（01-ingest-linking.md 26〜67行目）</span></div>
+  <div class="num"><b>0件</b><span>新規に書いたコード・設定（既に完了済みのため追加実装は無し）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+<li><b>（リンクなし）</b></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>正式指令（中核原則10項目）が恒久ルールに反映されているか</td><td class="yes">反映済み（01-ingest-linking.md 30〜41行目）</td></tr>
+<tr><td>用語区分6種（在庫／入口／小旅行／棚／おすすめ／外周資料）</td><td class="yes">反映済み（43〜52行目）</td></tr>
+<tr><td>仕入れ候補4分類A〜D</td><td class="yes">反映済み（54〜61行目）</td></tr>
+<tr><td>店主のSpotify/Musicデータの扱い（フィルターでなく羅針盤）</td><td class="yes">反映済み（63〜67行目）</td></tr>
+<tr><td>統合した変更が現在の本番ドキュメントの履歴に実在するか</td><td class="yes">YES（下の実測ログ参照）</td></tr>
+<tr><td>Spotify仕入れ担当マニュアルの冒頭でこの節を読む指示があるか</td><td class="yes">28行目に明記「Spotify仕入れ担当と『つなげる担当』の両方が、着手前に必ずこの節を読む」</td></tr>
+</table>
+
+<h2>⑥ 実測の生ログ（joy-relief-stationリポジトリの履歴記録。引用として貼る生データ）</h2>
+<pre style="background:#1c1c1c;color:#8ef0ae;padding:14px;border-radius:10px;overflow-x:auto;font-size:0.78rem;line-height:1.5;"><code data-inyou="evidence">記録された時刻: 2026-08-06 06:27:00 +0900　記録者表示名: Kohei Munakata
+内容: Spotify仕入れ・つなげる担当の正式指令を恒久ルールへ統合
+
+現在地チェック1: この変更は、今動いている作業の履歴の中に含まれている → はい
+現在地チェック2: この変更は、本番として配信されている側の履歴の中にも含まれている → はい（本番へ反映済みという意味）
+
+該当箇所（01-ingest-linking.md 26〜41行目の内容）：
+26行目） Spotify仕入れ・つなげる担当 正式指令（店主指示 2026-08-06・恒久ルール）
+28行目） Spotify仕入れ担当と「つなげる担当」の両方が、着手前に必ずこの節を読む。
+30行目） 中核原則（10項目）
+32行目） 1. 世界の人気曲・有名曲は、店主の好みと異なっても入口として広く扱う。
+33行目） 2. 「検索できる在庫」と「店主推薦の棚」を分離する。
+34行目） 3. 棚の曲をおすすめ表示で優先する。
+35行目） 4. 棚にない曲・アーティストでも、ファンが喜ぶ入口と小旅行を用意する。
+36行目） 5. 店主のSpotify・Music／iTunesは、品ぞろえを制限するフィルターではなく、編集軸を作る羅針盤として使う。
+37行目） 6. 来店者の好きなものを否定しない。店主の好みを押しつけない。
+38行目） 7. 「半歩横→もう半歩横→一歩先」へ道をつなぐ。
+39行目） 8. 季節・情景・感情・音楽史・制作陣・ライブ・映画・CM・カバーなどを調査して接続する。
+40行目） 9. 店主が興味を持たないアーティストでも、ファンに失礼のない品質で扱う。
+41行目） 10. 最終目的は、良い音楽を知りたいが探し方が分からない人に、信頼できる道を提供すること。</code></pre>
+<p style="font-size:0.82rem;color:#7a7568;">指示が出た時刻（06:23）は店主のスマホ発言ログ（本キュー#34564の原文「言われた日時」欄）に基づく。統合が記録された時刻（06:27）と比較すると4分後。</p>
+
+<footer>
+joy-relief-stationは非公開リポジトリのためGitHub上の直リンクは作れず、実測結果を上の&lt;pre&gt;にそのまま貼っている。このページ自身が #34564 の完了証拠。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

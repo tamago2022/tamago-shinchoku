@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34494 コンシェルジュ推しバッジ 顔かぶり 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34494 コンシェルジュ推しバッジ 顔かぶり</div>
+<h1>#34494 コンシェルジュ推しバッジ 顔かぶり</h1>
+<div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+2026-08-05に「バッジが大きく中央に表示され人物の顔にほぼ丸かぶり」と指摘された件。本番HTMLを直接取得して実測した結果、現在は<code>サムネ短辺の28%</code>・<code>四隅の余白6.5%</code>・<code>左上の隅固定(align-items:flex-start)</code>という仕組みに変わっており、中央配置・顔かぶりは本番で再現しない。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>28%</b><span>バッジ高さ(サムネ短辺比・実測)</span></div>
+  <div class="num"><b>6.5%</b><span>四隅の余白(短辺基準・実測)</span></div>
+  <div class="num"><b>左上</b><span>配置(flex-start・中央配置は無し)</span></div>
+  <div class="num"><b>8/8</b><span>自動検品PASS(design-rules-check)</span></div>
+</div>
+
+<h2>③ 実測の生データ（本番URLから直接fetchしたHTML中のstyle属性そのまま）</h2>
+<div class="note">
+2026-10-06、<code>https://joy-relief-station.lovable.app/world/food</code> を<code>node -e のfetch</code>で直接取得（店主・AIともに未操作、画面表示ではなく生HTML）。「カラッとおから」カードのバッジを囲む要素のstyle属性を抜粋：
+</div>
+<pre style="background:#1c1c1c;color:#8ef0ae;padding:12px 14px;border-radius:10px;font-size:0.76rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">style="padding:min(6.5cqw, 6.5cqh);height:100%;display:flex;flex-direction:column;justify-content:space-between;align-items:stretch" data-card-badges=""
+  → style="display:flex;flex-direction:column;align-items:flex-start;gap:min(3cqw, 3cqh);width:100%"
+    → &lt;img src="/badges/concierge-pick.webp" ... style="height:min(28cqw, 28cqh);width:auto;display:block;opacity:0;flex:none"&gt;</pre>
+<div class="note">
+読み方：外側の余白が短辺の<b>6.5%</b>（<code>min(6.5cqw, 6.5cqh)</code>）、バッジ本体の高さが短辺の<b>28%</b>（<code>min(28cqw, 28cqh)</code>）、縦並びの配置が<code>align-items:flex-start</code>＝<b>左上固定</b>。中央寄せ（<code>justify-content:center</code>・<code>inset-0</code>の中央寄せ等）は使われていない。ローカルの自動検品（<code>npm run check:design-rules</code>）でも同じ基準（<code>28%±1pt・余白6.5%±2px</code>・上下左右対称）を8項目全てPASSで実測済み。
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番 食べ物の扉(カラッとおから・バッジ実物あり)</b><a href="https://joy-relief-station.lovable.app/world/food" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/food</a></li>
+  <li><b>本番 akikoページ(同じ仕組みのバッジ枠)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>本番HTMLにバッジが実在する</td><td class="yes">yes</td></tr>
+<tr><td>配置が中央(justify-center/inset-0中央寄せ)になっていない</td><td class="yes">yes</td></tr>
+<tr><td>配置が左上の隅固定(align-items:flex-start)</td><td class="yes">yes</td></tr>
+<tr><td>高さがサムネ短辺の28%(2026-08-05当時の「顔の半分近く」から縮小)</td><td class="yes">yes</td></tr>
+<tr><td>自動検品(design-rules-check.mjs)が8/8 PASS</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+実測手順: node -e のfetchで本番URLを直接取得し、バッジを囲むdata-card-badges要素のstyle属性(padding:min(6.5cqw,6.5cqh)/height:min(28cqw,28cqh)/align-items:flex-start)をそのまま読んだ。ローカルのdesign-rules-check.mjsもバッジ8項目すべてPASS(カード横並び高さ等の別4項目は本件と無関係な既存の失敗で、34494番のスコープ外)。正本: src/lib/designRules.ts・src/lib/badgeKinds.ts。履歴: badgeKinds.tsのConciergePickBadgeコメントに2026-08-05当日の経緯そのものが記録されている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

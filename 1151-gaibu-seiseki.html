@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Genspark と Devin は役に立ったか（実測）</title>
+<style>
+:root{--ink:#1a1a1a;--sub:#6b6b6b;--line:#e2ded6;--bg:#faf8f4;--red:#b3261e;--grn:#1f6f43;--amb:#9a6a00;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.7;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:18px 14px 60px}
+h1{font-size:21px;line-height:1.45;margin:0 0 4px}
+.date{color:var(--sub);font-size:12px;margin-bottom:18px}
+h2{font-size:17px;margin:34px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+h3{font-size:14px;margin:20px 0 6px}
+p{font-size:14px;margin:8px 0}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}
+.k{display:inline-block;font-weight:700;font-size:20px;border-radius:6px;padding:1px 10px;color:#fff}
+.k.x{background:var(--red)}.k.s{background:var(--amb)}.k.o{background:var(--grn)}
+.lead{font-size:15px;font-weight:600;margin:6px 0 10px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:12.5px;background:#fff;min-width:560px}
+th,td{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{background:#f1ede5;font-weight:700;white-space:nowrap}
+td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.s,.src{color:var(--sub);font-size:10.5px;word-break:break-all}
+.big{font-size:15px;font-weight:700}
+.red{color:var(--red);font-weight:700}
+.grn{color:var(--grn);font-weight:700}
+small{color:var(--sub);font-size:11.5px;display:block;margin-top:4px}
+.s2{color:var(--sub);font-size:11px;font-weight:400}
+ul{padding-left:1.1em;font-size:14px;margin:8px 0}
+li{margin:6px 0}
+.hr{height:1px;background:var(--line);margin:26px 0}
+a{color:#0b5ea8}
+.foot{margin-top:34px;font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Genspark と Devin は、役に立ったのか</h1>
+<div class="date">2026-09-26 ／ 数字はすべて repo 内の実測記録から。各行の末尾に出どころ（ファイル:行番号）を付けた。憶測は1行も書いていない。ブラウザ不使用。</div>
+
+<div class="card">
+<p class="lead">先に3行</p>
+<p>① <b>Genspark</b>：投げ22／返り16／本番に出た2／採用2／使った1,336.1クレジット（残588.837・10/4に消滅） → <span class="k s">△</span> <span class="s2">status/gaibu_ai/daicho.jsonl:1 ／ status/AI_NEDAN.md:52 ／ status/1136_hikitsugi_genspark.md:7</span></p>
+<p>② <b>Devin</b>：投げ26／PRで返り5／mainに入った3／<b>本番で開けた1</b>／$8.85 → <span class="k s">△</span> <span class="s2">status/1059_hikitsugi_devin.md:8 ／ :9 ／ :10 ／ :11 ／ :17</span></p>
+<p>③ 誰に何を任せるかは <a href="#wariate">いちばん下の表</a>。</p>
+</div>
+
+<!-- ============ GENSPARK ============ -->
+<h2>1. Genspark</h2>
+
+<div class="card">
+<p><span class="k s">△</span> <b class="big">仕事に使ったのは 10.1クレジットだけ。残りの 1,326 は成果物ゼロで消えた。</b> <span class="s2">status/AI_NEDAN.md:52</span></p>
+<p>「急にガーッと減り出した」の正体は、9/24 に回した <b>Claw 1回（663クレジット）</b>と <b>AI Developer 2回（366＋297クレジット）</b>。<span class="s2">status/AI_NEDAN.md:34 ／ status/AI_NEDAN.md:35</span></p>
+<p>この3回ぶんの成果物は、repo を全文検索しても <b class="red">1件も残っていない</b>（`grep -rn -iE "claw|ai.?developer" status` → 値段表の記述だけが出て、出力は0件）。</p>
+<p>逆に、実際に紙になった Deep Research と Super Agent は <b class="grn">全部 0クレジット</b>（100% off の無料枠）だった。<span class="s2">status/1136_hikitsugi_genspark.md:7 ／ status/AI_NEDAN.md:31</span></p>
+</div>
+
+<h3>投げたもの全部（記録が残っているもの）</h3>
+<div class="tw">
+<table>
+<tr><th>いつ</th><th>何を頼んだ</th><th>返ってきたか</th><th>成果物</th><th class="n">使ったクレジット</th><th>本番に出たか</th><th>出どころ</th></tr>
+
+<tr><td>9/22</td><td>掲示板が通るかの確認（ai-kaigi）</td><td>✕ 返事なし</td><td>—</td><td class="n">0</td><td>✕</td><td class="s">status/gaibu_ai/daicho.jsonl:8</td></tr>
+
+<tr><td>9/23</td><td>Notion を読めるか実測</td><td>◯</td><td><a href="1075-genspark-notion.html">1075-genspark-notion.html</a></td><td class="n">記録なし</td><td>◯ 紙が出た</td><td class="s">1075-genspark-notion.html:1</td></tr>
+
+<tr><td>9/24 06:38</td><td>配管テスト（search 1回）</td><td>◯</td><td>—</td><td class="n">1.000</td><td>✕ 仕事ではない</td><td class="s">status/1058_hikitsugi_genspark.md:8</td></tr>
+
+<tr><td>9/24 06:44</td><td>繋がっていない組の下調べ（search 9件）</td><td>◯ 9件</td><td>status/gsk/kotae/ に9本</td><td class="n">9.000</td><td class="red">✕ 棚に1件も繋いでいない</td><td class="s">status/1058_hikitsugi_genspark.md:9</td></tr>
+
+<tr><td>9/24 11:28</td><td>覆面客：曲ページを採点（1回目）</td><td>✕ 答えを返さず</td><td>—</td><td class="n">1.0</td><td>✕</td><td class="s">status/fukumen_kyaku/daicho.jsonl:1</td></tr>
+
+<tr><td>9/24 11:34</td><td>覆面客（2回目・crawl）</td><td>△ 点数が読めない</td><td>—</td><td class="n">0.0</td><td>✕</td><td class="s">status/fukumen_kyaku/daicho.jsonl:2</td></tr>
+
+<tr><td>9/24 11:38</td><td><b>覆面客（3回目）</b></td><td><b>◯ 軽さ9／楽しさ3／美しさ4</b></td><td>status/fukumen_kyaku/20260924-113854.txt</td><td class="n">2.2</td><td class="grn">◎ 採用。直しの根拠になった</td><td class="s">status/fukumen_kyaku/daicho.jsonl:3</td></tr>
+
+<tr><td>9/24 03:55</td><td class="red">AI Developer（2回）</td><td class="red">出力の記録なし</td><td class="red">repo内に0件</td><td class="n red">663.0</td><td class="red">✕</td><td class="s">status/AI_NEDAN.md:35</td></tr>
+
+<tr><td>9/24 12:00</td><td class="red">Claw（1回）</td><td class="red">出力の記録なし</td><td class="red">repo内に0件</td><td class="n red">663.0</td><td class="red">✕</td><td class="s">status/AI_NEDAN.md:34</td></tr>
+
+<tr><td>9/24 13:03</td><td><b>覆面客：直した後の再採点</b></td><td><b>◯ 軽さ8／楽しさ4／美しさ6</b></td><td>status/1130_MARUNAGE_TO_ANKEITO.md:8</td><td class="n">3.3</td><td class="grn">◎ 直りを数字で確認</td><td class="s">status/fukumen_kyaku/daicho.jsonl:4</td></tr>
+
+<tr><td>9/25 04:15</td><td>「あの日にかえりたい」曲ページの完成版（Super Agent）</td><td>◯ 単一HTML・出典9本</td><td><a href="yuming-anohi/g.html">yuming-anohi/g.html</a></td><td class="n grn">0.000</td><td class="red">✕ 採点29点・本番未接続</td><td class="s">status/1136_hikitsugi_genspark.md:5 ／ :41</td></tr>
+
+<tr><td>9/25 04:29</td><td>AI各社の料金表を公式出典だけで（Deep Research）</td><td>◯ 出典つき</td><td><a href="1136-ai-nedan.html">1136-ai-nedan.html</a></td><td class="n grn">0.000</td><td class="grn">◯ 進捗表から開ける</td><td class="s">status/gaibu_ai/daicho.jsonl:42</td></tr>
+
+<tr><td>9/25 09:41</td><td>止めずに回し続ける設計の実運用事例（Deep Research）</td><td>◯ 出典URLつき</td><td><a href="1143-mawashi.html">1143-mawashi.html</a></td><td class="n grn">0.000</td><td class="grn">◯ 進捗表から開ける＋1案を採用</td><td class="s">status/1143/shinchoku.md:35 ／ status/1143/te_5tsu.md:8</td></tr>
+
+<tr><td>9/26 00:09</td><td>ログインの手を年ゼロに（お題）</td><td>— 未送信</td><td>—</td><td class="n">0</td><td>—</td><td class="s">status/gaibu_ai/daicho.jsonl:47</td></tr>
+</table>
+</div>
+<small>※ 9/24 の search 9件は1行にまとめた。全50行の原本は <a href="1136-gaibu-ai-daicho.html">外部AIの台帳</a>（status/gaibu_ai/daicho.jsonl:1）。</small>
+
+<h3>役に立ったか＝本番に出たか／たまごさんが採用したか</h3>
+<div class="tw">
+<table>
+<tr><th>数え方</th><th class="n">件数</th><th>中身</th><th>出どころ</th></tr>
+<tr><td>投げた</td><td class="n big">22</td><td>search 10／覆面客 4／Claw 1／AI Developer 2／Super Agent 1／Deep Research 2／掲示板 2</td><td class="s">status/gaibu_ai/daicho.jsonl:1 ほか上の表</td></tr>
+<tr><td>返ってきた</td><td class="n big">16</td><td>返らなかったのは、掲示板と覆面客の失敗と、出力の記録が無い Claw／AI Developer</td><td class="s">status/gaibu_ai/daicho.jsonl:8 ／ status/fukumen_kyaku/daicho.jsonl:1</td></tr>
+<tr><td><b>本番に出た</b></td><td class="n big grn">2</td><td>料金表（1136）／回し続ける設計の調査（1143）。どちらも進捗表から開ける紙</td><td class="s">status/gaibu_ai/daicho.jsonl:42 ／ status/1143/shinchoku.md:35</td></tr>
+<tr><td><b>採用された</b></td><td class="n big grn">2</td><td>覆面客の採点（→ 本番コミット e5b295d3a8e4 の直しの根拠）／1143 の調査から「Freshness SLO」の案を実装</td><td class="s">status/1130_MARUNAGE_TO_ANKEITO.md:3 ／ status/1143/te_5tsu.md:26</td></tr>
+<tr><td>作っただけ＝役に立っていない</td><td class="n big red">3</td><td>曲ページ g.html（本番未接続）／search 9件（棚に未接続）／Claw・AI Developer（成果物なし）</td><td class="s">status/1136_hikitsugi_genspark.md:41 ／ status/1058_hikitsugi_genspark.md:9</td></tr>
+</table>
+</div>
+
+<h3>お金（実測）</h3>
+<ul>
+<li>クレジット <b>1,924.937 → 588.837</b>＝<b>1,336.1 使った</b>（前後とも <code>gsk me</code> の実測） <span class="s2">status/1058_hikitsugi_genspark.md:8 ／ status/1136_hikitsugi_genspark.md:7</span></li>
+<li>うち <b class="red">1,326＝Claw＋AI Developer の3回</b>。仕事に使ったのは約10.1だけ。 <span class="s2">status/AI_NEDAN.md:52</span></li>
+<li>1クレジット ≒ $0.001999（$19.99 ÷ 10,000）＝ 1,336.1 で約$2.67。<b>ただし実際に払っているのは月額$19.99。</b> <span class="s2">status/AI_NEDAN.md:24 ／ status/AI_NEDAN.md:26</span></li>
+<li><b>本番に出た2件で割ると、1件あたり月額$19.99の半分＝約$10。</b>（子セッション1本の中央値 408.1円と比べると高い） <span class="s2">status/public/tekizai.json:6 ／ status/public/cost_by_task.json:10</span></li>
+<li><b>残 588.837。</b>9/25 が最後の実測。9/24 から <code>status/genspark.stop</code> が立っていて今は測っていない。 <span class="s2">status/gsk/zan.json:4 ／ status/1136_hikitsugi_genspark.md:7</span></li>
+<li class="red"><b>10/4 でサイクル終了・繰り越しなし＝残りは消える。</b> <span class="s2">status/gsk/shigoto.json:4</span></li>
+</ul>
+
+<div class="card">
+<p class="lead">→ 判定 <span class="k s">△</span>　使い続ける。ただし仕事を2つに絞る。</p>
+<ul>
+<li class="grn">◯ <b>任せる</b>：Deep Research（調べもの・出典つき）と Super Agent、そして<b>覆面客の採点</b>。実測で0クレジットのまま、紙と直しになった。 <span class="s2">status/AI_NEDAN.md:31</span></li>
+<li class="red">✕ <b>もう回さない</b>：Claw と AI Developer。1回で300〜660飛んで、成果物が1件も残っていない。 <span class="s2">status/AI_NEDAN.md:35</span></li>
+<li>★ 10/4 までの残 588 は、<b>0クレジットの Deep Research に全部回す</b>。残高を減らさずに使い切れる唯一の形。 <span class="s2">status/AI_NEDAN.md:31</span></li>
+</ul>
+</div>
+
+<div class="hr"></div>
+
+<!-- ============ DEVIN ============ -->
+<h2>2. Devin</h2>
+
+<div class="card">
+<p><span class="k s">△</span> <b class="big">2週間で26本走らせて、本番で開けたのは1本。</b> <span class="s2">status/1059_hikitsugi_devin.md:8 ／ :11</span></p>
+<p>止まった理由は能力ではなく、<b>「指示があるまで待ちます」と言って寝る癖</b>と<b>枠切れ</b>。こちらの依頼文に「返事を書くな・終わりの合図はPRのURLだけ」を入れていなかった。 <span class="s2">status/devin_990_report.md:33 ／ status/1059_hikitsugi_devin.md:22</span></p>
+</div>
+
+<h3>本当に完成させたもの（PRのURLで数える）</h3>
+<div class="tw">
+<table>
+<tr><th>PR</th><th>何</th><th>mainに入ったか</th><th>本番で開けるか</th><th>出どころ</th></tr>
+<tr><td><a href="https://github.com/tamago2022/joy-relief-station/pull/425">#425</a></td><td>FeedbackDoor を最下部に一本化</td><td>◯ <code>0d7e9905</code></td><td class="grn"><b>◯ これだけ</b></td><td class="s">status/1059_hikitsugi_devin.md:11</td></tr>
+<tr><td><a href="https://github.com/tamago2022/joy-relief-station/pull/424">#424</a></td><td>バッジ寸法：片側cq単位を min() に</td><td>◯ <code>9e2a58de</code></td><td>△ CSS・目視していない</td><td class="s">status/1059_hikitsugi_devin.md:14</td></tr>
+<tr><td><a href="https://github.com/tamago2022/joy-relief-station/pull/426">#426</a></td><td>GPT Live Lab ページ</td><td>◯ <code>21d9a760</code></td><td class="red">✕ /lab/gpt-live が404＝<b>公開を押していない</b></td><td class="s">status/1059_hikitsugi_devin.md:13</td></tr>
+<tr><td><a href="https://github.com/tamago2022/joy-relief-station/pull/448">#448</a></td><td>返ってきたが受け取らず</td><td>✕</td><td class="red">✕ 放置</td><td class="s">status/1059_hikitsugi_devin.md:23</td></tr>
+<tr><td><a href="https://github.com/tamago2022/joy-relief-station/pull/455">#455</a></td><td>joy-relief 残りの重さ</td><td>✕</td><td class="red">✕ 放置</td><td class="s">status/1059_hikitsugi_devin.md:23</td></tr>
+<tr><td colspan="5">残り<b>21本</b>＝PRを1本も出さずに <code>finished</code> で終了。「原因特定」「棚卸し」型の調べものは<b>PRが1本も出ていない</b>。 <span class="s2">status/1059_hikitsugi_devin.md:26</span></td></tr>
+</table>
+</div>
+
+<h3>数えた結果</h3>
+<div class="tw">
+<table>
+<tr><th>数え方</th><th class="n">件数</th><th>率</th><th>出どころ</th></tr>
+<tr><td>投げた（セッション）</td><td class="n big">26</td><td>全部 finished（9/16〜9/22）</td><td class="s">status/1059_hikitsugi_devin.md:8</td></tr>
+<tr><td>PRで返ってきた</td><td class="n big">5</td><td>19.2%</td><td class="s">status/1059_hikitsugi_devin.md:9</td></tr>
+<tr><td>mainに入った</td><td class="n big">3</td><td>11.5%</td><td class="s">status/1059_hikitsugi_devin.md:10</td></tr>
+<tr><td><b>本番で開けた</b></td><td class="n big grn">1</td><td class="red"><b>3.8%</b></td><td class="s">status/1059_hikitsugi_devin.md:11</td></tr>
+</table>
+</div>
+
+<h3>お金（実測できたぶんだけ）</h3>
+<ul>
+<li><b>$8.85</b>（9/18〜9/20 の15本ぶん。公式画面の差分より） <span class="s2">status/1142/log.md:28 ／ status/1050_hikitsugi_soto_hatarakite.md:29</span></li>
+<li><b>★訂正あり：</b>この$8.85 の円換算を、こちらは2か所で違う額で書いていた。<b>1,327円</b>（status/1142/log.md:28）と<b>1,391円</b>（status/1059_hikitsugi_devin.md:17）。差は為替の取り方だけで、元の$8.85 は同じ。<b>どちらか一方を「実測の円」と呼ぶのはやめて、$8.85 を正とする。</b></li>
+<li>1本あたり <b>$0.59</b>（$8.85 ÷ 15本）。<b>本番に出た1件あたり $8.85。</b> <span class="s2">status/1059_hikitsugi_devin.md:18</span></li>
+<li>26本ぶんの総額は<b>取れない</b>。<code>/v1/enterprise/consumption</code> は403「Contact support to enable」、<code>/v1/usage</code> <code>/v1/billing</code> <code>/v1/acu</code> は404。 <span class="s2">status/1142/log.md:22 ／ status/mac_jobs/done/a1000_devin_acu_and_one.out:40</span></li>
+<li><b>残ACUは画面にしか出ない。スクショの実測：週の枠100%使用・リセット9/27・残高 −$0.30。</b> <span class="s2">status/1151/shinchoku.md:25 ／ :26 ／ :27</span></li>
+<li>9/24 以降、財布の栓（<code>tools/yosan.py</code> の devin）は<b>0円</b>。<b>新しい課金は発生していない。</b> <span class="s2">status/1142/log.md:25</span></li>
+</ul>
+
+<h3>分かっている癖（実測）</h3>
+<ul>
+<li><b>詰まると直そうとせず「指示があるまで待ちます」と書いて寝る。</b>外出中は誰も答えないので、そのまま <code>finished</code> で死ぬ。<b>死んだセッションは生き返らない。</b> <span class="s2">status/devin_990_report.md:33</span></li>
+<li>押し戻しても、文面が「再開してください」だと「再開します」と返事を書いてまた寝た（9通のうち4通がこの空返事）。 <span class="s2">status/devin_990_report.md:40</span></li>
+<li><b>得意技は「前提が正しいかを実測で確かめる」。</b>2回とも、こちらが教えていないのに自力で真犯人（youtubeIdMap）に辿り着いた。<b>再現性がある。</b> <span class="s2">status/devin_990_report.md:48 ／ status/devin-night-2026-09-18.md:62</span></li>
+<li>3本まとめて投げると30分で枠が空になる。<b>1本ずつ。</b> <span class="s2">status/devin_990_report.md:78</span></li>
+</ul>
+
+<div class="card">
+<p class="lead">→ 判定 <span class="k s">△</span>　止めない。ただし任せる仕事を1つに絞る。</p>
+<ul>
+<li class="grn">◯ <b>任せる</b>：<b>原因究明（前提のウラ取り）だけ。</b>26本の中で唯一、再現性が実測で確認できた型。 <span class="s2">status/devin_990_report.md:48</span></li>
+<li class="red">✕ <b>任せない</b>：「棚卸し」「調べもの」型。PRが1本も出ていない。 <span class="s2">status/1059_hikitsugi_devin.md:26</span></li>
+<li>★ 投げるときの必須文（実測で効いた）：<b>「返事を書くな。質問をするな。終わりの合図は Pull Request の URL だけ」</b>＋<b>「完了は本番で開けること。push だけでは完了ではない」</b> <span class="s2">status/1059_hikitsugi_devin.md:33</span></li>
+<li>★ 1本ずつ・3時間で交代。枠のリセットは 9/27（画面のスクショ実測）。 <span class="s2">status/1151/shinchoku.md:29 ／ status/1151/shinchoku.md:26</span></li>
+</ul>
+</div>
+
+<div class="hr"></div>
+
+<!-- ============ 横並び ============ -->
+<h2 id="wariate">3. 誰に何を任せるか（全員を同じ表で）</h2>
+<div class="tw">
+<table>
+<tr><th>相手</th><th class="n">投げ</th><th class="n">返り</th><th class="n">本番</th><th>かかった金</th><th>判定</th><th>任せる仕事</th><th>出どころ</th></tr>
+
+<tr><td><b>子セッション（Claude）</b></td><td class="n">131</td><td class="n">131</td><td class="n grn">131</td><td>中央値 408.1円／本</td><td><span class="k o">◯</span></td><td>判断・配管・原因究明。<b>いま回っているのはここだけ</b></td><td class="s">status/public/tekizai.json:6</td></tr>
+
+<tr><td><b>fal</b></td><td class="n">24</td><td class="n">24</td><td class="n grn">20</td><td>68.7円／本</td><td><span class="k o">◯</span></td><td>絵・音・動画をつくる</td><td class="s">status/public/fal_cost_ledger.json:13</td></tr>
+
+<tr><td><b>Jules（Google）</b></td><td class="n">11</td><td class="n">10</td><td class="n">1</td><td class="grn">0円</td><td><span class="k o">◯</span></td><td>件数とキーが決まっているJSON（149件で合格率 91.3%）。<b>0円なので列に流し続ける</b></td><td class="s">status/public/uketori_machi.json:4 ／ status/gaibu_ai/daicho.jsonl:23</td></tr>
+
+<tr><td><b>Genspark</b></td><td class="n">22</td><td class="n">16</td><td class="n">2</td><td>月 $19.99<br>＋1,336.1クレジット</td><td><span class="k s">△</span></td><td><b>調べもの（Deep Research・0クレジット）と覆面客の採点だけ。</b>Claw と AI Developer は止める。10/4で終了</td><td class="s">status/AI_NEDAN.md:52 ／ status/AI_NEDAN.md:24</td></tr>
+
+<tr><td><b>Devin</b></td><td class="n">26</td><td class="n">5</td><td class="n">1</td><td>$8.85（15本ぶん）</td><td><span class="k s">△</span></td><td><b>原因究明（前提のウラ取り）だけ。</b>1本ずつ投げる</td><td class="s">status/1059_hikitsugi_devin.md:8 ／ :17</td></tr>
+
+<tr><td><b>ChatGPT API</b></td><td class="n">5</td><td class="n">2</td><td class="n grn">103</td><td>0.922円／回</td><td><span class="k s">△</span></td><td>その場で返る短い検品。<b>ただし今は残高0で 429 が返る</b></td><td class="s">status/public/gaibu_kenpin_ledger.json:13</td></tr>
+
+<tr><td><b>Codex</b></td><td class="n">7</td><td class="n">6</td><td class="n red">0</td><td class="grn">0円</td><td><span class="k s">△</span></td><td>英文のネイティブ判定など「読んで点を付ける」。<b>使用上限に当たる回と、出力0バイトで打ち切りの回がある</b></td><td class="s">status/gaibu_ai/daicho.jsonl:39 ／ status/1143/shinchoku.md:38</td></tr>
+
+<tr><td><b>Grok（xAI）</b></td><td class="n">2</td><td class="n red">0</td><td class="n red">0</td><td class="grn">0円</td><td><span class="k x">✕</span></td><td><b>投げるのをやめる。</b>口が閉じている（API team_blocked・掲示板にbotが0体）</td><td class="s">status/gaibu_ai/daicho.jsonl:41</td></tr>
+
+<tr><td><b>GitHub Copilot</b></td><td class="n">1</td><td class="n red">0</td><td class="n red">0</td><td class="grn">0円</td><td><span class="k x">✕</span></td><td><b>投げるのをやめる。</b>@copilot に反応0・担当者に入れると403</td><td class="s">status/gaibu_ai/daicho.jsonl:22</td></tr>
+
+<tr><td><b>チャッピー（OpenAI直）</b></td><td class="n">5</td><td class="n red">0</td><td class="n red">0</td><td class="grn">0円</td><td><span class="k x">✕</span></td><td><b>投げるのをやめる。</b>残高0で全モデル429</td><td class="s">status/gaibu_ai/daicho.jsonl:31</td></tr>
+</table>
+</div>
+
+<div class="card">
+<p class="lead">結論を1行で</p>
+<p><b>0円で返ってくる Jules を主力にして、Genspark は「0クレジットの調べもの」だけを 10/4 まで使い切り、Devin は「原因究明」だけに絞る。Grok・Copilot・チャッピーは投げるのをやめる。</b>（投げても返らないので赤が増えるだけ） <span class="s2">status/1136_hikitsugi_genspark.md:80</span></p>
+</div>
+
+<h3>★正直に書く：まだ取れていないもの</h3>
+<ul>
+<li>Genspark の <b>Claw / AI Developer が何を返したか</b>。履歴にクレジットの減りだけが残っていて、出力が repo 内に無い。<b>Genspark の画面にしか残っていない可能性がある。</b> <span class="s2">status/AI_NEDAN.md:34</span></li>
+<li>Devin の全セッションぶんの総額。consumption API が閉じているので、15本ぶんの $8.85 からの推計しかできない。<b>推計は「実測」とは呼ばない。</b> <span class="s2">status/1142/log.md:22</span></li>
+<li>Devin の <b>#424（CSS）が本番でどう見えているか</b>。目視していない。 <span class="s2">status/1059_hikitsugi_devin.md:14</span></li>
+<li>このページの本番URLの HTTP 200 確認は、Mac側の5分便が載せた後に行う（サンドボックスから外へ出られないため）。 <span class="s2">status/1151/shinchoku.md:30</span></li>
+</ul>
+
+<div class="foot">
+1151号 ／ 2026-09-26 作成 ／ ブラウザ不使用・追加の課金なし。<br>
+途中経過：status/1151/shinchoku.md ／ 原本の台帳：status/gaibu_ai/daicho.jsonl
+</div>
+
+</div>
+</body>
+</html>

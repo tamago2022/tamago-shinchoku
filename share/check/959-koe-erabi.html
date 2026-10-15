@@ -1,0 +1,508 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="assets/kagi/kagi.js"></script>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
+<title>959 案内人の声えらび（30人ぶん・同じ台詞で聴き比べ）</title>
+<style>html,body{margin:0;background:#0d0b09}</style></head><body>
+<style>
+  :root{
+    --bg:#12100d; --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
+    --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227;
+  }
+  *{box-sizing:border-box}
+  .wrap{max-width:720px;margin:0 auto;padding:24px 14px 64px;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
+  @media(max-width:430px){.wrap{padding:16px 8px 56px}}
+  .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    color:#e8dcc0;letter-spacing:.14em;font-size:.82rem;text-align:center;margin:0 0 4px}
+  .lead{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:#c9bfa6;
+    text-align:center;font-size:.78rem;line-height:1.9;margin:0 0 16px}
+  .panel{background:var(--paper);border-radius:16px;padding:18px 14px;margin-top:14px;border:1px solid #e2dccd}
+  .panel.dark{background:#1a1712;border-color:#2f2a23;color:#ddd2ba}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
+     font-size:1rem;letter-spacing:.06em;margin:0 0 4px;color:var(--ink)}
+  h2 .n{color:var(--kin);font-size:.72rem;letter-spacing:.14em;display:block;margin-bottom:3px}
+  .note{font-size:.78rem;color:var(--sub);line-height:1.8;margin-top:8px}
+  .panel.dark .note{color:#9d947f}
+  a{color:var(--ao)} .panel.dark a{color:#8fb6cf}
+
+  /* ── 値段表 ── */
+  table.nedan{width:100%;border-collapse:collapse;margin-top:12px;font-size:.82rem}
+  table.nedan th,table.nedan td{padding:8px 6px;border-bottom:1px solid #e2dccd;text-align:left;vertical-align:top}
+  table.nedan th{font-weight:400;color:var(--sub);font-size:.72rem;letter-spacing:.06em}
+  table.nedan td.yen{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+  table.nedan tr.dead td{color:#b4aa9a}
+  table.nedan tr.dead td.yen{color:#b4aa9a;font-weight:400}
+  .tag{display:inline-block;font-size:.62rem;letter-spacing:.04em;padding:1px 6px;border-radius:999px;
+    background:#e7eef3;color:#22303a;margin-left:5px;vertical-align:1px}
+  .tag.x{background:#f7e9e7;color:var(--aka)}
+  .tag.o{background:#e6f0e9;color:var(--midori)}
+
+  /* ── 財布 ── */
+  .saifu{background:#fffdf8;border:1px solid #e2dccd;border-radius:12px;padding:11px 12px;margin-top:12px;
+    font-size:.8rem;line-height:1.8}
+  .saifu b{font-variant-numeric:tabular-nums}
+  .saifu .bar{height:5px;background:#e8e1d2;border-radius:99px;margin-top:7px;overflow:hidden}
+  .saifu .bar i{display:block;height:100%;background:var(--midori);width:0}
+
+  /* ── 声の札 ── */
+  input[type=password]{width:100%;padding:11px 12px;border:1px solid #d8d1c0;
+    border-radius:10px;font-size:15px;background:#fff;color:var(--ink);font-family:ui-monospace,monospace}
+  textarea{width:100%;padding:11px 12px;border:1px solid #d8d1c0;border-radius:10px;
+    font-size:15px;background:#fff;color:var(--ink);font-family:inherit;line-height:1.7;resize:vertical}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button,.row a{padding:12px 16px;border-radius:12px;border:none;cursor:pointer;
+    font-size:15px;font-weight:700;letter-spacing:.04em;font-family:inherit}
+  .row a{text-decoration:none;text-align:center;line-height:1.35}
+  .row a.btn-main{color:#fff}
+  .row a.btn-sub{color:var(--ink)}
+  .btn-main{flex:1 1 200px;background:var(--midori);color:#fff}
+  .btn-sub{flex:0 1 auto;background:#fff;color:var(--ink);border:1px solid #d8d1c0;font-weight:400}
+  .row a.btn-sub{border:1px solid #d8d1c0;font-weight:400}
+  button:disabled{background:#c3bdb0;color:#fff;cursor:not-allowed;border-color:#c3bdb0}
+
+  .koelist{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+  .koe{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;
+    background:#fff;border:1px solid #e2dccd;border-radius:11px;padding:9px 10px;cursor:pointer;
+    font-weight:400;transition:border-color .12s,transform .12s;position:relative}
+  .koe:hover{border-color:#c9bda2}
+  .koe.play{border-color:var(--kin);background:#fffaf0}
+  .koe.done{background:#fbfaf6}
+  .koe.err{border-color:#e0c3bd;background:#fdf6f4}
+  .koe .nm{font-size:.92rem;font-weight:700;letter-spacing:.02em}
+  .koe .ch{font-size:.7rem;color:var(--sub)}
+  .koe .ms{font-size:.66rem;color:var(--midori);font-variant-numeric:tabular-nums}
+  .koe .ms.err{color:var(--aka)}
+  .koe .st{position:absolute;top:7px;right:8px;font-size:.6rem;color:#c3bdb0}
+  .koe.fav{box-shadow:0 0 0 2px var(--kin) inset}
+
+  .stopwatch{font-variant-numeric:tabular-nums;font-size:.8rem;color:var(--sub);margin-top:10px;line-height:1.9}
+  .stopwatch b{color:var(--ink);font-size:1.05rem}
+  .err-box{background:#fdf6f4;border:1px solid #e0cfcb;border-radius:10px;padding:10px 12px;
+    font-size:.74rem;color:#7a4a43;line-height:1.7;margin-top:10px;white-space:pre-wrap;
+    font-family:ui-monospace,monospace;max-height:180px;overflow:auto;display:none}
+  .kv{font-size:.72rem;color:var(--sub);line-height:1.9;margin-top:10px}
+  .panel.dark .kv{color:#9d947f}
+  ol.te{margin:10px 0 0;padding-left:1.25em;font-size:.82rem;line-height:1.95}
+  ol.te li{margin-bottom:7px}
+  ol.te b{font-weight:700}
+</style>
+
+<div class="wrap">
+  <p class="kanban">ご き げ ん 補 給 所</p>
+  <p class="lead">案内人の声えらび<br>同じ台詞を、30人ぶん。押した順に鳴ります。</p>
+
+  <!-- ══════════ ① 値段 ══════════ -->
+  <div class="panel">
+    <h2><span class="n">一</span>手は五つ。1分あたり、安い順。</h2>
+    <p class="note" style="margin-top:2px">
+      「喋っている時間」あたりの値段です。黙っている間は出ません。1ドル＝157円で計算。
+    </p>
+    <table class="nedan" id="nedan"></table>
+    <p class="kv" id="nedanSrc"></p>
+  </div>
+
+  <!-- ══════════ ② 財布 ══════════ -->
+  <div class="saifu">
+    <div>この聴き比べで出る分：<b id="mitsumori">—</b>
+      <span style="color:#8d8578">（1本あたり <b id="ippon">—</b>）</span></div>
+    <div style="margin-top:3px">今日ここまで <b id="kyou">—</b> ／ 1日の栓 <b id="cap">—</b></div>
+    <div class="bar"><i id="bar"></i></div>
+    <p class="note" style="margin-top:7px">
+      Google の無料枠に残りがあるうちは <b>0円</b>です。上の見積もりは「有料枠だったら」の額。
+      958番の案内人と同じ財布を見ています（合わせて1日100円で止まります）。
+    </p>
+  </div>
+
+  <!-- ══════════ ③ 聴き比べ ══════════ -->
+  <div class="panel">
+    <h2><span class="n">二</span>聴き比べ</h2>
+    <p class="note" style="margin-top:2px">
+      鍵は958番と同じものを見ています（この端末のブラウザの中だけ）。
+      空なら下に貼ってください。1本作ると、その端末に残るので2回目からは押した瞬間に鳴ります。
+    </p>
+    <textarea id="serifu" rows="3"></textarea>
+    <p class="note" id="mojisu"></p>
+
+    <div class="row">
+      <button class="btn-main" id="go">この台詞で、まず4人ぶん作る</button>
+      <button class="btn-sub" id="goAll">30人ぜんぶ</button>
+      <button class="btn-sub" id="stop" disabled>やめる</button>
+    </div>
+
+    <div class="stopwatch" id="sw">押してから声が出るまで：<b>—</b></div>
+    <div class="err-box" id="err"></div>
+    <div class="koelist" id="koelist"></div>
+
+    <details style="margin-top:14px">
+      <summary style="font-size:.78rem;color:var(--sub);cursor:pointer">鍵（Google AI Studio）</summary>
+      <input id="gkey" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false"
+        style="margin-top:9px">
+      <p class="note">958番と同じ引き出し（tamago_gemini_key）に入ります。</p>
+    </details>
+  </div>
+
+  <!-- ══════════ ④ iris の件 ══════════ -->
+  <div class="panel dark">
+    <h2 style="color:#e8dcc0"><span class="n">三</span>アイリス（iris）の件</h2>
+    <p class="note" id="irisNote"></p>
+  </div>
+
+  <!-- ══════════ ⑤ テンポ ══════════ -->
+  <div class="panel">
+    <h2><span class="n">四</span>テンポ：遅かった理由と、直したところ</h2>
+    <ol class="te" id="tempo"></ol>
+    <div class="row">
+      <a class="btn-main" href="959-gemini-live-tamago.html">直した案内人を開く（959）</a>
+      <a class="btn-sub" href="958-gemini-live-tamago.html">直す前（958）</a>
+    </div>
+    <p class="note">
+      959を開いて話しかけると、画面の真ん中に
+      <b>「喋り終えてから返事まで ◯.◯◯秒」</b>が毎回出ます。958にはこの表示がありません。
+      直す前の作りでは、公式サンプルの初期値のまま <b>2.0秒</b> 黙って待ってから返事を始めていたので、
+      マイクの送り方（0.13秒）と合わせて <b>約2.2秒</b>。ここが出発点です。
+    </p>
+    <p class="kv" id="tempoSrc"></p>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const YEN=157;
+
+/* ══════════ 値段（公式の表そのまま。1分＝喋っている1分）══════════
+   出どころ：
+   - Gemini: https://ai.google.dev/gemini-api/docs/pricing
+       Live（3.8 Live / 3.1 Flash Live）: 音声入 $0.005/分・音声出 $0.018/分
+       3.1 Flash TTS Preview: 音声出 $20.00 / 1M tokens（音声は 25 tokens/秒）
+       2.5 Flash Preview TTS:  音声出 $10.00 / 1M tokens
+   - xAI: https://docs.x.ai/developers/model-capabilities/audio/voice
+       Speech to Speech (grok-voice-latest): $0.08/分
+       TTS: $15.00 / 1M 文字
+       STT streaming: $0.20/時
+   - ElevenLabs: https://elevenlabs.io/pricing/api
+       TTS Flash/Turbo $0.05 / 1,000文字、多言語 $0.10 / 1,000文字
+   日本語の話速は 1分＝約350文字として換算（文字あたり課金のものだけ）。 */
+const MOJI_PER_MIN=350, TOK_PER_SEC=25;
+const usdPerMinFromTokens=usdPer1M=>usdPer1M/1e6*TOK_PER_SEC*60;
+const usdPerMinFromChars =usdPer1MChar=>usdPer1MChar/1e6*MOJI_PER_MIN;
+
+const TE=[
+  { no:"②'", na:"頭脳Gemini ＋ 声だけ xAI の TTS（iris が使える形）",
+    usd: usdPerMinFromChars(15) + 0.005,
+    memo:"iris で喋らせられる唯一の安い形。xAI TTS $15/1M文字＋聞き取りぶん",
+    ok:false, why:"いまは出ない（下の三を見てください）" },
+  { no:"①", na:"Gemini Live のまま、声だけ取り替える",
+    usd:0.005+0.018, memo:"いまの958番。実測で 約1.2円/分（黙っている間が長いぶん安い）",
+    ok:true, why:"今すぐ動く" },
+  { no:"⑤", na:"三段構え（聞き取り xAI ＋ 頭脳 Gemini ＋ 声 xAI）",
+    usd: 0.20/60 + usdPerMinFromChars(15) + 0.001,
+    memo:"部品ごとに一番安いのを寄せ集める。継ぎ目のぶん遅くなる",
+    ok:false, why:"xAI が動かないので今は組めない" },
+  { no:"②", na:"頭脳Gemini ＋ 声だけ Gemini TTS（2.5 Flash）",
+    usd: usdPerMinFromTokens(10), memo:"台詞に [whispers] のような演技指示が書ける",
+    ok:true, why:"今すぐ動く" },
+  { no:"②", na:"頭脳Gemini ＋ 声だけ Gemini TTS（3.1 Flash・流し込み可）",
+    usd: usdPerMinFromTokens(20), memo:"文の頭から喋り出せる唯一のTTS。下の聴き比べはこれ",
+    ok:true, why:"今すぐ動く" },
+  { no:"④", na:"ElevenLabs（Flash/Turbo）",
+    usd: usdPerMinFromChars(50), memo:"多言語モデルはこの倍（$0.10/1,000文字）",
+    ok:null, why:"鍵がまだ無い" },
+  { no:"③", na:"Grok Voice（iris）にまるごと戻す",
+    usd:0.08, memo:"声も頭脳も xAI。一番高い",
+    ok:false, why:"いまは出ない" }
+];
+(function paintNedan(){
+  const rows=TE.slice().sort((a,b)=>a.usd-b.usd);
+  let h='<tr><th>手</th><th>中身</th><th style="text-align:right">1分</th></tr>';
+  for(const t of rows){
+    const tag = t.ok===true ? '<span class="tag o">今すぐ動く</span>'
+              : t.ok===false ? '<span class="tag x">'+t.why+'</span>'
+              : '<span class="tag">'+t.why+'</span>';
+    h+=`<tr class="${t.ok===true?"":"dead"}">
+      <td style="white-space:nowrap;color:#8d8578">${t.no}</td>
+      <td>${t.na}${tag}<br><span style="font-size:.72rem;color:#8d8578">${t.memo}</span></td>
+      <td class="yen">${(t.usd*YEN).toFixed(2)}円</td></tr>`;
+  }
+  $("nedan").innerHTML=h;
+  $("nedanSrc").innerHTML="値段の出どころ："+
+    '<a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">Gemini API 公式の値段表</a>／'+
+    '<a href="https://docs.x.ai/developers/model-capabilities/audio/voice" target="_blank" rel="noopener">xAI Voice 公式</a>／'+
+    '<a href="https://elevenlabs.io/pricing/api" target="_blank" rel="noopener">ElevenLabs API 公式</a>。'+
+    "文字あたり課金のものは「日本語 1分＝350文字」で換算しています（この前提はこちらの見積もりで、公式の数字ではありません）。";
+})();
+
+/* ══════════ 声（Google公式の30人。一言はGoogleが付けているもの）══════════ */
+const CHARA={Bright:"明るい",Upbeat:"陽気",Informative:"よく知っている",Firm:"きっぱり",
+  Excitable:"はしゃぐ",Youthful:"若い",Breezy:"風とおしがいい","Easy-going":"のんき",
+  Breathy:"息まじり",Clear:"すっきり",Smooth:"なめらか",Gravelly:"しゃがれ",
+  Soft:"やわらかい",Even:"ならし",Mature:"大人びた",Forward:"前のめり",
+  Friendly:"人なつこい",Casual:"くだけた",Gentle:"やさしい",Lively:"生きがいい",
+  Knowledgeable:"物知り",Warm:"あたたかい"};
+const VOICES=[
+  ["Zephyr","Bright"],["Puck","Upbeat"],["Charon","Informative"],["Kore","Firm"],
+  ["Fenrir","Excitable"],["Leda","Youthful"],["Orus","Firm"],["Aoede","Breezy"],
+  ["Callirrhoe","Easy-going"],["Autonoe","Bright"],["Enceladus","Breathy"],["Iapetus","Clear"],
+  ["Umbriel","Easy-going"],["Algieba","Smooth"],["Despina","Smooth"],["Erinome","Clear"],
+  ["Algenib","Gravelly"],["Rasalgethi","Informative"],["Laomedeia","Upbeat"],["Achernar","Soft"],
+  ["Alnilam","Firm"],["Schedar","Even"],["Gacrux","Mature"],["Pulcherrima","Forward"],
+  ["Achird","Friendly"],["Zubenelgenubi","Casual"],["Vindemiatrix","Gentle"],["Sadachbia","Lively"],
+  ["Sadaltager","Knowledgeable"],["Sulafat","Warm"]
+];
+/* 案内人に向きそうな4人を先に。残りはそのあと。 */
+const OSUSUME=["Sulafat","Achird","Vindemiatrix","Aoede"];
+
+const SERIFU_DEF="こんばんは。今日はどんな気分で来られました？　一枚、お持ちしましょうか。";
+const MODEL="gemini-3.1-flash-tts-preview";
+const USD_PER_1M_AUDIO_TOK=20;
+
+/* ══════════ 財布（958番と同じ引き出し）══════════ */
+const SAIFU={
+  capDefault:100,
+  day(){ const d=new Date(Date.now()+9*3600e3); return d.toISOString().slice(0,10); },
+  kDay(){ return "tamago_voice_yen_"+this.day(); },
+  cap(){ try{ const v=parseFloat(localStorage.getItem("tamago_voice_cap_yen"));
+              return (isFinite(v)&&v>0)?v:this.capDefault; }catch(_){ return this.capDefault; } },
+  today(){ try{ const v=parseFloat(localStorage.getItem(this.kDay())); return isFinite(v)?v:0; }
+           catch(_){ return 0; } },
+  put(v){ try{ localStorage.setItem(this.kDay(),String(Math.max(0,v))); }catch(_){} },
+  tsukau(yen){ this.put(this.today()+yen); paintSaifu(); },
+  nokori(){ return this.cap()-this.today(); }
+};
+/* 台詞の長さから、鳴る秒数をざっくり見て、そこから円を出す。
+   日本語 1分＝350文字 として 1文字＝60/350秒。音声は 25トークン/秒。 */
+const yomiByou = txt => Math.max(2, txt.replace(/\s/g,"").length*60/MOJI_PER_MIN);
+const yenPerHon = txt => yomiByou(txt)*TOK_PER_SEC/1e6*USD_PER_1M_AUDIO_TOK*YEN;
+
+function paintSaifu(){
+  const txt=$("serifu").value||SERIFU_DEF;
+  const one=yenPerHon(txt);
+  $("ippon").textContent=one.toFixed(2)+"円";
+  $("mitsumori").textContent=`4人で ${(one*4).toFixed(1)}円 ／ 30人ぜんぶで ${(one*30).toFixed(1)}円`;
+  const k=SAIFU.today(), c=SAIFU.cap();
+  $("kyou").textContent=k.toFixed(1)+"円";
+  $("cap").textContent=c.toFixed(0)+"円";
+  $("bar").style.width=Math.min(100,k/c*100)+"%";
+  $("bar").style.background = k/c>0.85 ? "#c4483a" : "#3a7a52";
+  const n=txt.replace(/\s/g,"").length;
+  $("mojisu").textContent=`${n}文字 ＝ 鳴る時間はだいたい ${yomiByou(txt).toFixed(1)}秒。`
+    +`1本 ${one.toFixed(2)}円（無料枠に残りがあれば0円）。`;
+}
+
+/* ══════════ 声を作る ══════════ */
+const CACHE=new Map();   // voice -> {url, ms}
+let cancelled=false, busy=false;
+const koeEl=$("koelist"), errEl=$("err");
+let audio=new Audio(), nowPlaying="";
+
+function paintKoe(){
+  const order=[...OSUSUME, ...VOICES.map(v=>v[0]).filter(n=>!OSUSUME.includes(n))];
+  koeEl.innerHTML="";
+  for(const nm of order){
+    const ch=(VOICES.find(v=>v[0]===nm)||[])[1]||"";
+    const c=CACHE.get(nm);
+    const b=document.createElement("button");
+    b.className="koe"+(c&&c.url?" done":"")+(c&&c.err?" err":"")+(nowPlaying===nm?" play":"")
+      +(OSUSUME.includes(nm)?" fav":"");
+    b.innerHTML=`<span class="nm">${nm}</span>`
+      +`<span class="ch">${CHARA[ch]||ch}<span style="color:#c3bdb0"> / ${ch}</span></span>`
+      +(c&&c.ms?`<span class="ms">${(c.ms/1000).toFixed(1)}秒でできた</span>`:"")
+      +(c&&c.err?`<span class="ms err">出ませんでした</span>`:"")
+      +(c&&c.url?`<span class="st">▶</span>`:`<span class="st">…</span>`);
+    b.onclick=()=>hiku(nm);
+    koeEl.appendChild(b);
+  }
+}
+
+function wavFromPcm16(bytes, rate){
+  const n=bytes.length, buf=new ArrayBuffer(44+n), v=new DataView(buf);
+  const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  w(0,"RIFF"); v.setUint32(4,36+n,true); w(8,"WAVEfmt "); v.setUint32(16,16,true);
+  v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,rate,true);
+  v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  w(36,"data"); v.setUint32(40,n,true);
+  new Uint8Array(buf,44).set(bytes);
+  return new Blob([buf],{type:"audio/wav"});
+}
+const b64ToBytes=b64=>{ const s=atob(b64), a=new Uint8Array(s.length);
+  for(let i=0;i<s.length;i++) a[i]=s.charCodeAt(i); return a; };
+
+/* 返ってくる形が変わっても拾えるように、
+   「data という名前の、やたら長い文字列」を木の中から探す。 */
+function hirouOto(obj){
+  let best=null, mime="";
+  (function walk(o){
+    if(!o||typeof o!=="object") return;
+    for(const k of Object.keys(o)){
+      const v=o[k];
+      if(typeof v==="string"){
+        if((k==="data"||k==="audio"||k==="b64_json") && v.length>2000
+           && (!best||v.length>best.length)) best=v;
+        if(/mime/i.test(k)) mime=v;
+      } else walk(v);
+    }
+  })(obj);
+  return {b64:best, mime};
+}
+
+async function tsukuru(voice, key){
+  const t0=performance.now();
+  const body={
+    model: MODEL,
+    input: $("serifu").value||SERIFU_DEF,
+    response_format:{ type:"audio" },
+    generation_config:{ speech_config:[ { voice: voice } ] }
+  };
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+    method:"POST",
+    headers:{ "x-goog-api-key":key, "Content-Type":"application/json" },
+    body:JSON.stringify(body)
+  });
+  const ct=r.headers.get("content-type")||"";
+  if(!r.ok){
+    const t=await r.text().catch(()=>"");
+    throw new Error(`${voice}：${r.status} ${r.statusText}\n${t.slice(0,600)}`);
+  }
+  let blob;
+  if(ct.includes("json")){
+    const j=await r.json();
+    const {b64,mime}=hirouOto(j);
+    if(!b64) throw new Error(`${voice}：音声が入っていませんでした。返ってきた中身の形：\n`
+      +JSON.stringify(j).slice(0,700));
+    const bytes=b64ToBytes(b64);
+    const m=/rate=(\d+)/.exec(mime||"");
+    blob = (mime&&/mpeg|mp3|wav|ogg/i.test(mime))
+      ? new Blob([bytes],{type:mime})
+      : wavFromPcm16(bytes, m?parseInt(m[1],10):24000);
+  }else{
+    blob=await r.blob();
+  }
+  const ms=performance.now()-t0;
+  SAIFU.tsukau(yenPerHon($("serifu").value||SERIFU_DEF));
+  return { url:URL.createObjectURL(blob), ms };
+}
+
+function narasu(nm){
+  const c=CACHE.get(nm); if(!c||!c.url) return;
+  try{ audio.pause(); }catch(_){}
+  audio=new Audio(c.url); nowPlaying=nm; paintKoe();
+  audio.onended=()=>{ nowPlaying=""; paintKoe(); };
+  audio.play().catch(()=>{ nowPlaying=""; paintKoe(); });
+}
+
+async function hiku(nm){
+  if(CACHE.get(nm)&&CACHE.get(nm).url){ narasu(nm); return; }
+  const key=kagi(); if(!key) return;
+  if(SAIFU.nokori()<=0){ shikaru("今日の栓（"+SAIFU.cap()+"円）を使い切っています。明日また。"); return; }
+  CACHE.set(nm,{}); paintKoe();
+  const t0=performance.now();
+  try{
+    const c=await tsukuru(nm,key);
+    CACHE.set(nm,c); paintKoe();
+    $("sw").innerHTML=`押してから声が出るまで：<b>${((performance.now()-t0)/1000).toFixed(2)}秒</b>`
+      +`　<span style="color:#8d8578">（${nm}・1本目。2回目からは 0.0秒＝すぐ鳴ります）</span>`;
+    narasu(nm);
+  }catch(e){ CACHE.set(nm,{err:true}); paintKoe(); shikaru(e.message); }
+}
+
+function shikaru(msg){ errEl.style.display="block"; errEl.textContent=msg; }
+function kagi(){
+  const k=(($("gkey")||{}).value||"").trim()||(window.TamagoKagi?window.TamagoKagi.get():"");
+  if(!k){ if(window.TamagoKagi) window.TamagoKagi.ask();
+          else shikaru("Geminiの鍵が空です。いちばん下の「鍵」を開いて貼ってください。"); return ""; }
+  try{ localStorage.setItem("tamago_gemini_key",k); }catch(_){}
+  return k;
+}
+
+async function matomete(list){
+  const key=kagi(); if(!key) return;
+  busy=true; cancelled=false; errEl.style.display="none";
+  $("go").disabled=$("goAll").disabled=true; $("stop").disabled=false;
+  const t0=performance.now(); let hon=0, hatsu=0;
+  /* 3本ずつ同時に。全部いっぺんだと Google に弾かれる。 */
+  for(let i=0;i<list.length && !cancelled;i+=3){
+    if(SAIFU.nokori()<=0){ shikaru("今日の栓を使い切ったので止めました。"); break; }
+    await Promise.all(list.slice(i,i+3).map(async nm=>{
+      if(CACHE.get(nm)&&CACHE.get(nm).url) return;
+      CACHE.set(nm,{}); paintKoe();
+      try{ const c=await tsukuru(nm,key); CACHE.set(nm,c); hon++;
+           if(!hatsu){ hatsu=performance.now()-t0; narasu(nm); } }
+      catch(e){ CACHE.set(nm,{err:true}); shikaru(e.message); }
+      paintKoe();
+    }));
+  }
+  const all=(performance.now()-t0)/1000;
+  $("sw").innerHTML=`押してから最初の声が出るまで：<b>${(hatsu/1000).toFixed(2)}秒</b>`
+    +`　<span style="color:#8d8578">／ ${hon}本ぜんぶで ${all.toFixed(1)}秒。`
+    +`このあとはどれを押しても すぐ鳴ります。</span>`;
+  busy=false; $("go").disabled=$("goAll").disabled=false; $("stop").disabled=true;
+}
+
+$("go").onclick =()=>matomete(OSUSUME);
+$("goAll").onclick=()=>matomete([...OSUSUME,...VOICES.map(v=>v[0]).filter(n=>!OSUSUME.includes(n))]);
+$("stop").onclick=()=>{ cancelled=true; try{audio.pause();}catch(_){} };
+$("serifu").addEventListener("input",paintSaifu);
+
+/* ══════════ 三：iris の件 ══════════ */
+$("irisNote").innerHTML =
+ `たまごさんが好きだと言った <b>iris</b> は、xAI の公式の声の一覧に確かに載っています`
+ +`（<a href="https://docs.x.ai/developers/model-capabilities/audio/voice" target="_blank" rel="noopener">公式</a>の言葉で`
+ +`「Friendly, upbeat, and naturally charming」＝人なつこくて、陽気で、気取らない愛嬌がある）。`
+ +`お店のアプリで iris が喋るのは、そのとおりです。<br><br>`
+ +`ただ、<b>こちらから機械で呼ぼうとすると、いまは出ません。</b>`
+ +`鍵は入っていて、正しく届いています。返ってきた答えはこれです：<br>`
+ +`<span style="color:#e0b0a8">「Your newly created team doesn't have any credits or licenses yet.」`
+ +`＝ この団体にはまだ持ち分（クレジット）がありません</span>。<br>`
+ +`声の一覧をもらうだけでも同じ答えで断られました。<b>鍵の問題ではなく、持ち分がゼロだという話です。</b><br><br>`
+ +`買えば通ります。ただし<b>こちらでは買いません</b>（お金を動かすことはしない約束です）。`
+ +`たまごさんが xAI のコンソールで持ち分を入れたら、その日のうちに iris の聴き比べを足します。<br><br>`
+ +`そのときの値段は上の表のとおりで、<b>②' の形（頭脳はGemini、声だけ iris）なら1分 ${(TE[0].usd*YEN).toFixed(2)}円</b>、`
+ +`<b>③ のまるごと Grok Voice なら1分 ${(0.08*YEN).toFixed(2)}円</b>。`
+ +`同じ iris でも <b>15倍ちがいます</b>。買うなら ②' の形です。`;
+
+/* ══════════ 四：テンポ ══════════ */
+const TEMPO=[
+ ["道具の返事を待つ間、まるごと黙っていた",
+  "958番が使っていた <b>gemini-3.1-flash-live-preview</b> について、Googleは「Function calling is sequential only. "
+  +"<b>The model will not start responding until you've sent the tool response.</b>」と書いています。"
+  +"＝棚を探し終わるまで、案内人は一言も喋れない。これが「遅い」の正体です。",
+  "<b>gemini-3.8-live</b> に替えて、道具に <code>behavior: NON_BLOCKING</code> を付け、"
+  +"返すときに <code>scheduling: INTERRUPT</code> を付ける。裏で棚を探しながら先に喋れるようになります。"],
+ ["棚を探しに行く時間そのものは、そんなに悪くなかった",
+  "実測（たまごさんの公開ページから3回ずつ）：大棚 head.json は 324KB で "
+  +"<b>冷えていて0.78秒・温まって0.23秒</b>。これはページを開いた瞬間に取りに行く作りに既になっていました。"
+  +"押したあとに取りに行くのは、アーティスト別の小棚だけで <b>0.28秒</b>。"
+  +"つまり「棚が重いから遅い」のではありません。"
+  +"<b>その0.3秒のあいだ、案内人が一言も喋れないこと</b>が問題でした（上の一つ目）。",
+  "上の一つ目を直せば、この0.3秒は喋りながら裏で済みます。棚の側は触りません。"],
+ ["マイクの音を 128ms ずつまとめて送っていた",
+  "2048サンプル ÷ 16000Hz ＝ <b>128ms</b>。Googleの手引きは「Send audio in chunks of 20ms to 40ms」"
+  +"「Don't buffer input audio significantly」。",
+  "512サンプル＝<b>32ms</b> に。1回あたり 96ms 早く届きます。"],
+ ["★いちばん重い：喋り終えてから <b>2秒</b> 黙って待っていた",
+  "958番が使っているGoogle公式サンプル geminilive.js の初期値が "
+  +"<code>silence_duration_ms: 2000</code>。Google自身の手引きにはこう書いてあります："
+  +"「<b>Too high (e.g., 2000ms+): The system waits a long time after the user stops speaking, "
+  +"increasing perceived latency before the model responds.</b>」"
+  +"「Recommended (500ms–800ms)」。<b>公式サンプルの初期値が、公式が「高すぎる」と書いた値でした。</b>",
+  "推奨帯の下端 <b>500ms</b> へ。喋り終えるたびに <b>1.5秒</b> 早くなります。"],
+ ["長話をしていた",
+  "上限が無いので、気分が乗ると長く喋る。長いと、次に口を挟むまでが遠い。",
+  "<code>maxOutputTokens</code> で頭を押さえ、台詞にも「短く」を入れる。"]
+];
+$("tempo").innerHTML=TEMPO.map(([t,a,b])=>
+  `<li><b>${t}</b><br><span style="color:#8d8578">${a}</span>`
+  +`<br><span style="color:#3a7a52">→ ${b}</span></li>`).join("");
+$("tempoSrc").innerHTML="出どころ："+
+ '<a href="https://ai.google.dev/gemini-api/docs/live-api/capabilities" target="_blank" rel="noopener">Live API capabilities</a>／'+
+ '<a href="https://ai.google.dev/gemini-api/docs/live-api/tools" target="_blank" rel="noopener">Live API tools（非同期の道具）</a>／'+
+ '<a href="https://ai.google.dev/gemini-api/docs/live-api/best-practices" target="_blank" rel="noopener">Live API best practices（20〜40ms）</a>。';
+
+/* ══════════ 起動 ══════════ */
+$("serifu").value=SERIFU_DEF;
+try{ const k=localStorage.getItem("tamago_gemini_key"); if(k) $("gkey").value=k; }catch(_){}
+paintSaifu(); paintKoe();
+</script>
+</body></html>

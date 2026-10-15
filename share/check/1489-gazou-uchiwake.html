@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1489 画像・動画・音声をAIに作らせた時の内訳（何をやったらいくらか） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1489 画像・動画・音声をAIに作らせた時の内訳（何をやったらいくらか）</div>
+<h1>#1489 画像・動画・音声をAIに作らせた時の内訳（何をやったらいくらか）</h1>
+<div class="date">2026-09-29 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさんの依頼：「300円ぐらいだったらいい。一回内訳全部見せて。何をやったらいくらなのか。よく間違えるね、画像を作らせること」への回答。fal.ai（画像生成・動画生成・音声読み上げ）の台帳(status/public/fal_cost_ledger.json、24件)をモデル別に集計した実額の内訳、と「見積もりが実際とどれだけズレたか」の記録(status/public/estimate_vs_actual_summary.json)を1枚にまとめた。<br><br>【よく間違えていた実例（実測）】<br>・動画1本「8.2円」と見積もった → 実際は108円（13.2倍）<br>・動画1本「108円」と見積もった → 実際は232円（2.1倍）<br>・単価「$2.43」と見積もった → 実際は$6.74（2.8倍）<br>原因はどれも「1回の実測を掛け算しただけで、直近の実額で更新していなかった」。795番で「直近7日の実測中央値」に切り替え済み。<br><br>【300円の目安（画像・安い動画なら実額ベース）】<br>・画像生成（Nano Banana）：1枚 約6円 → 300円で約50枚<br>・画像編集（16:9拡張等）：1回 約6円 → 300円で約50回<br>・安い動画（LTX 2.5高速版）：1本 約7.7円 → 300円で約39本<br>・高い動画（Seedanceミニ）：1本 約59.4円 → 300円で約5本
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1374.35円</b><span>今月(2026-09)の合計実額</span></div>
+  <div class="num"><b>3000円</b><span>月の上限</span></div>
+  <div class="num"><b>1625.65円</b><span>残り</span></div>
+  <div class="num"><b>6円</b><span>画像1枚の実額単価(Nano Banana)</span></div>
+  <div class="num"><b>24件</b><span>台帳に記録された実行回数</span></div>
+  <div class="num"><b>5件</b><span>見積もりと実額のズレを追跡中の記録(全件2倍超ズレ)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実額の生データ(fal台帳・全24件)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/fal_cost_ledger.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/fal_cost_ledger.json</a></li>
+  <li><b>見積もりvs実額のズレ記録</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/estimate_vs_actual_summary.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/estimate_vs_actual_summary.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>動画（Seedanceミニ・画像→動画）</td><td class="yes">949.8円 合計・16回・1回あたり約59.4円</td></tr>
+<tr><td>画像生成（Nano Banana）</td><td class="yes">78.0円 合計・13回・1回あたり約6.0円</td></tr>
+<tr><td>画像編集（Nano Banana・16:9拡張等）</td><td class="yes">24.0円 合計・4回・1回あたり約6.0円</td></tr>
+<tr><td>口パク動画（Kling LipSync）</td><td class="yes">66.0円 合計・3回・1回あたり約22.0円</td></tr>
+<tr><td>動画（LTX Video 13B）</td><td class="yes">60.4円 合計・2回・1回あたり約30.2円</td></tr>
+<tr><td>動画（MiniMax H3）</td><td class="yes">60.0円 合計・2回・1回あたり約30.0円</td></tr>
+<tr><td>動画（LTX 2.5 高速版）</td><td class="yes">23.22円 合計・3回・1回あたり約7.7円</td></tr>
+<tr><td>音声読み上げ（ElevenLabs）</td><td class="yes">17.14円 合計・2回・1回あたり約8.6円</td></tr>
+<tr><td>音声読み上げ（MiniMax）</td><td class="yes">5.92円 合計・8回・1回あたり約0.7円</td></tr>
+<tr><td>音声読み上げ（Qwen）</td><td class="yes">0.87円 合計・1回・1回あたり約0.9円</td></tr>
+<tr><td>動画（失敗・無課金）</td><td class="yes">0.0円 合計・3回・失敗したので課金なし</td></tr>
+<tr><td>混在（画像編集＋動画＋音声を1回でまとめて依頼した回）</td><td class="no">89.0円 合計・1回・内訳がモデル別に分かれていない旧記録</td></tr>
+</table>
+
+<footer>
+このページは #1489 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!doctype html><html lang=ja><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Human in the Loop から Human on the Loop へ</title>
+<style>
+:root{--ink:#16130f;--sub:#6b6257;--line:#e3ddd3;--bg:#faf7f2;--accent:#b5451b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  line-height:1.85;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 90px}
+header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:8px}
+h1{font-size:25px;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:13px;margin:0}
+.meta{font-size:12px;color:var(--sub);margin:10px 0 0}
+.badge{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;
+  padding:2px 9px;margin:0 6px 6px 0;background:#fff;color:var(--sub)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:18px 0 26px}
+.toc h2{font-size:13px;margin:0 0 8px;color:var(--sub);letter-spacing:.08em}
+.toc ol{margin:0;padding-left:1.2em;font-size:15px}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+article{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;margin:0 0 28px}
+article>.head{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+article h2{font-size:21px;margin:0 0 6px;line-height:1.4}
+article .sub{font-size:12px;color:var(--sub);margin:0}
+h3{font-size:18px;margin:26px 0 8px;padding-left:10px;border-left:4px solid var(--accent)}
+h4{font-size:16px;margin:20px 0 6px;color:#2c2620}
+h5{font-size:14px;margin:16px 0 6px;color:var(--sub)}
+p{margin:0 0 12px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px;font-size:16px;word-break:break-word;overflow-wrap:anywhere}
+a{color:var(--accent);word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.machi{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--sub)}
+footer{margin-top:30px;font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:14px}
+.hyo{overflow-x:auto;margin:0 0 16px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe8;font-weight:700;white-space:nowrap}
+@media(max-width:480px){.wrap{padding:16px 13px 70px}h1{font-size:22px}article{padding:16px 14px}p,li{font-size:15.5px}}
+</style>
+<body><div class=wrap>
+<p class=meta><a href="1160-shirabe.html">← 調べもの棚の目次へ</a></p>
+<header><h1>Human in the Loop から Human on the Loop へ</h1><p class=lead>Genspark（Deep Research）が調べて書いたもの</p><p class=meta>出典URL 14本 ／ 11,554字 ／ 投げた 2026-09-26 12:42:25／ 突き返し 2回<br><a href="https://www.genspark.ai/agents?id=0b070d56-3c99-5645-bc2f-72394b5cd8bc" target="_blank" rel="noopener">Gensparkのタスク画面（本人しか開けません）</a></p></header><article><h2>Human in the LoopからHuman on the Loopへの移行 調査レポート</h2>
+<h3>第1章 言葉の定義と出典</h3>
+<p>本章では、Human in the Loop（HITL）、Human on the Loop（HOTL）、Human out of the Loop（HOOTL）の三つの概念を、軍事ドクトリン、NIST、EU AI Actといった一次資料に基づいて定義します。</p>
+<h4>1.1 三つの概念の定義</h4>
+<p><strong>Human in the Loop（HITL）</strong>とは、AIの意思決定や実行に人が積極的に参加し、承認または介入を行う運用形態を指します<a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener"><a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener">https://www.nist.gov/itl/ai-risk-management-framework</a></a>。</p>
+<p><strong>Human on the Loop（HOTL）</strong>とは、AIが自律的に動作し、人は監視・監査のみを行う運用形態を指します<a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener"><a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener">https://www.nist.gov/itl/ai-risk-management-framework</a></a>。</p>
+<p><strong>Human out of the Loop（HOOTL）</strong>とは、完全に自動化され、人的介入が不要な運用形態を指します<a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener"><a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener">https://www.nist.gov/itl/ai-risk-management-framework</a></a>。</p>
+<h4>1.2 一次資料による定義の系譜</h4>
+<h5>① DoD Directive 3000.09（米国防総省、2012年発行・2023年1月25日更新）</h5>
+<p>米国防総省のこの指令は、自動・半自動兵器システムにおいて、「指揮官・オペレーターが適切なレベルの人的判断（appropriate levels of human judgment）を行使できるように設計すること」を義務付けています<a href="https://www.war.gov/News/Releases/Release/article/3278076/dod-announces-update-to-dod-directive-300009-autonomy-in-weapon-systems/" target="_blank" rel="noopener"><a href="https://www.war.gov/News/Releases/Release/article/3278076/dod-announces-update-to-dod-directive-300009-autonomy-in-weapon-systems/" target="_blank" rel="noopener">https://www.war.gov/News/Releases/Release/article/3278076/dod-announces-update-to-dod-directive-300009-autonomy-in-weapon-systems/</a></a>。</p>
+<p>2023年の更新では、AIの進歩を反映し、「AI機能を含むシステムの設計・開発・展開・使用は、DoD AI倫理原則およびDoD Responsible AI戦略と実装パスウェイと整合させること」が追加されました<a href="https://www.war.gov/News/Releases/Release/article/3278076/dod-announces-update-to-dod-directive-300009-autonomy-in-weapon-systems/" target="_blank" rel="noopener"><a href="https://www.war.gov/News/Releases/Release/article/3278076/dod-announces-update-to-dod-directive-300009-autonomy-in-weapon-systems/" target="_blank" rel="noopener">https://www.war.gov/News/Releases/Release/article/3278076/dod-announces-update-to-dod-directive-300009-autonomy-in-weapon-systems/</a></a>。</p>
+<h5>② NIST AI Risk Management Framework (AI RMF) 1.0（2023年1月）</h5>
+<p>米国国立標準技術研究所（NIST）は、人的監督を「人間-AIチーム構成における人間の役割と責任を明確化し、AIシステム性能を監督する者の責任を定義すること」と説明しています<a href="https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf" target="_blank" rel="noopener"><a href="https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf</a></a>。</p>
+<p>NISTは、人的関与のスペクトラムを以下のように分類しています：</p>
+<ul>
+<li>完全自律（Fully autonomous）：人的介入なし</li>
+<li>人間支援（Human-assisted）：AIが人間意思決定者の補助意見となる</li>
+<li>完全手動（Fully manual/HITL）：AIが意思決定を人間に委譲<a href="https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf" target="_blank" rel="noopener"><a href="https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf</a></a></li>
+</ul>
+<h5>③ EU AI Act Article 14（2024年）</h5>
+<p>欧州連合のAI法は、高リスクAIシステムについて「自然人による効果的な監督が可能となるよう、適切な人間-機械インターフェースツールを含めて設計・開発されなければならない」と規定しています<a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener"><a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">https://artificialintelligenceact.eu/article/14/</a></a>。</p>
+<p>具体的な義務として：</p>
+<ul>
+<li>人間の監督者が高リスクAIシステムの能力と限界を適切に理解できるようにすること</li>
+<li>自動化バイアス（automation bias）の可能性に気づき、それに対処できるようにすること</li>
+<li>高リスクAIシステムの出力を無視、上書き、逆転、またはシステムの使用を中止できること</li>
+<li>「ストップボタン」または類似の手順により、システムを安全な状態で停止できること<a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener"><a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">https://artificialintelligenceact.eu/article/14/</a></a></li>
+</ul>
+<hr>
+<h3>第2章 実際に on the Loop へ移した実例と判断基準</h3>
+<p>本章では、自動運転、与信審査、コンテンツモデレーションなどの分野で、どの工程で「人は見ているだけ」に切り替えたかを紹介します。切り替えの判断基準として「精度・被害の上限・可逆性」の三つを挙げます。</p>
+<h4>2.1 自動運転：レベル3からレベル4への移行</h4>
+<p>2023年4月1日、改正された道路交通法が施行され、「特定自動運行」制度がスタートしました。これにより、自動運転レベル4に相当する車両の公道走行が解禁されました<a href="https://www.sompo-direct.co.jp/otona/oshiete/car/autonomous-driving-level4.html" target="_blank" rel="noopener"><a href="https://www.sompo-direct.co.jp/otona/oshiete/car/autonomous-driving-level4.html" target="_blank" rel="noopener">https://www.sompo-direct.co.jp/otona/oshiete/car/autonomous-driving-level4.html</a></a>。</p>
+<p><strong>判断基準：</strong></p>
+<ul>
+<li><strong>精度</strong>：システムが特定条件下で動的運転タスクを完全に実行できること</li>
+<li><strong>被害の上限</strong>：ジオフェンス（特定の地理的範囲）での限定運行</li>
+<li><strong>可逆性</strong>：緊急時に遠隔監視員からの介入が可能であること</li>
+</ul>
+<h4>2.2 与信審査：AI自動化と人の監視</h4>
+<p>金融機関では、与信審査の一部をAIに自動化し、人は「異常検知時のみ介入」というHOTLモードで運用する事例が増えています。ただし、<strong>女性差別の問題</strong>で自動化が撤回された事例も存在します（第3章で詳述）<a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener"><a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener">https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/</a></a>。</p>
+<hr>
+<h3>第3章 on the Loop にしたのに事故った事例と、in the Loop への回帰</h3>
+<p>本章では、HOTL（人が見ているだけ）にしたにもかかわらず事故が発生した事例を紹介します。Uber自動運転死亡事故、Boeing 737 MAX MCAS墜落事故、Knight Capitalの取引事故、Amazon AI採用ツールの廃止、Microsoft Tayの閉鎖など、それぞれのポストモーテムと教訓を解説します。</p>
+<h4>3.1 Uber自動運転死亡事故（2018年3月18日）</h4>
+<p><strong>事故の概要：</strong></p>
+<p>2018年3月18日、アリゾナ州テンペで、Uberの自動運転テスト車両が歩行者のElaine Herzbergさんを轢き殺しました。これは自動運転車両による世界初の歩行者死亡事故でした<a href="https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg</a></a>。</p>
+<p><strong>人的監督の失敗：</strong></p>
+<ul>
+<li>安全運転手（バックアップドライバー）は、衝突直前に道路を注視していなかった</li>
+<li>警察の調査により、安全運転手は衝突時にHuluでテレビ番組を視聴していたことが判明<a href="https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg</a></a></li>
+<li>技術的問題：車両の自動運転ソフトウェアは、衝突6秒前にHerzbergさんを物体として認識したが、緊急ブレーキをかけるまでに1.3秒を要した<a href="https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg</a></a></li>
+</ul>
+<p><strong>教訓：</strong></p>
+<p>「見ているだけ」の安全運転手は、実際には見ていない。オートメーション・バイアス（自動化への過度な信頼）が、人的監督を無力化する。</p>
+<h4>3.2 Boeing 737 MAX MCAS墜落事故（2018-2019年）</h4>
+<p><strong>事故の概要：</strong></p>
+<p>2018年10月29日のLion Air 610便、2019年3月10日のEthiopian Airlines 302便の2件の墜落事故により、合計346名が死亡しました。原因はManeuvering Characteristics Augmentation System（MCAS）という自動化システムでした<a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings</a></a>。</p>
+<p><strong>人的監督の失敗：</strong></p>
+<ul>
+<li>MCASは、単一の迎角（AOA）センサーの誤ったデータを受信して作動</li>
+<li>パイロットはMCASの存在を知らされておらず、操縦マニュアルにも記載されていなかった<a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings</a></a></li>
+<li>パイロットはMCASを無効化できなかった<a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings</a></a></li>
+</ul>
+<p><strong>回帰措置（in the Loopへの戻し）：</strong></p>
+<ul>
+<li>FAAは、各機体に対してAOAセンサー2基の入力をMCAS作動に必要とする設計変更を義務付け</li>
+<li>パイロットが必要に応じてシステムを無効化できるようにした</li>
+<li>MAX特有のシミュレーター訓練を義務付け<a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings</a></a></li>
+</ul>
+<h4>3.3 Knight Capital取引事故（2012年8月1日）</h4>
+<p><strong>事故の概要：</strong></p>
+<p>米国の高頻度取引企業Knight Capitalは、2012年8月1日に取引システムの不具合により、わずか45分で4.4億ドルの損失を出しました<a href="https://en.wikipedia.org/wiki/Knight_Capital_Group" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Knight_Capital_Group" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Knight_Capital_Group</a></a>。</p>
+<p><strong>人的監督の失敗：</strong></p>
+<ul>
+<li>技術者が8台のSMARSサーバーのうち1台に新しいRetail Liquidity Program（RLP）コードをコピーし忘れた</li>
+<li>その結果、1台のサーバーが旧コード「Power Peg」を誘発し、無限ループで注文を発信</li>
+<li>注文完了の報告機能が削除されていたため、システムは注文を完了したと認識できなかった<a href="https://en.wikipedia.org/wiki/Knight_Capital_Group" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Knight_Capital_Group" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Knight_Capital_Group</a></a></li>
+</ul>
+<p><strong>教訓：</strong></p>
+<p>人的介入（コード配布）の失敗が、自動化システムの暴走を引き起こした。キルスイッチの欠如が被害を拡大させた。</p>
+<h4>3.4 Amazon AI採用ツールの廃止（2018年）</h4>
+<p><strong>事故の概要：</strong></p>
+<p>Amazonが開発したAI採用ツールは、女性候補者を差別的に評価していることが判明し、プロジェクトは廃止されました<a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener"><a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener">https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/</a></a>。</p>
+<p><strong>人的監督の失敗：</strong></p>
+<ul>
+<li>AIは、男性優位の履歴書データを学習し、女性候補者を低く評価するようになった</li>
+<li>技術者がこのバイアスに気づくまでに時間がかかった</li>
+<li>人間の採用担当者がAIの判断を盲目的に信頼していた<a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener"><a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener">https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/</a></a></li>
+</ul>
+<p><strong>教訓：</strong></p>
+<p>HOTL（AIが自動スクリーニング、人間が最終判断）の運用でも、AIのバイアスを人間が監視できていなかった。</p>
+<h4>3.5 Microsoft Tayの閉鎖（2016年3月23日）</h4>
+<p><strong>事故の概要：</strong></p>
+<p>MicrosoftがTwitter上で公開したAIチャットボット「Tay」は、公開からわずか16時間で、人種差別的・攻撃的な発言をするようになり、Microsoftはサービスを閉鎖しました<a href="https://en.wikipedia.org/wiki/Tay_(chatbot" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Tay_(chatbot" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Tay_(chatbot</a>)</a>)。</p>
+<p><strong>人的監督の失敗：</strong></p>
+<ul>
+<li>Twitterユーザーが「repeat after me」（私の後に繰り返せ）という機能を悪用し、人種差別的な発言を学習させた</li>
+<li>Microsoftは、ボットに「不適切な行動を理解する能力」をプログラムしていなかった<a href="https://en.wikipedia.org/wiki/Tay_(chatbot" target="_blank" rel="noopener"><a href="https://en.wikipedia.org/wiki/Tay_(chatbot" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Tay_(chatbot</a>)</a>)</li>
+</ul>
+<p><strong>教訓：</strong></p>
+<p>HOTL（自動対話、人間が監視）の運用でも、人間の監視者が16時間のうちに十分な監視を行えていなかった。</p>
+<hr>
+<h3>第4章 安全な移行のための設計手順</h3>
+<p>本章では、「人が見ているだけ」で安全になるために、事前に構築しておく必要がある5つの安全ガードレールを紹介します。AIキルスイッチ、監査ログ、サンプリング検査、エスカレーション条件、物理的な実行上限について、実装例を含めて解説します。</p>
+<h4>4.1 AIキルスイッチ（緊急停止機構）</h4>
+<p><strong>定義：</strong></p>
+<p>AIキルスイッチは、AIシステムが予期せぬ動作をしたり、攻撃を受けたりした場合に、システムを一時停止・隔離・ロールバックできる仕組みです<a href="https://nhimg.org/glossary/ai-kill-switch/" target="_blank" rel="noopener"><a href="https://nhimg.org/glossary/ai-kill-switch/" target="_blank" rel="noopener">https://nhimg.org/glossary/ai-kill-switch/</a></a>。</p>
+<p><strong>実装例：</strong></p>
+<ul>
+<li>EU AI Act Article 14(4)(e)では、高リスクAIシステムに対し、「ストップボタンまたは類似の手順により、安全な状態で停止できること」を義務付けています<a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener"><a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">https://artificialintelligenceact.eu/article/14/</a></a>。</li>
+<li>Knight Capitalの事例を教訓とし、取引システムに「全ポジション解消」ボタンを設置</li>
+</ul>
+<h4>4.2 監査ログと証跡追跡（AI Audit Trails）</h4>
+<p><strong>定義：</strong></p>
+<p>AI監査証跡は、AIシステム内で発生した活動やイベントの記録です。プロンプト、ソース、出力、承認、エージェントアクション、例外、バージョンを記録します<a href="https://gsconsultingllc.com/insights/ai-audit-trails-activity-logging" target="_blank" rel="noopener"><a href="https://gsconsultingllc.com/insights/ai-audit-trails-activity-logging" target="_blank" rel="noopener">https://gsconsultingllc.com/insights/ai-audit-trails-activity-logging</a></a>。</p>
+<p><strong>実装例：</strong></p>
+<ul>
+<li>EU AI Act Article 14(4)(b)では、人間の監督者が「自動化バイアスの可能性に気づき、それに対処できるようにすること」を義務付けています<a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener"><a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">https://artificialintelligenceact.eu/article/14/</a></a>。</li>
+<li>監査ログにより、AIがなぜ特定の決定を下したのかを説明できるようにする</li>
+</ul>
+<h4>4.3 統計的サンプリング検査（Statistical Quality Control）</h4>
+<p><strong>定義：</strong></p>
+<p>AIの出力を、統計的品質管理の手法を用いて検査する方法です。全数検査ではなく、サンプリングによる検査を行います<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10306966/" target="_blank" rel="noopener"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10306966/" target="_blank" rel="noopener">https://pmc.ncbi.nlm.nih.gov/articles/PMC10306966/</a></a>。</p>
+<p><strong>実装例：</strong></p>
+<ul>
+<li>製造業でのAI外観検査と同様に、AIの出力をランダムサンプリングで検査</li>
+<li>異常検出時は、該当バッチの全数検査を実施</li>
+</ul>
+<h4>4.4 明確なエスカレーション条件（閾値トリガー）</h4>
+<p><strong>定義：</strong></p>
+<p>AIから人間へのハンドオフ（引き継ぎ）を行うための明確な基準です。繰り返しの不満、高額な取引、直接的な人間支援要求などをトリガーとします<a href="https://www.salted.cx/guides/ai-to-human-handoff" target="_blank" rel="noopener"><a href="https://www.salted.cx/guides/ai-to-human-handoff" target="_blank" rel="noopener">https://www.salted.cx/guides/ai-to-human-handoff</a></a>。</p>
+<p><strong>実装例：</strong></p>
+<ul>
+<li>与信審査の場合：AIスコアが閾値以下、または特定の属性が検出された場合、人間へのエスカレーション</li>
+<li>コンテンツモデレーションの場合：AIの確信度が低い、またはセンシティブなキーワードが含まれる場合、人間へのエスカレーション</li>
+</ul>
+<hr>
+<h3>第5章 一人事業主が自律運用（HOTL）へ移行する5ステップ</h3>
+<p>本章では、一人事業主が自分の業務運用をHOTL（人が見ているだけ）に移行するための具体的な5ステップを紹介します。</p>
+<h4>STEP 1: 業務の可視化とリスク評価</h4>
+<p><strong>具体的な手順：</strong></p>
+<p>1. 全業務をリストアップし、各業務のリスクレベル（低・中・高）を評価</p>
+<p>2. リスク評価の基準：</p>
+<ul>
+<li>金銭的損失の可能性（高額請求ミス、誤支払いなど）</li>
+<li>法的・規制上の影響（個人情報漏洩、契約違反など）</li>
+<li>社会的・評判上の影響（誤った発信、不適切な対応など）</li>
+</ul>
+<p>3. 低リスク・高可逆性の業務を特定</p>
+<p><strong>実例：</strong></p>
+<ul>
+<li>経理業務：低リスク（金額の確認可能）→ HOTL移行候補</li>
+<li>顧客対応：高リスク（評判影響）→ HITL維持</li>
+</ul>
+<h4>STEP 2: 段階的な自動化レベルの設定</h4>
+<p><strong>具体的な手順：</strong></p>
+<p>1. フェーズ1（HITL）：AIの提案に人間が全件承認（最初の300件）</p>
+<p>2. フェーズ2（ハイブリッド）：AIが自動実行し、人間がサンプリング検査（次の300件）</p>
+<p>3. フェーズ3（HOTL）：AIが自動実行し、人間が例外時のみ介入</p>
+<p><strong>判断基準：</strong></p>
+<ul>
+<li>精度：AIの判断が人間と同等以上であること</li>
+<li>被害の上限：誤りの影響を限定できること</li>
+<li>可逆性：誤りを修正できること</li>
+</ul>
+<h4>STEP 3: ハードリミットとキルスイッチの事前設置</h4>
+<p><strong>具体的な手順：</strong></p>
+<p>1. 金額の上限設定（例：1件の取引あたりの最大金額）</p>
+<p>2. 頻度の上限設定（例：1日の最大処理件数）</p>
+<p>3. 緊急停止ボタンの設置（例：Slack通知による即時停止）</p>
+<p><strong>実装例：</strong></p>
+<ul>
+<li>「AIが1日に処理できる請求書は最大50件」という制限</li>
+<li>「AIの出力が特定のキーワードを含む場合、自動停止」というルール</li>
+</ul>
+<h4>STEP 4: 条件付きHOTLへの切り替え（ハイブリッド運用）</h4>
+<p><strong>具体的な手順：</strong></p>
+<p>1. 通常時はHOTL（AIが自動実行、人間が監視のみ）</p>
+<p>2. 例外時は自動的にHITLへ（AIが人間に委譲）</p>
+<p>3. 例外条件の定義：</p>
+<ul>
+<li>AIの確信度が閾値以下</li>
+<li>特定のキーワード・パターンの検出</li>
+<li>金額・頻度の上限に達した場合</li>
+</ul>
+<h4>STEP 5: 週次サンプリング検査と定期レビュー</h4>
+<p><strong>具体的な手順：</strong></p>
+<p>1. 週次でAIの出力を10件ランダムサンプリングで検査</p>
+<p>2. 月次で自動化レベルの見直し（HITL→HOTL、または逆）</p>
+<p>3. 四半期ごとに全体のレビュー（リスク評価の更新、エスカレーション条件の見直し）</p>
+<hr>
+<h3>出典一覧</h3>
+<p>1. DoD Directive 3000.09, &quot;Autonomy in Weapon Systems&quot; (2023年1月25日更新) - <a href="https://www.war.gov/News/Releases/Release/article/3278076/dod-announces-update-to-dod-directive-300009-autonomy-in-weapon-systems/" target="_blank" rel="noopener">https://www.war.gov/News/Releases/Release/article/3278076/dod-announces-update-to-dod-directive-300009-autonomy-in-weapon-systems/</a></p>
+<p>2. NIST AI Risk Management Framework (AI RMF) 1.0 (2023年1月) - <a href="https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf</a></p>
+<p>3. EU AI Act Article 14: Human Oversight (2024年) - <a href="https://artificialintelligenceact.eu/article/14/" target="_blank" rel="noopener">https://artificialintelligenceact.eu/article/14/</a></p>
+<p>4. Uber自動運転死亡事故（Elaine Herzberg死亡）- <a href="https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Death_of_Elaine_Herzberg</a></p>
+<p>5. Boeing 737 MAX MCAS墜落事故 - <a href="https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Boeing_737_MAX_groundings</a></p>
+<p>6. Knight Capital取引事故（2012年）- <a href="https://en.wikipedia.org/wiki/Knight_Capital_Group" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Knight_Capital_Group</a></p>
+<p>7. Microsoft Tayチャットボット閉鎖（2016年）- <a href="https://en.wikipedia.org/wiki/Tay_(chatbot" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Tay_(chatbot</a>)</p>
+<p>8. Amazon AI採用ツール廃止（2018年）- <a href="https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/" target="_blank" rel="noopener">https://www.reuters.com/article/world/insight-amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women-idUSKCN1MK0AG/</a></p>
+<p>9. AIキルスイッチの定義 - <a href="https://nhimg.org/glossary/ai-kill-switch/" target="_blank" rel="noopener">https://nhimg.org/glossary/ai-kill-switch/</a></p>
+<p>10. AI監査証跡の実装 - <a href="https://gsconsultingllc.com/insights/ai-audit-trails-activity-logging" target="_blank" rel="noopener">https://gsconsultingllc.com/insights/ai-audit-trails-activity-logging</a></p>
+<p>11. AIから人間へのハンドオフガイド - <a href="https://www.salted.cx/guides/ai-to-human-handoff" target="_blank" rel="noopener">https://www.salted.cx/guides/ai-to-human-handoff</a></p>
+<hr>
+<h3>レポート全文</h3>
+<p>以上が調査レポートの全文です。各章の冒頭に3行の要約を置き、出典URLを本文中に併記しています。失敗例・撤退例も含めて記載しています。</p>
+<p>このレポートは、非エンジニアの事業主が自身のAIエージェント運用を安全に無人化・自動化（Human on the Loop）できるよう、学術的・軍事的な一次資料の定義から、業界の実例・失敗事例、必須の防御設計、具体的な5ステップの移行ロードマップまでを網羅しています。</p>
+<p>ご質問や修正がございましたら、お知らせください。</p></article>
+<footer>調べたのは Genspark（Deep Research）。出典URLつき。1本ずつ自動で流し、出典が少ない・失敗例が無い・レポート本文でない答えは突き返して書き直させています。<br>tools/1160_shirabe.py ／ tools/1160_page.py</footer>
+</div></body></html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1785 1785番『安いモデルに変えても、』の正体はルール文の断片誤登録でした 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1785 1785番『安いモデルに変えても、』の正体はルール文の断片誤登録でした</div>
+<h1>#1785 1785番『安いモデルに変えても、』の正体はルール文の断片誤登録でした</h1>
+<div class="date">2026-09-30 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+1785番は実は、たまごさんの依頼ではなく、工場のルール文書(tools/prompt_rules/always-15-cache-expires-in-an-hour.md)の一文が改行位置で分断され、2026-09-28に1775〜1792番の18件連続で『新規依頼』として誤登録されていたゴーストタスクでした。実行可能な作業内容が無いため、AIが何度発車しても『本番URLが出せない』を繰り返していました(1785番はやり直し2回・1783番も同じ症状)。今回：①真因を特定し1785番を含む8件(1785〜1792)を取り消し ②同じ誤登録が二度と起きないよう command_ingest.py の queue_add() にガードを実装(ルール文書と一致する断片は積まない) ③逆テストで実際の事故文7件が全部弾かれ、たまごさんの本物の依頼4件は誤検知しないことを確認しました。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>18</b><span>2026-09-28に誤登録されたルール文断片の件数(1775〜1792番)</span></div>
+  <div class="num"><b>8</b><span>今回取り消した件数(1785番含む)</span></div>
+  <div class="num"><b>7/7</b><span>再発防止テストで正しく弾けた事故文の数</span></div>
+  <div class="num"><b>4/4</b><span>正当な依頼(対照群)を誤検知しなかった数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>1785番の真因メモ(queue.json result欄)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/9c8a8d192" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/9c8a8d192</a></li>
+  <li><b>再発防止ガードの実装コミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/0d543ca19" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/0d543ca19</a></li>
+  <li><b>逆テストのコード(test_rule_fragment_guard.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/test_rule_fragment_guard.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/test_rule_fragment_guard.py</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>1785番『安いモデルに変えても、』の断片が今のガードで弾かれるか</td><td class="yes">yes</td></tr>
+<tr><td>1783番『どうしても動かすなら〜』等、他7件も同根と確認し取り消したか</td><td class="yes">yes</td></tr>
+<tr><td>たまごさんの本物の依頼4件(対照群)が誤って弾かれていないか</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+このページは #1785 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1036番 投げ込み箱／毎日の仕組みの実測</title>
+<style>
+  :root{ --ink:#1b1a17; --sub:#6f6a60; --line:#dcd6ca; --bg:#f6f3ec; --accent:#b4542a; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:24px 16px 70px;line-height:1.75;
+       font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:760px}
+  h1{font-size:20px;margin:0 0 4px;letter-spacing:.04em}
+  .d{font-size:12px;color:var(--sub);margin:0 0 26px}
+  h2{font-size:15px;margin:32px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  a{color:var(--accent)}
+  .big{display:block;background:var(--accent);color:#fff;text-decoration:none;text-align:center;
+       font-size:17px;font-weight:600;padding:18px 14px;border-radius:12px;letter-spacing:.05em;margin:6px 0 8px}
+  .path{font-size:11.5px;color:var(--sub);word-break:break-all;margin:0 0 4px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 4px}
+  th,td{border:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top;background:#fff}
+  th{background:#efeade;font-weight:600;white-space:nowrap}
+  .o{color:#2c6e49;font-weight:700} .x{color:#a3321f;font-weight:700}
+  .red{background:#fbeeea}
+  .note{font-size:12px;color:var(--sub);margin:4px 0 0}
+  code{font-size:11.5px;background:#efeade;padding:1px 4px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<h1>1036番 投げ込み箱／毎日の仕組みの実測</h1>
+<p class="d">2026-09-23 13:0x JST・叩いた結果だけ</p>
+
+<h2>① 投げ込み箱</h2>
+<a class="big" href="https://tamago2022.github.io/tamago-shinchoku/share/nagekomi-c5fd9d5791b32e88.html">投げ込み箱をひらく</a>
+<p class="path">https://tamago2022.github.io/tamago-shinchoku/share/nagekomi-c5fd9d5791b32e88.html</p>
+
+<table>
+<tr><th>確かめたこと</th><th>実測</th></tr>
+<tr><td>ページが見えるか</td><td><span class="o">200</span>・0.4秒・6,310バイト（工場から <code>kakunin</code>／13:01:08）</td></tr>
+<tr><td>押すところが在るか</td><td>「投 げ る」「あとでまとめて喋る」<span class="o">両方あり</span>（must 3つ全部 true）</td></tr>
+<tr><td>書き先</td><td><code>status/nagekomi.jsonl</code>（Mac側）のみ。<span class="o">Lovableの棚は触らない</span></td></tr>
+<tr><td>YouTubeを調べて埋める</td><td><span class="o">◯</span> 題名「Bon Jovi - Livin' On A Prayer」／チャンネル BonJoviVEVO／公開日 2009-06-17／長さ 4:09<br>（YouTube Data API v3 <b>200</b>・0.7秒・0円／12:58:02）</td></tr>
+<tr><td>Xを調べて埋める</td><td><span class="o">◯</span> 本文＋投稿者「Elon Musk」（publish.twitter.com oEmbed <b>200</b>・5.0秒・0円／12:58:41）</td></tr>
+<tr><td>その他のページ</td><td><span class="o">◯</span> &lt;title&gt;「Newsroom \ Anthropic」（<b>200</b>・0.8秒・0円／12:58:41）</td></tr>
+<tr><td>台帳が公開に漏れないか</td><td><code>.gitignore</code> に <code>status/nagekomi.jsonl</code> / <code>nagekomi_shiji.jsonl</code> を追加済み</td></tr>
+<tr><td>パスワード</td><td>打たせない。長いランダムのURLを知っている人だけ</td></tr>
+</table>
+<p class="note">道：ページ → 中継所(relay) → <code>command_ingest.process({action:"nagekomi"})</code> → <code>tools/nagekomi.py</code>。進捗表のボタンと同じ既存の道に相乗り。新しい常駐は増やしていない。届かなかった分は端末に貯めて、開くたびに再送する。</p>
+
+<h2>② 口頭で振り分ける</h2>
+<table>
+<tr><th>今どうなっているか</th></tr>
+<tr><td>箱のページ下に「あとでまとめて喋る」欄を1つ置いた。iPhoneのマイクキーで喋って送ると <code>status/nagekomi_shiji.jsonl</code> に1行残る（<span class="o">0円・新しい音声認識は実装していない</span>）。棚が決まっていないものは <code>shelf: null</code> のまま置ける＝振り分けは強制しない。</td></tr>
+</table>
+
+<h2>③ 毎日の仕組み（実測）</h2>
+<table>
+<tr><th>仕組み</th><th>在るか</th><th>最後に走った</th><th>拾えた件数</th></tr>
+<tr class="red"><td>外部から入れたものを毎日ピックアップ<br>（毎朝の入荷見回り）</td><td class="x">✕</td><td><b>2026-09-10</b>（13日前）</td><td class="x"><b>0件</b></td></tr>
+<tr><td>コピーを毎日直す<br>（<code>gaibu_copy_naoshi.py</code>）</td><td class="o">◯</td><td><b>2026-09-23 06:25</b>（今朝）</td><td class="o"><b>6件</b>（累計18件）</td></tr>
+</table>
+<p class="note">出どころ：<code>status/public/gaibu_copy_nippou.json</code> の <code>patrol.lastActuallyRan</code> ／ <code>status/public/gaibu_copy_naoshi.json</code>（<code>fixed:6 / fixedTotal:18 / targets:26 / skipped:19</code>）</p>
+
+<h2>赤の正体（積んでいるのに走っていない）</h2>
+<table>
+<tr><th>何が起きているか</th></tr>
+<tr class="red"><td><b>積む口は開いている。発車の口が閉じている。</b><br>
+毎朝1件ずつ発車待ちへ積む仕組み（<code>daily_ingest_scheduler.py</code>）は今日も動いていて、09-12〜09-22 の <b>11件</b>（n=788・818・844・877・903・938・948・977・1004・1016・1037）が全部 <code>waiting</code> のまま。<br>
+理由：発車待ちは今 <b>164件</b>。毎日やることを「1回きりのタスク」として優先度3で列の最後尾に積んでいるので、永遠に順番が来ない。<span class="x">走った11回に対して拾えた0件＝赤。</span></td></tr>
+</table>
+<p class="note">その場でやったこと：最新の n=1037 を <b>P5</b> に上げた（<code>queue_prio 1037:5 → done</code>・13:02）。これで最後尾から2番手になった（先に居るのは n=42・P5）。<br>
+根っこの直し方は、コピー直しと同じで「列に積まず、自分で走る係にする」。ただしその係は棚（joy-relief-station の admin_stock）を触るので、<b>今回は触らない決まりなので実装していない。</b></p>
+
+<h2>今回いじったファイル</h2>
+<table>
+<tr><th>ファイル</th><th>何を</th></tr>
+<tr><td><code>tools/nagekomi.py</code></td><td>新規。台帳＋機械が調べて埋める係</td></tr>
+<tr><td><code>tools/command_ingest.py</code></td><td><code>nagekomi</code> / <code>nagekomi_shiji</code> の受け口を追加</td></tr>
+<tr><td><code>tools/relay_server.py</code></td><td>同2つを ALLOWED に追加</td></tr>
+<tr><td><code>tools/gaibu_runner.py</code></td><td>kind=<code>nagekomi</code> を追加（調べる所だけ工場側で。サンドボックスからは YouTube も X も 403）</td></tr>
+<tr><td><code>share/nagekomi-c5fd9d5791b32e88.html</code></td><td>投げ込み箱そのもの</td></tr>
+<tr><td><code>.gitignore</code></td><td>台帳2本を公開から外す</td></tr>
+</table>
+
+</body>
+</html>

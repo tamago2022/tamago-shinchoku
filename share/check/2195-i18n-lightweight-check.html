@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#2195 多言語を足して重くなるのは不合格 — 実測で確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #2195 多言語を足して重くなるのは不合格 — 実測で確認</div>
+<h1>#2195 多言語を足して重くなるのは不合格 — 実測で確認</h1>
+<div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+既存の多言語対応（案件#131／#1123・react-i18next採用）が本番でどう動いているかを実測した。結論：**多言語を足しても重くなっていない**。トップページ初回読み込みのJSチャンク12個（合計約2129KB）の中に、言語データ（common.json・文言差し替え表）は<strong>1バイトも混入していない</strong>。言語切替を押した人だけ、選んだ1言語分のチャンク（common約8〜9KB＋overlay約80〜88KB、未圧縮）を動的に追加取得する設計。日本語のまま使う人（デフォルト）への追加コストはゼロ。i18n:check（5言語キー整合性・固有名詞混入チェック）も合格。新規のコード変更は不要と判断した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0件</b><span>トップページ初回JSに混入したi18nチャンク数（実測）</span></div>
+  <div class="num"><b>2129KB</b><span>トップページ初回JS合計サイズ（実測・12チャンク）</span></div>
+  <div class="num"><b>約90KB</b><span>言語切替1回あたりの追加ダウンロード（実測・未圧縮、en想定）</span></div>
+  <div class="num"><b>183</b><span>5言語キー整合性チェック合格キー数（ja/en/zh-Hans/es/ko一致）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>トップページ初回ロードにcommon-*.js/en-*.js等が混入していないか</td><td class="yes">yes</td></tr>
+<tr><td>言語切替ボタンで選んだ言語だけが動的ロードされるか（ソース上のimport()確認）</td><td class="yes">yes</td></tr>
+<tr><td>npm run i18n:check（キー整合性・固有名詞混入）</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+実測手順：python3でjoy-relief-station.lovable.app/を取得→初回ロードのJSチャンク一覧(/assets/*.js)を抽出→全チャンクのContent-Lengthを実測（合計2,180,454バイト＝2129KB）。index-*.js本文中からi18n設定(src/i18n/config.ts・textOverlay.ts相当)の動的import文字列を検出し、common-*.js／en-*.js／zh-Hans-*.js／es-*.js／ko-*.jsの実ファイル名を特定、各ファイルを個別に実測（common系4件=約8-9KB、言語差し替え表4件=約79-88KB、未圧縮）。これらは初回ロードのチャンク一覧には一切出現しなかった（=動的import設計が本番で機能している実証）。生データ：<pre>common-Czl4Rfth.js 7956B / common-e1afDU2K.js 7999B / common-DOEXsZC7.js 8914B / common-Hrks6UIx.js 9017B / en-C8aJAhN5.js 87930B / zh-Hans-BewYErnd.js 82230B / es-byJUwFOJ.js 79459B / ko-gXXc6tEy.js 80239B</pre>ローカルのフルビルド(vite build)はworktree固有の既存不具合（coverGuide.ts依存の生成ファイル欠落・gitignore対象、本件のコード変更とは無関係）で完走できず、本番環境への直接実測で代替した。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

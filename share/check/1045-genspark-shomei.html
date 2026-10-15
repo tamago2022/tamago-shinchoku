@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1045 Genspark 往復の記録</title>
+<style>
+:root{--ink:#1a1a1a;--sub:#6b6b6b;--line:#ddd;--bg:#faf9f7;--ok:#0a7a3d;--ng:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+line-height:1.7;-webkit-text-size-adjust:100%}
+.wrap{max-width:820px;margin:0 auto;padding:20px 16px 72px}
+h1{font-size:19px;margin:0 0 4px;letter-spacing:.02em}
+.date{color:var(--sub);font-size:12px;margin:0 0 22px}
+h2{font-size:14px;margin:30px 0 8px;padding:6px 10px;background:#111;color:#fff;border-radius:3px;letter-spacing:.04em}
+pre{margin:0;padding:12px;background:#fff;border:1px solid var(--line);border-radius:4px;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.65;
+white-space:pre-wrap;word-break:break-all;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;
+border:1px solid var(--line);border-radius:4px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f2f0ed;font-weight:600;white-space:nowrap;width:38%}
+tr:last-child th,tr:last-child td{border-bottom:none}
+td.num{font-family:ui-monospace,Menlo,monospace}
+.code{display:inline-block;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,monospace;
+font-size:11.5px;font-weight:700;color:#fff}
+.c200{background:var(--ok)}
+a{color:#0b5cab;word-break:break-all}
+ul{margin:8px 0 0;padding-left:20px;font-size:13px}
+li{margin-bottom:6px}
+@media(max-width:420px){
+ .wrap{padding:16px 12px 60px}
+ h1{font-size:17px} h2{font-size:13px}
+ table{font-size:12px} th,td{padding:7px 8px} th{width:42%}
+ pre{font-size:10.5px;padding:10px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>1045 ― Gensparkに投げて、返ってきた記録</h1>
+<p class="date">2026-09-24 / すべて Mac 上の <code>gsk</code> v1.13.1 で実測</p>
+
+<h2>投げたコマンド（そのまま）</h2>
+<pre>gsk task create deep_research \
+  --task_name "1045 lipsync3" \
+  --query "日本から使える、ブラウザ上で動くリップシンク（口パク）のJavaScriptライブラリを3つだけ挙げてください。各1行の説明と、公式のURL（GitHubまたは公式サイト）を必ず付けてください。全体で15行以内。" \
+  --instructions "日本語で答えること。3つだけ。1つにつき「名前／1行の説明／公式URL」の3点。URLは実在するGitHubリポジトリか公式サイトのみ。全体15行以内。前置き・後書き・言い訳を書かない。"</pre>
+
+<h2>時刻とクレジット</h2>
+<table>
+<tr><th>投げた時刻</th><td class="num">2026-09-24 00:20:38 JST</td></tr>
+<tr><th>submitが返った時刻</th><td class="num">2026-09-24 00:20:42 JST</td></tr>
+<tr><th>finished になった時刻</th><td class="num">2026-09-24 00:22:38 JST</td></tr>
+<tr><th>投げてから finished まで</th><td class="num">120秒</td></tr>
+<tr><th>クレジット 前</th><td class="num">1924.937（00:20:31 JST）</td></tr>
+<tr><th>クレジット 後</th><td class="num">1924.937（00:22:41 JST）</td></tr>
+<tr><th>減ったクレジット</th><td class="num">0.000</td></tr>
+<tr><th>project_id</th><td class="num">2f4a20f6-ef4e-5a51-b6bb-a9d718f6d2bd</td></tr>
+<tr><th>state / stop_reason</th><td class="num">finished / finished</td></tr>
+</table>
+
+<h2>返ってきた中身（そのまま）</h2>
+<pre>1. wawa-lipsync — Web Audio APIを使ったリアルタイムリップシンク用TypeScriptライブラリ。[GitHub](https://github.com/wass08/wawa-lipsync)
+2. wLipSync — WebAssemblyで動作するMFCCベースのリップシンクライブラリ。[GitHub](https://github.com/mrxz/wLipSync)
+3. lip-sync-engine — Rhubarb Lip SyncのWebAssemblyポートで、ブラウザ上で音声から口形素を生成。[GitHub](https://github.com/biolimbo/lip-sync-engine)</pre>
+
+<h2>返ってきた出典URLを、こちらで叩いたHTTPコード</h2>
+<table>
+<tr><th>URL</th><th style="width:auto">コード</th></tr>
+<tr><td><a href="https://github.com/wass08/wawa-lipsync">https://github.com/wass08/wawa-lipsync</a></td><td><span class="code c200">200</span></td></tr>
+<tr><td><a href="https://github.com/mrxz/wLipSync">https://github.com/mrxz/wLipSync</a></td><td><span class="code c200">200</span></td></tr>
+<tr><td><a href="https://github.com/biolimbo/lip-sync-engine">https://github.com/biolimbo/lip-sync-engine</a></td><td><span class="code c200">200</span></td></tr>
+</table>
+<p style="font-size:12px;color:var(--sub);margin:8px 0 0">3件とも 2026-09-24 に工場から叩いて 200。</p>
+
+<h2>途中で Genspark が叩いたURL（task info に残っていたもの）</h2>
+<pre>https://github.com/biolimbo/lip-sync-engine
+https://github.com/Amoner/lipsync-engine
+https://github.com/TMElyralab/MuseTalk
+https://github.com/yashrajbharti/LipSync.js
+https://medium.com/@yashrajbharti.met18/lipsyncing-made-dead-simple-using-pure-css-e345ce604c94
+https://github.com/topics/lip-sync
+https://www.npmjs.com/package/lipsync   ← Genspark側で [CRAWL FAILED]</pre>
+
+<h2>同じ日の、もう1本の往復</h2>
+<table>
+<tr><th>コマンド</th><td class="num">gsk web_search "Genspark MCP server endpoint"</td></tr>
+<tr><th>返り</th><td>その場でJSON（organic_results）</td></tr>
+<tr><th>クレジット 前→後</th><td class="num">1925.937 → 1924.937</td></tr>
+<tr><th>減ったクレジット</th><td class="num">1.000</td></tr>
+</table>
+
+<h2>ついでに叩いて、返ってこなかった口</h2>
+<table>
+<tr><th>https://www.genspark.ai/api/mcp（認証あり・POST）</th><td class="num">404 {"detail":"Not Found"}</td></tr>
+<tr><th>https://www.genspark.ai/api/mcp/（認証あり・POST）</th><td class="num">404 {"detail":"Not Found"}</td></tr>
+<tr><th>https://www.genspark.ai/mcp</th><td class="num">404 Page not found: /mcp</td></tr>
+<tr><th>https://mcp.genspark.ai/</th><td class="num">000（名前解決しない）</td></tr>
+<tr><th>gsk mcp list</th><td class="num">servers: [] / total: 0</td></tr>
+</table>
+
+</div>
+</body>
+</html>

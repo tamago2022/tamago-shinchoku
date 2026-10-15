@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#759 できたものが埋もれる：新しく作った／直した で分けて探せるように 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #759 できたものが埋もれる：新しく作った／直した で分けて探せるように</div>
+<h1>#759 できたものが埋もれる：新しく作った／直した で分けて探せるように</h1>
+<div class="date">2026-09-12 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+進捗表の『🎁できたもの』棚を、新しく作った(✨)／直した(🔧)の2種類に分けた。言葉で探す検索欄・今日/昨日/1週間の日付絞り込みも追加。過去の完了246件＋アーカイブ6件を一括で棚に取り込み（元は成果物18件しか無かった）。棚は今まで通り消えない・1画面目は開かず折りたたんだまま。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>206件</b><span>できたもの棚の合計（旧18件→新規背取り込みで206件）</span></div>
+  <div class="num"><b>47件</b><span>✨新しく作った</span></div>
+  <div class="num"><b>159件</b><span>🔧直した（今回追加した区分。旧仕様は載せていなかった）</span></div>
+  <div class="num"><b>13件</b><span>『昨日』ボタンで実際に絞り込めた件数（09-11分）</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>前：フィルタは種類だけ。直した/作ったの区別が無く、1日経つと探せなくなっていた（14件のみ）</b><img src="img/759-before.png" alt="前"></div>
+  <div class="shot after"><b>後：✨新しく作った／🔧直した のタブ＋検索欄＋『昨日』ボタン。実際に昨日(09-11)分だけに絞り込めた（実物サムネ付き）</b><img src="img/759-after-yesterday.png" alt="後"></div>
+  <div class="shot plain"><b>🔧直した タブを押した状態（本番・実物）</b><img src="img/759-after.png" alt="🔧直した タブを押した状態（本番・実物）"><span class="meta">オレンジ＝直したが選択中。修正系の完了がここに積み上がる</span></div>
+  <div class="shot plain"><b>1画面目（375px・開かず閉じたまま）</b><img src="img/759-firstview.png" alt="1画面目（375px・開かず閉じたまま）"><span class="meta">できたもの棚は開いた状態では表示されない＝1画面目を圧迫していない</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番：進捗表を開く</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+  <li><b>本番：できたもの棚のデータ(JSON)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/dekimono.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/dekimono.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①新しく作った／直したで分かれているか</td><td class="yes">✨47件・🔧159件に分離して表示</td></tr>
+<tr><td>②昨日のものに戻れるか</td><td class="yes">『昨日』ボタンで13件に絞り込み実測（09-11分）</td></tr>
+<tr><td>③サムネイル付き・押せるか</td><td class="yes">各行にサムネ(check頁は実画像・無ければ種類アイコン)、行全体がリンク</td></tr>
+<tr><td>④1画面目を圧迫していないか</td><td class="yes">開かず折りたたみのまま。375pxスクショで#dekitaSecが最初の画面に出ないことを確認</td></tr>
+<tr><td>⑤古いものは消えないか</td><td class="yes">過去分は削除ではなく全部読み込み（246件の完了＋6件のアーカイブを一括で取り込み）</td></tr>
+</table>
+
+<footer>
+このページは #759 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

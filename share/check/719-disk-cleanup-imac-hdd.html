@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#719 デスクトップ整理＋iMac HDD引っ越し（719番・7回目・進行中） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #719 デスクトップ整理＋iMac HDD引っ越し（719番・7回目・進行中）</div>
+<h1>#719 デスクトップ整理＋iMac HDD引っ越し（719番・7回目・進行中）</h1>
+<div class="date">2026-09-11 00:00〜 実測確認・前回の「原因特定」を実測で訂正</div>
+
+<div class="fix">
+デスクトップは完全に整理し、「今動いている開発フォルダ」以外は全部iMac HDDへ移した（joy-relief-station等の稼働中フォルダだけが残る状態）。前回セッションが「これが犯人」としたブラウザの一時ファイル(code_sign_clone)の片付けを、消す前後で容量を厳密に測り直したところ、<b>空き容量はほとんど増えないことが分かった</b>（見かけの1.4GBを消しても内蔵の空きは増えない、むしろ減ることさえあった）。前回の発見は訂正が必要と判明。本当に効果がある一番大きい塊（21GB・10万ファイルの古い作業フォルダ）の移動を裏で開始し、このセッション終了後も継続する。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>84GB</b><span>今の内蔵の空き（正しい指標 /System/Volumes/Data。目標100GBまであと16GB）</span></div>
+  <div class="num"><b>0GB</b><span>code_sign_clone移動による実際の解放量（見かけ上は10GB超移動したが、実測では増えなかった＝前回の見立て違い）</span></div>
+  <div class="num"><b>4項目</b><span>デスクトップ直下の残り（joy-relief-station等、すべて稼働中で触ってはいけないもの）</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>iMac HDD側の置き場ノート（今回の訂正・引き継ぎを追記済み）</b><a href="file:///Volumes/iMac%20HDD/Claude専用/README_置き場ルール.md" target="_blank" rel="noopener">file:///Volumes/iMac HDD/Claude専用/README_置き場ルール.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>iMac HDDにClaude専用の置き場ができているか</td><td class="yes">yes</td></tr>
+<tr><td>内蔵の空きが100GB以上になったか</td><td class="no">no（84GB）</td></tr>
+<tr><td>デスクトップが「今動いているもの」だけになったか</td><td class="yes">yes</td></tr>
+<tr><td>減り続ける原因が分かったか</td><td class="no">要再調査（前回の「code_sign_clone犯人説」は実測で否定。真因はまだ確定していない）</td></tr>
+</table>
+
+<footer>
+次にやること：`~/Documents/AI作業/2026-09-02/プロジェクト/デスクトップ整理`（21GB・101,586ファイル）の移動をrsyncで裏起動し継続中。これが完了すれば100GBに届く見込み。今回の作業中、他の並行セッションもディスクへ同時アクセスしており、単純な読み取り(du)ですら数分〜10分以上かかる状態だった。次のセッションは、着手前に`ps aux`で他セッションの重い処理と重なっていないか確認し、iMac HDDのREADMEに追記した「code_sign_clone移動は効果なし」の訂正を踏まえて進めること。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

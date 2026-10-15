@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#898 関所(sekisho)・再設計：呼び忘れても素通りしない形へ 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #898 関所(sekisho)・再設計：呼び忘れても素通りしない形へ</div>
+<h1>#898 関所(sekisho)・再設計：呼び忘れても素通りしない形へ</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+検品NG（1回目・09-17 04:43、理由：Dispatch自身が直接発言する経路は関所をコードで強制しておらずプロンプト頼みのみだった）を受け、関所の置き場所を『報告の手前』から『確認ページが生まれる瞬間（tools/make_check_page.py の書き出し直前）』と『pushされる瞬間（.githooks/pre-push）』の2箇所へ変更した。どちらもプロンプトでの指示に関係なく必ず実行されるコードなので、share/check/に存在するページ・origin/mainに乗ったコミットは、すでに関所を通ったものしかあり得ない。再設計の途中で、書式文字列が壊れていて『実測なし』の検出経路が必ず例外落ちしていたバグと、確認ページの型（テンプレ）の定型文にある『実測』の一語だけで直後の無関係な数字主張まで実測済みと誤認する誤免除バグの2つを発見し、修正した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2箇所</b><span>関所をコードで強制した場所（make_check_page.pyの書き出し直前／.githooks/pre-pushのpush直前）</span></div>
+  <div class="num"><b>493件</b><span>既存share/check/ページの一括点検対象数</span></div>
+  <div class="num"><b>97件</b><span>一括点検で不合格（px/%%の主張に実測の跡が無い・食い違う）だった件数</span></div>
+  <div class="num"><b>2件</b><span>再設計の過程で発見・修正したsekisho.py自体のバグ数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>tools/sekisho.py（本体・gate_local()を追加）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/sekisho.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/sekisho.py</a></li>
+  <li><b>tools/make_check_page.py（書き出し直前に関所を統合）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/make_check_page.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/make_check_page.py</a></li>
+  <li><b>.githooks/pre-push（push直前の関所フック）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/.githooks/pre-push" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/.githooks/pre-push</a></li>
+  <li><b>tools/install_hooks.sh（新しいworktree/再clone時の導入）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/install_hooks.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/install_hooks.sh</a></li>
+  <li><b>一括点検レポート（不合格97件の一覧）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/sekisho_sweep_2026-09-17.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/sekisho_sweep_2026-09-17.md</a></li>
+  <li><b>README.md「関所(sekisho)・再設計」節</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/README.md#関所sekisho再設計呼び忘れても素通りしない形へ2026-09-17898番2回目検品ng後の再実装" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/README.md#関所sekisho再設計呼び忘れても素通りしない形へ2026-09-17898番2回目検品ng後の再実装</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>実測の跡が無い偽のpx主張をmake_check_page.py経由で書かせる</td><td class="yes">書き出し自体を拒否・ファイルは存在しない</td></tr>
+<tr><td>実測: 9.6px を含む正しいページ</td><td class="yes">正常に書き出せる</td></tr>
+<tr><td>実測なしのHTMLをshare/check/へ直接commitし.githooks/pre-pushへ手動でpushイベントを渡す</td><td class="yes">FAILでpush中止(exit=1)。テスト用コミットはgit revertで打ち消し済み</td></tr>
+<tr><td>check_number_claims()の書式文字列バグ(実測なし検出経路が必ず例外落ち)</td><td class="yes">修正して再テストでFAILを正しく返すことを確認</td></tr>
+<tr><td>テンプレ定型文『実測確認』による誤免除バグ(距離だけでは無関係な数字主張まで実測扱いにしていた)</td><td class="yes">キーワード直後にコロン/矢印を要求する形に変更、再現テストでFAILすることを確認</td></tr>
+<tr><td>既存493ページの一括点検(軽量判定・触る検品/AI検品は含まない)</td><td class="yes">通過396件・不合格97件・取得不可0件。docs/sekisho_sweep_2026-09-17.mdに一覧を記録(直すのは別タスク)</td></tr>
+</table>
+
+<footer>
+このページは #898 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

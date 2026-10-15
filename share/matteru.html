@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>たまごさん待ち｜押すボタンだけ</title>
+<style>
+  :root{ --paper:#f4f1ea; --ink:#16130f; --sub:#6b6259; --rule:#d8d2c6;
+         --red:#b3261e; --ok:#2f6b3f; --amber:#8a6d1f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+       font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:980px;margin:0 auto;padding:24px 16px 72px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:16px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:.04em}
+  .lead{color:var(--sub);font-size:12.5px;margin:0}
+  h2{font-size:13px;letter-spacing:.14em;color:var(--sub);margin:26px 0 8px;
+     font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
+  .nums{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 4px}
+  .nums .cell{border:1px solid var(--rule);background:#fff;padding:8px 12px;min-width:104px}
+  .nums .cell.bad{border-color:var(--red)}
+  .nums .k{font-size:10.5px;letter-spacing:.1em;color:var(--sub);display:block}
+  .nums .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .nums .cell.bad .v{color:var(--red)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-size:11px;letter-spacing:.1em;color:var(--sub);
+     font-weight:700;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule);
+     white-space:nowrap}
+  td{padding:9px 8px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  td.n{font-variant-numeric:tabular-nums;color:var(--sub);white-space:nowrap;padding-right:10px;font-size:12px}
+  .what{font-weight:700;display:block}
+  .why{color:var(--red);font-weight:700;font-size:12px;white-space:nowrap}
+  .btn{display:inline-block;border:2px solid var(--ink);padding:3px 9px;
+       font-weight:700;font-size:12.5px;white-space:nowrap;background:#fff;margin:1px 0}
+  .sub{color:var(--sub);font-size:11.5px;display:block;margin-top:3px}
+  .done{border-left:3px solid var(--ok);padding-left:10px;font-size:13px;margin:6px 0}
+  .done b{color:var(--ok)}
+  pre{background:#fff;border:1px solid var(--rule);padding:10px;overflow-x:auto;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.5}
+  footer{margin-top:30px;padding-top:12px;border-top:1px solid var(--rule);
+         color:var(--sub);font-size:11.5px}
+  a{color:#1b4d8f}
+  @media(max-width:620px){ body{font-size:14px} td.n{display:none} th.n{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>たまごさん待ち — 押すボタンだけ</h1>
+  <p class="lead">たまごさんにしか決められないものだけを7行に絞った。
+     こちらで進められるものは下に回して、もう手を付けた。<br>
+     実測 2026-09-24 02:46（Mac実機）／ 元データ：status/queue.json 305件・status/dispatch_outbox.jsonl 316行</p>
+</header>
+
+<div class="nums">
+  <div class="cell bad"><span class="k">たまごさん待ち</span><span class="v">7</span></div>
+  <div class="cell"><span class="k">こちらで進めた</span><span class="v">11</span></div>
+  <div class="cell bad"><span class="k">いま同時に走れる</span><span class="v">1本</span></div>
+  <div class="cell bad"><span class="k">Brave占有メモリ</span><span class="v">12.3GB</span></div>
+</div>
+
+<h2>1｜たまごさんにしか押せない（上から順に効く）</h2>
+<table>
+<tr><th class="n">案件</th><th>何を</th><th>止まっている理由</th><th>押すボタン</th></tr>
+
+<tr>
+  <td class="n">621</td>
+  <td><span class="what">ブラウザを1個に決める</span>
+      <span class="sub">Braveが53プロセス・12.3GB。611番と614番が「ブラウザ占領のため一時停止」のまま17日止まっている。同時に走れる本数もこれで1本に落ちている</span></td>
+  <td class="why">ブラウザ</td>
+  <td><span class="btn">Braveを閉じてよい</span> / <span class="btn">だめ</span></td>
+</tr>
+
+<tr>
+  <td class="n">792</td>
+  <td><span class="what">亮太さんのページを世に出す</span>
+      <span class="sub">実装もmain合流も済み（commit 7a523a65）。Lovableの公開だけ人手。同じ件で847・867・871・873の4件が鳴り続けている</span></td>
+  <td class="why">公開</td>
+  <td><span class="btn">Lovableで Publish を押す</span></td>
+</tr>
+
+<tr>
+  <td class="n">710</td>
+  <td><span class="what">Måneskin「I WANNA BE YOUR SLAVE」THE FIRST TAKE を棚に載せるか</span>
+      <span class="sub">棚に置くか置かないかはたまごさんのもの。711番のTHE FIRST TAKE 30曲がこれ待ちで全部止まっている</span></td>
+  <td class="why">棚出し</td>
+  <td><span class="btn">載せる</span> / <span class="btn">載せない</span></td>
+</tr>
+
+<tr>
+  <td class="n">722</td>
+  <td><span class="what">Claudeの請求が8/30に2回（$112.22 と $110）</span>
+      <span class="sub">返金の申し立てはアカウント本人しか出せない。放置するほど問い合わせが通りにくくなる</span></td>
+  <td class="why">課金</td>
+  <td><span class="btn">返金を申請する</span> / <span class="btn">やめる</span></td>
+</tr>
+
+<tr>
+  <td class="n">721</td>
+  <td><span class="what">Suno が10/13に2万円で自動更新</span>
+      <span class="sub">あと19日。解約するなら今月中。使っていないなら年24万円が黙って出ていく</span></td>
+  <td class="why">課金</td>
+  <td><span class="btn">続ける</span> / <span class="btn">解約する</span></td>
+</tr>
+
+<tr>
+  <td class="n">635</td>
+  <td><span class="what">独自ドメインを取る（年$10前後）</span>
+      <span class="sub">たまごさん「投資をケチってマネタイズが遅くなる方がリスク」。買う判断と、どの名前にするかの2つだけが残っている</span></td>
+  <td class="why">課金</td>
+  <td><span class="btn">この名前で買う（名前を1つ）</span> / <span class="btn">今はやらない</span></td>
+</tr>
+
+<tr>
+  <td class="n">911</td>
+  <td><span class="what">Devin（SWE-1.7 Unlimited）を主戦場にするか</span>
+      <span class="sub">契約の判断。決まらない間、外のAIに出す仕事の行き先が決まらない</span></td>
+  <td class="why">課金</td>
+  <td><span class="btn">契約する</span> / <span class="btn">見送る</span></td>
+</tr>
+</table>
+
+<h2>2｜こちらでできたのに止めていた（もう動かした・返事不要）</h2>
+<div class="done"><b>11件を発車待ちに戻した。</b>
+  ①「URLを1本も貼らずに終わった」だけが理由で止まっていた仕事 9件（6・470・486・613・868・872・890・927・939番）。
+  仕事そのものではなく報告の書き方で止まっていたので、判断を仰がずに列へ戻した。
+  ②テストA・テストB（586・587番）は「空き容量が20GBに戻ったら列へ戻す」条件付きの保留。<b>実測85GBで条件を満たしている</b>ので戻した。</div>
+<div class="done">たまごさんに見せずに片付けたので、ここは読まなくていい。数だけ置いてある。</div>
+
+<h2>3｜なぜ「同時1本」なのか（実測・仕事2の途中結果）</h2>
+<p style="font-size:13.5px;margin:6px 0">
+「同時2本まで」は空きメモリで決まっていなかった。<b>本当の首はスワップとBrave。</b>
+メモリは14.2GB空いていて、Claudeのセッション1本は実測280MB。メモリだけなら20本以上いける。
+止めているのはこの2つ：<b>スワップの残りが1.04GB（17.41GB中16.34GB使用済み）</b>と、<b>8コアに対して負荷22.64（283%）</b>。
+Braveが12.3GB・53プロセスを抱えたままなので、スワップが吐き出せない。
+</p>
+<p style="font-size:13.5px;margin:6px 0">
+さらに、上限を決めている <code>status/calibration.json</code> が自分で自分を縛っていた。
+規則は「標本6件以上で合格した最大本数」だが、実測の標本数は <b>0本=238件・1本=307件・2本=10件・3本=1件</b>。
+<b>上限が2本だから3本が走らず、3本が走らないから標本が集まらず、だから永久に2本のまま。</b>
+</p>
+<pre>実測（Mac実機・2026-09-24T02:46:33+0900）
+hw.memsize        34359738368  (32.0GB) / hw.ncpu 8
+vm_stat  free 160634p  inactive 3184090p  speculative 107129p  purgeable 5155p
+         → 空き実効 3457008p x 4096B = 14.16GB
+vm.swapusage: total = 17408.00M  used = 16344.75M  free = 1063.25M
+vm.loadavg:   { 22.64 27.30 23.67 }        → 22.64 / 8コア = 283%
+memory_pressure: System-wide memory free percentage: 80%
+
+プロセス別RSS（上位）
+  12610MB  /Applications/Brave            (53プロセス)
+   7365MB  com.apple.Virtualization.VirtualMachine.xpc
+   2120MB  /Applications/Google Chrome    (16プロセス)
+   1824MB  /Applications/Claude.app ...Frameworks
+Claude系セッション（実測）: 274MB / 270MB / 294MB / 129MB / 70MB / 70MB
+
+status/calibration.json（実測の標本数）
+  N=0 238件  N=1 307件  N=2 10件  N=3 1件(enough:false)</pre>
+
+<footer>
+  作った理由：たまごさんが優先順位を付けるためだけの紙。説明は置かない。<br>
+  数字はすべて上の <code>実測</code> ブロックから取っている。推測で埋めた数字は1つも無い。<br>
+  元データ：<code>status/queue.json</code> / <code>status/dispatch_outbox.jsonl</code> / <code>status/calibration.json</code> / <code>status/_1051/jissoku.txt</code>
+</footer>
+
+</div>
+</body>
+</html>

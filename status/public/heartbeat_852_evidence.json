@@ -1,0 +1,31 @@
+{
+  "capturedAt": "2026-09-18T01:18:00+09:00",
+  "note": "852番は799番の生死表が古い判定(34.1分沈黙)を元に自動発行した重複タスク。原因は843番で既にmain合流・GitHub Pages反映済みの誤検知バグ本体（heartbeat.logだけを見ると健全な時でも最大60分近く沈黙し誤ってdead判定していた不具合）。852番着手時点で再実測した結果を、この工場の運用ルールでgit追跡対象外のstatus/heartbeat.logを直接raw linkできないため、status/public/配下にコピーして公開する。",
+  "shikumi_heartbeat_entry": {
+    "key": "heartbeat",
+    "name": "心臓（heartbeat）",
+    "lastRanAt": "2026-09-18T01:16:16.823077+09:00",
+    "countToday": 1,
+    "expect": "10分以内に更新",
+    "expectMin": 10,
+    "howMeasured": "status/.heartbeat_alive（ループが15秒おきに必ずtouch）とstatus/heartbeat.log（警告時・毎正時のみ書く）のうち新しい方のmtime基準：現在0.1分沈黙（10分以内=alive／30分以内=slow／それ超=dead。heartbeat.logだけを見ると健全な時でも最大60分近く沈黙し誤ってdead判定していたため、#925と同じ理由で毎周期更新される.heartbeat_aliveも合わせて見る。2026-09-18・843番で修正）",
+    "verdict": "alive"
+  },
+  "processCheck": {
+    "heartbeatShPid": 26940,
+    "startedAt": "2026-09-17T19:51:00+09:00",
+    "psCommand": "ps aux | grep -E 'heartbeat\\.sh|heartbeat_watchdog'",
+    "psOutput": [
+      "mac 26940 0.0 0.0 34268220 1544 ?? Ss 7:51PM 0:21.97 bash /Users/mac/Desktop/tamago-shinchoku/tools/heartbeat.sh",
+      "mac 93499 0.0 0.0 34132028 952 ?? S Thu01AM 0:09.08 /bin/bash /Users/mac/Desktop/tamago-shinchoku/tools/heartbeat_watchdog_loop.sh"
+    ],
+    "heartbeatAliveMtime": "2026-09-18T01:17:43+09:00",
+    "capturedAtCheck": "2026-09-18T01:17:52+09:00",
+    "silenceSeconds": 9
+  },
+  "rootCauseCommit": {
+    "issue": "843番",
+    "summary": "status/.heartbeat_alive（15秒おき無条件touch）を新設し、生死判定の材料をheartbeat.logの毎正時書き込みだけに頼らない形へ修正済み（main合流・GitHub Pages反映済み）。852番はこの修正より後にshikumi.pyが古い一時的な沈黙(34.1分)を拾って自動発行した重複起票であり、コード修正は不要、実測の再確認のみが対象。"
+  },
+  "verdictNow": "alive"
+}
