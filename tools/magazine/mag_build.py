@@ -33,6 +33,7 @@ EXTRA_CSS = '''
 .cw .cw-chapter--paper .say__bub{background:rgba(29,37,54,.07)}
 .cw .cw-chead__catch{font:700 clamp(24px,6.6vw,40px)/1.4 "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.04em;margin:18px 0 0}
 .cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 auto 28px;max-width:760px}.cw .cw-interlude img{display:block;width:100%;height:auto;border-radius:4px;filter:sepia(.12)}.cw .cw-interlude figcaption{margin-top:10px;font-size:13px;line-height:1.7;color:var(--mute)}.cw .cw-interlude .cw-credit{font-size:11.5px;opacity:.8}.cw .cw-interlude figcaption a{color:inherit;text-decoration:underline}
 .cw .bridge{margin:2.2em 0 0;padding-top:1.4em;border-top:1px solid var(--line);font-size:14.5px;color:var(--mute)}
 .cw .cw-chapter--paper .bridge{color:var(--paper-mute);border-color:rgba(29,37,54,.16)}
 '''
@@ -83,6 +84,16 @@ def chead(c):
             + (f'<h2 class="cw-chead__catch">{e(catch)}</h2>' if catch else '') + '</div></header>')
 
 
+def interlude(ph):
+    """章の合間の写真（全マガジン共通・2026-10-16）。時代の空気を伝える自由ライセンス写真だけ（Wikimedia Commons 等、CC BY / BY-SA / CC0 / PD）。
+    主役は曲と記事。写真はわさび・大葉。クレジット（撮影者・ライセンス・元ページ）を必ず付ける。
+    ph = dict(src, w, h, alt, cap, credit, page, lic)"""
+    return ('<section class="cw-interlude" aria-label="写真"><div class="cw-wrap">' + ''.join(
+        f'<figure><img src="{e(x["src"])}" width="{x["w"]}" height="{x["h"]}" alt="{e(x["alt"])}" loading="lazy" decoding="async"/>'
+        f'<figcaption>{x["cap"]}<br/><span class="cw-credit">写真：<a href="{e(x["page"])}" target="_blank" rel="noopener">{e(x["credit"])}</a>（{e(x["lic"])}）</span></figcaption></figure>'
+        for x in ph) + '</div></section>')
+
+
 def chapter(c, paper=False):
     parts = [chead(c),
              f'<div class="cw-main">{video(c["main"])}</div>',
@@ -96,7 +107,7 @@ def chapter(c, paper=False):
     if c.get('bridge'):
         parts.append(f'<p class="bridge">{c["bridge"]}</p>')
     cls = 'cw-chapter cw-chapter--paper' if paper else 'cw-chapter'
-    return f'<section class="{cls}" id="ch{c["no"]}"><div class="cw-wrap">' + ''.join(parts) + '</div></section>'
+    return f'<section class="{cls}" id="ch{c["no"]}"><div class="cw-wrap">' + ''.join(parts) + '</div></section>' + (interlude(c['after']) if c.get('after') else '')
 
 
 # 参考動画コーナー（全マガジン共通の末尾・Genspark手紙 issue#7 の決まり6・2026-10-15）
@@ -266,8 +277,10 @@ if __name__ == '__main__':
 # 並び：本文（締め・余韻）→ THE MAP（ある号だけ）→ きっかけの動画（怒れる人々と同じ大きさ＝cw-note の小さい1枚）→ 出典 → ほかの特集（ページの一番下）。
 # 「つながっている特集」の欄は置かない。見出しの言い方は「OTHER MAGAZINES — ほかの特集」（シティポップ特集と同じ）に統一。
 # 部品はここ1か所。各号は unify_tail() を通すだけ（mag_build で組む号は build() が自動で通す。直接組んだ号もこれで組み直す）。
-TAIL_CSS = '.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}.cw .cw-allback{margin:28px 0 0;text-align:right}.cw .cw-allback a{color:inherit;font:500 13px/1.6 "Helvetica Neue",Arial,sans-serif;letter-spacing:.12em;text-decoration:underline;text-underline-offset:4px}'
+TAIL_CSS = '.cw .cw-video__play:empty::before{content:"";display:block;margin-left:4px;border-style:solid;border-width:8px 0 8px 13px;border-color:transparent transparent transparent currentColor}.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}.cw .cw-allback{margin:28px 0 0;text-align:right}.cw .cw-allback a{color:inherit;font:500 13px/1.6 "Helvetica Neue",Arial,sans-serif;letter-spacing:.12em;text-decoration:underline;text-underline-offset:4px}'
 OTHERS_LABEL = 'OTHER MAGAZINES — ほかの特集'
+TAIL_CSS_OLD = ['.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}.cw .cw-allback{margin:28px 0 0;text-align:right}.cw .cw-allback a{color:inherit;font:500 13px/1.6 "Helvetica Neue",Arial,sans-serif;letter-spacing:.12em;text-decoration:underline;text-underline-offset:4px}',
+                '.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}']
 BACKNUMBER_URL = BASE + 'backnumber.html'  # バックナンバー一覧（全マガジン共通の行き先）
 OTHERS['hoshikatsu'] = (BASE + 'kimi-wa-hoshi-katsu.html', '編曲家・作曲家', '君は星勝を知っているか')
 OTHERS_ORDER = ['hoshikatsu', 'harakami', 'ikareru', 'takoukan', 'josh', 'hikigatari', 'citypop']
@@ -336,9 +349,16 @@ def unify_tail(h, key):
     if not m:
         raise SystemExit('出典(cw-sources)が無いページ: ' + key)
     h = h[:m.start()] + kikkake_html() + m.group(0) + others_html(key) + h[m.end():]
-    h = h.replace('.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}</style>', '</style>')
-    if TAIL_CSS not in h:
-        h = h.replace('</style>', TAIL_CSS + '</style>', 1)
+    h = R.sub(r'/\*tail\*/.*?/\*/tail\*/', '', h, flags=R.S)  # 前回の共通部品のCSS
+    # 軽くする（全マガジン共通）：noreferrer は noopener で足りる／form の無いページの type="button"／遅延読み込みの画像の decoding 指定
+    h = h.replace('rel="noopener noreferrer"', 'rel="noopener"').replace(' type="button"', '')
+    h = R.sub(r'<img([^>]*?) decoding="async"([^>]*?loading="lazy")', r'<img\1\2', h)
+    h = R.sub(r'<img([^>]*?loading="lazy"[^>]*?) decoding="async"', r'<img\1', h)
+    for old_css in TAIL_CSS_OLD:
+        h = h.replace(old_css, '')
+    # 再生ボタンの三角は CSS 1か所で描く（各動画に同じ SVG を持たせない＝軽く、全マガジンで同じ見た目）
+    h = R.sub(r'(<span[^>]*class="cw-video__play"[^>]*>)(?:<svg.*?</svg>|▶)?(</span>)', r'\1\2', h, flags=R.S)
+    h = h.replace('</style>', '/*tail*/' + TAIL_CSS + '/*/tail*/</style>', 1)
     return h
 
 
@@ -347,3 +367,35 @@ _build_i18n = build
 
 def build(m):  # noqa: F811  終わりの並びを共通部品で
     return unify_tail(_build_i18n(m), m['key'])
+
+
+# ===== 訳のキーを書き込んでから終わりを組む（2026-10-16 怒れる人々）=====
+# unify_tail の共通部品は data-i18n="c_…" を最初から持つ。ページに data-i18n が1つでもあると JS は自動でキーを振らない
+# （＝本文の訳が全部効かなくなる）。だから build の中で、共通部品を足す前に本文の k1.. を要素へ書き込む。
+def stamp_keys(h):
+    import importlib
+    ua = importlib.import_module('unify_all')
+    return ua.stamp(h)[0]
+
+
+def build(m):  # noqa: F811
+    h = _build_i18n(m)
+    if m.get('i18n'):
+        h = stamp_keys(h)
+    return unify_tail(h, m['key'])
+
+
+_write_tail = write
+
+
+def write(m):  # noqa: F811  共通部品の訳も訳ファイルへ足す
+    p = _write_tail(m)
+    if m.get('i18n'):
+        import json as J
+        tr = J.loads(J.dumps(m['i18n']))
+        for l, d in common_i18n().items():
+            tr.setdefault(l, {}).update(d)
+        t = J.dumps(tr, ensure_ascii=False, separators=(',', ':'))
+        for d in (os.path.join(REPO, 'share/check'), os.path.join(REPO, 'status/magazine_prod')):
+            open(os.path.join(d, i18n_name(m)), 'w', encoding='utf-8').write(t)
+    return p
