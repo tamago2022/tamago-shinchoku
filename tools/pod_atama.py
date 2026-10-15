@@ -49,6 +49,23 @@ def silences(fr, rate, min_sec=0.25, thr=300):
     return out
 
 
+_FW = None
+
+
+def stt_local(pcm, rate):
+    """手元の faster-whisper（small・キャッシュ済み）で書き起こす。API を使わない＝0円・財布の関所に触れない。"""
+    global _FW
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    from faster_whisper import WhisperModel
+    import numpy as np
+    if _FW is None:
+        _FW = WhisperModel("small", device="cpu", compute_type="int8")
+    fr, _ = audioop.ratecv(pcm, 2, 1, rate, 16000, None)
+    x = np.frombuffer(fr, dtype=np.int16).astype(np.float32) / 32768.0
+    segs, info = _FW.transcribe(x, beam_size=1, vad_filter=False)
+    return info.language, "".join(s.text for s in segs).strip()
+
+
 def stt(key, pcm, rate):
     b = io.BytesIO()
     fr, _ = audioop.ratecv(pcm, 2, 1, rate, 16000, None)
@@ -104,18 +121,23 @@ def main():
             bounds.append((prev, s))
         prev = e
     log("頭90秒の塊:", ["%.1f-%.1f" % b for b in bounds[:15]])
-    key = kagi.need("GEMINI_API_KEY")
     cut = None
     for s, e in bounds[:12]:
-        t = stt(key, pcm[int(s * rate) * 2:int(e * rate) * 2], rate)
-        log("塊 %.1f-%.1f秒: %s" % (s, e, (t or "")[:120].replace("\n", " ")))
-        if t and has_ja(t):
+        lang, t = stt_local(pcm[int(s * rate) * 2:int(e * rate) * 2], rate)
+        log("塊 %.1f-%.1f秒 [%s]: %s" % (s, e, lang, (t or "")[:120].replace("\n", " ")))
+        if lang == "ja" or has_ja(t):
             cut = s; break
-        time.sleep(4)
     if cut is None:
         log("日本語の始まりが見つからない→切らない"); print("RESULT", json.dumps({"ok": False})); return 1
     log("切る位置: %.2f秒（ここから日本語）" % cut)
     if a.dry:
+        from faster_whisper import WhisperModel  # noqa
+        import numpy as np
+        fr, _ = audioop.ratecv(pcm[: rate * 2 * 45], 2, 1, rate, 16000, None)
+        x = np.frombuffer(fr, dtype=np.int16).astype(np.float32) / 32768.0
+        segs, info = _FW.transcribe(x, beam_size=1)
+        for sg in segs:
+            log("  頭45秒 [%s] %.1f-%.1f %s" % (info.language, sg.start, sg.end, sg.text.strip()[:80]))
         print("RESULT", json.dumps({"ok": True, "cut": cut, "dry": True})); return 0
     start = max(0, int((cut - 0.05) * rate)) * 2
     out_wav = os.path.join(WORK, "out.wav")
