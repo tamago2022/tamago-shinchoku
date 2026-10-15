@@ -1,0 +1,99 @@
+# -*- coding: utf-8 -*-
+"""共有ボタン（全マガジン・全特集の共通部品・2026-10-16 たまごさん「URLをコピーしてLINEに貼る手間は全部潰して」）
+- 記事のいちばん上（ヘッダーの直後）といちばん下（締めの直後）の2か所
+- 並び：LINE → X → Facebook → Threads → リンクをコピー → スマホの共有（対応端末だけ表示）。下の段だけ、右に公式アカウント（X）
+- アイコンだけ（ロゴ。文字なし）。外部スクリプトなし・SVG内蔵（<symbol> を1回だけ定義して <use> で使い回す＝軽い）
+- 共有文＝タイトル＋本番URL（canonical）。タイトルは押した瞬間の document.title（5言語の切替に追従）
+- 同じ部品を React（/feature）でも使う：joy-relief-station src/components/ShareBar.tsx（中身は同じ並び・同じ大きさ）
+アイコンは Simple Icons（CC0）。
+"""
+import json, os
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+OFFICIAL_X = 'https://x.com/oasisjoyrelief'   # サイト内の既存リンク（src/components/XFollowBand.tsx）
+OFFICIAL_YOUTUBE = None                        # サイト内に公式YouTubeのリンクが見つからない（2026-10-16）→ 置かない
+
+P = {  # Simple Icons（CC0）
+ 'line': 'M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314',
+ 'x': 'M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z',
+ 'fb': 'M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z',
+ 'th': 'M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z',
+ 'cp': 'M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 1 1 4.2 4.2l-1.8 1.8a1 1 0 0 1-1.4-1.4l1.8-1.8a1 1 0 1 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0Zm2.8-2.8a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 1 1-4.2-4.2l1.8-1.8a1 1 0 0 1 1.4 1.4l-1.8 1.8a1 1 0 1 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0Z',
+ 'ok': 'M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6 11-11-1.4-1.4z',
+ 'sh': 'M12 2.6 7.3 7.3l1.4 1.4L11 6.4V15h2V6.4l2.3 2.3 1.4-1.4L12 2.6ZM5 11v9.5c0 .8.7 1.5 1.5 1.5h11c.8 0 1.5-.7 1.5-1.5V11h-2v9H7v-9H5Z',
+}
+LABEL = {'line': 'LINE', 'x': 'X', 'fb': 'Facebook', 'th': 'Threads', 'cp': 'Copy link / リンクをコピー', 'sh': 'Share / 共有'}
+
+CSS = ('.cw .cw-share{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:22px 0}'
+       '.cw .cw-share a,.cw .cw-share button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;'
+       'border:1px solid var(--line);color:var(--ink);background:transparent;cursor:pointer;transition:background .15s}'
+       '.cw .cw-share a:hover,.cw .cw-share button:hover{background:rgba(237,230,214,.1)}'
+       '.cw .cw-share svg{width:18px;height:18px;fill:currentColor}'
+       '.cw .cw-share [data-sh=sh]{display:none}.cw .cw-share.can-sh [data-sh=sh]{display:inline-flex}'
+       '.cw .cw-share .cw-share__sep{flex:1}'
+       '.cw .cw-share--top{margin:0 0 8px}')
+
+
+def symbols():
+    return ('<svg width="0" height="0" style="position:absolute" aria-hidden="true">'
+            + ''.join(f'<symbol id="i-{k}" viewBox="0 0 24 24"><path d="{v}"/></symbol>' for k, v in P.items()) + '</svg>')
+
+
+def ic(k):
+    return f'<svg aria-hidden="true"><use href="#i-{k}"/></svg>'
+
+
+def bar(pos):
+    btn = ''.join(f'<a href="#" data-sh="{k}" aria-label="{LABEL[k]}" rel="noopener">{ic(k)}</a>' for k in ('line', 'x', 'fb', 'th'))
+    btn += f'<button type="button" data-sh="cp" aria-label="{LABEL["cp"]}">{ic("cp")}</button>'
+    btn += f'<button type="button" data-sh="sh" aria-label="{LABEL["sh"]}">{ic("sh")}</button>'
+    follow = ''
+    if pos == 'bottom':
+        follow = '<span class="cw-share__sep"></span>' + f'<a href="{OFFICIAL_X}" target="_blank" rel="noopener" aria-label="X @oasisjoyrelief">{ic("x")}</a>'
+        if OFFICIAL_YOUTUBE:
+            follow += f'<a href="{OFFICIAL_YOUTUBE}" target="_blank" rel="noopener" aria-label="YouTube">{ic("yt")}</a>'
+    return f'<div class="cw-share cw-share--{pos}" data-share="{pos}">{btn}{follow}</div>'
+
+
+SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]"),U=function(){return (c&&c.href)||location.href.split("#")[0].split("?")[0]},'
+          'T=function(){return document.title.split("｜")[0].trim()},E=encodeURIComponent;'
+          'document.querySelectorAll("[data-share]").forEach(function(b){if(navigator.share)b.classList.add("can-sh");'
+          'b.addEventListener("click",function(ev){var a=ev.target.closest("[data-sh]");if(!a)return;var k=a.getAttribute("data-sh"),u=U(),t=T(),h=null;'
+          'if(k==="line")h="https://line.me/R/share?text="+E(t+"\\n"+u);else if(k==="x")h="https://x.com/intent/post?text="+E(t)+"&url="+E(u);'
+          'else if(k==="fb")h="https://www.facebook.com/sharer/sharer.php?u="+E(u);else if(k==="th")h="https://www.threads.net/intent/post?text="+E(t+" "+u);'
+          'if(h){ev.preventDefault();window.open(h,"_blank","noopener");return}'
+          'if(k==="sh"){navigator.share({title:t,text:t,url:u}).catch(function(){});return}'
+          'if(k==="cp"){var s=t+" "+u,ok=function(){var y=a.querySelector("use");y.setAttribute("href","#i-ok");setTimeout(function(){y.setAttribute("href","#i-cp")},1600)};'
+          'if(navigator.clipboard)navigator.clipboard.writeText(s).then(ok,function(){});else{var x=document.createElement("textarea");x.value=s;document.body.appendChild(x);x.select();try{document.execCommand("copy");ok()}catch(e){}x.remove()}}'
+          '})})})();</script>')
+
+
+def add(h):
+    """組み上がったマガジンのHTMLに共有ボタンを入れる（何度通しても同じ）。上＝ヘッダー（cw-hero）の直後、下＝締め（cw-close）の直後。"""
+    import re as R
+    h = R.sub(r'<div class="cw-share[^"]*" data-share="[a-z]+">.*?</div>(?=)', '', h, flags=R.S)
+    h = R.sub(r'<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-line".*?</svg>', '', h, flags=R.S)
+    h = R.sub(r'<script>\(function\(\)\{var c=document\.querySelector\("link\[rel=canonical\]"\).*?</script>', '', h, flags=R.S)
+    h = R.sub(r'<style id="cw-share">.*?</style>', '', h, flags=R.S)
+    # 上：ヒーローの直後（目次の前）
+    h, n = R.subn(r'(</header>\s*<div class="cw-wrap">)', lambda m: m.group(1) + bar('top'), h, count=1)
+    if not n:  # ヒーローの無いページ（バックナンバー等）は最初の見出しブロックの直後
+        h = R.sub(r'(</header>)', lambda m: m.group(1) + bar('top'), h, count=1)
+    # 下：締めの直後
+    m = R.search(r'<section[^>]*class="cw-close"[^>]*>.*?</section>', h, flags=R.S)
+    if m:
+        h = h[:m.end()] + bar('bottom') + h[m.end():]
+    else:  # 締めが無いページ（バックナンバー等）は出典の前／本文の最後
+        h = h.replace('</main>', '<div class="cw-wrap">' + bar('bottom') + '</div></main>', 1)
+    h = h.replace('<main class="cw"', symbols() + '<main class="cw"', 1) if 'id="i-line"' not in h else h
+    h = h.replace('</head>', '<style id="cw-share">' + CSS + '</style></head>', 1)
+    h = h.replace('</body>', SCRIPT + '</body>', 1)
+    return h
+
+
+def check(h):
+    bad = []
+    if h.count('data-share="top"') != 1: bad.append('上の共有ボタン')
+    if h.count('data-share="bottom"') != 1: bad.append('下の共有ボタン')
+    if 'id="i-line"' not in h: bad.append('アイコン定義')
+    return bad

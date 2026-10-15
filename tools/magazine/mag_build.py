@@ -446,6 +446,9 @@ def unify_look(h):
     h = R.sub(r'\.cw \.cw-video__play:empty::before\{[^}]*\}', '', h)
     h = R.sub(r'<style id="cw-look">.*?</style>', '', h, flags=R.S)
     h = h.replace('</head>', '<style id="cw-look">' + LOOK_CSS + '</style></head>', 1)
+    # ⑤ 共有ボタン（上と下の2か所・全マガジン共通）＝ tools/magazine/share_bar.py
+    import share_bar
+    h = share_bar.add(h)
     return h
 
 
@@ -458,6 +461,8 @@ def look_check(h):
     if R.search(r'Magazine Story', h): bad.append('Magazine Story が出ている')
     if R.search(r'class="cw-chead__catch"|<p [^>]*class="cw-chead__title"', h): bad.append('章頭の型が違う（一言は小さく上）')
     if R.search(r'class="cw-video__play"[^>]*>\s*<svg', h): bad.append('再生ボタンの形が違う')
+    import share_bar
+    bad += share_bar.check(h)
     return bad
 
 
