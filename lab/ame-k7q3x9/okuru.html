@@ -1,51 +1,51 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow,noarchive"><meta name="googlebot" content="noindex,nofollow"><meta name="theme-color" content="#0d0f12"><title>試作｜送る</title><style>
-*{box-sizing:border-box;margin:0;padding:0}html,body{background:var(--t-bg);color:var(--t-fg);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
-body{min-height:100svh;background:var(--t-bg) url(img/yoru.jpg) center top/cover fixed}
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><!--tamago-dark 2：この試作は独自の配色。1168番で暗くしない--><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="googlebot" content="noindex,nofollow"><meta name="theme-color" content="#10182a"><title>試作｜送る</title><style>
+*{box-sizing:border-box;margin:0;padding:0}html,body{background:#10182a;color:#ece2cc;font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{min-height:100svh;background:#10182a url(img/yoru.jpg) center top/cover fixed}
 .mn{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:300}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}a{color:inherit;text-decoration:none}
 .wrap{max-width:430px;margin:0 auto;padding:22px 22px 120px;position:relative}
 .logo{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:12px;letter-spacing:7px;opacity:.85}
-.logo small{display:block;font-size:8.5px;letter-spacing:4px;color:var(--t-warn);margin-top:3px}
-.thumb{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:16/9;background:var(--t-bg)}
+.logo small{display:block;font-size:8.5px;letter-spacing:4px;color:#d6aa5c;margin-top:3px}
+.thumb{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:16/9;background:#0b1120}
 .thumb img{width:100%;height:100%;object-fit:cover;filter:saturate(.8) brightness(.85)}
 .thumb .pl{position:absolute;inset:0;display:grid;place-items:center;width:100%}
-.pl i{width:64px;height:64px;border-radius:50%;background:var(--t-bg);border:1px solid var(--t-warn);display:grid;place-items:center}
-.pl i:after{content:"";border-left:18px solid var(--t-line);border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:5px}
+.pl i{width:64px;height:64px;border-radius:50%;background:rgba(16,24,42,.55);border:1px solid rgba(214,170,92,.7);display:grid;place-items:center}
+.pl i:after{content:"";border-left:18px solid #ece2cc;border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:5px}
 .thumb iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(236,226,204,.28)}
-.ic svg{width:20px;height:20px;stroke:var(--t-fg);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ic svg{width:20px;height:20px;stroke:#ece2cc;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 </style><style>
 .song{margin-top:34px}.ttl{font-size:30px;margin-top:20px;letter-spacing:.04em}.by{font-size:12px;letter-spacing:3px;opacity:.7;margin-top:6px}
 .acts{display:flex;gap:12px;margin-top:22px;align-items:center;position:relative}
-.bubble{position:absolute;left:0;top:58px;background:var(--t-panel);color:var(--t-fg2);border-radius:14px;padding:12px 12px 12px 16px;display:none;align-items:center;gap:12px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:5;white-space:nowrap}
-.bubble:before{content:"";position:absolute;top:-7px;left:72px;border:7px solid transparent;border-top:0;border-bottom-color:var(--t-line)}
-.bubble.on{display:flex}.bubble button{width:36px;height:36px;border-radius:50%;background:var(--t-ok-bg);color:var(--t-fg);font-size:17px}
+.bubble{position:absolute;left:0;top:58px;background:#f3ecdc;color:#1b2440;border-radius:14px;padding:12px 12px 12px 16px;display:none;align-items:center;gap:12px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:5;white-space:nowrap}
+.bubble:before{content:"";position:absolute;top:-7px;left:72px;border:7px solid transparent;border-top:0;border-bottom-color:#f3ecdc}
+.bubble.on{display:flex}.bubble button{width:36px;height:36px;border-radius:50%;background:#06c755;color:#fff;font-size:17px}
 .picker{display:none;gap:10px;overflow-x:auto;margin-top:22px;padding-bottom:6px;scrollbar-width:none}.picker.on{display:flex}
 .picker button{flex:0 0 92px;opacity:.5}.picker button.sel{opacity:1}.picker img{width:92px;aspect-ratio:16/9;object-fit:cover;border-radius:4px}
 .picker span{display:block;font-size:10px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
 .ret{font-size:14px;letter-spacing:.15em;margin-top:24px;display:none}.ret.on{display:block}
 .art{display:flex;gap:12px;align-items:center;margin-top:40px;padding-top:18px;border-top:1px solid rgba(236,226,204,.15);font-size:13px}
 .art img{width:84px;aspect-ratio:16/9;object-fit:cover;border-radius:3px;opacity:.85}
-.veil{position:fixed;inset:0;background:var(--t-bg);opacity:0;pointer-events:none;transition:opacity .25s;z-index:8}
-.sheet{position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;background:var(--t-panel);color:var(--t-fg2);border-radius:20px 20px 0 0;padding:12px 20px 26px;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);z-index:9;max-height:92svh;overflow:auto}
+.veil{position:fixed;inset:0;background:rgba(5,9,18,.55);opacity:0;pointer-events:none;transition:opacity .25s;z-index:8}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;background:#f3ecdc;color:#1b2440;border-radius:20px 20px 0 0;padding:12px 20px 26px;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);z-index:9;max-height:92svh;overflow:auto}
 .open .veil{opacity:1;pointer-events:auto}.open .sheet{transform:none}
-.grip{width:38px;height:4px;border-radius:2px;background:var(--t-panel);margin:0 auto 12px}
-.chip{display:none;font-size:12px;letter-spacing:.06em;border:1px solid var(--t-warn);color:var(--t-warn);border-radius:999px;padding:5px 12px;width:max-content;margin:0 auto 4px}.chip.on{display:block}
+.grip{width:38px;height:4px;border-radius:2px;background:#1b244033;margin:0 auto 12px}
+.chip{display:none;font-size:12px;letter-spacing:.06em;border:1px solid #b98a3c;color:#7d5a1e;border-radius:999px;padding:5px 12px;width:max-content;margin:0 auto 4px}.chip.on{display:block}
 .prev{display:block;width:72%;margin:0 auto;transition:transform .3s}.prev.pop{transform:rotate(-4deg) scale(1.04)}
 .dots{display:flex;justify-content:center;gap:14px;margin:2px 0 18px}
-.dots button{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}.dots button.sel{outline:2px solid var(--t-line);outline-offset:3px}
+.dots button{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}.dots button.sel{outline:2px solid #1b2440;outline-offset:3px}
 .tops{display:flex;gap:12px;justify-content:center;margin-bottom:16px}
 .tops button{position:relative;width:30%;text-align:left}.tops img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;filter:grayscale(.6);opacity:.55;transition:.2s}
-.tops b{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:var(--t-panel);border:1px solid var(--t-line);font-size:15px;line-height:22px;text-align:center;font-weight:400}
-.tops .on img{filter:none;opacity:1}.tops .on b{background:var(--t-panel);color:var(--t-fg)}
+.tops b{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:#f3ecdc;border:1px solid #1b244055;font-size:15px;line-height:22px;text-align:center;font-weight:400}
+.tops .on img{filter:none;opacity:1}.tops .on b{background:#1b2440;color:#f3ecdc}
 .tops span{display:block;font-size:9.5px;margin-top:4px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row{display:flex;gap:8px;margin-bottom:10px}
-textarea,input{width:100%;border:1px solid var(--t-line);background:var(--t-panel);border-radius:10px;padding:11px 12px;font-size:16px;color:var(--t-fg2);font-family:inherit;resize:none}
+textarea,input{width:100%;border:1px solid #1b244026;background:#fffaf0;border-radius:10px;padding:11px 12px;font-size:16px;color:#1b2440;font-family:inherit;resize:none}
 input{flex:0 0 32%}
-.send{display:flex;gap:10px;margin-top:6px}.line{flex:1;height:52px;border-radius:26px;background:var(--t-ok-bg);color:var(--t-fg);font-size:16px;font-weight:600;letter-spacing:.06em}
-.cp{width:52px;height:52px;border-radius:50%;border:1px solid var(--t-line);display:grid;place-items:center}.cp svg{width:20px;stroke:var(--t-fg2);fill:none;stroke-width:1.6;stroke-linecap:round}
-.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--t-panel);color:var(--t-fg);padding:8px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.3s;z-index:20}.toast.on{opacity:1}
+.send{display:flex;gap:10px;margin-top:6px}.line{flex:1;height:52px;border-radius:26px;background:#06c755;color:#fff;font-size:16px;font-weight:600;letter-spacing:.06em}
+.cp{width:52px;height:52px;border-radius:50%;border:1px solid #1b244033;display:grid;place-items:center}.cp svg{width:20px;stroke:#1b2440;fill:none;stroke-width:1.6;stroke-linecap:round}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#1b2440;color:#ece2cc;padding:8px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.3s;z-index:20}.toast.on{opacity:1}
 .vtag{position:fixed;top:12px;right:14px;font-size:10px;letter-spacing:2px;opacity:.4}
 </style></head><body><div class="wrap">
 <div class="logo">ごきげん補給所<small>JOY RELIEF STATION</small></div>
@@ -106,6 +106,4 @@ $('bCopy').onclick=async()=>{const g=gift();try{await navigator.clipboard.writeT
 render();
 if(Q.get('demo')==='sheet'){openS();if(Q.get('dc')){color=Q.get('dc');paint();}(Q.get('dt')||'').split(',').filter(Boolean).forEach(k=>{const b=$('tops').querySelector(`[data-k="${k}"]`);b&&b.click();});if(Q.get('df'))$('from').value=Q.get('df');}
 if(Q.get('demo')==='bubble'&&isB)$('bub').classList.add('on');
-</script>
-<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
-</body></html>
+</script></body></html>
