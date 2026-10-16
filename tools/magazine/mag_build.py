@@ -420,6 +420,7 @@ LOOK_CSS = ('.cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 
             '.cw .cw-interlude figcaption{margin-top:10px;font-size:13px;line-height:1.7;color:var(--mute)}.cw .cw-interlude .cw-credit{font-size:11.5px;opacity:.8}'
             '.cw .cw-interlude figcaption a{color:inherit;text-decoration:underline}.cw .cw-interlude p{max-width:640px;margin:22px auto 0;font-size:15.5px;line-height:1.95}'
             '.cw a.cw-inl{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}'
+            '.cw .cw-close p.cw-close__body{font-size:16px;line-height:2;letter-spacing:.02em}'
             '.cw .cw-hero__sub{display:block;font-size:.44em;line-height:1.7;margin-top:.6em;font-weight:500;letter-spacing:.06em}'
             '.cw .cw-video__play:empty::before{content:"";display:block;margin-left:4px;border-style:solid;border-width:8px 0 8px 13px;border-color:transparent transparent transparent currentColor}')
 
@@ -453,6 +454,12 @@ def unify_look(h):
     h = R.sub(r'<span([^>]*)class="cw-video__cap"([^>]*)>([^<]*)</span>',
               lambda m: '' if R.search(NOTE_RE, m.group(3)) else m.group(0), h)
     h = R.sub(r'<p class="cw-note">(?:(?!</p>).)*?(?:引用して|公式の配信元|確認できた範囲|一般の方の投稿|を使っています)(?:(?!</p>).)*</p>', '', h, flags=R.S)
+    # ⑧ 締めの中の長い説明の段落は本文と同じ大きさ（締めの大きな字は短い言葉だけ。星勝で「最後の方だけ文字が大きい」と言われた）
+    def _close(m):
+        sec = m.group(0)
+        return R.sub(r'<p( data-i18n="[^"]*")?>((?:(?!</p>).){121,}?)</p>',
+                     lambda q: q.group(0) if len(R.sub('<[^>]+>', '', q.group(2))) <= 120 else f'<p class="cw-close__body"{q.group(1) or ""}>{q.group(2)}</p>', sec, flags=R.S)
+    h = R.sub(r'<section[^>]*class="cw-close"[^>]*>.*?</section>', _close, h, flags=R.S)
     # ⑥ 曲の一覧（THE MAP）は出さない（怒れる人々と同じ。目次と重複する）
     h = R.sub(r'<section[^>]*class="cw-mapwrap"[^>]*>.*?</section>', '', h, flags=R.S)
     # ⑤ 共有ボタン（上と下の2か所・全マガジン共通）＝ tools/magazine/share_bar.py
