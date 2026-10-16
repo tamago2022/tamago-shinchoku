@@ -158,6 +158,15 @@ _COMPLETION_KEYWORDS = ("完了しました", "できました", "直しまし�
                         # 永久に赤判定され続ける）。「もう作ってあります」を追加しつつ、
                         # in_daichoの要件自体も外す（下のhantei_1ken参照）。
                         "もう作ってあります")
+# 35023番実例（2026-10-16）：2026-08-09のSQL適用依頼（「ブラウザ代行で実行して
+# ください」という一文だけが単独で抜き出されたタイトル）が、実際には同一セッション
+# 内で「## 【完了】本番DBを直接叩いて確認しました」（3列とも入った・HTTP 200で
+# 実データ確認）まで完結していたのに、_COMPLETION_KEYWORDSのどの語とも一致せず
+# （「確認しました」はキーワード未登録）6回目の再発として★赤判定され続けていた。
+# この工場の全セッションは完了報告の冒頭に必ず「【完了】」を置く規約
+# （AGENTS.md「報告の形」）になっているため、ゆるい言い回しをさらに追加するより、
+# この見出し自体を正規表現で検出する方が誤検知が少なく恒久的。
+_COMPLETION_HEADER_RE = re.compile(r"(?:^|\n)\s*#{0,3}\s*(?:【完了】|##\s*結論[：:]\s*\*?\*?完了)")
 _DENIAL_KEYWORDS = ("まだ", "できてない", "直ってない", "ダメ", "だめ", "違う", "できない", "直ってなく")
 _SESSION_LOG_CACHE = {}
 _PROJECTS_DIRS_CACHE = None
@@ -318,7 +327,8 @@ def _rows_show_completion(rows, since):
         text, role = _message_text(row)
         if not text:
             continue
-        if role == "assistant" and any(k in text for k in _COMPLETION_KEYWORDS):
+        if role == "assistant" and (any(k in text for k in _COMPLETION_KEYWORDS)
+                                     or _COMPLETION_HEADER_RE.search(text)):
             completed = True
             denied_after = False
             continue
@@ -652,6 +662,15 @@ def main():
         ]
         if not _session_log_shows_completion({"from": "dummy"}, log_rows=rows_done):
             ng.append("セッション内完結の検出ができていない（34639番の再発防止）")
+        # 35023番の再発防止：「【完了】」見出しだけの完了報告（「確認しました」等、
+        # 既存キーワードに一致しない言い回し）も、セッション内完結として検出できるか
+        rows_kanryou_midashi = [
+            {"message": {"role": "user", "content": "SQLが流れたか本番DBで確認してください。"}},
+            {"message": {"role": "assistant",
+                         "content": "## 【完了】本番DBを直接叩いて確認しました\n\n3列とも入りました。"}},
+        ]
+        if not _session_log_shows_completion({"from": "dummy"}, log_rows=rows_kanryou_midashi):
+            ng.append("「【完了】」見出しの完了報告を検出できない（35023番の再発防止）")
         rows_denied = [
             {"message": {"role": "assistant", "content": "直しました。"}},
             {"message": {"role": "user", "content": "まだ直ってないよ。"}},
