@@ -424,6 +424,9 @@ LOOK_CSS = ('.cw .cw-interlude{padding:48px 0}.cw .cw-interlude figure{margin:0 
             '.cw .cw-video__play:empty::before{content:"";display:block;margin-left:4px;border-style:solid;border-width:8px 0 8px 13px;border-color:transparent transparent transparent currentColor}')
 
 
+NOTE_RE = r'公式|Topic|VEVO|vevo|投稿|再生|チャンネル|Archives|配信|ライブ「|音源'
+
+
 def unify_look(h):
     """組み上がった（または直接組んだ）マガジンのHTMLを、見た目の統一ルールに合わせる。何度通しても同じ結果。"""
     import re as R
@@ -446,6 +449,10 @@ def unify_look(h):
     h = R.sub(r'\.cw \.cw-video__play:empty::before\{[^}]*\}', '', h)
     h = R.sub(r'<style id="cw-look">.*?</style>', '', h, flags=R.S)
     h = h.replace('</head>', '<style id="cw-look">' + LOOK_CSS + '</style></head>', 1)
+    # ⑦ 制作側のメモは読者に出さない（キャプションの「公式チャンネル」「一般の方の投稿・〇万回再生」、末尾の「歌詞は引用していません」等）
+    h = R.sub(r'<span([^>]*)class="cw-video__cap"([^>]*)>([^<]*)</span>',
+              lambda m: '' if R.search(NOTE_RE, m.group(3)) else m.group(0), h)
+    h = R.sub(r'<p class="cw-note">(?:(?!</p>).)*?(?:引用して|公式の配信元|確認できた範囲|一般の方の投稿|を使っています)(?:(?!</p>).)*</p>', '', h, flags=R.S)
     # ⑥ 曲の一覧（THE MAP）は出さない（怒れる人々と同じ。目次と重複する）
     h = R.sub(r'<section[^>]*class="cw-mapwrap"[^>]*>.*?</section>', '', h, flags=R.S)
     # ⑤ 共有ボタン（上と下の2か所・全マガジン共通）＝ tools/magazine/share_bar.py
@@ -462,6 +469,11 @@ def look_check(h):
     if 'id="cw-base"' not in h: bad.append('土台のCSSが無い（白い枠が出る）')
     if R.search(r'Magazine Story', h): bad.append('Magazine Story が出ている')
     if 'class="cw-mapwrap"' in h: bad.append('曲の一覧（THE MAP）が出ている')
+    for c in R.findall(r'class="cw-video__cap"[^>]*>([^<]*)<', h):
+        if R.search(NOTE_RE, c): bad.append('制作側のメモ：' + c[:30]); break
+    txt = R.sub(r'<script.*?</script>|<style.*?</style>', '', h, flags=R.S)
+    ng = [w for w in SEISAKU_NG if w in txt]
+    if ng: bad.append('制作側のメモ：' + '、'.join(ng))
     if R.search(r'class="cw-chead__catch"|<p [^>]*class="cw-chead__title"', h): bad.append('章頭の型が違う（一言は小さく上）')
     if R.search(r'class="cw-video__play"[^>]*>\s*<svg', h): bad.append('再生ボタンの形が違う')
     import share_bar
