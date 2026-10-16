@@ -52,12 +52,12 @@
 <div class="date">2026-10-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-① 記事ページの共有ボタン(LINE/X/Facebook/Threads)が押しても無反応だったバグは<code>ShareBar.tsx</code>を修正しmainへ合流済み(PR #1009・コミット4c7ef481b・origin/mainに実在確認済み)。② 本番反映はLovable MCPのOAuth再認可(refresh_token失効)が工場全体で詰まっており、35040番固有の問題ではない。③ 再認可はブラウザでの同意操作が必須だが、たまごさんの指示で1186号憲法がブラウザの新規起動を例外なく禁止しており、かつ現在起動中のブラウザも無いため、この場からは実行できない。
+① 記事ページの共有ボタン（LINE／X／Facebook／Threads）が押しても無反応だったバグはもう直してあり、サイトの本体には取り込み済み。② 本番への反映だけが、Lovable側の自動公開の鍵切れで工場全体ごと止まっている。35040番だけの問題ではない。③ 鍵の再発行にはブラウザでの同意ボタン操作が必須だが、ブラウザを新しく立ち上げる操作は憲法で禁止されており、今立っているブラウザも無いため、この場からは実行できない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3/3</b><span>試した経路(CLI再取得・API直叩き・ブラウザ起動)が全て失敗</span></div>
+  <div class="num"><b>3/3</b><span>試した打開策（自動更新・直接再取得・ブラウザ起動）が全て失敗</span></div>
   <div class="num"><b>404</b><span>本番記事ページの実測(いま確認)</span></div>
   <div class="num"><b>200</b><span>本番トップの実測(本番自体は生きている)</span></div>
 </div>
@@ -73,13 +73,13 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>実装修正(ShareBar.tsx・PR#1009)</td><td class="yes">main合流済み</td></tr>
+<tr><td>共有ボタンの無反応バグ修正</td><td class="yes">取り込み済み</td></tr>
 <tr><td>本番記事ページが200で開く</td><td class="no">まだ404</td></tr>
-<tr><td>Lovable OAuth再認可(ブラウザのAllow)</td><td class="no">1186号でブラウザ新規起動禁止・実行不可</td></tr>
+<tr><td>自動公開の鍵の再発行（同意ボタン操作）</td><td class="no">ブラウザ新規起動が禁止で実行不可</td></tr>
 </table>
 
 <footer>
-打開策関所(1464号)PASS済み：CLI/API/ブラウザ起動/過去記録検索の4経路を試して全滅を確認した上での判断待ち報告。kohyou_osu.logの実測(2026-10-17 06:06時点)でも同一原因(HTTP 401 Not authenticated)を確認済み。ブラウザ操作が可能な担当がLovableの同意画面でAllowを1回押せば、この記事を含む溜まった未反映分が一括で本番に出る見込み。
+打開の努力は4通り試して全滅を確認した上での判断待ち報告。見張りのログ（2026-10-17 06:06時点）でも同一原因（ログイン切れ）を確認済み。ブラウザ操作が可能な担当が同意画面のボタンを1回押せば、この記事を含む溜まった未反映分が一括で本番に出る見込み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
