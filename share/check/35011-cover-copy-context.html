@@ -45,46 +45,44 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35011 文脈コピー書き直し（coverGuide.ts）</div>
 <h1>#35011 文脈コピー書き直し（coverGuide.ts）</h1>
-<div class="date">2026-10-16 実装・main合流まで実測確認／Lovable本番公開はまだ</div>
+<div class="date">2026-10-16 実装・コード反映まで実測確認／Lovable本番公開はまだ</div>
 
 <h2>① 何を直したか</h2>
 <div class="fix">
-曲紹介文が空っぽな手抜きの定型文「代表曲のひとつ。」（旅を止める禁句）になっていた箇所を、
-事実の入った文脈コピーへ書き直し、本体コード(src/lib/coverGuide.ts)のnoteフィールドだけを
-書き換えてmainへ合流した。他のフィールド（youtubeId・title等）は一切変更していない。
+曲紹介文が空っぽな手抜きの一文（旅を止める禁句）になっていた箇所を、事実の入った文脈コピーへ書き直し、
+曲データの紹介文フィールドだけを書き換えてコード本体に反映した。他のフィールド（動画ID・曲名等）は一切変更していない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>558件</b><span>main合流前（本番コード上）</span></div>
-  <div class="num"><b>485件</b><span>今回書き直してmainへ入れた件数</span></div>
+  <div class="num"><b>558件</b><span>反映前（コード上）</span></div>
+  <div class="num"><b>485件</b><span>今回書き直して入れた件数</span></div>
   <div class="num"><b>73件</b><span>まだ手抜き文のまま残っている件数</span></div>
 </div>
 <div class="note">
-GitHub main (joy-relief-station) の src/lib/coverGuide.ts を実測。コミット 9fa01205e（直前）→ 51b064025（今回）で、
-「代表曲のひとつ。」の出現行数 558 → 73。差は485で、今回書き換えた行数（git diffで実測した除去行485件）と一致。
-note以外のフィールドが変わった行は0件（diffで実測）。
+曲データファイルを実測。反映前558件 → 反映後73件。差は485件で、今回書き換えた件数と一致。
+紹介文以外のフィールドが変わった箇所は0件（実測）。
 </div>
 
 <h2>③ 書き直しの実例（before/after・実データ）</h2>
 <div class="ba">
   <div class="song">GEZAN「東京 （Official MUSIC Video)」</div>
-  <div class="before">before: 代表曲のひとつ。</div>
+  <div class="before">before: （元々入っていた空の定型文）</div>
   <div class="after">after: 都市の喧騒がそのままうねりになる。GEZANが公式MUSIC Videoで鳴らす「東京」、PARCOの企業広告にも参加したバンドの素顔がここにある。</div>
 </div>
 <div class="ba">
   <div class="song">美空ひばり「一本の鉛筆」</div>
-  <div class="before">before: 代表曲のひとつ。</div>
+  <div class="before">before: （元々入っていた空の定型文）</div>
   <div class="after">after: 1974年、第1回広島平和音楽祭のために作られた曲。冷房付きの控室を用意されたが、ひばりは「広島の人たちはもっと熱かったはず」とつぶやいて、猛暑のステージのそばに居続けたと伝わっている。</div>
 </div>
 <div class="ba">
   <div class="song">Queen「Radio Ga Ga」</div>
-  <div class="before">before: 代表曲のひとつ。</div>
+  <div class="before">before: （元々入っていた空の定型文）</div>
   <div class="after">after: きっかけは、ドライブ中に息子が気に入らない曲へ言った「radio ca-ca」の一言。ドラマーのロジャー・テイラーは、それをスタジオに3日間こもって曲にした。</div>
 </div>
 <div class="ba">
   <div class="song">ABBA「Super Trouper」</div>
-  <div class="before">before: 代表曲のひとつ。</div>
+  <div class="before">before: （元々入っていた空の定型文）</div>
   <div class="after">after: タイトルの「スーパー・トゥルーパー」は曲名じゃなく、大型ステージで使うスポットライトの製品名。歌っているのは、その眩しい光を浴びるツアー中の孤独。</div>
 </div>
 
@@ -97,16 +95,16 @@ note以外のフィールドが変わった行は0件（diffで実測）。
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへのpush</td><td class="yes">済み（9fa01205e → 51b064025、joy-relief-station origin/main）</td></tr>
-<tr><td>差分の範囲</td><td class="yes">src/lib/coverGuide.ts のみ・485行・noteフィールドのみ（diffで実測、他フィールド変更0件）</td></tr>
-<tr><td>構文チェック</td><td class="yes">node --check 通過・tsc上も本ファイル自体の新規エラー0件（既存の無関係なルーター型エラーのみ残存）</td></tr>
-<tr><td>Lovable本番への公開</td><td class="no">未反映。自動公開便が本日すでに4回連続失敗し自動停止中（status/lovable_publish_state.json実測：consecutiveFailures=4, stoppedForToday=true）。CDP接続先(127.0.0.1:9223)も現在未起動で、このセッションから手動で押す手段が無い</td></tr>
-<tr><td>本番ページの実測</td><td class="no">joy-relief-station.lovable.app の該当ページをfetchで直接確認。まだ旧コピー「代表曲のひとつ」が出ている（公開待ちのため）</td></tr>
+<tr><td>コード本体への反映</td><td class="yes">済み（joy-relief-stationの公開コードに合流済み）</td></tr>
+<tr><td>差分の範囲</td><td class="yes">曲データファイル1本のみ・485行・紹介文フィールドのみ（実測、他フィールド変更0件）</td></tr>
+<tr><td>構文チェック</td><td class="yes">通過。本ファイル自体の新規エラー0件（既存の無関係な別箇所のエラーのみ残存）</td></tr>
+<tr><td>Lovable本番への公開</td><td class="no">未反映。自動公開便が本日すでに4回連続失敗し自動停止中（実測：連続失敗4回・本日停止中）。公開操作に使うブラウザ接続も現在起動しておらず、このセッションから手動で押す手段が無い</td></tr>
+<tr><td>本番ページの実測</td><td class="no">本番ページを直接確認。まだ旧コピー（空の定型文）が出ている（公開待ちのため）</td></tr>
 </table>
 
 <footer>
-このページは #35011 のセッションが手動更新した確認資料（1回目はpush前の暫定版で404、2回目のこの版で実データに更新）。
-公開の自動化は既存の仕組み（lovable-publish.mjs）に乗せており、Chromeが起動し次第この便が自動で押す設計。
+このページは #35011 のセッションが手動更新した確認資料（1回目はコード反映前の暫定版で開けなかった。2回目のこの版で実データに更新）。
+公開の自動化は既存の仕組みに乗せており、公開用ブラウザが起動し次第この便が自動で押す設計。
 書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
