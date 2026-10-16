@@ -11,6 +11,7 @@ import json, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OFFICIAL_X = 'https://x.com/oasisjoyrelief'   # サイト内の既存リンク（src/components/XFollowBand.tsx）
+OFFICIAL_TIKTOK = 'https://www.tiktok.com/@joyreliefstation'  # サイト内の既存リンク（XFollowBand.tsx）
 OFFICIAL_YOUTUBE = None                        # サイト内に公式YouTubeのリンクが見つからない（2026-10-16）→ 置かない
 
 P = {  # Simple Icons（CC0）
@@ -48,7 +49,7 @@ def bar(pos):
     btn += f'<button type="button" data-sh="cp" aria-label="{LABEL["cp"]}">{ic("cp")}</button>'
     btn += f'<button type="button" data-sh="sh" aria-label="{LABEL["sh"]}">{ic("sh")}</button>'
     follow = ''
-    if pos == 'bottom':
+    if False:  # 2026-10-17：公式アカウントは共有ボタンと分けて sns() に
         follow = '<span class="cw-share__sep"></span>' + f'<a href="{OFFICIAL_X}" target="_blank" rel="noopener" aria-label="X @oasisjoyrelief">{ic("x")}</a>'
         if OFFICIAL_YOUTUBE:
             follow += f'<a href="{OFFICIAL_YOUTUBE}" target="_blank" rel="noopener" aria-label="YouTube">{ic("yt")}</a>'
@@ -68,6 +69,18 @@ SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]
           '})})})();</script>')
 
 
+SNS_PATH_TT = 'M16.6 3c.3 2.4 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.2c0 3.1-2.5 5.5-5.6 5.5S5.4 18.3 5.4 15.2c0-3.4 2.9-5.9 6.2-5.5v3.2c-1.7-.5-3.1.7-3.1 2.3 0 1.3 1 2.4 2.4 2.4 1.4 0 2.4-1 2.4-2.5V3h3.3z'
+SNS_CSS = '.cw .cw-sns{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:40px 0 24px}.cw .cw-sns span{font-size:12px;letter-spacing:.12em;opacity:.8;margin-right:4px}'
+
+
+def sns():
+    """ごきげん補給所のSNSアカウント（2026-10-17 店主指示）：共有ボタンとは分けて、ページのいちばん下にまとめる。サイト内の既存リンクだけ。"""
+    tt = f'<svg aria-hidden="true" viewBox="0 0 24 24"><path d="{SNS_PATH_TT}"/></svg>'
+    return ('<div class="cw-wrap"><div class="cw-share cw-sns" data-sns="1"><span data-i18n="c_sns">ごきげん補給所のSNSアカウント</span>'
+            f'<a href="{OFFICIAL_X}" target="_blank" rel="noopener" aria-label="X @oasisjoyrelief">{ic("x")}</a>'
+            f'<a href="{OFFICIAL_TIKTOK}" target="_blank" rel="noopener" aria-label="TikTok @joyreliefstation">{tt}</a></div></div>')
+
+
 def add(h):
     """組み上がったマガジンのHTMLに共有ボタンを入れる（何度通しても同じ）。上＝ヘッダー（cw-hero）の直後、下＝締め（cw-close）の直後。"""
     import re as R
@@ -85,6 +98,9 @@ def add(h):
         h = h[:m.end()] + bar('bottom') + h[m.end():]
     else:  # 締めが無いページ（バックナンバー等）は出典の前／本文の最後
         h = h.replace('</main>', '<div class="cw-wrap">' + bar('bottom') + '</div></main>', 1)
+    h = R.sub(r'<div class="cw-wrap"><div class="cw-share cw-sns" data-sns="1">.*?</div></div>', '', h, flags=R.S)
+    h = h.replace('</main>', sns() + '</main>', 1)
+    h = h.replace('</head>', '<style id="cw-sns">' + SNS_CSS + '</style></head>', 1) if 'id="cw-sns"' not in h else h
     h = h.replace('<main class="cw"', symbols() + '<main class="cw"', 1) if 'id="i-line"' not in h else h
     h = h.replace('</head>', '<style id="cw-share">' + CSS + '</style></head>', 1)
     h = h.replace('</body>', SCRIPT + '</body>', 1)
