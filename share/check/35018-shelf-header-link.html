@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35018 棚への戻り導線を、曲ページの一番上（ヘッダー）に追加 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35018 棚への戻り導線を、曲ページの一番上（ヘッダー）に追加</div>
+<h1>#35018 棚への戻り導線を、曲ページの一番上（ヘッダー）に追加</h1>
+<div class="date">2026-10-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+店主の言葉「棚が離れていると、そこまで行かねえから。人は目の前にあるから籠に入れてくれるわけだよ」に対応。これまで『関連する棚へ』はページのかなり下にしか無かった。曲ページを開いた瞬間に見えるヘッダー部分（曲名の下）にも、同じ棚への入口を最大3件まで追加した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2件</b><span>ac-dc『back-in-black』ページのヘッダーに実際に表示された棚リンク数（開発サーバーで実測）</span></div>
+  <div class="num"><b>0件</b><span>main合流前の同じ場所にあった棚リンク数</span></div>
+  <div class="num"><b>0件</b><span>この変更でtscに新規発生したエラー数（main基準との差分比較で確認）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>main合流後の確認に使った開発サーバー出力（生HTML）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35018-shelf-header-link.html#raw" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35018-shelf-header-link.html#raw</a></li>
+  <li><b>本番ページ（現状・まだ公開待ち）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ac-dc&amp;song=back-in-black" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=ac-dc&amp;song=back-in-black</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>実装してmainへ反映</td><td class="yes">yes</td></tr>
+<tr><td>開発サーバーで実際に棚リンクが出ることを実測</td><td class="yes">yes</td></tr>
+<tr><td>本番(Lovable)への公開</td><td class="yes">no</td></tr>
+</table>
+
+<footer>
+本番への公開(Lovableの「公開」)は、Chrome起動を禁じる既存の関所(1186号)により本セッションでは実行できなかった。本日この同一ブロッカーに当たった案件は本件を含め6件目(#34982/#35004/#35011/#35015/#35016/#35018)で、構造的な壁であり本件固有の問題ではない。店主が公開専用ブラウザ(CDPポート9223)を一度起動すれば、既存の自動公開便がmain分をまとめて反映する。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
