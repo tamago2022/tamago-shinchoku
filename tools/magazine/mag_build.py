@@ -288,6 +288,7 @@ COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_kk_role': ('Where it started', '起因的视频', 'El video que lo empezó', '계기가 된 영상'),
     'c_kk_title': ('"Why do we stop listening to new music as adults? [Ornithology × Music Psychology]" (Nanji, Hito wo Shire)', '《为什么长大后就不再听新歌【鸟类学×音乐心理学】》（汝，知人）', '«¿Por qué de adultos dejamos de escuchar música nueva? [Ornitología × Psicología musical]» (Nanji, Hito wo Shire)', '「왜 어른이 되면 새 노래를 듣지 않게 될까 【조류학×음악심리학】」(너 자신, 인간을 알라)'),
     'c_kk_note': ('"The season for learning songs never ends."', '“学歌的季节永不结束。”', '«La estación de aprender canciones nunca termina».', '\'노래를 익히는 계절은 끝나지 않는다.\''),
+    'c_sns': ('Gokigen Station on social media', '好心情补给站的社交账号', 'Estación Gokigen en redes sociales', '고키겐 보급소 SNS 계정'),
     'c_allback': ('All back issues →', '全部往期 →', 'Todos los números →', '모든 백넘버 →'),
     'c_ot_label': ('OTHER MAGAZINES — more features', 'OTHER MAGAZINES — 其他专题', 'OTHER MAGAZINES — más especiales', 'OTHER MAGAZINES — 다른 특집'),
     'c_ot_hoshikatsu_s': ('Arranger / composer', '编曲家・作曲家', 'Arreglista y compositor', '편곡가・작곡가'),
