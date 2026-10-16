@@ -62,7 +62,11 @@
   <div class="num"><b>51件</b><span>joy-relief-station: 完全拒否(deny)</span></div>
   <div class="num"><b>108件</b><span>tamago-shinchoku: 自動承認(allow)</span></div>
   <div class="num"><b>0件</b><span>tamago-shinchoku: 確認対象(ask)</span></div>
+  <div class="num"><b>290件</b><span>全体共通(~/.claude/settings.json): 自動承認(allow)</span></div>
+  <div class="num"><b>3件</b><span>全体共通: 確認対象(ask) ＝ rm / rmdir / sudo のみ</span></div>
+  <div class="num"><b>28件</b><span>全体共通: 完全拒否(deny)</span></div>
 </div>
+<div class="note">2026-10-17 11時台に実測（本番の設定ファイルを直接 python3 で数えた生の件数。想定値ではない）。全体共通設定の defaultMode は <b>auto</b>。</div>
 
 
 
@@ -75,8 +79,10 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>Edit/Write/Read・git status/diff/add/commit/push・npm run build・gh pr系</td><td class="yes">自動承認（allow）</td></tr>
-<tr><td>rm/rmdir/find削除・git branch -D/worktree remove/stash drop・push --force-with-lease・remote変更・npm/pip/brew install・curl/wget・kill系</td><td class="yes">確認対象のまま（ask）</td></tr>
-<tr><td>グローバル設定 defaultMode: auto（classifierが安全なら自動判断）</td><td class="yes">有効</td></tr>
+<tr><td>rm/rmdir/find削除・git branch -D/worktree remove/stash drop・push --force-with-lease・remote変更・npm/pip/brew install・curl/wget・kill系</td><td class="yes">確認対象のまま（ask・joy-relief-stationの個別設定）</td></tr>
+<tr><td>全体共通（~/.claude/settings.json）で確認対象として残したのは rm・rmdir・sudo の3つだけ</td><td class="yes">ask（意図的に残した・削除系とOS権限系）</td></tr>
+<tr><td>osascript・tccutil・sudo・defaults write・force push・.ssh/.aws読み取り等</td><td class="no">完全拒否（deny・聞かずにブロック）</td></tr>
+<tr><td>グローバル設定 defaultMode: auto（classifierが安全なら自動判断・classifyAllShell:trueで && や \| で繋いだ複合コマンドも部品ごとに判定）</td><td class="yes">有効</td></tr>
 <tr><td>円卓会議(GOOD-VIBES-Roundtable)への展開</td><td class="yes">対象外（.claudeディレクトリ自体が無くClaude Codeで未運用）</td></tr>
 <tr><td>tamago_brainへの展開</td><td class="yes">対象外（コードリポジトリではなくObsidian Vaultのため.claude設定の概念が無い）</td></tr>
 </table>
