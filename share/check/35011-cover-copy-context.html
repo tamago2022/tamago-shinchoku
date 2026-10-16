@@ -24,20 +24,16 @@
   ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  .ba{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 12px;}
+  .ba .song{font-weight:700;margin-bottom:6px;}
+  .ba .before{color:var(--aka);font-size:0.88rem;margin:0 0 4px;}
+  .ba .after{color:var(--midori);font-size:0.88rem;margin:0;}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
-  .no{color:var(--aka);}
+  .no{color:var(--aka);font-weight:700;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
@@ -49,36 +45,69 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35011 文脈コピー書き直し（coverGuide.ts）</div>
 <h1>#35011 文脈コピー書き直し（coverGuide.ts）</h1>
-<div class="date">2026-10-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-16 実装・main合流まで実測確認／Lovable本番公開はまだ</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-店主が2026-08-09に『文脈を作ってほしい』と言った案件。曲紹介文が空っぽな手抜きの定型文（旅を止める禁句）になっていた箇所を、事実の入った文脈コピーへ179件書き直して本体コードへ入れた。型チェックは対象ファイルで新規エラー0件。
+曲紹介文が空っぽな手抜きの定型文「代表曲のひとつ。」（旅を止める禁句）になっていた箇所を、
+事実の入った文脈コピーへ書き直し、本体コード(src/lib/coverGuide.ts)のnoteフィールドだけを
+書き換えてmainへ合流した。他のフィールド（youtubeId・title等）は一切変更していない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>737件</b><span>書き直し前（本番にまだ残っている件数）</span></div>
-  <div class="num"><b>558件</b><span>書き直し後（新しいコード上）</span></div>
-  <div class="num"><b>179件</b><span>今回書き直した件数</span></div>
+  <div class="num"><b>558件</b><span>main合流前（本番コード上）</span></div>
+  <div class="num"><b>485件</b><span>今回書き直してmainへ入れた件数</span></div>
+  <div class="num"><b>73件</b><span>まだ手抜き文のまま残っている件数</span></div>
+</div>
+<div class="note">
+GitHub main (joy-relief-station) の src/lib/coverGuide.ts を実測。コミット 9fa01205e（直前）→ 51b064025（今回）で、
+「代表曲のひとつ。」の出現行数 558 → 73。差は485で、今回書き換えた行数（git diffで実測した除去行485件）と一致。
+note以外のフィールドが変わった行は0件（diffで実測）。
 </div>
 
-
+<h2>③ 書き直しの実例（before/after・実データ）</h2>
+<div class="ba">
+  <div class="song">GEZAN「東京 （Official MUSIC Video)」</div>
+  <div class="before">before: 代表曲のひとつ。</div>
+  <div class="after">after: 都市の喧騒がそのままうねりになる。GEZANが公式MUSIC Videoで鳴らす「東京」、PARCOの企業広告にも参加したバンドの素顔がここにある。</div>
+</div>
+<div class="ba">
+  <div class="song">美空ひばり「一本の鉛筆」</div>
+  <div class="before">before: 代表曲のひとつ。</div>
+  <div class="after">after: 1974年、第1回広島平和音楽祭のために作られた曲。冷房付きの控室を用意されたが、ひばりは「広島の人たちはもっと熱かったはず」とつぶやいて、猛暑のステージのそばに居続けたと伝わっている。</div>
+</div>
+<div class="ba">
+  <div class="song">Queen「Radio Ga Ga」</div>
+  <div class="before">before: 代表曲のひとつ。</div>
+  <div class="after">after: きっかけは、ドライブ中に息子が気に入らない曲へ言った「radio ca-ca」の一言。ドラマーのロジャー・テイラーは、それをスタジオに3日間こもって曲にした。</div>
+</div>
+<div class="ba">
+  <div class="song">ABBA「Super Trouper」</div>
+  <div class="before">before: 代表曲のひとつ。</div>
+  <div class="after">after: タイトルの「スーパー・トゥルーパー」は曲名じゃなく、大型ステージで使うスポットライトの製品名。歌っているのは、その眩しい光を浴びるツアー中の孤独。</div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番トップ（公開待ち）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番トップ（公開待ち・今は旧コピーのまま）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>GEZAN「東京」のページ（直したうちの1件・本番反映待ち）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=gezan&song=%E6%9D%B1%E4%BA%AC-official-music-video" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=gezan&song=東京-official-music-video</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>型チェック</td><td class="yes">新規エラー0件（対象ファイル）</td></tr>
-<tr><td>本体コードへの反映</td><td class="yes">済み</td></tr>
-<tr><td>Lovable本番への公開</td><td class="no">未反映（公開便が本日2回連続失敗で自動停止、復旧は別経路待ち）</td></tr>
+<tr><td>mainへのpush</td><td class="yes">済み（9fa01205e → 51b064025、joy-relief-station origin/main）</td></tr>
+<tr><td>差分の範囲</td><td class="yes">src/lib/coverGuide.ts のみ・485行・noteフィールドのみ（diffで実測、他フィールド変更0件）</td></tr>
+<tr><td>構文チェック</td><td class="yes">node --check 通過・tsc上も本ファイル自体の新規エラー0件（既存の無関係なルーター型エラーのみ残存）</td></tr>
+<tr><td>Lovable本番への公開</td><td class="no">未反映。自動公開便が本日すでに4回連続失敗し自動停止中（status/lovable_publish_state.json実測：consecutiveFailures=4, stoppedForToday=true）。CDP接続先(127.0.0.1:9223)も現在未起動で、このセッションから手動で押す手段が無い</td></tr>
+<tr><td>本番ページの実測</td><td class="no">joy-relief-station.lovable.app の該当ページをfetchで直接確認。まだ旧コピー「代表曲のひとつ」が出ている（公開待ちのため）</td></tr>
 </table>
 
 <footer>
-このページは #35011 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #35011 のセッションが手動更新した確認資料（1回目はpush前の暫定版で404、2回目のこの版で実データに更新）。
+公開の自動化は既存の仕組み（lovable-publish.mjs）に乗せており、Chromeが起動し次第この便が自動で押す設計。
+書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
