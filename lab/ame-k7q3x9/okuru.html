@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="googlebot" content="noindex,nofollow"><meta name="theme-color" content="#10182a"><title>試作｜送る</title><style>
+*{box-sizing:border-box;margin:0;padding:0}html,body{background:#10182a;color:#ece2cc;font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{min-height:100svh;background:#10182a url(img/yoru.jpg) center top/cover fixed}
+.mn{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:300}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}a{color:inherit;text-decoration:none}
+.wrap{max-width:430px;margin:0 auto;padding:22px 22px 120px;position:relative}
+.logo{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:12px;letter-spacing:7px;opacity:.85}
+.logo small{display:block;font-size:8.5px;letter-spacing:4px;color:#d6aa5c;margin-top:3px}
+.thumb{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:16/9;background:#0b1120}
+.thumb img{width:100%;height:100%;object-fit:cover;filter:saturate(.8) brightness(.85)}
+.thumb .pl{position:absolute;inset:0;display:grid;place-items:center;width:100%}
+.pl i{width:64px;height:64px;border-radius:50%;background:rgba(16,24,42,.55);border:1px solid rgba(214,170,92,.7);display:grid;place-items:center}
+.pl i:after{content:"";border-left:18px solid #ece2cc;border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:5px}
+.thumb iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(236,226,204,.28)}
+.ic svg{width:20px;height:20px;stroke:#ece2cc;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+</style><style>
+.song{margin-top:34px}.ttl{font-size:30px;margin-top:20px;letter-spacing:.04em}.by{font-size:12px;letter-spacing:3px;opacity:.7;margin-top:6px}
+.acts{display:flex;gap:12px;margin-top:22px;align-items:center;position:relative}
+.bubble{position:absolute;left:0;top:58px;background:#f3ecdc;color:#1b2440;border-radius:14px;padding:12px 12px 12px 16px;display:none;align-items:center;gap:12px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:5;white-space:nowrap}
+.bubble:before{content:"";position:absolute;top:-7px;left:72px;border:7px solid transparent;border-top:0;border-bottom-color:#f3ecdc}
+.bubble.on{display:flex}.bubble button{width:36px;height:36px;border-radius:50%;background:#06c755;color:#fff;font-size:17px}
+.picker{display:none;gap:10px;overflow-x:auto;margin-top:22px;padding-bottom:6px;scrollbar-width:none}.picker.on{display:flex}
+.picker button{flex:0 0 92px;opacity:.5}.picker button.sel{opacity:1}.picker img{width:92px;aspect-ratio:16/9;object-fit:cover;border-radius:4px}
+.picker span{display:block;font-size:10px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.ret{font-size:14px;letter-spacing:.15em;margin-top:24px;display:none}.ret.on{display:block}
+.art{display:flex;gap:12px;align-items:center;margin-top:40px;padding-top:18px;border-top:1px solid rgba(236,226,204,.15);font-size:13px}
+.art img{width:84px;aspect-ratio:16/9;object-fit:cover;border-radius:3px;opacity:.85}
+.veil{position:fixed;inset:0;background:rgba(5,9,18,.55);opacity:0;pointer-events:none;transition:opacity .25s;z-index:8}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;background:#f3ecdc;color:#1b2440;border-radius:20px 20px 0 0;padding:12px 20px 26px;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);z-index:9;max-height:92svh;overflow:auto}
+.open .veil{opacity:1;pointer-events:auto}.open .sheet{transform:none}
+.grip{width:38px;height:4px;border-radius:2px;background:#1b244033;margin:0 auto 12px}
+.chip{display:none;font-size:12px;letter-spacing:.06em;border:1px solid #b98a3c;color:#7d5a1e;border-radius:999px;padding:5px 12px;width:max-content;margin:0 auto 4px}.chip.on{display:block}
+.prev{display:block;width:72%;margin:0 auto;transition:transform .3s}.prev.pop{transform:rotate(-4deg) scale(1.04)}
+.dots{display:flex;justify-content:center;gap:14px;margin:2px 0 18px}
+.dots button{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}.dots button.sel{outline:2px solid #1b2440;outline-offset:3px}
+.tops{display:flex;gap:12px;justify-content:center;margin-bottom:16px}
+.tops button{position:relative;width:30%;text-align:left}.tops img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;filter:grayscale(.6);opacity:.55;transition:.2s}
+.tops b{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;background:#f3ecdc;border:1px solid #1b244055;font-size:15px;line-height:22px;text-align:center;font-weight:400}
+.tops .on img{filter:none;opacity:1}.tops .on b{background:#1b2440;color:#f3ecdc}
+.tops span{display:block;font-size:9.5px;margin-top:4px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{display:flex;gap:8px;margin-bottom:10px}
+textarea,input{width:100%;border:1px solid #1b244026;background:#fffaf0;border-radius:10px;padding:11px 12px;font-size:16px;color:#1b2440;font-family:inherit;resize:none}
+input{flex:0 0 32%}
+.send{display:flex;gap:10px;margin-top:6px}.line{flex:1;height:52px;border-radius:26px;background:#06c755;color:#fff;font-size:16px;font-weight:600;letter-spacing:.06em}
+.cp{width:52px;height:52px;border-radius:50%;border:1px solid #1b244033;display:grid;place-items:center}.cp svg{width:20px;stroke:#1b2440;fill:none;stroke-width:1.6;stroke-linecap:round}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#1b2440;color:#ece2cc;padding:8px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.3s;z-index:20}.toast.on{opacity:1}
+.vtag{position:fixed;top:12px;right:14px;font-size:10px;letter-spacing:2px;opacity:.4}
+</style></head><body><div class="wrap">
+<div class="logo">ごきげん補給所<small>JOY RELIEF STATION</small></div>
+<div class="ret mn" id="ret"></div>
+<div class="picker" id="picker"></div>
+<div class="song"><div class="thumb" id="th"></div><h1 class="ttl mn" id="ttl"></h1><div class="by" id="by"></div>
+<div class="acts"><button class="ic" id="bShare" aria-label="共有"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"/></svg></button><button class="ic" id="bGift" aria-label="贈る" style="display:none"><svg viewBox="0 0 24 24"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-2-4-6-4-6-1.5S10 7 12 7c2 0 6-1 6-1.5S14 3 12 7"/></svg></button>
+<div class="bubble" id="bub"><span class="mn" id="bubT"></span><button id="bubGo" aria-label="この人に送る">→</button></div></div></div>
+<a class="art" id="art"></a>
+</div>
+<div class="veil" id="veil"></div>
+<div class="sheet" id="sheet"><div class="grip"></div>
+<div class="chip" id="chip"></div>
+<img class="prev" id="prev" alt="">
+<div class="dots" id="dots"></div>
+<div class="tops" id="tops"></div>
+<div class="row"><input id="from" placeholder="なまえ" maxlength="12"><textarea id="msg" rows="2" maxlength="80" placeholder="ひとこと"></textarea></div>
+<div class="send"><button class="line" id="bLine">LINEで送る</button><button class="cp" id="bCopy" aria-label="リンクをコピー"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg></button></div>
+</div><div class="toast" id="toast"></div><div class="vtag" id="vtag"></div>
+<script>const SONGS={"kaze": {"t": "風をあつめて", "a": "はっぴいえんど", "y": "kTPw8tJLdtw", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=%E3%81%AF%E3%81%A3%E3%81%B2-%E3%81%84%E3%81%88%E3%82%93%E3%81%A8&song=%E9%A2%A8%E3%82%92%E3%81%82%E3%81%A4%E3%82%81%E3%81%A6", "who": "70年代に青春を過ごした人へ", "msg": "お父さん、これ聴いたことあるはず ♪", "art": "josh", "top": ["josh", "pris", "tahiti"]}, "lovely": {"t": "Lovely Day", "a": "Bill Withers", "y": "bEeaS6fuUoA", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=bill-withers&song=lovely-day", "who": "朝がちょっと重たい人へ", "msg": "朝いちばんに、どうぞ ♪", "art": "takou", "top": ["sirduke", "happy", "k24"]}, "sirduke": {"t": "Sir Duke", "a": "Stevie Wonder", "y": "ETFvmkIA6S4", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=stevie-wonder&song=sir-duke", "who": "昔レコードを集めていた人へ", "msg": "これ、家で鳴ってなかった？ ♪", "art": "takou", "top": ["lovely", "k24", "sugar"]}, "owari": {"t": "owari no kisetsu", "a": "rei harakami", "y": "wC1z9sNSaXo", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=rei-harakami&song=owari-no-kisetsu", "who": "静かな夜が好きな人へ", "msg": "夜に、ひとりで聴いてみて ♪", "art": "harakami", "top": ["senko", "bara", "kaze"]}, "senko": {"t": "閃光", "a": "UA", "y": "eMRTkimQJWM", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=u-a&song=senko", "who": "2000年代に20代だった人へ", "msg": "あの頃の音、覚えてる？ ♪", "art": "harakami", "top": ["bara", "owari"]}, "happy": {"t": "Happy", "a": "Pharrell Williams", "y": "ZbZSe6N_BXs", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=pharrell-williams&song=happy", "who": "孫の動画で踊っちゃう人へ", "msg": "これで一緒に踊ろう ♪", "art": "takou", "top": ["lovely", "k24", "sirduke"]}, "josh": {"t": "風をあつめて", "a": "Josh Turner", "y": "QeWtMZYjnCE", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=josh-turner-guitar&song=%E9%A2%A8%E3%82%92%E3%81%82%E3%81%A4%E3%82%81%E3%81%A6"}, "pris": {"t": "風をあつめて", "a": "Priscilla Ahn", "y": "SWBVVgLBWvA", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=priscilla-ahn&song=kaze-wo-atsumete"}, "tahiti": {"t": "Kaze Wo Atsumete", "a": "Tahiti 80", "y": "lp6rkCyAaFc", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=tahiti-80&song=%E9%A2%A8%E3%82%92%E3%81%82%E3%81%A4%E3%82%81%E3%81%A6"}, "k24": {"t": "24K Magic", "a": "Bruno Mars", "y": "UqyT8IEBkvY", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=bruno-mars&song=24k-magic"}, "sugar": {"t": "Sugar", "a": "Maroon 5", "y": "09R8_2nJtjg", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=maroon-5&song=sugar"}, "bara": {"t": "ばらの花", "a": "くるり", "y": "baNgL0jFkAs", "p": "https://joy-relief-station.lovable.app/cover-guide?artist=quruli&song=%E3%81%AF-%E3%82%89%E3%81%AE%E8%8A%B1"}},ARTS={"josh": {"t": "弾き語り・ジョシュ・ターナー編", "u": "https://joy-relief-station.lovable.app/magazine/hikigatari-josh-turner.html", "y": "kTPw8tJLdtw"}, "takou": {"t": "楽しくなりたいから ― 多幸感ポップス", "u": "https://joy-relief-station.lovable.app/magazine/naze-ongaku-01-takoukan.html", "y": "bEeaS6fuUoA"}, "harakami": {"t": "君はレイ・ハラカミを知っているか", "u": "https://joy-relief-station.lovable.app/magazine/rei-harakami.html", "y": "wC1z9sNSaXo"}},COLORS=[["ai", "#3a5684"], ["shu", "#c1442e"], ["kin", "#c4983e"], ["koke", "#688260"], ["sakura", "#c48c8c"], ["kinari", "#e2d4b6"]],MAINS=["kaze", "lovely", "sirduke", "owari", "senko", "happy"],BASE="https://tamago2022.github.io/tamago-shinchoku/lab/ame-k7q3x9/";
+const Q=new URLSearchParams(location.search),V=(Q.get('v')||'A').toUpperCase();
+let cur=Q.get('s')&&SONGS[Q.get('s')]?Q.get('s'):'kaze',color='ai',tops=new Set();
+const $=id=>document.getElementById(id),yt=(y,q)=>`https://i.ytimg.com/vi/${y}/${q||'hqdefault'}.jpg`;
+$('vtag').textContent=V==='AC'?'A+C':V;
+const hasA=V.includes('A'),hasC=V.includes('C'),isB=V==='B';
+if(isB)$('bGift').style.display='grid';
+const toName=Q.get('to');
+if(toName){$('ret').textContent='↩ '+toName;$('ret').classList.add('on');$('picker').classList.add('on');}
+$('picker').innerHTML=MAINS.map(k=>`<button data-k="${k}"><img src="${yt(SONGS[k].y,'mqdefault')}" alt=""><span>${SONGS[k].t}</span></button>`).join('');
+$('picker').onclick=e=>{const b=e.target.closest('button');if(b){cur=b.dataset.k;render();}};
+$('dots').innerHTML=COLORS.map(([k,c])=>`<button data-c="${k}" style="background:${c}" aria-label="${k}"></button>`).join('');
+$('dots').onclick=e=>{const b=e.target.closest('button');if(!b)return;color=b.dataset.c;paint();const p=$('prev');p.classList.add('pop');setTimeout(()=>p.classList.remove('pop'),280);};
+function paint(){$('prev').src='img/ame-'+color+'.png';[...$('dots').children].forEach(b=>b.classList.toggle('sel',b.dataset.c===color));}
+function render(){const s=SONGS[cur];
+ $('th').innerHTML=`<img src="${yt(s.y)}" alt=""><button class="pl" aria-label="再生"><i></i></button>`;
+ $('th').querySelector('.pl').onclick=()=>{$('th').insertAdjacentHTML('beforeend',`<iframe src="https://www.youtube-nocookie.com/embed/${s.y}?autoplay=1&playsinline=1&rel=0" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>`)};
+ $('ttl').textContent=s.t;$('by').textContent=s.a;
+ const a=ARTS[s.art];$('art').href=a.u;$('art').innerHTML=`<img src="${yt(a.y,'mqdefault')}" alt=""><span class="mn">${a.t} →</span>`;
+ [...$('picker').children].forEach(b=>b.classList.toggle('sel',b.dataset.k===cur));
+ tops=new Set();
+ $('tops').innerHTML=(s.top||[]).map(k=>`<button data-k="${k}"><img src="${yt(SONGS[k].y,'mqdefault')}" alt=""><b>＋</b><span>${SONGS[k].a}</span></button>`).join('');
+ $('chip').textContent='♪ '+s.who;$('chip').classList.toggle('on',hasA&&!toName);
+ $('bubT').textContent=s.who;$('msg').value=(hasC&&!toName)?s.msg:'';
+}
+$('tops').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;tops.has(k)?tops.delete(k):tops.add(k);b.classList.toggle('on');b.querySelector('b').textContent=tops.has(k)?'✓':'＋';};
+const openS=()=>{document.body.classList.add('open');paint();};
+$('bShare').onclick=openS;$('veil').onclick=()=>document.body.classList.remove('open');
+$('bGift').onclick=e=>{e.stopPropagation();$('bub').classList.toggle('on');};
+$('bubGo').onclick=()=>{$('bub').classList.remove('on');$('msg').value=SONGS[cur].msg;openS();};
+function enc(o){const b=new TextEncoder().encode(JSON.stringify(o));let s='';b.forEach(x=>s+=String.fromCharCode(x));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function gift(){const f=$('from').value.trim(),m=$('msg').value.trim();
+ const url=BASE+'r-'+color+'.html?g='+enc({f,m,s:cur,t:[...tops],v:V});
+ const head=f?f+'さんから、飴ちゃんひとつ。':'飴ちゃんひとつ、どうぞ。';
+ return {url,text:head+(m?'\n'+m:'')+'\n'+url};}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('on');setTimeout(()=>$('toast').classList.remove('on'),1600);}
+$('bLine').onclick=()=>{const g=gift();location.href='https://line.me/R/share?text='+encodeURIComponent(g.text);};
+$('bCopy').onclick=async()=>{const g=gift();try{await navigator.clipboard.writeText(g.text);toast('コピーしました');}catch(e){prompt('',g.text);}};
+render();
+if(Q.get('demo')==='sheet'){openS();if(Q.get('dc')){color=Q.get('dc');paint();}(Q.get('dt')||'').split(',').filter(Boolean).forEach(k=>{const b=$('tops').querySelector(`[data-k="${k}"]`);b&&b.click();});if(Q.get('df'))$('from').value=Q.get('df');}
+if(Q.get('demo')==='bubble'&&isB)$('bub').classList.add('on');
+</script></body></html>
