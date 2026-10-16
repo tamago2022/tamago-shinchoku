@@ -550,7 +550,7 @@ if __name__ == "__main__":
 
     # 2026-09-27（1373番）使いすぎアラート。スワップ/ロードが閾値を超えた周だけ、
     #   「今使いすぎです、もうすぐ固まります」＋名指しの終了提案を書き直す（読み取り専用・何も殺さない）。
-    _okosu("1373_alert.py", "--shikii")
+    pass  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 _okosu("1373_alert.py", "--shikii")
 
     # 2026-09-25（1145番）実測・ページ実物見の見張り。黙って止まったら続きから立て直す。
     # 実害：nohupで走らせた実測が213本で消えた（ログに痕跡なし＝殺された）。書くだけでは効かないので線を1本入れる。
@@ -558,7 +558,7 @@ if __name__ == "__main__":
 
     # 2026-09-26（1155番）ずんだもん読み上げの見張り。心臓に殺されても続きから立て直す。
     # 止めたいときは status/zunda/stop を置く。
-    _okosu("1155_keeper.py")
+    pass  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 _okosu("1155_keeper.py")
 
     # 2026-09-26（1159番）ずんだもん窓口と外への穴の見張り。閉じたら開け直す。
     _okosu("1159_keeper.py")
@@ -567,11 +567,11 @@ if __name__ == "__main__":
     #   実測：pace.json が 05:17→07:35 の2時間18分ぶん止まっていた（取得元は新しかった）。
     #   pace.py は machine_status_push.sh の747行目に相乗りしており、重い日はそこまで到達しない。
     #   → 5分以上古ければここで取り直し、60分以上古ければ status/zanryo_mihari.json を red にする。
-    _okosu("1403_zanryo_mihari.py")
+    pass  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 _okosu("1403_zanryo_mihari.py")
 
     # 2026-09-26（1158番）claudeの同時起動の見張り。1分おきに本数を数えて証拠を残す。
     # 関所(1158_kanmon.py)が本当に効いているかを、時刻つきの実測で示すための線。
-    _okosu("1158_mihari.py")
+    pass  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 _okosu("1158_mihari.py")
 
     # 2026-09-26（1160番）調べもの常駐ライン。Gensparkに「調べて」を1本ずつ絶やさず流す。
     # 止めたいときは status/genspark.stop を置く。
@@ -580,7 +580,7 @@ if __name__ == "__main__":
     # 2026-09-26（1162番）LINEスタンプ「ラシコル」の審査の見張り。
     # 3時間おきにLINE STOREの商品ページを見に行き、公開されたら表が変わる。
     # 止めたいときは status/1162.stop を置く。
-    _okosu("1162_mihari.py")
+    pass  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 _okosu("1162_mihari.py")
 
     # 2026-09-26（1163番）棚に書ける鍵（~/.tamago/supabase_service_role）が置かれた
     # **その周回で**、たまごさんがコマンドを1つも打たずに溜まっている分を全部棚へ入れる。
