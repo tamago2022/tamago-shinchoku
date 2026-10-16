@@ -52,13 +52,13 @@
 <div class="date">2026-10-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-検索語「one」で候補（ONE OK ROCK等）が出ない不具合を修正。/searchルートにSSRローダーを追加し、直リンクで開いた瞬間の初期HTMLに候補を乗せる実装は完了、origin/mainへ合流済み（commit 6b869d307）。しかし本番(Lovable)への反映だけが止まっている。原因は①公開を押す専用Chrome（CDP 9223）が10/11以降起動していない、②2026-09-29に新設された関所「Chromeの起動・再起動は例外なく禁止」（たまごさんの画面に選択ダイアログが中央に出る事故の再発防止）により、AI側からそのChromeを起動する手段自体が無いこと。この組み合わせで公開ボタンを押す経路が構造的に閉じている。同一構造の詰まりは#86488・#34982・#35024に続き今回で累積4件目（.claude/KNOWN_ISSUES.mdに追記済み）。実装側は完了、公開操作だけ店主の判断（Chromeを一度開く／関所を一時解除／直接「公開」を押す、のいずれか）が必要。
+検索語「one」で候補（ONE OK ROCK等）が出ない不具合を修正。実装は完了した。しかし本番(Lovable)への反映だけが止まっている。原因は、公開を押すための専用ブラウザが今起動していないこと、かつAI側からそのブラウザを新しく起動する手段が憲法で禁止されていること（画面に選択ダイアログが出て作業を止める事故の再発防止のため）。この組み合わせで、公開ボタンを押す経路が構造的に閉じている。同じ詰まりは他の案件でも繰り返し起きており、累積4件目として記録した。実装側は完了、公開操作だけ店主の判断（専用ブラウザを一度開く／直接「公開」を押す、のいずれか）が必要。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1</b><span>実測: 本番HTMLに「まだありません」が含まれる(本来0が正)</span></div>
-  <div class="num"><b>0</b><span>実測: 本番HTMLにONE OK ROCK等の候補文字列(本来1以上が正)</span></div>
+  <div class="num"><b>1</b><span>実測: 本番に「まだありません」が出る(本来0が正)</span></div>
+  <div class="num"><b>0</b><span>実測: 本番にONE OK ROCK等の候補(本来1以上が正)</span></div>
 </div>
 
 
@@ -71,8 +71,8 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>実装(SSRローダー追加)</td><td class="yes">yes</td></tr>
-<tr><td>origin/mainへの合流</td><td class="yes">yes</td></tr>
+<tr><td>実装</td><td class="yes">yes</td></tr>
+<tr><td>コードの取り込み</td><td class="yes">yes</td></tr>
 <tr><td>本番(Lovable公開)への反映</td><td class="yes">no</td></tr>
 </table>
 
