@@ -365,9 +365,17 @@ def write_to_vault(slug, markdown_text, source_lines):
     path = os.path.join(out_dir, fname)
     if os.path.exists(path):
         return "", "同名ファイルが既に存在（上書きしない）: %s" % fname
+    # 35068号【判定日赤】：ここにtype/開催日/statusが無いと、ハブノート
+    # 「円卓会議議事録一覧.md」のDataviewクエリ（WHERE type = "円卓会議"）に
+    # 一切引っかからず、新規ノートを作っても一覧に出てこなかった（1ヶ月以上未着手の原因）。
+    # ハブ側は34624号で「手で追記不要・Vault全体を自動検索」方式に変わっている
+    # （既存の一覧ノート自体は直さない＝34624号の完成を後退させない）ので、
+    # 保存処理の側をこのクエリ条件に合わせるのが正しい直し方。
     front = (
-        "---\n生成元: tools/entaku_kaigi.py（34813号）\n生成日時: %s\n出典:\n%s\n---\n\n"
-        % (now().strftime("%Y-%m-%d %H:%M JST"),
+        "---\ntype: 円卓会議\n開催日: %s\ntags: [円卓会議, 円卓会議/議事録]\nstatus: 未読\n"
+        "生成元: tools/entaku_kaigi.py（35068号で自動ハブ登録対応）\n生成日時: %s\n出典:\n%s\n---\n\n"
+        % (now().strftime("%Y-%m-%d"),
+           now().strftime("%Y-%m-%d %H:%M JST"),
            "\n".join("  - %s" % s for s in source_lines) or "  - (なし)")
     )
     body = markdown_text if markdown_text.endswith("\n") else markdown_text + "\n"
