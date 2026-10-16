@@ -19,6 +19,7 @@
 - **台帳（正本）：`tools/jidou_daicho.json`**（名前 → tsukuru 作るもの／okiba 置き場／kesu 消す役）。`"kari": true` は機械の下見で仮に付けたもので、見直したら外す。
 - **棚卸し：`tools/jidou_tanaoroshi.py`**（心臓の相乗りから1時間に1回）。心臓（heartbeat.sh・top_status.py）・launchd・cron・GitHub Actions を全部拾い、スクリプトの中身を下見して「一時フォルダ・ブラウザ・複製・動画/音・キャッシュ・HDD」を作っていそうかを出す。台帳に無い＝片付け役なし→ Dispatch に1行。下見と台帳の消す役が合わない＝`zure`。一覧は `status/public/jidou_tanaoroshi.json`、進捗表は `health.json` の `jidou`。
 - **関所（発車できない）：** 心臓・Actions を変える push は `.githooks/pre-push` が `jidou_tanaoroshi.py --check` を通し、台帳に無ければ止める。心臓の相乗り（top_status の `_okosu`）は台帳に無い係を起こさない。子への指示は `tools/prompt_rules/topic-jidou-daicho.md`。逆テスト：`--self-test`。
+- **見回りは「7日で直した実績」があるものだけ残す（2026-10-17・たまごさん「見回り、一回全部なくさないか。何か役に立ってるのか」）。** 判定と止めた一覧は `status/public/mimawari_hantei.json`（止めた22本：実績ゼロ・通知だけ）。止めた係は台帳に `teishi` を書き、心臓の行はコメントで残す（launchd の plist は `~/.tamago/teishi_launchagents/` へ移した）。**たまごさんの画面に通知を出す見回りは作らない**（Dispatch に要約1行だけ）。Claude アプリの定期タスク（scheduled-tasks.json）も棚卸しの対象（有効なものは台帳必須）。きっかけ：`rusuban-mimawari-30min` が中身は停止済みなのに有効のまま30分おきにセッションを作り「見回り30分が開始されました」を出し続けていた。
 
 ## リソース配分の優先順位（憲法・2026-08-05言われ→2026-10-06判定日赤を受けて2026-10-07明記）
 - **複数の依頼・空きレーンの着火先で迷ったら、①判定日赤（🔴＝機械が自動でpriority=1へ繰り上げた案件）→②`status/queue.json`のpriority番号が小さい順→③言われてから経過時間が長いもの、の順で選ぶ。** 判定日赤は「1週間／1ヶ月経っても1ミリも動いていない」を`tools/hantei_hiduke.py`が機械判定したもので、「優先度が低いから後回し」は赤になった時点で理由にならない。詳細・正本は`AGENTS.md`。
@@ -67,7 +68,7 @@
 - **実測（10/8夜〜10/9）：Dispatchの子が落ちた（exit 143）原因は、見回り`rusuban-mimawari-30min`の`tamago_tatamu.py --kill --hours 0.5`。** Coworkの子は会話ログが`~/.claude/projects`に無いため「起動から30分」で一律にSIGTERMされていた（10/7〜10/9の143が毎時:18-19/:48-49に集中）。2026-10-09に「Coworkの子・放置時間が測れないものは畳まない」へ直した（Vault側の見回りスクリプト tamago_tatamu の畳む条件を修正。控えは`~/.tamago/backup/`）。
 - **固まった理由は許可待ち：** web_fetchの初回ドメイン（`webfetch:<ドメイン>`）・Gmail・Lovable・定期タスクの道具は、Coworkでは親(Dispatch)経由でたまごさんの画面に許可を出し、押されるまで返らない。`~/.claude/settings.json`（`tools/kyoka_zero.py`）はこれには効かない（実測）。
 - **置き換え：** web_fetch → `python3 tools/mac_fetch.py URL`（Macのcurl）／Gmail下書き → `status/shitagaki/`にファイル／Lovable → git push／定期タスク → 心臓に1行／Gensparkは`tools/genspark_tanomu.py`（待ち切れなくても起こし役が回収）。
-- **機械の裏付け：** `tools/okoshi.py`（心臓から5分おき。落ちた・20分固まった子を工場の列へ「続きから」で積み直す。同じ所で2回なら別経路の指示つき。結果`status/okoshi.json`・進捗表「自動で起こした回数」）、`tools/kyoka_kanmon.py`（許可ポップアップの回数を道具ごとに毎時集計→`status/kyoka_kanmon.json`）。
+- **機械の裏付け：** `tools/okoshi.py`（心臓から5分おき。落ちた・20分固まった子を工場の列へ「続きから」で積み直す。同じ所で2回なら別経路の指示つき。結果`status/okoshi.json`・進捗表「自動で起こした回数」）、`tools/kyoka_kanmon.py`（許可ポップアップの回数を道具ごとに毎時集計→`status/kyoka_kanmon.json`。2026-10-17 実績ゼロで心臓からの定期実行は停止）。
 
 ## 外部カードの題名は「何の動画か」（憲法・2026-10-14）
 - **1行目（題名）＝主題の名詞＋していること**（例：「さつまいもで作る、チャイ香るアイスビスケットサンド」）。気の利いた言い回しは2行目（コピー）へ。投稿文の比喩・決め台詞（「AでなくB」）・言い回しの写し・絵文字を題名にしない。きっかけ：題名が「⛱ 「冷やす」でなく「癒す」」で何の動画か分からなかった。
