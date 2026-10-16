@@ -127,6 +127,12 @@ PRICING = {
         "in_per_m": 0.30, "out_per_m": 2.50,
         "source": "https://ai.google.dev/gemini-api/docs/pricing",
     },
+    # 35030番（2026-10-16）：kenpin_gate.py が足した Claude CLI 経路。APIキーではなくこのMacの
+    # サブスク契約（claude CLI）を叩くだけなので、1回ごとの追加の従量課金は無い＝単価0円。
+    ("Claude", "sonnet"): {
+        "in_per_m": 0.0, "out_per_m": 0.0,
+        "source": "サブスク契約内（Claude CLI・1回ごとの追加従量課金なし）",
+    },
 }
 # 上のPRICINGに載っていないモデルを呼んだ場合だけ使う保険値（常にnoteへ「概算」と明記する）。
 FALLBACK_PRICE = {"in_per_m": 5.0, "out_per_m": 15.0, "source": "(未登録モデルのため概算)"}
@@ -235,11 +241,15 @@ def check_cost_cap(ledger=None):
 
 
 def _extract_tokens(usage, provider):
-    """OpenAI/xAIは prompt_tokens/completion_tokens、Geminiは promptTokenCount/candidatesTokenCount。"""
+    """OpenAI/xAIは prompt_tokens/completion_tokens、Geminiは promptTokenCount/candidatesTokenCount、
+    Claude CLIは input_tokens/output_tokens（claude -p --output-format json の usage フィールドそのまま）。"""
     usage = usage or {}
     if provider == "Gemini":
         tok_in = int(usage.get("promptTokenCount") or 0)
         tok_out = int(usage.get("candidatesTokenCount") or 0)
+    elif provider == "Claude":
+        tok_in = int(usage.get("input_tokens") or 0)
+        tok_out = int(usage.get("output_tokens") or 0)
     else:
         tok_in = int(usage.get("prompt_tokens") or 0)
         tok_out = int(usage.get("completion_tokens") or 0)

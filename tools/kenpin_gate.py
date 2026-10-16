@@ -88,7 +88,26 @@ STATES = ("draft", "submitted", "fix_required", "passed", "delivered")
 
 # たまごさん指示（4章）：当面 Claude=実装 / ChatGPT=外部検品 の2社体制。
 # 後で Grok/Gemini を足せるよう、順番だけの定義にしてある（1社目で判定が返ったらそこで確定）。
-VENDOR_ORDER = ("OpenAI", "Grok", "Gemini")
+#
+# ★35030番（2026-10-16）：OpenAI(残高0→429)とGemini(モデル名が合わずエラー)が同時に死に、
+#   Grokは鍵が無い。実測（2026-10-16）で3社とも「全社とも判定できませんでした」になることを確認した
+#   （status/failures.md 910番と同じ壊れ方が1ヶ月以上続いていた＝判定日赤）。
+#   たまごさんの指示「OpenAIとGeminiは今回は後回しでよく、Claude CLI経路だけでいいので1つ確実に
+#   動く状態を作ってください」どおり、3社とも尽きた時の保険として Claude CLI を最後に足す。
+#   既存の優先順位（OpenAI第一）はそのまま動かさず、他社が復活したらそちらが先に使われる。
+VENDOR_ORDER = ("OpenAI", "Grok", "Gemini", "Claude")
+
+# Claude CLI経路専用のモデル。第六条「モデル・触ってはいけないもの：Sonnet固定（Opusは週枠を食い潰す）」
+# に従い sonnet を使う（Opusにはしない）。
+CLAUDE_MODEL = "sonnet"
+
+
+def _claude_bin():
+    """tools/1192_title_romaji.py と同じ探索順（claude_kuchi経由のラッパーを最優先で使う）。"""
+    for c in (os.path.expanduser("~/.local/bin/claude"), "/opt/homebrew/bin/claude", "/usr/local/bin/claude"):
+        if os.path.exists(c):
+            return c
+    return "claude"
 
 # ★このゲート専用のOpenAIモデル順（gaibu_kenpin.py の OPENAI_MODEL_CANDIDATES とは別に持つ）。
 # 2026-09-17 実測：gpt-4o-mini は「最大3つ」と指示しても毎回3つ埋めてくる癖が強く、
@@ -617,6 +636,38 @@ def _parse_judgement(content, provider):
 def _call_vendor(provider, prompt):
     """戻り値: (verdict, gaps, blindspot, one_line, model, usage, err)
     gaibu_kenpin.py の鍵探索とURL定義を再利用し、ここでは**この仕組み専用のプロンプト**だけを送る。"""
+    if provider == "Claude":
+        # APIキーは使わない。このMacに既に入っている claude CLI（サブスク契約）を叩く。
+        # --safe-mode …… CLAUDE.md・hooks・skills等のカスタマイズを全部切る。
+        #   このリポジトリの .claude/settings.json には重いSessionStart/UserPromptSubmitフックが
+        #   入っており、--safe-mode無しで叩くと判定と無関係な通知文がresultへ混ざることを実測で確認した
+        #   （例：「🎉35026番 上がりました…」のような別案件の文言が紛れ込む）。
+        #   --bare は同じく無効化できるが認証ごと無効になり「OAuth session expired」で落ちることを
+        #   実測確認済みのため使わない。--safe-modeは認証・モデル選択・権限は普通に効く（公式ヘルプの説明どおり）。
+        # --output-format json …… 最終回答だけを "result" フィールドに持たせ、ノイズと分離する。
+        import subprocess
+        try:
+            r = subprocess.run(
+                [_claude_bin(), "-p", "--safe-mode", "--model", CLAUDE_MODEL,
+                 "--output-format", "json", "--system-prompt", SYSTEM_PROMPT],
+                input=prompt, capture_output=True, text=True, timeout=180)
+        except Exception as e:
+            return None, [], "", "", "", None, "Claude CLI：%s" % e
+        if r.returncode != 0:
+            return None, [], "", "", "", None, (
+                "Claude CLI：exit=%s %s" % (r.returncode, ((r.stderr or r.stdout) or "")[:200]))
+        try:
+            env = json.loads(r.stdout)
+        except Exception as e:
+            return None, [], "", "", "", None, "Claude CLI：応答が読めません(%s) %s" % (e, (r.stdout or "")[:200])
+        if env.get("is_error"):
+            return None, [], "", "", "", None, "Claude CLI：%s" % str(env.get("result"))[:200]
+        content = str(env.get("result") or "")
+        v, g, b, o = _parse_judgement(content, provider)
+        usage = dict(env.get("usage") or {})
+        usage["claude_cli_total_cost_usd"] = env.get("total_cost_usd")
+        return v, g, b, o, CLAUDE_MODEL, usage, ""
+
     if provider == "Gemini":
         key = gk._find_env_key(("GEMINI_API_KEY",))
         if not key:
@@ -770,38 +821,58 @@ def run_one(ticket_path, quiet=False):
     ticket = json.load(io.open(ticket_path, encoding="utf-8"))
     n = ticket.get("n")
 
+    # ★35030番（2026-10-16）：check_cost_cap()は「有料APIの財布の関所」（status/saifu_teishi.json の
+    # 停止札・2026-10-15から音声課金の監査で全停止中）を含む。Claude CLIはサブスク契約内の呼び出しで
+    # 追加の従量課金が発生しないため、この停止札の対象外として扱う（停止札はここでは引かない。
+    # 下のループで provider=="Claude" のときだけ素通しする）。
     okcap, capmsg = gk.check_cost_cap()
-    if not okcap:
-        return "SKIP", "コスト上限：%s" % capmsg
 
     prompt = build_prompt(ticket)
     skips = []
     for provider in VENDOR_ORDER:
-        saifu = _SAIFU_BY_PROVIDER.get(provider, "openai")
-        what = "外部検品ゲート %s号 第%s回(%s・%s)" % (n, ticket.get("seq"), ticket.get("kind"), provider)
-        try:
-            okv, whyv = yosan.mitsumori(saifu, YOSAN_MITSUMORI_YEN, what=what, anken="外部検品ゲート（鬼監督）")
-        except Exception as e:
-            # ★2026-10-15：お金の関所は読めないとき「通さない」（旧：素通し）。
-            okv, whyv = False, "予算の栓を読めないので止めた(%s)" % e
-        if not okv:
-            skips.append("%s: 予算の栓 %s" % (provider, whyv))
-            continue
-        v, gaps, blindspot, one_line, model, usage, err = _call_vendor(provider, prompt)
-        if v is None:
-            skips.append("%s" % err)
-            continue
-        cost_row = None
-        try:
-            cost_row = gk.record_cost(n, ticket.get("title"), provider, model, usage, v,
-                                      note="kenpin_gate 第%s回(%s)" % (ticket.get("seq"), ticket.get("kind")))
-        except Exception:
-            pass
-        try:
-            yosan.tsukatta(saifu, (cost_row or {}).get("costYen") or YOSAN_MITSUMORI_YEN,
-                           what=what, src="tools/kenpin_gate.py", anken="外部検品ゲート（鬼監督）", model=model or "", ryou="検品1回")
-        except Exception:
-            pass
+        if provider == "Claude":
+            # サブスク契約内・追加課金0円なので、財布の関所(check_cost_cap)もyosanの財布も通さない。
+            v, gaps, blindspot, one_line, model, usage, err = _call_vendor(provider, prompt)
+            if v is None:
+                skips.append("%s" % err)
+                continue
+            cost_row = None
+            try:
+                cost_row = gk.record_cost(
+                    n, ticket.get("title"), provider, model, usage, v,
+                    note="kenpin_gate 第%s回(%s)・Claude CLI(サブスク内・追加課金なし)"
+                         % (ticket.get("seq"), ticket.get("kind")))
+            except Exception:
+                pass
+        else:
+            if not okcap:
+                skips.append("%s: 財布の関所 %s" % (provider, capmsg))
+                continue
+            saifu = _SAIFU_BY_PROVIDER.get(provider, "openai")
+            what = "外部検品ゲート %s号 第%s回(%s・%s)" % (n, ticket.get("seq"), ticket.get("kind"), provider)
+            try:
+                okv, whyv = yosan.mitsumori(saifu, YOSAN_MITSUMORI_YEN, what=what, anken="外部検品ゲート（鬼監督）")
+            except Exception as e:
+                # ★2026-10-15：お金の関所は読めないとき「通さない」（旧：素通し）。
+                okv, whyv = False, "予算の栓を読めないので止めた(%s)" % e
+            if not okv:
+                skips.append("%s: 予算の栓 %s" % (provider, whyv))
+                continue
+            v, gaps, blindspot, one_line, model, usage, err = _call_vendor(provider, prompt)
+            if v is None:
+                skips.append("%s" % err)
+                continue
+            cost_row = None
+            try:
+                cost_row = gk.record_cost(n, ticket.get("title"), provider, model, usage, v,
+                                          note="kenpin_gate 第%s回(%s)" % (ticket.get("seq"), ticket.get("kind")))
+            except Exception:
+                pass
+            try:
+                yosan.tsukatta(saifu, (cost_row or {}).get("costYen") or YOSAN_MITSUMORI_YEN,
+                               what=what, src="tools/kenpin_gate.py", anken="外部検品ゲート（鬼監督）", model=model or "", ryou="検品1回")
+            except Exception:
+                pass
         ok, err2 = _apply_result(ticket, v, gaps, blindspot, one_line, provider, model, cost_row)
         if not ok:
             return "SKIP", "判定は取れたが台帳へ書けませんでした：%s" % err2
