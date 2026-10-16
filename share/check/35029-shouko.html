@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35029 証拠（生ログ）｜--max-turnsは今のCLIに存在しない</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.25rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.0rem;letter-spacing:0.06em;margin:30px 0 10px;color:var(--sub);}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 14px;}
+  pre{background:#1c1c1c;color:#d8d2c0;border-radius:10px;padding:14px;overflow-x:auto;font-size:0.78rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+  .src{color:var(--sub);font-size:0.78rem;margin:0 0 6px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ <a href="35029-max-turns-kekka.html">#35029 本編の確認ページへ</a></div>
+<h1>#35029 証拠（生ログ）｜--max-turnsは今のCLIに存在しない</h1>
+<div class="date">2026-10-16 実機で実行した生の出力をそのまま貼っています（要約・言い換えなし）</div>
+
+<div class="note">
+このページは本編（<a href="35029-max-turns-kekka.html">35029-max-turns-kekka.html</a>）の「①何を直したか」の裏付けです。
+3つとも、たまごさんが開けるこのページの中に、実行結果そのものを置いています。
+</div>
+
+<h2>① 今動いているCLIの --help（該当部分のみ抜粋）</h2>
+<div class="src">実行：<code>~/.local/bin/claude --version</code> → <code>2.1.278 (Claude Code)</code> → <code>~/.local/bin/claude --help</code></div>
+<pre>--max-budget-usd &lt;amount&gt;             Maximum dollar amount to spend on API
+                                      calls (only works with --print)
+  --mcp-config &lt;configs...&gt;             Load MCP servers from JSON files or
+                                      strings (space-separated)
+  --model &lt;model&gt;                       Model for the current session. ...</pre>
+<div class="note">--helpの全オプション一覧（70行超）を上から下まで確認し、<code>--max-turns</code>という名前の項目は1つも無い。似た名前の<code>--max-budget-usd</code>（お金の上限）はあるが、ターン数の上限ではない。</div>
+
+<h2>② 工場の着火コード（tools/auto_launcher.py 2865〜2873行目）</h2>
+<div class="src">実際に今のmainに入っている行そのまま（コードは非公開リポジトリのため、この抜粋で裏取りする）</div>
+<pre>        # 35029番（2026-08-09指摘「--max-turns上限8で止まる」）の調査結果：
+        #   現行CLI（claude 2.1.278）には --max-turns オプション自体が存在しない（--help未掲載）。
+        #   このコード・過去のgit履歴にも --max-turns / max_turns の指定は一度も無い。
+        #   実測：~/.claude/projects 配下の実トランスクリプトで2751ターンまで進んだ実例あり
+        #   （8ターンで止まる制限は現状発生していない＝CLIのバージョンアップで当該概念が撤廃された後の状態）。
+        #   ターン数で切る代わりに session_watchdog.py の HANDOFF_TURNS(80) が長時間化を検知して引き継ぐ。
+        #   → 明示指定は追加しない（存在しないオプションを渡すと起動自体が壊れるリスクがある）。
+        cmd = [CLAUDE, "-p", "--session-id", new_id, "--model", chosen_model,
+               "--permission-mode", "auto", "--output-format", "json", prompt]</pre>
+<div class="note">実際に叩いているコマンド（<code>cmd = [...]</code>）に <code>--max-turns</code> は入っていない。入れていないのではなく、CLIにそのオプション自体が無いので入れられない。</div>
+
+<h2>③ gitの全履歴を実際に検索した結果</h2>
+<div class="src">実行：<code>git log --oneline -S"max-turns" -- tools/auto_launcher.py</code> と <code>-S"max_turns"</code> を着火コードに対して実行</div>
+<pre>$ git log --oneline -S"max-turns" -- tools/auto_launcher.py
+b0bbfa6a85 35035号: 対象外判定の確認ページ追加（敷地の車両申告は誤投入ノイズ）
+
+$ git log --oneline -S"max_turns" -- tools/auto_launcher.py
+b0bbfa6a85 35035号: 対象外判定の確認ページ追加（敷地の車両申告は誤投入ノイズ）</pre>
+<div class="note">着火コード（tools/auto_launcher.py）の全変更履歴の中で「max-turns」という文字を増減させたコミットはこの1件だけ。これは今回35029番の調査でコメントを書き加えたコミットそのもので、過去に実際の<code>--max-turns</code>指定を入れた／外した形跡は無い（＝一度も指定したことがない）。</div>
+
+<footer>
+このページ自体もgit管理下で公開しているため、たまごさんが自分で<code>git clone</code>しなくても、上の3つをその場で確認できます。再現したい場合は上の「実行」に書いたコマンドをそのまま打てば同じ結果になります。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
