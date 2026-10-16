@@ -155,6 +155,24 @@ def from_launchd():
     return items
 
 
+def from_claude_teiki():
+    """Claude アプリの定期タスク（scheduled-tasks.json）。有効なものだけ拾う。
+    2026-10-17 実測：rusuban-mimawari-30min が中身は停止済みなのに有効のまま30分おきにセッションを作り、
+    たまごさんの画面に「見回り30分が開始されました」を出し続けていた（この棚卸しに入っていなかった）。"""
+    items = []
+    for f in glob.glob(HOME + "/Library/Application Support/Claude/*/*/*/scheduled-tasks.json"):
+        try:
+            ts = json.load(open(f, encoding="utf-8")).get("scheduledTasks", [])
+        except Exception:
+            continue
+        for t in ts:
+            if not t.get("enabled"):
+                continue
+            items.append({"name": "claude-teiki:" + t.get("id", "?"), "kind": "Claudeの定期タスク（画面に通知が出る）",
+                          "freq": t.get("cronExpression") or ("1回 %s" % t.get("fireAt")), "path": t.get("filePath")})
+    return items
+
+
 def from_cron():
     try:
         r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=10)
@@ -179,7 +197,7 @@ def from_actions():
 def tanaoroshi():
     daicho = load(DAICHO, {})
     seen, rows = set(), []
-    for it in from_heartbeat() + from_top_status() + from_launchd() + from_cron() + from_actions():
+    for it in from_heartbeat() + from_top_status() + from_launchd() + from_claude_teiki() + from_cron() + from_actions():
         if it["name"] in seen:
             continue
         seen.add(it["name"])

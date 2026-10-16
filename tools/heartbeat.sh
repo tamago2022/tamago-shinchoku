@@ -216,7 +216,7 @@ while :; do
   # それより細かく叩く意味は無いので、中の間引きに合わせた周期で呼ぶ。
   # ログインが戻ったら自分で気づいて再開する（10分に1回だけ試す）
   #   ← 元から「10分に1回」と書いてあったのに毎サイクル起動していた。10分に揃える。
-  tick_every 40 && python3 "$REPO/tools/auth_watch.py"     >/dev/null 2>&1 || true
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 40 && python3 "$REPO/tools/auth_watch.py"     >/dev/null 2>&1 || true
   # 2026-09-20（975番）ログインの生死・鍵の寿命・切れる前の予告を1か所にまとめた係。
   #   auth_watch.py は「切れた後に戻ったら旗を外す」だけだった（＝切れてからしか動かない）。
   #   auth_keeper.py は「切れる前に言う」「1年もつ鍵(setup-token)へ正本を移す」「死んだ鍵を
@@ -288,7 +288,7 @@ while :; do
   #   status/dispatch_outbox.jsonl へ1行書く。青の日は1行も出さない（黙っているのが正常の合図）。
   #   中で20時間に間引いているので10分おきに呼んでも測るのは1日1回。投げっぱなしで心臓は待たない。
   #   ★この係は測って判定して知らせるだけ。**直さない**（測った本人が直すと嘘を誰も見つけられない）。
-  tick_every 40 && ( python3 "$REPO/tools/omosa_mihari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 40 && ( python3 "$REPO/tools/omosa_mihari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-12（787番）：「いまの現在地」1枚(status/genzaichi.md/.json)を実質30分おきで更新する。
   #   憲法0番に「30分おき自動更新」と書いてあったのに実体（スケジューリング）が無かった穴を塞ぐ。
   #   新しいlaunchd常駐は増やさず、既存の心臓に相乗り。内部で1500秒ゲートしているので
@@ -324,7 +324,7 @@ while :; do
   #   ★ tick_every 8（約2分）＝ 1142_loop と同じ間隔。measure→alert なので loop の前に置く。
   tick_every 8  && ( python3 "$REPO/tools/1143_freshness.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 門の押しボタン（わざと不正な1件を流して、門が生きているか実測する）。中で6時間に間引く。
-  tick_every 40 && ( python3 "$REPO/tools/1142_kanmon.py" >> "$REPO/status/1142_kanmon.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 40 && ( python3 "$REPO/tools/1142_kanmon.py" >> "$REPO/status/1142_kanmon.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（894番）：発車0本の検知＋自己修復（tools/genzaichi.pyのcheck_launch_silence・
   #   797/798番実装）は、genzaichi.py本体が「実質30分おき」に間引かれているせいで、
   #   発車が10分止まっても最大約30分検知が遅れる穴があった。判定自体は軽量（ファイルの
@@ -493,7 +493,7 @@ while :; do
   #   2026-10-08 作り直し：今月いくら（カードから実際に引かれた円）＋サービスごと＋証拠。1時間に1回書き直す。
   #   fal見張り（たまごさん「fal は最優先で監視対象に」）を先に走らせ、お金の紙はその結果を写す。
   #   fal見張りは API を3本読むだけ（課金なし）。1日$3超・1回$2超を status/public/fal_kanshi.json の aka に積む→進捗表の赤帯。
-  tick_every 240 && ( { python3 "$REPO/tools/fal_kanshi.py" >> "$REPO/status/fal_kanshi.log" 2>&1; python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1; } & ) >/dev/null 2>&1
+  tick_every 240 && ( { python3 "$REPO/tools/okane_ichimai.py" >> "$REPO/status/okane_ichimai.log" 2>&1; } & ) >/dev/null 2>&1  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）：fal_kanshi.py だけ外した】
   # 2026-09-24（1052番）たまごさんの確認待ちの紙。たまごさん「俺の確認待ちもいっぱいあるのかもしれない。
   #   なんか今出してよ。優先順位つけるから」「多くても10行」
   #   ★たまごさんにしか押せないもの（鍵・本人確認・金銭・取り消せない公開）だけを載せる。
@@ -538,7 +538,7 @@ while :; do
   # 2026-09-24（1080番）メイン不在の門。たまごさん
   #   「タイトルがあるのにメインのものがないだとか、そういうのはもうゼロにして。あり得ないから。」
   #   ★本番のcoverGuide.tsを数え直して status/main_kanmon.json に書くだけ。書き換えない＝0円。
-  tick_every 60 && ( python3 "$REPO/tools/main_kanmon.py" --jissoku >> "$REPO/status/main_kanmon.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 60 && ( python3 "$REPO/tools/main_kanmon.py" --jissoku >> "$REPO/status/main_kanmon.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1082番）戻せる台帳。たまごさん
   #   「間違えて変えてしまうものもあるかもしれないけれど、すぐ戻れるようにしといてね。」
   #   ★戻れる点（anzen-* の印）を作り直して、全部が戻せる状態かを実測する。
@@ -601,10 +601,10 @@ while :; do
   #   棚に receipt の無い依頼が45分／便が75分沈黙、のどちらかで
   #   ①進捗表へ1行（dispatch_outbox.jsonl）②role-sweep を kickstart で起こす。
   #   蹴るのは同じ赤につき3回まで（起きないものを永遠に叩かない）。青の周は1バイトも書かない。
-  tick_every 20 && ( python3 "$REPO/tools/1170_shukka_mihari.py" >> "$REPO/status/1170_shukka.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 20 && ( python3 "$REPO/tools/1170_shukka_mihari.py" >> "$REPO/status/1170_shukka.log" 2>&1 & ) >/dev/null 2>&1
   #    launchd への登録は冪等。既に入っていれば何もしないので、毎周呼んで構わない。
   #    ★たまごさんに手で流させない。登録そのものを機械にやらせる。
-  tick_every 40 && ( bash "$REPO/tools/tomaranai_install.sh" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 40 && ( bash "$REPO/tools/tomaranai_install.sh" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-09 起こし役。たまごさん「止まっていました、という報告をされても何もできない。
   #   Gensparkの作業も、何かあったらノックして起こせる仕組みに」
   #   ★Dispatchの子セッションが落ちた／道具を呼んだまま20分止まった → 工場の列(P1)へ「続きから」で積み直す。
@@ -620,11 +620,11 @@ while :; do
   #   git と curl だけ（0円）。20分おき。結果 status/public/tokushu.json・tokushu_new.json。
   tick_every 80 && ( python3 "$REPO/tools/tokushu.py" >> "$REPO/status/tokushu.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-09 許可ポップアップの関所：アプリのログから許可要求を道具ごとに数える（読むだけ・1時間おき・0円）。
-  tick_every 240 && ( python3 "$REPO/tools/kyoka_kanmon.py" >> "$REPO/status/okoshi/kyoka.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 240 && ( python3 "$REPO/tools/kyoka_kanmon.py" >> "$REPO/status/okoshi/kyoka.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-10 編集ログインの毎日見回り。たまごさん「本当に終わらせてほしい」（@で入れない・6回目）。
   #   本番 /admin に「@」「＠」でheadlessログイン→落ちたら金庫(DB)を入れ直して再試行→だめなら進捗表に赤帯。
   #   1時間おきに起きるが、本番を叩くのは1日1回（--daily）。0円。結果 status/public/admin_login_mimawari.json
-  tick_every 240 && ( python3 "$REPO/tools/admin_login_mimawari.py" --daily >> "$REPO/status/admin_login_mimawari.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 240 && ( python3 "$REPO/tools/admin_login_mimawari.py" --daily >> "$REPO/status/admin_login_mimawari.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-11 Vaultの関所。たまごさん「Obsidian が重くならないことが第一。毎回書き込みが入るから、どうにかして」
   #   Vaultの更新時刻を数えて1日の書き込み回数を出し、工場側が上限を超えたら進捗表を赤（status/public/vault_kanmon.json）。
   #   読むだけ（0円）。20分おき。00_現在地.md のまとめ書きは1時間おきに起きて、22時以降・変化があった時だけ1日1回。
@@ -666,7 +666,7 @@ while :; do
   [ -f "$REPO/status/youryou_kyuukyuu4.go" ] && ( python3 "$REPO/tools/youryou_kyuukyuu4.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_ps.go" ] && ( python3 "$REPO/tools/youryou_ps.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_nozoki.go" ] && ( python3 "$REPO/tools/youryou_nozoki.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
-  [ -f "$REPO/status/youryou_shirabe3.go" ] && ( python3 "$REPO/tools/youryou_shirabe3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 [ -f "$REPO/status/youryou_shirabe3.go" ] && ( python3 "$REPO/tools/youryou_shirabe3.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   [ -f "$REPO/status/youryou_hakaru2.go" ] && ( python3 "$REPO/tools/youryou_hakaru2.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
 
   # 2026-10-14 Claudeの生成物の納品先＝Googleドライブ「AI生成物/Claude/<案件>」。たまごさん「iCloudは置き場に使わない」
