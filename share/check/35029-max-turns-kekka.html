@@ -59,7 +59,7 @@
 <div class="nums">
   <div class="num"><b>2751ターン</b><span>実測した最長セッション実例(8で止まっていない証拠)</span></div>
   <div class="num"><b>80ターン</b><span>長時間化を検知して引き継ぐ既存の仕組みの閾値</span></div>
-  <div class="num"><b>0件</b><span>コード・git履歴にmax-turns指定がある箇所</span></div>
+  <div class="num"><b>0件</b><span>実際に<code>--max-turns</code>オプションをCLI起動コマンドへ指定した箇所（コメントで文字を書いた1件を除く）</span></div>
 </div>
 
 
@@ -76,7 +76,7 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>claude --helpに--max-turnsがあるか</td><td class="no">無い(--max-budget-usdのみ)</td></tr>
 <tr><td>auto_launcher.pyのCLI起動コマンドに--max-turns指定があるか</td><td class="no">無い(3箇所とも未指定)</td></tr>
-<tr><td>過去のgit履歴にmax-turns関連コミットがあるか</td><td class="no">無い(git log -S検索で0件)</td></tr>
+<tr><td>過去のgit履歴に<code>--max-turns</code>をCLI起動コマンドへ実際に指定したコミットがあるか</td><td class="no">無い(git log -S検索でヒットするのは今回の調査コメント追加コミット1件のみ)</td></tr>
 <tr><td>8ターンで止まる現象は今も起きているか</td><td class="no">起きていない(実測2751ターンの実例)</td></tr>
 </table>
 

@@ -58,13 +58,13 @@
 <div class="note">実際に叩いているコマンド（<code>cmd = [...]</code>）に <code>--max-turns</code> は入っていない。入れていないのではなく、CLIにそのオプション自体が無いので入れられない。</div>
 
 <h2>③ gitの全履歴を実際に検索した結果</h2>
-<div class="src">実行：<code>git log --oneline -S"max-turns" -- tools/auto_launcher.py</code> と <code>-S"max_turns"</code> を着火コードに対して実行</div>
+<div class="src">実行：<code>git log --oneline -S"max-turns" -- tools/auto_launcher.py</code> と <code>-S"max_turns"</code> を着火コードに対して実行（2026-10-16 21:3x 時点・mainブランチで再実行し直したそのままの出力）</div>
 <pre>$ git log --oneline -S"max-turns" -- tools/auto_launcher.py
-b0bbfa6a85 35035号: 対象外判定の確認ページ追加（敷地の車両申告は誤投入ノイズ）
+757b098e9b 35029号: 確認ページに押せる証拠リンクを追加（生ログページ新設）
 
 $ git log --oneline -S"max_turns" -- tools/auto_launcher.py
-b0bbfa6a85 35035号: 対象外判定の確認ページ追加（敷地の車両申告は誤投入ノイズ）</pre>
-<div class="note">着火コード（tools/auto_launcher.py）の全変更履歴の中で「max-turns」という文字を増減させたコミットはこの1件だけ。これは今回35029番の調査でコメントを書き加えたコミットそのもので、過去に実際の<code>--max-turns</code>指定を入れた／外した形跡は無い（＝一度も指定したことがない）。</div>
+757b098e9b 35029号: 確認ページに押せる証拠リンクを追加（生ログページ新設）</pre>
+<div class="note">着火コード（tools/auto_launcher.py）の全変更履歴の中で「max-turns」という文字を増減させたコミットは<code>757b098e9b</code>（今回35029番の調査でコメントを書き加えたコミットそのもの）1件だけ。過去に実際の<code>--max-turns</code>指定を入れた／外した形跡は無い（＝一度も指定したことがない）。</div>
 
 <footer>
 このページ自体もgit管理下で公開しているため、たまごさんが自分で<code>git clone</code>しなくても、上の3つをその場で確認できます。再現したい場合は上の「実行」に書いたコマンドをそのまま打てば同じ結果になります。
