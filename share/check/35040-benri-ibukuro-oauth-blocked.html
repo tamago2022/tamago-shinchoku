@@ -58,8 +58,12 @@
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>本番トップページ(生きている)</span></div>
-  <div class="num"><b>404</b><span>記事ページ(まだ出ていない・実測)</span></div>
+  <div class="num"><b>404</b><span>記事ページ(2026-10-17 05:xx再実測でも出ていない)</span></div>
   <div class="num"><b>3日</b><span>自動公開システムが認証エラーで止まっている期間</span></div>
+  <div class="num"><b>23日</b><span>同意用URL(status/kagi_shounin_url.json)が発行されたのが2026-09-23・以後更新なし</span></div>
+</div>
+<div class="note">
+2026-10-17 05:10 再確認：<code>status/kohyou_osu.log</code>は直近(05:03:05)も<code>HTTP 401 Not authenticated</code>で失敗継続。<code>status/lovable_shounin.json</code>の<code>kagi_ok</code>は<code>false</code>。受け皿(127.0.0.1:41999)は立っているが(<code>uketori_machi: true</code>)、同意待ちの承認URL自体が23日前のまま更新されておらず、期限切れの可能性が高い。この同意操作(ブラウザでAllowを押す)は本セッション(ブラウザ操作ツールなし)では実行できず、Chrome『Claude作業用』を操作できるセッションの対応が必要。
 </div>
 
 
