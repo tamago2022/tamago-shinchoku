@@ -2862,6 +2862,13 @@ def launch_one(item, q, alive, safe_max):
             log("🦄 %d番はFable指定・解禁期間中なのでFableで起動（2026-10-15）" % item.get("n"))
         elif chosen_model != SONNET:
             log("💡 %d番は単純作業と判定、%sで起動（節約・34489番）" % (item.get("n"), chosen_model))
+        # 35029番（2026-08-09指摘「--max-turns上限8で止まる」）の調査結果：
+        #   現行CLI（claude 2.1.278）には --max-turns オプション自体が存在しない（--help未掲載）。
+        #   このコード・過去のgit履歴にも --max-turns / max_turns の指定は一度も無い。
+        #   実測：~/.claude/projects 配下の実トランスクリプトで2751ターンまで進んだ実例あり
+        #   （8ターンで止まる制限は現状発生していない＝CLIのバージョンアップで当該概念が撤廃された後の状態）。
+        #   ターン数で切る代わりに session_watchdog.py の HANDOFF_TURNS(80) が長時間化を検知して引き継ぐ。
+        #   → 明示指定は追加しない（存在しないオプションを渡すと起動自体が壊れるリスクがある）。
         cmd = [CLAUDE, "-p", "--session-id", new_id, "--model", chosen_model,
                "--permission-mode", "auto", "--output-format", "json", prompt]
     try:
