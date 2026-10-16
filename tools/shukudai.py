@@ -372,9 +372,21 @@ _NOT_TASK = re.compile(
 # （_is_quoted_reference_text）。短い相槌や断片的な一致での誤検知を避けるため、
 # 一定の長さ（8文字）以上の一致だけを対象にする＝非対称なコストの原則
 # （actionable=False誤判定の方が重い）を守りつつ、同じ記事からの再発を型で止める。
+# 35054番実例（2026-10-17）：34672番と同じ根本原因の再発（9回目）。「GOOD VIBES円卓」
+# パイプライン（YouTube動画の文字起こしをAIへ渡す長大なプロンプト本文）が
+# "queue-operation enqueue" で会話ログに記録され、tools/kioku.py の句点分割により
+# 無数の断片（「これは今後の判断軸に入れておきます。」「水が吹き出している。」等、
+# 元動画の字幕・雑談の引用）が別々の「たまごさんの発言」として status/kioku/hatsugen.jsonl
+# へ割れて登録された（兄弟案件35051〜35059番）。kioku.py側は
+# _GOOD_VIBES_ROUNDTABLE_PROMPT_MARKER で★今後の新規取り込みは防止済み★だが、
+# 2026-08-10時点で既に取り込まれてしまった既存行はそれだけでは救済されない。
+# イケハヤ記事と同じ「引用元ファイルの本文に一字一句含まれる行は非タスク」方式で、
+# 既存の兄弟断片もsync()の再評価時に自動でactionable=Falseへ落ちるようにする。
 _QUOTED_REFERENCE_FILES = (
     "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/"
     "tamago_brain/00 inbox/イケハヤ　claude codeの教科書　キティちゃん　秘書.md",
+    "/Users/mac/.claude/projects/-Users-mac-Library-Application-Support-GOOD-VIBES-Roundtable-current/"
+    "a3b71887-d69f-4595-a7e4-ab0c20b7ad27.jsonl",
 )
 _QUOTED_REFERENCE_MIN_LEN = 8
 _quoted_reference_cache = {}
@@ -965,6 +977,15 @@ def self_test():
           actionable({"source": "kioku",
                       "title": "不可逆な削除をする前に、消す対象のリストだけ一度教えてください"
                                "(これは内容が消える操作なので判断待ちにしてOKです)。"}) is True)
+    # 35054番再発防止：GOOD VIBES円卓のプロンプト本文(会話ログa3b71887...jsonl)に
+    # 一字一句含まれる断片（句点分割の副産物）は、34672番のイケハヤ記事と同じ理屈で
+    # actionable=False。兄弟案件(35051/52/53/55/56/58/59番)も同じ会話ログ由来。
+    check("35054番再発防止：GOOD VIBES円卓の文字起こし断片はactionable=False",
+          actionable({"source": "kioku", "title": "これは今後の判断軸に入れておきます。"}) is False)
+    check("35054番再発防止：判定日赤プレフィックス付きでもactionable=False",
+          actionable({"source": "queue", "title": "判定日赤｜これは今後の判断軸に入れておきます。"}) is False)
+    check("35054番再発防止：兄弟案件（水が吹き出している。）もactionable=False",
+          actionable({"source": "kioku", "title": "水が吹き出している。"}) is False)
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))
