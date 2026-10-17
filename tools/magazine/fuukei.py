@@ -14,7 +14,7 @@ from html import escape as e
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, 'fuukei.json')
 CSS = ('.cw .cw-fk{padding:40px 0}.cw .cw-fk figure{margin:0 auto;max-width:760px}'
-       '.cw .cw-fk img{display:block;width:100%;height:auto;border-radius:4px;filter:sepia(.1)}'
+       '.cw .cw-fk img{display:block;width:auto;max-width:100%;height:auto;margin:0 auto;border-radius:4px;filter:sepia(.1)}'
        '.cw .cw-fk__cr{display:block;margin-top:6px;font-size:10.5px;line-height:1.5;opacity:.55;text-align:right}'
        '.cw .cw-fk__cr a{color:inherit}')
 
