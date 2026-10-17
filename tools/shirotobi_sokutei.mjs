@@ -99,7 +99,18 @@ try {
       else if (s.fallbackUrl) { await ev(`(()=>{const a=document.createElement("a");a.href=${JSON.stringify(s.fallbackUrl)};document.body.appendChild(a);setTimeout(()=>a.click(),50);return 1})()`); done = s.fallbackUrl + "（リンクが無いので同じページ内からリンクを足して押した）"; }
     }
     events.push({ t: at, label: s.label || "開く", target: done });
-    await sleep(s.kind === "goto" ? 12000 : 7000);
+    // 着くまで待つ：進行バー（data-nav-progress）が消え、骨組み（data-route-skeleton）も無くなるまで（最大20秒）。そのあと1.5秒見る。
+    await sleep(s.kind === "goto" ? 8000 : 600);
+    const until = Date.now() + 20000;
+    while (Date.now() < until) {
+      const busy = await Promise.race([
+        ev("!!document.querySelector('[data-nav-progress],[data-route-skeleton]') || document.readyState!=='complete'").catch(() => true),
+        sleep(2000).then(() => true),
+      ]);
+      if (!busy) break;
+      await sleep(250);
+    }
+    await sleep(1500);
     const u = await ev("location.href").catch(() => "?");
     events[events.length - 1].landed = u;
   }
