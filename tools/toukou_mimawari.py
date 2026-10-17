@@ -302,6 +302,7 @@ def check():
     """joy-relief-station の最新 main を一時の作業場に出して点検する。作業場は終わったら必ず消す。"""
     if not os.path.isdir(os.path.join(JRS, ".git")):
         return {"ok": False, "why": "joy-relief-station の手元の複製が無い（%s）" % JRS}
+    log("点検 開始（%s）" % JRS)
     r = _git(["fetch", "-q", "origin", "main"], JRS)
     if r.returncode != 0:
         log("fetch 失敗：%s" % (r.stderr or "")[:200])
@@ -315,6 +316,7 @@ def check():
             os.symlink(nm, os.path.join(wt, "node_modules"))
         ledger_in = os.path.join(wt, "docs", "operations", "posted-songs.json")
         shutil.copyfile(DAICHO, ledger_in)
+        log("作業場 %s で点検を走らせる" % wt)
         out = os.path.join(REPO, "status", "public", "toukou_tenken.json.tmp")
         r = subprocess.run(["npx", "tsx", "--import", "./scripts/_asset-stub.mjs",
                             "scripts/patrol/check-posted-songs.mts", "--ledger", ledger_in,
@@ -409,7 +411,10 @@ def daily(force=False):
     except Exception:
         pass
     collect(jrs_dir=JRS, net=True)
-    c = check()
+    try:
+        c = check()
+    except Exception as e:  # 落ちた理由を必ず残す（黙って死なない）
+        c = {"ok": False, "why": "点検の途中で落ちた：%r" % (e,)}
     if not c.get("ok"):
         log("点検できず：%s" % c.get("why"))
         _write_json(TENKEN, {"at": _now().isoformat(), "error": c.get("why")})
