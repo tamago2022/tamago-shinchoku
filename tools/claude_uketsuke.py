@@ -434,6 +434,8 @@ def check_nouhin(st):
             rc, out, err = run(["gh", "api", "repos/%s/issues/comments?sort=created&direction=desc&per_page=100&since=%s"
                                 % (repo, st["nouhinSince"])], timeout=90)
             rows = json.loads(out or "[]") if rc == 0 else None
+            if rows is None:
+                log("%s 納品コメントが読めない rc=%s %s" % (repo, rc, (err or "")[:160]))
         except Exception as e:
             rows = None
             log("%s 納品コメントが読めない: %r" % (repo, e))
