@@ -304,7 +304,9 @@ def check_nouhin(st):
             try:
                 sys.path.insert(0, HERE)
                 import command_ingest
-                status, qmsg = command_ingest.queue_add(text, priority=1, label="GH%s 納品の受け取り" % num, origin="factory")
+                # urgent：たまごさん 10/17「店主が1回言うだけで自動投稿まで」＝納品は列の後ろ（約2,700件）に並ばせない
+                status, qmsg = command_ingest.queue_add(text, priority=1, label="GH%s 納品の受け取り" % num,
+                                                        origin="factory", urgent=True)
             except Exception as e:
                 log("#%s 納品を積めない: %r" % (num, e))
                 seen.discard(cid)
