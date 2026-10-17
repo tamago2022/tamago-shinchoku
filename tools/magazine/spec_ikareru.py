@@ -47,6 +47,9 @@ GEKI = 'https://gekirock.com/interview/2019/03/uchikubigokumon.php'
 # 08 Ado
 WUS = 'https://ja.wikipedia.org/wiki/%E3%81%86%E3%81%A3%E3%81%9B%E3%81%87%E3%82%8F'
 SOL = 'https://www.tfm.co.jp/lock/speciallocks/38998'
+TXP = 'https://www.tv-tokyo.co.jp/plus/entertainment/entry/202305/13306.html'   # syudou「うっせぇわ」制作秘話（2023-05）
+FBJ = 'https://forbesjapan.com/articles/detail/67625'                            # 所属事務所・千木良卓也
+ORI = 'https://www.oricon.co.jp/special/56000/'                                  # 共感の声「学校のルールに苦しみ悩んだ」
 # 09 おとぼけビ〜バー
 WOTO = 'https://en.wikipedia.org/wiki/Otoboke_Beaver'
 RT19 = 'https://rooftop1976.com/interview/190704143000.php?page=3'
@@ -160,8 +163,9 @@ M = dict(
              main=dict(id='Qp3b-RXtz4w', role='MV 2020', artist='Ado', song='うっせぇわ', cap=''),
              body=[f'2020年10月23日に配信された、Adoのメジャー1作目。詞と曲はボカロPのsyudou{src("Wikipedia", WUS)}。2021年の新語・流行語大賞では、トップテンに入った{src("Wikipedia", WUS)}。',
                    f'歌った当時、Adoは高校3年生。社会人の世界は、ドラマや映画で想像するしかなかった。「簡単に言えば“怒りの感情”みたいな。怒りの感情は学生にも共通している部分はあったので、そこをいかに強く出せるか」{src("SCHOOL OF LOCK!", SOL)}。',
-                   f'syudouは「女性の目線にしよう」などとは一切考えず、普段どおりに書いた。返ってきたのは「いっさいの直しナシ」。サビで裏声に持っていくあの歌い方も、Ado自身のアイデアだった。「僕が歌のディレクションしたって思われることが多いんですけど、マジでなんもしてないんすよ！」{src("SCHOOL OF LOCK!", SOL)}。',
-                   '怒鳴っているのは、もう大人じゃない。押しつけられる側だった世代が、古い「常識」をそのまま投げ返した。社会現象になったのは、みんなどこかで言いたかったからだと思う。'],
+                   f'書いた側も、誰かを狙ったわけではなかった。syudouは、それまでも自分の視点で思ったことを曲にしてきたから、Adoから依頼をもらったときも、いつも通りのスタンスで作った、と振り返っている{src("TV TOKYO PLUS", TXP)}。「女性の目線にしよう」などとも一切考えず、普段どおりに書いた。返ってきたのは「いっさいの直しナシ」。サビで裏声に持っていくあの歌い方も、Ado自身のアイデアだった。「僕が歌のディレクションしたって思われることが多いんですけど、マジでなんもしてないんすよ！」{src("SCHOOL OF LOCK!", SOL)}。',
+                   f'出たのは、コロナ禍で音楽の聴き方がストリーミングやYouTubeへ移っていく時期。顔を出さない若い歌い手のデビューという衝撃も重なった、と所属事務所の千木良卓也は語っている{src("Forbes JAPAN", FBJ)}。若い人たちからは「学校のルールに苦しみ悩んだ」という共感の声も届いた{src("ORICON NEWS", ORI)}。',
+                   '怒鳴っているのは、もう大人じゃない。職場を知らない高校生が、怒りの感情だけを手がかりに想像で歌い、書いた側は自分の視点のまま書いた。押しつけられる側だった世代が、古い「常識」をそのまま投げ返した。社会現象になったのは、みんなどこかで言いたかったからだと思う。'],
              say='デモに返ってきた唯一の注文は「キーを4〜5個上げてください」（SCHOOL OF LOCK!）。優等生、最初から喉でキレる気まんまん。',
              bridge='押しつけられる側がキレる、その前から。京都では、別の怒りが1分半に凝縮されていた。'),
         dict(no='09', artist='おとぼけビ〜バー', song='ジジイ is Waiting For My Reaction', album='京都', year='2020',
@@ -194,7 +198,7 @@ M = dict(
              ('Wikipedia — THE TIMERS', WTIM), ('Wikipedia — COVERS', WCOV), ('ENCOUNT — FM東京事件', ENC), ('サイゾー — 三宅伸治の証言', CYZO), ('スポニチ — 古舘伊知郎の証言（2025）', SP25), ('文春オンライン — 「実は生じゃなかった」', BUN), ('Wikipedia — スローバラード', WSLOW),
              ('Wikipedia — Rebel Girl (Bikini Kill song)', WRG), ('Wikipedia — Bikini Kill', WBK), ('Wikipedia — Kathleen Hanna', WKH), ('ELLE — Kathleen Hanna『Rebel Girl』抜粋', ELLE),
              ('Wikipedia — 打首獄門同好会', WUCHI), ('激ロック — 打首獄門同好会インタビュー（2019）', GEKI),
-             ('Wikipedia — うっせぇわ', WUS), ('SCHOOL OF LOCK! — Ado × syudou', SOL),
+             ('Wikipedia — うっせぇわ', WUS), ('SCHOOL OF LOCK! — Ado × syudou', SOL), ('TV TOKYO PLUS — syudou (2023)', TXP), ('Forbes JAPAN — Takuya Chigira', FBJ), ('ORICON NEWS — Usseewa', ORI),
              ('Wikipedia — Otoboke Beaver', WOTO), ('Rooftop — おとぼけビ〜バー（2019）', RT19), ('ANTENNA — コーチェラ出演', ANT),
              ('Wikipedia — Gold (Prince song)', WGOLD), ('Wikipedia — Prince (musician)', WPRI)],
     note='',

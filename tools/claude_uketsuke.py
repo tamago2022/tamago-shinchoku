@@ -298,13 +298,16 @@ def check_nouhin(st):
                 "【最初にやる】`gh issue view %s -R %s --comments` で依頼と注意（触らない・事実注意・たまごさんの構成指示）を全部読む。" % (num, repo),
                 "【守る】連携のルール（status/renkei/1017_zenin_rule.md）。本文を勝手にリライトしない。未確認は断定にしない。お金・削除・権限変更はしない。",
                 "【公開】マガジンは CLAUDE.md「公開は毎回本番へ」どおり、関所（koutai_kanmon・unify_look・magazine_monogatari_kanmon・prebuild）を通して本番へ。本番が変わったことを koukai_kakunin で確かめる。",
+                "【.yml・.sh など動くファイルの納品】置く前に中身を全部読む：外部への送信先・秘密(secrets/トークン)の扱い・書き換えられる範囲(パスの制限)・取得先が AI Drive だけか。危険は直してから置く。",
                 "【投稿】公開できたら status/buffer_queue/ に注文票を1枚（憲法28条の型・リンクは自サイト・customScheduled）。",
                 "【返事】同じIssueにコメント（先頭に %s）：本番URL＋予約日時＋未確認。たまごさんを仲介に使わない。" % FACTORY_MARK,
             ])
             try:
                 sys.path.insert(0, HERE)
                 import command_ingest
-                status, qmsg = command_ingest.queue_add(text, priority=1, label="GH%s 納品の受け取り" % num, origin="factory")
+                # urgent：たまごさん 10/17「店主が1回言うだけで自動投稿まで」＝納品は列の後ろ（約2,700件）に並ばせない
+                status, qmsg = command_ingest.queue_add(text, priority=1, label="GH%s 納品の受け取り" % num,
+                                                        origin="factory", urgent=True)
             except Exception as e:
                 log("#%s 納品を積めない: %r" % (num, e))
                 seen.discard(cid)
