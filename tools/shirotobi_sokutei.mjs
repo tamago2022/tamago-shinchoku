@@ -84,7 +84,7 @@ try {
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
   await send("Emulation.setTouchEmulationEnabled", { enabled: true });
   await send("Emulation.setUserAgentOverride", { userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1 shirotobi-sokutei" });
-  await send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await send("Emulation.setCPUThrottlingRate", { rate: Number(process.env.SHIRO_CPU || 4) });
   await send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
   await send("Page.startScreencast", { format: "jpeg", quality: 60, maxWidth: 390, maxHeight: 844, everyNthFrame: 1 });
 
@@ -94,6 +94,12 @@ try {
     if (s.kind === "goto") { await send("Page.navigate", { url: s.url }); done = s.url; }
     else if (s.kind === "back") { done = String(await ev("history.back(),location.href")); }
     else {
+      // 人が押すのは画面が動く状態になってから。マガジン（別のHTML）以外では、最初の描画が終わった印（__jrsHydrated）を最大20秒待つ。
+      for (let k = 0; k < 40; k++) {
+        const ok = await Promise.race([ev("location.pathname.startsWith('/magazine/') || window.__jrsHydrated===true").catch(() => false), sleep(2000).then(() => false)]);
+        if (ok) break;
+        await sleep(500);
+      }
       const href = await ev(`(()=>{const a=[...document.querySelectorAll(${JSON.stringify(s.sel)})].find(x=>{const r=x.getBoundingClientRect();return r.width>0&&r.height>0});if(!a)return null;a.scrollIntoView({block:"center"});const h=a.getAttribute("href");setTimeout(()=>a.click(),50);return h})()`);
       if (href) done = href;
       else if (s.fallbackUrl) { await ev(`(()=>{const a=document.createElement("a");a.href=${JSON.stringify(s.fallbackUrl)};document.body.appendChild(a);setTimeout(()=>a.click(),50);return 1})()`); done = s.fallbackUrl + "（リンクが無いので同じページ内からリンクを足して押した）"; }
