@@ -228,6 +228,7 @@ def main(dry=False):
         sha = sha.strip()
         st["base"] = sha[:12]
         tmp = tempfile.mkdtemp(prefix="1191_")
+        __import__("atexit").register(__import__("shutil").rmtree, tmp, True)  # 2026-10-18 使ったらしまう（140MB×16個が残っていた）
         tg = os.path.join(tmp, "a.tar")
         subprocess.run(["git", "archive", "-o", tg, "origin/main", "src", "scripts/i18n"], cwd=JOY, check=True, timeout=300)
         tarfile.open(tg).extractall(tmp)

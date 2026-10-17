@@ -6,12 +6,16 @@
             最優先は Mac が固まらないこと（キーボードが効かなくなる等は絶対NG）」
 
 ━━ 決め方（発車の直前に毎回測る）━━
+  ★2026-10-18（120042番）ロード平均だけで決めない。CPU使用率（iostat の us+sy）とメモリ圧を見る。
+    実測：ロード26〜35（8コア）でも CPU合計59%・メモリ空き83%＝固まっていないのに、400件中399件が上限1本だった。
+  CPU ≥ 92%  または メモリ空き < 5% → 新規発車を止める（固まる手前）
+  CPU ≥ 75%                        → 上限1本
   メモリ圧 赤            → 上限1本
   メモリ圧 黄            → 新規発車を止める（走っている子はそのまま）
   メモリ圧 緑
-     1分ロード ÷ コア数 < 0.60 → 上限4本
-     1分ロード ÷ コア数 < 0.70 → 上限3本
-     それ以外                  → 上限2本
+     CPU < 50% → 上限4本 ／ CPU < 65% → 上限3本 ／ それ以外 → 上限2本
+  CPUが測れなかった時だけ、従来どおり 1分ロード÷コア数（<0.60→4本 <0.70→3本 ≥1.0→1本 ≥3.0→止める）
+  スワップ ≥ 90% は、メモリ圧が緑で空き30%以上と分かっている時は数えない（Brave で一日中95%張り付き）
   測れなかった            → 上限2本（今までと同じ。推測で増やさない）
 
   ・上限を下げても、走っている子は殺さない。新規発車を止めるだけ。
@@ -93,7 +97,34 @@ def measure():
     sw = re.search(r"total = ([\d.]+)M\s+used = ([\d.]+)M", _run(["sysctl", "-n", "vm.swapusage"]))
     if sw and float(sw.group(1)) > 0:
         m["swapPct"] = round(100 * float(sw.group(2)) / float(sw.group(1)), 1)
+    # 2026-10-18（120042番）CPU使用率も測る。ロード平均は「待ち行列の長さ」で、心臓が15秒ごとに
+    #   20本前後の python を一斉に起こすだけで跳ね上がる（実測：ロード26・CPU合計59%・メモリ空き83%）。
+    #   ロードだけで「固まる手前」と言わず、CPUが本当に埋まっているかを見る。
+    cpu = cpu_busy_pct()
+    if cpu is not None:
+        m["cpuBusyPct"] = cpu
     return m
+
+
+def cpu_busy_pct():
+    """CPU使用率（user+sys、%）＝ iostat の2回目の行の us+sy。権限ダイアログは出ない。
+    取れなければ None（＝今までどおりロードだけで判定）。
+    ★top は使わない：この Mac では `top -l 2 -n 0 -s 1` が実測41秒・system CPU 7.6秒かかり（全プロセス・全スレッドを舐める）、
+      測ること自体がロードを押し上げる。iostat は実測1.2秒・CPUほぼ0。"""
+    out = _run(["iostat", "-c", "2", "-w", "1"], timeout=10)
+    return parse_iostat(out)
+
+
+def parse_iostat(out):
+    """iostat -c 2 -w 1 の出力から busy% を返す。末尾の数値行＝直近1秒。列は … us sy id 1m 5m 15m（後ろから4番目が id）。"""
+    rows = [l.split() for l in (out or "").splitlines()
+            if l.strip() and l.split()[0].replace(".", "", 1).isdigit()]
+    if not rows or len(rows[-1]) < 6:
+        return None
+    try:
+        return round(100.0 - float(rows[-1][-4]), 1)
+    except Exception:
+        return None
 
 
 # 2026-10-15 たまごさん「固まる手前まで重い。負荷が高い間は工場の同時本数を1本に」
@@ -102,13 +133,24 @@ FREEZE_RATIO = 3.0   # これ以上＝固まる手前 → 新規発車を止め�
 SWAP_HIGH = 90.0     # スワップ使用率% → 上限1本
 SWAP_FREEZE = 95.0   # → 新規発車を止める
 MEMFREE_FREEZE = 5   # memory_pressure の空き% → 新規発車を止める
+# 2026-10-18（120042番）CPU使用率（user+sys %）の物差し。ロードが高くてもCPUが空いていれば止めない。
+CPU_FREEZE = 92.0    # これ以上＝本当に固まる手前 → 新規発車を止める
+CPU_HIGH = 75.0      # これ以上＝重い → 上限1本
+CPU_4 = 50.0         # これ未満なら4本
+CPU_3 = 65.0         # これ未満なら3本（それ以外は2本）
 
 
 def kiken(m):
     """固まる手前か（新規発車を止める理由の文字列 or None）。tools/fuka_mihari.py と共用。"""
     ratio = (m["load1"] / float(m["ncpu"])) if m.get("load1") is not None and m.get("ncpu") else None
-    if ratio is not None and ratio >= FREEZE_RATIO:
-        return "ロード%.1f（コア%d×%.0f超）" % (m["load1"], m["ncpu"], FREEZE_RATIO)
+    cpu = m.get("cpuBusyPct")
+    if cpu is not None and cpu >= CPU_FREEZE:
+        return "CPU%.0f%%（%.0f%%超）" % (cpu, CPU_FREEZE)
+    # ロードだけでは止めない：CPUが測れた時は、CPUも埋まっている（CPU_FREEZE超）時だけ「固まる手前」。
+    #   2026-10-18 実測：ロード25〜35（コア8×3超）が一晩続いたがCPU合計は59%・メモリ空き83%で、
+    #   走行0本でも発車を止め続けていた（400件中399件が上限1本）。
+    if ratio is not None and ratio >= FREEZE_RATIO and cpu is None:
+        return "ロード%.1f（コア%d×%.0f超・CPUは測れず）" % (m["load1"], m["ncpu"], FREEZE_RATIO)
     # 2026-10-15 19時：スワップ%だけでは止めない。実測では Brave（タブ64枚・17GB＝たまごさんの場所）のせいで
     #   スワップは一日中95%前後に張り付き、メモリ圧は緑・空き75〜85%のまま。この旗が掃除係（worktree_taihi/shimau）
     #   まで止め、ディスクが46GB→19GBに落ちて工場が全停止した。メモリ圧が緑でない or 空き20%未満と重なった時だけ止める。
@@ -153,13 +195,28 @@ def judge(m, kotei2=False):
     if k:
         r.update(cap=CAP_RED, stopNew=True, reason="固まる手前（%s）→ 新規発車を止める" % k)
         return r
-    if (ratio is not None and ratio >= HIGH_RATIO) or (m.get("swapPct") or 0) >= SWAP_HIGH:
-        r.update(cap=CAP_RED, reason="重い（ロード比%s・スワップ%s%%）→ 上限1本" % (ratio, m.get("swapPct")))
+    cpu = m.get("cpuBusyPct")
+    r["cpuBusyPct"] = cpu
+    # 「重い→1本」：CPUが測れた時はCPUで決める（ロード比はCPUが測れない時だけ）。スワップ90%超は従来どおり。
+    omoi = (cpu is not None and cpu >= CPU_HIGH) or (cpu is None and ratio is not None and ratio >= HIGH_RATIO)
+    # スワップ90%超は、メモリ圧が緑で空きも30%以上と分かっている時は「重い」に数えない（10-15 19時の方針と同じ。
+    #   実測：Brave のせいでスワップは一日中94〜95%、メモリ圧は緑・空き83%。これで一晩 上限1本に張り付いていた）
+    swap_omoi = ((m.get("swapPct") or 0) >= SWAP_HIGH
+                 and not (color == "green" and m.get("memFreePct") is not None and m["memFreePct"] >= 30))
+    if omoi or swap_omoi:
+        r.update(cap=CAP_RED, reason="重い（CPU%s%%・ロード比%s・スワップ%s%%）→ 上限1本" % (cpu, ratio, m.get("swapPct")))
         return r
     if color == "red":
         r.update(cap=CAP_RED, reason="メモリ圧=赤 → 上限1本")
     elif color == "yellow":
         r.update(cap=CAP_DEFAULT, stopNew=True, reason="メモリ圧=黄 → 新規発車を止める（走行中はそのまま）")
+    elif color == "green" and cpu is not None:
+        if cpu < CPU_4:
+            r.update(cap=4, reason="メモリ圧=緑・CPU%.0f%%（%.0f%%未満）→ 上限4本（ロード比%s）" % (cpu, CPU_4, ratio))
+        elif cpu < CPU_3:
+            r.update(cap=3, reason="メモリ圧=緑・CPU%.0f%%（%.0f%%未満）→ 上限3本（ロード比%s）" % (cpu, CPU_3, ratio))
+        else:
+            r.update(cap=2, reason="メモリ圧=緑・CPU%.0f%%（%.0f%%以上）→ 上限2本（ロード比%s）" % (cpu, CPU_3, ratio))
     elif color == "green" and ratio is not None:
         if ratio < RATIO_4:
             r.update(cap=4, reason="メモリ圧=緑・ロード比%.2f（%.2f未満）→ 上限4本" % (ratio, RATIO_4))
@@ -254,13 +311,38 @@ def _self_test():
     eq(judge({"pressureLevel": 1, "load1": 400, "ncpu": 8})["stopNew"], True, "ロード50倍→止める")
     eq(judge({"pressureLevel": 1, "load1": 10, "ncpu": 8})["cap"], 1, "ロード比1.25→1本")
     eq(judge({"pressureLevel": 1, "load1": 1, "ncpu": 8, "swapPct": 92})["cap"], 1, "スワップ92%→1本")
-    eq(judge({"pressureLevel": 1, "load1": 1, "ncpu": 8, "swapPct": 96})["stopNew"], True, "スワップ96%→止める")
+    # 2026-10-15 19時の方針：スワップ%だけでは止めない（Braveで一日中95%張り付き）。緑なら1本、黄と重なれば止める
+    eq(judge({"pressureLevel": 1, "load1": 1, "ncpu": 8, "swapPct": 96})["stopNew"], False, "スワップ96%・緑→止めない（1本）")
+    eq(judge({"pressureLevel": 1, "load1": 1, "ncpu": 8, "swapPct": 96})["cap"], 1, "スワップ96%・緑→1本")
+    eq(judge({"pressureLevel": 2, "load1": 1, "ncpu": 8, "swapPct": 96})["stopNew"], True, "スワップ96%＋黄→止める")
     eq(judge({"pressureLevel": 2, "load1": 1, "ncpu": 8})["stopNew"], True, "黄→止める")
     eq(judge({"pressureLevel": 4, "load1": 1, "ncpu": 8})["cap"], 1, "赤→1")
     eq(judge({"memFreePct": 5, "load1": 1, "ncpu": 8})["cap"], 1, "空き5%→赤")
     eq(judge({"memFreePct": 15, "load1": 1, "ncpu": 8})["stopNew"], True, "空き15%→黄")
     eq(judge({"memFreePct": 50, "load1": 1, "ncpu": 8})["cap"], 4, "空き50%→緑4")
     eq(judge({})["cap"], 2, "測れない→2")
+    # 2026-10-18（120042番）CPUも見る。ロードが高くてもCPUが空いていれば止めない／CPUが埋まっていれば止める
+    j = judge({"pressureLevel": 1, "load1": 26.0, "ncpu": 8, "cpuBusyPct": 59.0})
+    eq(j["stopNew"], False, "ロード26・CPU59%→止めない")
+    eq(j["cap"], 3, "ロード26・CPU59%→3本")
+    eq(judge({"pressureLevel": 1, "load1": 26.0, "ncpu": 8, "cpuBusyPct": 95.0})["stopNew"], True, "CPU95%→止める")
+    eq(judge({"pressureLevel": 1, "load1": 3.0, "ncpu": 8, "cpuBusyPct": 93.0})["stopNew"], True, "ロード低でもCPU93%→止める")
+    eq(judge({"pressureLevel": 1, "load1": 10.0, "ncpu": 8, "cpuBusyPct": 40.0})["cap"], 4, "ロード比1.25・CPU40%→4本")
+    eq(judge({"pressureLevel": 1, "load1": 10.0, "ncpu": 8, "cpuBusyPct": 80.0})["cap"], 1, "CPU80%→1本")
+    eq(judge({"pressureLevel": 1, "load1": 2.0, "ncpu": 8, "cpuBusyPct": 70.0})["cap"], 2, "CPU70%→2本")
+    eq(judge({"pressureLevel": 2, "load1": 1.0, "ncpu": 8, "cpuBusyPct": 10.0})["stopNew"], True, "CPU空きでもメモリ圧黄→止める")
+    eq(judge({"pressureLevel": 1, "load1": 1.0, "ncpu": 8, "cpuBusyPct": 10.0, "swapPct": 92})["cap"], 1, "CPU空きでもスワップ92%→1本")
+    eq(kiken({"load1": 26.0, "ncpu": 8}) is not None, True, "CPU測れず・ロード3倍超→従来どおり止める")
+    sample = ("              disk0               disk2       cpu    load average\n"
+              "    KB/t  tps  MB/s     KB/t  tps  MB/s  us sy id   1m   5m   15m\n"
+              "   18.66    8  0.15    55.77 1011 55.04  30 12 58  15.27 14.67 17.25\n"
+              "    0.00    0  0.00   142.77  576 80.25  37 11 51  15.27 14.67 17.25\n")
+    eq(parse_iostat(sample), 49.0, "iostat の読み取り（直近行 id=51 → busy 49）")
+    eq(parse_iostat(""), None, "iostat 空→None")
+    eq(judge({"pressureLevel": 1, "memFreePct": 83, "load1": 26, "ncpu": 8, "cpuBusyPct": 40.0, "swapPct": 94})["cap"], 4,
+       "スワップ94%でも緑・空き83%・CPU40%→4本（10-18 実測の形）")
+    eq(judge({"pressureLevel": 1, "memFreePct": 25, "load1": 1, "ncpu": 8, "cpuBusyPct": 40.0, "swapPct": 94})["cap"], 1,
+       "スワップ94%・空き25%→1本")
     eq(judge({"pressureLevel": 1, "load1": 0.1, "ncpu": 8}, kotei2=True)["cap"], 2, "固定2")
     eq(judge({"pressureLevel": 4}, kotei2=True)["cap"], 2, "固定2は赤でも2（旧動作）")
     print("self-test", "OK" if ok else "NG")

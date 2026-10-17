@@ -39,7 +39,10 @@ PUB = os.path.join(REPO, "status", "public", "youryou_jougen.json")
 CUR_SESSION = "67542e85-a104-4946-bcde-7c7916354942"
 H = 3600
 TSUKAISUTE = ("hps-", "playwright", "tamago-verify-", "gaibu-shot-", "t1168-", "esbuild-", "puppeteer", "lighthouse",
-              "verify-click-")
+              "verify-click-",
+              # 2026-10-18（120042番）1191_honyaku_jidou／1192_title_romaji が origin/main を tar 展開した写し（1個140MB・
+              #   消さずに帰っていたので16+92個＝約4GB溜まった）。中身は git に有る＝作り直せる。作る側にも atexit で消す線を入れた
+              "1191_", "1192_", "1192h_")
 STAMP = os.path.join(REPO, "status", ".youryou_jougen_tsukaisute_at")
 
 FORBIDDEN = ("CloudStorage", "Mobile Documents", "iCloud", "Google Drive", "tamago_brain", "Vault", "Keychains",

@@ -285,8 +285,10 @@ def slow_extras(data):
     """取れたら足すだけ。取れなくても何も壊さない。"""
     data["vm_stat"] = sh(["vm_stat"], timeout=10)[:2000]
     data["oneline"] = sh([os.path.join(HERE, "machine_load.sh")], timeout=25)
-    # top -l 1 は高負荷時に十数秒〜（machine_load.sh のコメント参照）。ヘッダだけ・最後。
-    data["top"] = sh("top -l 1 -n 0 2>/dev/null | head -12", timeout=20)
+    # 2026-10-18（120042番）top -l 1 は2分おき＝1日720回叩いていた。この Mac では top が全プロセス・全スレッドを舐めて
+    #   実測41秒・system CPU 7.6秒（fuka_hassha.py の実測）＝測ること自体がロードを押し上げる。読む側も無かった
+    #   （tools/*.py に data["top"] の利用者なし）。CPU使用率は iostat（実測1.2秒・CPUほぼ0）で足りるので置き換えた。
+    data["top"] = sh("iostat -c 2 -w 1 2>/dev/null | tail -3", timeout=10)
     return data
 
 
