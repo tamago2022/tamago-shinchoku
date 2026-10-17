@@ -168,15 +168,25 @@ def add_switch(h, name):
 
 def build(spec):
     h = open(spec['in'], encoding='utf-8').read()
+    if '<main class="cw"' not in h:  # Genspark は <div class="cw"> で組んでくる。訳・共有ボタンは main.cw を目印にする
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(h, 'html.parser')
+        d = soup.find('div', class_='cw')
+        d.name = 'main'
+        for c in soup.find_all('div', class_='cw-close'):  # 締めは section（共有ボタンはその直後に入る）
+            c.name = 'section'
+        h = str(soup)
     h = re.sub(r'<div class="cw-allback"><a href="https://joy-relief-station\.lovable\.app/"[^>]*>ごきげん補給所へ戻る →</a></div>', '', h)
     h, rep = fix_images(h, spec)
     h = fix_head(h, spec)
     h = fix_songs(h, spec)
     h = add_switch(h, spec['name'])
     h = MB.unify_tail(h, spec['key'])
-    h = MB.unify_look(h)
+    # 前に入れた共有・フォローの段は外してから（bs4 が属性の順を変えると share_bar の外し方に当たらず二重になる）
+    h = re.sub(r'<section[^>]*class="cw-sharebox"[^>]*>.*?</section>', '', h, flags=re.S)
+    h = re.sub(r'<div class="cw-wrap"><div[^>]*class="cw-share cw-sns"[^>]*>.*?</div></div>', '', h, flags=re.S)
     h = stamp_keep(h)
-    h = MB.unify_look(h)   # bs4 で崩れた並びを戻す（何度通しても同じ）
+    h = MB.unify_look(h)   # 共有ボタン・フォロー・曲ページ導線・見た目の統一（共通部品は c_… の訳キーを最初から持つ）
     return h, rep
 
 
