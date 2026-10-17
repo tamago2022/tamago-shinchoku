@@ -85,7 +85,7 @@ ROUTE = {
         #   証拠＝#450：本文に依頼を書いても無反応、たまごさんが「@codex 上のお題をお願いします。」と
         #   コメントした**7秒後**に chatgpt-codex-connector[bot] が返事をした。
         #   つまり「起こす」のは本文ではなく別コメント。ここを機械でやる＝たまごさんが押さなくてよくなる。
-        "wake": "@codex 上のお題をお願いします。",
+        "wake": None,  # 2026-10-18 廃止（元は @codex で起こしていた）
         "note": "Codexは@codexコメントで起きる（本文だけでは起きない・実測）。mainに直接pushできる。",
     },
     "jules": {
@@ -288,6 +288,9 @@ def _thread_key(repo, number):
 
 def nageru(ai, topic, body="", n=None, dry_run=False, wait_sec=240):
     ai = ai_daicho.ai_key(ai)
+    # ★2026-10-18 たまごさん判断：Jules／Codexへの自動依頼は廃止（「使えない。全部閉じていい」）。
+    if ai in ("codex", "jules", "gemini"):
+        return {"ok": False, "error": "Jules／Codexへの自動依頼は廃止（2026-10-18 たまごさん判断）"}
     r = ROUTE[ai]
     label = ai_daicho.AI[ai]["label"]
 

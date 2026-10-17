@@ -70,6 +70,7 @@ def build():
 <div class="cw-wrap"><nav class="cw-nav" aria-label="ページ上部"><a href="https://joy-relief-station.lovable.app/">ごきげん補給所</a><span>Magazine Story</span></nav>
 <header class="cw-bnhead"><p class="cw-eyebrow" data-i18n="b_eyebrow">バックナンバー</p><h1 data-i18n="b_h1">すべてのバックナンバー</h1><p class="lead" data-i18n="b_lead">ごきげん補給所のマガジンを、ざっくりジャンル別に。</p></header>
 {"".join(secs)}<div style="height:72px"></div></div></main></div></body></html>'''
+    for l, d in MB.common_i18n().items(): tr[l].update(d)  # 共通部品（シェアの見出し・フォロー）の訳
     h = MB.add_i18n(h, tr, 'backnumber.i18n.json')
     h = MB.unify_look(h)  # 白い枠なし・Magazine Story なし（全マガジン共通）
     t = json.dumps(tr, ensure_ascii=False, separators=(',', ':'))

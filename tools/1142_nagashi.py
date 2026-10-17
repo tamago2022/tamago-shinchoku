@@ -269,6 +269,8 @@ def throw_devin(job):
 
 def throw_jules(job):
     """0円の口。GitHubのIssueに jules の札を貼る（公式の呼び方）。"""
+    # ★2026-10-18 たまごさん判断：Jules／Codexへの自動依頼は廃止（「使えない。全部閉じていい」）。
+    return None, "Jules／Codexへの自動依頼は廃止（2026-10-18 たまごさん判断）"
     try:
         import shigoto_furu
         r = shigoto_furu.furu("gemini", SAHOU + job["prompt"], title="【Julesに頼む】%s" % job["name"][:40])

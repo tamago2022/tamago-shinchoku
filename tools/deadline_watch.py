@@ -88,7 +88,7 @@ def main():
             issue = m.group(1)
             marker = f"<!--deadline:{repo}:{ms['number']}:{today}:{label}-->"
             body = (f"{marker}\n{'（動作確認の試し投稿）' if test else ''}締め切り{label}（{due_jst:%m/%d %H:%M}）：{ms['title']}\n"
-                    f"完了{c}/{c+o}、残り{o}件。\n@codex 確認を。Gensparkも確認を（このIssueを読んでいます）。\n"
+                    f"完了{c}/{c+o}、残り{o}件。\nGensparkも確認を（このIssueを読んでいます）。\n"
                     f"一覧: {ms['html_url']}")
             existing = api(f"repos/{repo}/issues/{issue}/comments?per_page=100&sort=created&direction=desc")
             if any(marker in (x.get("body") or "") for x in existing):
@@ -98,7 +98,7 @@ def main():
             if not DRY:
                 r = api(f"repos/{repo}/issues/{issue}/comments", "-F", "body=@-", inp=body)
                 print("URL", r["html_url"])
-                outbox(f"【締め切り{label}】{ms['title']}：完了{c}/{c+o}、残り{o}件（{due_jst:%m/%d}）。#{issue}に@codex・Gensparkへ確認コメント済み {r['html_url']}")
+                outbox(f"【締め切り{label}】{ms['title']}：完了{c}/{c+o}、残り{o}件（{due_jst:%m/%d}）。#{issue}にGensparkへ確認コメント済み {r['html_url']}")
 
     # ---- xAI(Grok Voice)の使用量を台帳へ（Lovable voice_usage_log をSELECTのみ。失敗しても続ける）----
     if not DRY and not test:
