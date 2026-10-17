@@ -274,11 +274,8 @@ def youtube_detail(vid):
         seg = m.group(1)
         tt = re.search(r'"title":"((?:[^"\\]|\\.)*)"', seg)
         st = re.search(r'"subtitle":"((?:[^"\\]|\\.)*)"', seg)
-        vv = re.search(r'"videoId":"([\w-]{11})"', seg)
         if tt:
-            music = {"title": _json_str(tt.group(1)), "artist": _json_str(st.group(1)) if st else "",
-                     # YouTube が付けた「元の曲」の動画（公式の音源）。曲ページが無い時の仕入れの手がかり
-                     "videoId": vv.group(1) if vv else ""}
+            music = {"title": _json_str(tt.group(1)), "artist": _json_str(st.group(1)) if st else ""}
     return {"desc": _json_str(d.group(1)) if d else "",
             "title": (t.group(1).replace(" - YouTube", "") if t else ""), "music": music}
 
