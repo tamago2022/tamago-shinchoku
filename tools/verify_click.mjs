@@ -339,6 +339,22 @@ async function main() {
       console.error("---DUMP_TEXT_END---");
     }
 
+    // 35066番一時デバッグ：指定文字列を含むHTML断片を周辺コンテキスト付きでダンプする。
+    // 調査終了後に削除する一時コード。
+    if (process.env.VC_DUMP_HTML_GREP) {
+      const needle = process.env.VC_DUMP_HTML_GREP;
+      const expr = `(() => {
+        const html = document.body.innerHTML;
+        const idx = html.indexOf(${JSON.stringify(needle)});
+        if (idx < 0) return JSON.stringify({ found: false });
+        return JSON.stringify({ found: true, snippet: html.slice(Math.max(0, idx - 600), idx + 300) });
+      })()`;
+      const r = await evalJson(send, expr);
+      console.error("---DUMP_HTML_GREP_START---");
+      console.error(JSON.stringify(r, null, 2));
+      console.error("---DUMP_HTML_GREP_END---");
+    }
+
     const beforeShot = await send("Page.captureScreenshot", { format: "png" });
     if (OUT_JSON) {
       writeFileSync(OUT_JSON.replace(/\.json$/, "") + ".before.png", Buffer.from(beforeShot.data, "base64"));
