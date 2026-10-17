@@ -21,7 +21,7 @@
   python3 tools/sns_shuukan.py tenken            … 投稿先マガジンの点検（80点・関連4曲以上・曲ページリンク）
   python3 tools/sns_shuukan.py douga <週番号|all> … 15秒縦動画（MP4）＋静止画（PNG）を作る
 """
-import datetime, io, json, os, re, subprocess, sys
+import datetime, io, json, os, re, subprocess, sys, urllib.parse
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JRS = os.path.join(os.path.dirname(REPO), "jrs_fix")
@@ -241,7 +241,7 @@ def cmd_honban():
                            capture_output=True, text=True).stdout.split()
         songs = {}
         for ar, so in song_pairs(m):
-            u = "%s/cover-guide?artist=%s&song=%s" % (SITE, ar, so)
+            u = "%s/cover-guide?artist=%s&song=%s" % (SITE, urllib.parse.quote(ar), urllib.parse.quote(so))
             h = subprocess.run(["curl", "-sL", "-m", "40", u], capture_output=True, text=True).stdout
             t = re.search(r'property="og:title" content="([^"]*)"', h)
             t = t.group(1) if t else ""
@@ -421,6 +421,64 @@ def render(week, outdir):
     return mp4, png
 
 
+JNAME = {"ikareru": "怒れる人々", "hoshikatsu": "星勝", "citypop": "シティポップ", "harakami": "レイハラカミ"}
+
+
+def nouhin_name(w, ext):
+    return "SNS週1告知_第%d週_%s%s%s" % (w["week"], JNAME[w["magazine"]], w["cut"], ext)
+
+
+def cmd_junbi(nums, vdir):
+    """サンドボックスで：動画・1コマ目・文章を status/sns_shuukan/nouhin/ に並べる（Macが拾う）。"""
+    import shutil
+    nd = os.path.join(OUTDIR, "nouhin")
+    os.makedirs(nd, exist_ok=True)
+    for w in [x for x in weeks() if x["week"] in nums]:
+        base = "%02d_%s_%s" % (w["week"], w["magazine"], w["cut"])
+        shutil.move(os.path.join(vdir, base + ".mp4"), os.path.join(nd, nouhin_name(w, ".mp4")))
+        shutil.move(os.path.join(vdir, base + "_1koma.png"), os.path.join(nd, nouhin_name(w, "_1コマ目.png")))
+        body = "【第%d週】%s 21:00（予約はまだ。たまごさんの「これで」待ち）\n【マガジン】%s\n【切り口%s】%s\n【事実の出どころ】%s\n\n■1投稿目（文章＋動画）\n%s\n\n■リプ\n%s\n" % (
+            w["week"], w["date"], w["magazine_title"], w["cut"], w["cut_name"], w["konkyo"], w["post1_text"], w["reply_text"])
+        io.open(os.path.join(nd, nouhin_name(w, "_文章.txt")), "w", encoding="utf-8").write(body)
+    print(sorted(os.listdir(nd)))
+
+
+def cmd_nouhin():
+    """Macで：nouhin/ の中身をドライブ「AI制作物/Claude/その他」へ上げ、URLを取って予定表に書く。"""
+    import time, glob
+    sys.path.insert(0, os.path.join(REPO, "tools"))
+    import claude_nouhin as cn
+    nd = os.path.join(OUTDIR, "nouhin")
+    names = sorted(f for f in os.listdir(nd) if not f.startswith("."))
+    for f in names:
+        print("put", f, cn.put(os.path.join(nd, f), anken="その他", move=True).get("ok"))
+    cn.flush()
+    base, why = cn.drive_alive()
+    found = {}
+    for _ in range(30):                                  # ドライブが番号を振るまで最大5分待つ
+        folder = os.path.join(base, "その他") if base else None
+        if folder and os.path.isdir(folder):
+            for f in os.listdir(folder):
+                for n in names:
+                    stem = os.path.splitext(n)[0]
+                    if stem in f and n not in found:
+                        u = cn.drive_url(os.path.join(folder, f))
+                        if u:
+                            found[n] = u
+        if len(found) == len(names):
+            break
+        time.sleep(10)
+    plan = json.load(io.open(PLAN_OUT, encoding="utf-8"))
+    for w in plan["weeks"]:
+        for kind, ext in (("video_drive_url", ".mp4"), ("png_drive_url", "_1コマ目.png"), ("text_drive_url", "_文章.txt")):
+            n = nouhin_name(w, ext)
+            if n in found:
+                w[kind] = found[n]
+    io.open(PLAN_OUT, "w", encoding="utf-8").write(json.dumps(plan, ensure_ascii=False, indent=1))
+    for n in names:
+        print(n, found.get(n, "★URL未取得"))
+
+
 def cmd_plan():
     data = {
         "updatedAt": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -438,7 +496,7 @@ def cmd_plan():
             old = {}
     for x in data["weeks"]:
         o = old.get(x["week"], {})
-        for k in ("approved", "video_drive_url", "buffer_id", "cost"):
+        for k in ("approved", "video_drive_url", "png_drive_url", "text_drive_url", "buffer_id", "cost"):
             if o.get(k) is not None:
                 x[k] = o[k]
     io.open(PLAN_OUT, "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False, indent=1))
@@ -451,6 +509,10 @@ def main():
         cmd_plan()
     elif a[0] == "moji":
         sys.exit(1 if cmd_moji() else 0)
+    elif a[0] == "junbi":
+        cmd_junbi([int(x) for x in a[1].split(",")], a[2])
+    elif a[0] == "nouhin":
+        cmd_nouhin()
     elif a[0] == "honban":
         cmd_honban()
     elif a[0] == "tenken":
