@@ -21,7 +21,7 @@
   python3 tools/sns_shuukan.py tenken            … 投稿先マガジンの点検（80点・関連4曲以上・曲ページリンク）
   python3 tools/sns_shuukan.py douga <週番号|all> … 15秒縦動画（MP4）＋静止画（PNG）を作る
 """
-import datetime, io, json, os, re, subprocess, sys, urllib.parse
+import datetime, io, json, os, re, subprocess, sys, unicodedata, urllib.parse
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JRS = os.path.join(os.path.dirname(REPO), "jrs_fix")
@@ -453,29 +453,40 @@ def cmd_nouhin():
     for f in names:
         print("put", f, cn.put(os.path.join(nd, f), anken="その他", move=True).get("ok"))
     cn.flush()
-    base, why = cn.drive_alive()
+    cmd_url()
+
+
+def cmd_url(nums=(1, 2, 3, 4)):
+    """Macで：ドライブ「その他」から各週のファイルを名前の末尾で探し、URLを予定表に書く（150秒まで）。"""
+    import time
+    sys.path.insert(0, os.path.join(REPO, "tools"))
+    import claude_nouhin as cn
+    ws = [w for w in weeks() if w["week"] in nums]
+    want = {nouhin_name(w, e): (w["week"], k) for w in ws
+            for k, e in (("video_drive_url", ".mp4"), ("png_drive_url", "_1コマ目.png"), ("text_drive_url", "_文章.txt"))}
     found = {}
-    for _ in range(30):                                  # ドライブが番号を振るまで最大5分待つ
+    t0 = time.time()
+    while time.time() - t0 < 150:
+        cn.flush()
+        base, why = cn.drive_alive()
         folder = os.path.join(base, "その他") if base else None
         if folder and os.path.isdir(folder):
             for f in os.listdir(folder):
-                for n in names:
-                    stem = os.path.splitext(n)[0]
-                    if stem in f and n not in found:
+                for n in want:
+                    if unicodedata.normalize("NFC", f).endswith("_" + n) and n not in found:   # Macの名前はNFD
                         u = cn.drive_url(os.path.join(folder, f))
                         if u:
                             found[n] = u
-        if len(found) == len(names):
+        if len(found) == len(want):
             break
         time.sleep(10)
     plan = json.load(io.open(PLAN_OUT, encoding="utf-8"))
     for w in plan["weeks"]:
-        for kind, ext in (("video_drive_url", ".mp4"), ("png_drive_url", "_1コマ目.png"), ("text_drive_url", "_文章.txt")):
-            n = nouhin_name(w, ext)
-            if n in found:
-                w[kind] = found[n]
+        for n, (wk, k) in want.items():
+            if w["week"] == wk:
+                w[k] = found.get(n)
     io.open(PLAN_OUT, "w", encoding="utf-8").write(json.dumps(plan, ensure_ascii=False, indent=1))
-    for n in names:
+    for n in sorted(want):
         print(n, found.get(n, "★URL未取得"))
 
 
@@ -513,6 +524,8 @@ def main():
         cmd_junbi([int(x) for x in a[1].split(",")], a[2])
     elif a[0] == "nouhin":
         cmd_nouhin()
+    elif a[0] == "url":
+        cmd_url()
     elif a[0] == "honban":
         cmd_honban()
     elif a[0] == "tenken":
