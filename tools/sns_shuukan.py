@@ -116,7 +116,7 @@ CUTS = {
         "cards": ["買い換えて\nないので。", "Roland\nSC-88Pro", "ああ、\nなっちゃう。", "rei harakami"],
         "konkyo": "01章（TOWER RECORDS／Red Bull Music Academy）"},
   "D": {"name": "くるり「ばらの花」のリミックスが矢野顕子に届いた",
-        "text": "1曲のリミックスが、矢野顕子に届いた。\n\nくるり「ばらの花 ～remixed by Rei Harakami」。\n2003年、これを聴いた矢野顕子が、ハラカミの才能をキャッチした。\nそこから、ふたりの名前をひとつにしたユニットが生まれる。\n\n最初の数秒で「あ、ハラカミだ」と分かる音、聴いてみますか。\n\n#reiharakami #yanokami",
+        "text": "1曲のリミックスが、矢野顕子に届いた。\n\nくるり「ばらの花 ～remixed by Rei Harakami」。\n2003年、これを聴いた矢野顕子が、ハラカミの才能をキャッチした。\nその先に、ふたりのユニットyanokamiが待っている。\n\n最初の数秒で分かる音、聴いてみますか。\n\n#reiharakami #yanokami",
         "cards": ["1曲のリミックスが、\n矢野顕子に\n届いた。", "くるり\n「ばらの花」\nremixed by\nRei Harakami", "そして、\nyanokami。", "rei harakami"],
         "konkyo": "04章（ヤマハミュージックコミュニケーションズ）"},
  },
@@ -202,8 +202,16 @@ def tenken_one(m):
         has_other = "ほかの特集" in r
         vids = len(set(re.findall(r'videoId:\s*"([A-Za-z0-9_\-]{11})"', s)))
         has_og = "og:title" in r or "head:" in r
-    cg = _cg()
-    exist = [p for p in pairs if ('"%s"' % p[0]) in cg and ('"%s"' % p[1]) in cg]
+    hb = None
+    if os.path.exists(HONBAN):
+        hb = json.load(io.open(HONBAN, encoding="utf-8"))["mags"].get(m["key"])
+    if hb:
+        exist = [p for p in pairs if hb["songs"].get("%s/%s" % p, {}).get("ok")]
+        live = hb["http"] == "200"
+    else:
+        cg = _cg()
+        exist = [p for p in pairs if ('"%s"' % p[0]) in cg and ('"%s"' % p[1]) in cg]
+        live = None
     miss = [p for p in pairs if p not in exist]
     pt = 0
     pt += 30 if len(exist) >= 4 else int(30 * len(exist) / 4)          # 関連4曲以上（曲ページがある曲）
@@ -212,9 +220,37 @@ def tenken_one(m):
     pt += 10 if has_src else 0                                           # 出典
     pt += 10 if has_other else 0                                         # 次の一歩（ほかの特集）
     pt += 10 if has_og else 0                                            # Xのカード
-    return {"magazine": m["key"], "url": m["url"], "score": pt, "pass": pt >= 80 and len(exist) >= 4,
+    return {"magazine": m["key"], "url": m["url"], "score": pt, "pass": pt >= 80 and len(exist) >= 4 and live is not False,
+            "measured": "本番（Macでcurl）" if hb else "手元のデータ（本番未測定）", "page_http": hb["http"] if hb else None,
             "song_links": len(pairs), "song_pages_found": len(exist), "missing": ["%s/%s" % p for p in miss],
             "videos_in_page": vids, "sources": has_src, "other_magazines": has_other, "og": has_og}
+
+
+HONBAN = os.path.join(OUTDIR, "tenken_honban.json")
+
+
+def song_pairs(m):
+    return (_song_links_local(m["local"]) if m["local"] else _song_links_citypop())[1]
+
+
+def cmd_honban():
+    """Macで走らせる（curl）。マガジン本体と、リンク先の曲ページを全部開いて確かめる。"""
+    out = {"at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), "mags": {}}
+    for m in MAGS:
+        r = subprocess.run(["curl", "-sL", "-m", "40", "-o", "/dev/null", "-w", "%{http_code} %{size_download}", m["url"]],
+                           capture_output=True, text=True).stdout.split()
+        songs = {}
+        for ar, so in song_pairs(m):
+            u = "%s/cover-guide?artist=%s&song=%s" % (SITE, ar, so)
+            h = subprocess.run(["curl", "-sL", "-m", "40", u], capture_output=True, text=True).stdout
+            t = re.search(r'property="og:title" content="([^"]*)"', h)
+            t = t.group(1) if t else ""
+            songs["%s/%s" % (ar, so)] = {"og_title": t, "ok": bool(t) and not t.startswith("案内所"), "size": len(h)}
+        out["mags"][m["key"]] = {"http": r[0] if r else "", "size": int(r[1]) if len(r) > 1 else 0, "songs": songs}
+    os.makedirs(OUTDIR, exist_ok=True)
+    io.open(HONBAN, "w", encoding="utf-8").write(json.dumps(out, ensure_ascii=False, indent=1))
+    for k, v in out["mags"].items():
+        print(k, v["http"], sum(1 for x in v["songs"].values() if x["ok"]), "/", len(v["songs"]))
 
 
 def cmd_tenken():
@@ -261,7 +297,7 @@ def _bg_image(key, i):
     im = ImageOps.fit(im, (W, H), centering=(0.5, 0.5))
     g = ImageOps.grayscale(im)
     du = ImageOps.colorize(g, black=(10, 14, 24), white=(150, 160, 175))   # 藍のモノトーン
-    return ImageEnhance.Brightness(du).enhance(0.55)
+    return ImageEnhance.Brightness(du).enhance(0.6)
 
 
 def _draw_text(img, text, size, color, y_center, font=FS, spacing=1.25, track=0.04):
@@ -291,20 +327,51 @@ def _ease(t):
     return 1 - (1 - t) ** 3
 
 
+def _layer(text, size, color, y_center, font=FS, track=0.04):
+    """文字だけの透明レイヤー（1回だけ描いて使い回す＝速い）。"""
+    from PIL import Image
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    _draw_text(im, text, size, color + (255,), y_center, font=font, track=track)
+    return im
+
+
+def _shade(img, amt):
+    from PIL import ImageEnhance
+    return ImageEnhance.Brightness(img).enhance(amt)
+
+
 def render(week, outdir):
     from PIL import Image, ImageDraw, ImageChops
     w = week
     key = w["magazine"]
     cards = w["video_cards"]
-    # 時間割（テンポはゆるめ。1枚目は0フレーム目から全面＝最初の1秒で掴む）
+    # 時間割（テンポはゆるめ）。0〜0.5秒＝朱一色に一番強い一言（最初の1秒で掴む・ショック）
     seg = [(0.0, 3.6), (3.6, 7.0), (7.0, 10.4), (10.4, 12.4)]   # 12.4〜15.0 は締め（題名＋ロゴ半分）
-    grain = _grain(w["week"])
+    SHOCK = 0.5
+    grain = _grain(w["week"]).convert("RGB").point(lambda v: v // 14)
     bgs = [_bg_image(key, i) for i in range(4)]
     icon = Image.open(ICON).convert("RGBA") if os.path.exists(ICON) else None
     os.makedirs(outdir, exist_ok=True)
     base = "%02d_%s_%s" % (w["week"], key, w["cut"])
     mp4 = os.path.join(outdir, base + ".mp4")
     png = os.path.join(outdir, base + "_1koma.png")
+    # 文字レイヤーを先に作る
+    shock = Image.new("RGB", (W, H), SHU)
+    shock.paste(_layer(cards[0], 200, KINARI, H * 0.46), (0, 0), _layer(cards[0], 200, KINARI, H * 0.46))
+    L0 = _layer(cards[0], 190, KINARI if bgs[0] is not None else SHU, H * 0.46)
+    LS = [None] + [_layer(cards[i], 120 if i < 3 else 130, KINARI, H * 0.47) for i in (1, 2, 3)]
+    end = Image.new("RGB", (W, H), KINARI)
+    ttl = w["magazine_title"]
+    ttl = ttl.replace(" 〜", "\n〜") if "〜" in ttl else ttl
+    for lay in (_layer(ttl, 74, AI, H * 0.42, font=FR, track=0.08),
+                _layer("フルは、リプのリンクから。", 44, SHU, H * 0.58, font=FR, track=0.12),
+                _layer("ご き げ ん 補 給 所", 34, AI, H * 0.80 + 190, font=FR, track=0.05),
+                _layer("JOY RELIEF STATION", 22, SHU, H * 0.80 + 240, font=FR, track=0.3)):
+        end.paste(lay, (0, 0), lay)
+    if icon is not None:
+        ic = icon.resize((150, 150))     # ロゴは半分の大きさ・低い位置
+        end.paste(ic, (W // 2 - 75, int(H * 0.80)), ic)
+    plain = Image.new("RGB", (W, H), AI)
     ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
                            "-s", "%dx%d" % (W, H), "-r", str(FPS), "-i", "-",
                            "-f", "lavfi", "-t", str(DUR), "-i", "anullsrc=r=44100:cl=stereo",
@@ -314,50 +381,38 @@ def render(week, outdir):
     nf = int(DUR * FPS)
     for fi in range(nf):
         t = fi / FPS
-        idx = next((i for i, (a, b) in enumerate(seg) if a <= t < b), None)
-        if idx is not None:
-            a, b = seg[idx]
-            lt = (t - a) / (b - a)
-            bg = bgs[idx]
-            if bg is not None:
-                # ゆっくり寄る（見て分かる速度）
-                z = 1.0 + 0.10 * lt
-                cw, ch = int(W / z), int(H / z)
-                frame = bg.crop(((W - cw) // 2, (H - ch) // 2, (W - cw) // 2 + cw, (H - ch) // 2 + ch)).resize((W, H))
-            else:
-                frame = Image.new("RGB", (W, H), AI)
-            if idx == 0:
-                # 1枚目：0フレーム目から朱の太字・全面。最初の0.5秒だけ生成り地→藍へ反転（ショック）
-                if t < 0.5 and bg is None:
-                    frame = Image.new("RGB", (W, H), KINARI)
-                    _draw_text(frame, cards[0], 190, SHU, H * 0.46)
-                else:
-                    _draw_text(frame, cards[0], 190, SHU if bg is None else KINARI, H * 0.46)
-                    if bg is not None:
-                        ImageDraw.Draw(frame).rectangle((W * 0.42, H * 0.70, W * 0.58, H * 0.705), fill=SHU)
-            else:
-                al = _ease(lt / 0.25)
-                layer = frame.copy()
-                _draw_text(layer, cards[idx], 120 if idx < 3 else 130, KINARI, H * 0.47 - 40 * (1 - al))
-                frame = Image.blend(frame, layer, al)
-                if idx == 3:
-                    ImageDraw.Draw(frame).ellipse((W / 2 - 14, H * 0.66, W / 2 + 14, H * 0.66 + 28), fill=SHU)
+        if t < SHOCK:
+            frame = shock.copy()
         else:
-            # 締め：生成り地、マガジン題名（細い明朝）、ロゴは半分の大きさで隅に低く
-            lt = (t - seg[-1][1]) / (DUR - seg[-1][1])
-            frame = Image.new("RGB", (W, H), KINARI)
-            _draw_text(frame, w["magazine_title"].replace(" 〜", "\n〜").replace("、", "、\n", 1) if len(w["magazine_title"]) > 14 else w["magazine_title"],
-                       74, AI, H * 0.42, font=FR, track=0.08)
-            _draw_text(frame, "フルは、リプのリンクから。", 44, SHU, H * 0.58, font=FR, track=0.12)
-            if icon is not None:
-                ic = icon.resize((150, 150))
-                frame.paste(ic, (W // 2 - 75, int(H * 0.80)), ic)
-            _draw_text(frame, "ご き げ ん 補 給 所", 34, AI, H * 0.80 + 190, font=FR, track=0.05)
-            _draw_text(frame, "JOY RELIEF STATION", 22, SHU, H * 0.80 + 240, font=FR, track=0.3)
-            if lt < 0.15:
-                frame = Image.blend(Image.new("RGB", (W, H), AI), frame, _ease(lt / 0.15))
-        # 紙の粒子（手触り）
-        frame = ImageChops.add(frame, grain.convert("RGB").point(lambda v: v // 14), scale=1.0, offset=-6)
+            idx = next((i for i, (a, b) in enumerate(seg) if a <= t < b), None)
+            if idx is not None:
+                a, b = seg[idx]
+                lt = (t - a) / (b - a)
+                bg = bgs[idx]
+                if bg is not None:
+                    z = 1.0 + 0.12 * lt                      # ゆっくり寄る（見て分かる速度）
+                    cw, ch = int(W / z), int(H / z)
+                    frame = bg.crop(((W - cw) // 2, (H - ch) // 2, (W - cw) // 2 + cw, (H - ch) // 2 + ch)).resize((W, H))
+                    frame = _shade(frame, 0.75)
+                else:
+                    frame = plain.copy()
+                if idx == 0:
+                    frame.paste(L0, (0, 0), L0)
+                    ImageDraw.Draw(frame).rectangle((W * 0.42, H * 0.66, W * 0.58, H * 0.665), fill=SHU)
+                else:
+                    al = _ease(lt / 0.22)
+                    dy = int(50 * (1 - al))
+                    lay = LS[idx]
+                    if al < 1:
+                        lay = lay.copy()
+                        lay.putalpha(lay.getchannel("A").point(lambda v: int(v * al)))
+                    frame.paste(lay, (0, dy), lay)
+                    if idx == 3:
+                        ImageDraw.Draw(frame).ellipse((W / 2 - 14, H * 0.68, W / 2 + 14, H * 0.68 + 28), fill=SHU)
+            else:
+                lt = (t - seg[-1][1]) / (DUR - seg[-1][1])
+                frame = end if lt >= 0.15 else Image.blend(plain, end, _ease(lt / 0.15))
+        frame = ImageChops.add(frame, grain, scale=1.0, offset=-6)   # 紙の粒子
         if fi == 0:
             frame.save(png)
         ff.stdin.write(frame.tobytes())
@@ -396,6 +451,8 @@ def main():
         cmd_plan()
     elif a[0] == "moji":
         sys.exit(1 if cmd_moji() else 0)
+    elif a[0] == "honban":
+        cmd_honban()
     elif a[0] == "tenken":
         res = cmd_tenken()
         sys.exit(0 if all(r["pass"] for r in res) else 1)
