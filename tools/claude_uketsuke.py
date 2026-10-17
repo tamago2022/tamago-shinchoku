@@ -247,7 +247,10 @@ def _download(drive_path, num):
     dst_dir = os.path.join(INBOX, str(num))
     os.makedirs(dst_dir, exist_ok=True)
     dst = os.path.join(dst_dir, os.path.basename(drive_path))
-    rc, out, err = run(["gsk", "--no-input", "drive", "download", "--path", drive_path, "--output", dst], timeout=180)
+    # gsk drive download は「今いるフォルダ」に落とす（--output は効かない・10/17 実測）
+    p = subprocess.run(["gsk", "--no-input", "drive", "download", "--path", drive_path],
+                       capture_output=True, text=True, timeout=180, env=ENV, cwd=dst_dir)
+    rc, out, err = p.returncode, p.stdout, p.stderr
     ok = rc == 0 and os.path.exists(dst) and os.path.getsize(dst) > 0
     return dst if ok else None, (out or err or "")[:200]
 
