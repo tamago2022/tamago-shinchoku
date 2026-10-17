@@ -9,6 +9,8 @@
 """
 import json, os
 
+# 2026-10-17 たまごさん：上の共有ボタン（LINE・X等）は一旦外す。別デザインが決まったら True に戻す。
+TOP = False
 HERE = os.path.dirname(os.path.abspath(__file__))
 OFFICIAL_X = 'https://x.com/oasisjoyrelief'   # サイト内の既存リンク（src/components/XFollowBand.tsx）
 OFFICIAL_TIKTOK = 'https://www.tiktok.com/@joyreliefstation'  # サイト内の既存リンク（XFollowBand.tsx）
@@ -88,10 +90,11 @@ def add(h):
     h = R.sub(r'<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-line".*?</svg>', '', h, flags=R.S)
     h = R.sub(r'<script>\(function\(\)\{var c=document\.querySelector\("link\[rel=canonical\]"\).*?</script>', '', h, flags=R.S)
     h = R.sub(r'<style id="cw-share">.*?</style>', '', h, flags=R.S)
-    # 上：ヒーローの直後（目次の前）
-    h, n = R.subn(r'(</header>\s*<div class="cw-wrap">)', lambda m: m.group(1) + bar('top'), h, count=1)
-    if not n:  # ヒーローの無いページ（バックナンバー等）は最初の見出しブロックの直後
-        h = R.sub(r'(</header>)', lambda m: m.group(1) + bar('top'), h, count=1)
+    # 上：2026-10-17 たまごさん「上の共有ボタンは一旦外す（別デザインを探し中）。下だけ残す」→ TOP=False の間は入れない
+    if TOP:
+        h, n = R.subn(r'(</header>\s*<div class="cw-wrap">)', lambda m: m.group(1) + bar('top'), h, count=1)
+        if not n:  # ヒーローの無いページ（バックナンバー等）は最初の見出しブロックの直後
+            h = R.sub(r'(</header>)', lambda m: m.group(1) + bar('top'), h, count=1)
     # 下：締めの直後
     m = R.search(r'<section[^>]*class="cw-close"[^>]*>.*?</section>', h, flags=R.S)
     if m:
@@ -109,7 +112,7 @@ def add(h):
 
 def check(h):
     bad = []
-    if h.count('data-share="top"') != 1: bad.append('上の共有ボタン')
+    if h.count('data-share="top"') != (1 if TOP else 0): bad.append('上の共有ボタン')
     if h.count('data-share="bottom"') != 1: bad.append('下の共有ボタン')
     if 'id="i-line"' not in h: bad.append('アイコン定義')
     return bad
