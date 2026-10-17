@@ -223,6 +223,97 @@ def check_drive(st):
     return len(new)
 
 
+# ── 【納品】受付（2026-10-17 追加・連携のルール #全員へ）──────────────────────
+# 実害：#1015 で Genspark が 11:29 に AI Drive へ原稿を置き Issue に書いたのに、
+#   ①受付係は「新しいIssueのタイトル」しか見ておらずコメントを見ていなかった
+#   ②AI Drive の初回基準（17:42）にその原稿が吸い込まれ「新着」にならなかった
+#   → たまごさんが手で伝えるまで止まった。
+# やること：joy-relief-station の新しいコメントで「【納品】/tamago-inbox/<番号>/<名前>」を拾い、
+#   gsk drive download（無料）で ~/tamago/_inbox/<番号>/ へ取り、発車待ちへ積み、Issue に受領を書く。
+NOUHIN_RE = re.compile(r"【納品】\s*(/[^\s`'\"<>]+)")
+INBOX = os.path.expanduser("~/tamago/_inbox")
+
+
+def _nouhin_paths(body):
+    return [p.rstrip("。.,、）)") for p in NOUHIN_RE.findall(body or "")]
+
+
+def _issue_no(url):
+    m = re.search(r"/issues/(\d+)", url or "")
+    return m.group(1) if m else None
+
+
+def _download(drive_path, num):
+    dst_dir = os.path.join(INBOX, str(num))
+    os.makedirs(dst_dir, exist_ok=True)
+    dst = os.path.join(dst_dir, os.path.basename(drive_path))
+    rc, out, err = run(["gsk", "--no-input", "drive", "download", "--path", drive_path, "--output", dst], timeout=180)
+    ok = rc == 0 and os.path.exists(dst) and os.path.getsize(dst) > 0
+    return dst if ok else None, (out or err or "")[:200]
+
+
+def check_nouhin(st):
+    st.setdefault("nouhinSeen", [])
+    st.setdefault("nouhinSince", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - 6 * 3600)))
+    seen = set(st["nouhinSeen"])
+    repo = REPOS[0]
+    try:
+        rc, out, err = run(["gh", "api", "repos/%s/issues/comments?sort=created&direction=desc&per_page=50&since=%s"
+                            % (repo, st["nouhinSince"])], timeout=90)
+        rows = json.loads(out or "[]") if rc == 0 else []
+    except Exception as e:
+        log("納品コメントが読めない: %r" % (e,))
+        return 0
+    n_ok = 0
+    for c in sorted(rows, key=lambda x: x.get("created_at") or ""):
+        cid = str(c.get("id"))
+        body = c.get("body") or ""
+        if cid in seen or FACTORY_MARK in body:
+            continue
+        paths = _nouhin_paths(body)
+        num = _issue_no(c.get("issue_url") or c.get("html_url"))
+        seen.add(cid)
+        if not paths or not num:
+            continue
+        got, bad = [], []
+        for p in paths[:10]:
+            dst, msg = _download(p, num)
+            (got if dst else bad).append(dst or "%s（%s）" % (p, msg))
+        if got:
+            text = "\n".join([
+                "【タスク】GitHub %s #%s に届いた【納品】を、その Issue の依頼どおりに仕上げて本番公開→Buffer予約→Issueに完了まで通す" % (repo, num),
+                "【受け取ったファイル（Macの中）】" + " ／ ".join(got),
+                "【出どころ】%s" % c.get("html_url"),
+                "【最初にやる】`gh issue view %s -R %s --comments` で依頼と注意（触らない・事実注意・たまごさんの構成指示）を全部読む。" % (num, repo),
+                "【守る】連携のルール（status/renkei/1017_zenin_rule.md）。本文を勝手にリライトしない。未確認は断定にしない。お金・削除・権限変更はしない。",
+                "【公開】マガジンは CLAUDE.md「公開は毎回本番へ」どおり、関所（koutai_kanmon・unify_look・magazine_monogatari_kanmon・prebuild）を通して本番へ。本番が変わったことを koukai_kakunin で確かめる。",
+                "【投稿】公開できたら status/buffer_queue/ に注文票を1枚（憲法28条の型・リンクは自サイト・customScheduled）。",
+                "【返事】同じIssueにコメント（先頭に %s）：本番URL＋予約日時＋未確認。たまごさんを仲介に使わない。" % FACTORY_MARK,
+            ])
+            try:
+                sys.path.insert(0, HERE)
+                import command_ingest
+                status, qmsg = command_ingest.queue_add(text, priority=1, label="GH%s 納品の受け取り" % num, origin="factory")
+            except Exception as e:
+                log("#%s 納品を積めない: %r" % (num, e))
+                seen.discard(cid)
+                continue
+            run(["gh", "issue", "comment", num, "-R", repo, "--body",
+                 "%s\n【Claude Code】納品を受け取りました（%d件）。工場の発車待ちに積みました（%s）。公開とBuffer予約が済んだらここに本番URLを書きます。"
+                 % (FACTORY_MARK, len(got), qmsg)], timeout=40)
+            outbox("【納品受付】#%s %d件" % (num, len(got)), "AI Drive から自動で取得→発車待ちへ（%s）" % qmsg, [c.get("html_url")])
+            log("#%s 納品 %d件を取得・積んだ（%s）" % (num, len(got), qmsg))
+            n_ok += 1
+        if bad:
+            run(["gh", "issue", "comment", num, "-R", repo, "--body",
+                 "%s\n【Claude Code】納品のうち取れなかったもの：%s。AI Drive の `/tamago-inbox/%s/` に同じ名前で置き直してください。"
+                 % (FACTORY_MARK, "、".join(bad), num)], timeout=40)
+            log("#%s 納品の取得失敗: %s" % (num, bad))
+    st["nouhinSeen"] = list(seen)[-3000:]
+    st["nouhinSince"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - 1800))
+    return n_ok
+
+
 def write_public(st, picked, dnew):
     try:
         json.dump({"at": time.strftime("%F %T"), "kankaku": "5分", "repos": REPOS, "mark": TITLE_MARK,
@@ -249,6 +340,10 @@ def main(force=False):
     started = now - 10
     picked = check_issues(st, MAX_PER_RUN)
     st["stats"]["picked"] += picked
+    try:
+        st["stats"]["nouhin"] = st["stats"].get("nouhin", 0) + check_nouhin(st)
+    except Exception as e:
+        log("納品受付で例外: %r" % (e,))
     if picked < MAX_PER_RUN:
         st["since"] = started
     dnew = 0
@@ -270,6 +365,10 @@ def self_test():
     assert _drive_files("fetch failed") is None
     t = instruction("tamago2022/x", {"number": 1, "title": TITLE_MARK + "t", "url": "u", "body": "b", "author": {"login": "a"}})
     assert FACTORY_MARK in t and "gh issue view 1" in t
+    assert _nouhin_paths("【Genspark】\n【納品】/tamago-inbox/1015/a.html\n【納品】 /tamago-inbox/1015/b.md。") == \
+        ["/tamago-inbox/1015/a.html", "/tamago-inbox/1015/b.md"]
+    assert _nouhin_paths("納品しました /x.html") == []
+    assert _issue_no("https://api.github.com/repos/a/b/issues/1015") == "1015"
     print("SELF-TEST OK")
     return 0
 

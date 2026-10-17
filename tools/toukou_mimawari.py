@@ -471,6 +471,17 @@ def collect(jrs_dir=None, net=True):
                 p["songKeys"] = prev["songKeys"]
             posts[p["id"]] = p
         sources[name] = {"n": len(got), "why": why}
+    # 同じ投稿が「Buffer の控え」と「X から取り出した本文」の2つで入る。本文の頭が同じなら、控えの曲キーを写す
+    #（写さないと、本文に出てくる別の人の名前＝原曲の人などで、違う曲に結んでしまう）
+    heads = {}
+    for p in posts.values():
+        if p.get("platform") == "x" and p.get("songKey") and p.get("text"):
+            heads[re.sub(r"\s+", "", p["text"])[:30]] = p["songKey"]
+    for p in posts.values():
+        if p.get("platform") == "x" and not p.get("songKey") and p.get("text"):
+            k = heads.get(re.sub(r"\s+", "", p["text"])[:30])
+            if k:
+                p["songKey"] = k
     # 手で結んだ曲（status/toukou_daicho_config.json の post_song_keys：{投稿ID: [曲キー…]}）。マガジン紹介の投稿など、1本で何曲も扱う時
     for pid, keys in (_read_json(CONFIG, {}).get("post_song_keys") or {}).items():
         if pid in posts:
