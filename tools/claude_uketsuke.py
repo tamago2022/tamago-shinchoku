@@ -14,7 +14,10 @@
   ③ Issue に「受け付けました」をコメント（先頭に <!-- tamago-factory -->＝Gensparkへの返事はIssueで）
   ④ Dispatch へ1行（status/dispatch_outbox.jsonl, type=claude_uketsuke）
   ⑤ 30分に1回、Genspark AI Drive（gsk drive tree）の新しいファイルを拾って Dispatch へ1行
-     （中身の取り込みはしない＝名前と置き場だけ知らせる。無料の一覧取得だけ使う）
+  ⑥ 【納品】（2026-10-18 作り直し）：両リポのどの Issue の【納品】コメントも／AI Drive /tamago-inbox/<番号>/ の新着も
+     取る→積む（kubun=mitai＝週の配分ゲートで止めない）→受領コメント→Dispatch。取れなければ8回まで取り直す。
+     .html は本番URLを見張り、出たら Issue に「公開しました＋URL」→Dispatch。45分出なければ「公開ボタン待ち」を1回。
+     名前が _pipe-test で始まる納品は配管の試験（積まない）。
 
 作るもの：status/claude_uketsuke_state.json（覚え書き）／status/claude_uketsuke.log（300行で刈る）
          status/public/claude_uketsuke.json（進捗表用）。一時ファイルは作らない。
