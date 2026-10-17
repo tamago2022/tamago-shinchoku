@@ -186,63 +186,148 @@ def _curl(url, timeout=30):
         return ""
 
 
-def from_tiktok():
-    html = _curl("https://www.tiktok.com/@%s" % TIKTOK)
-    if not html:
-        return [], "TikTok に届かない（curl 空）"
-    m = re.search(r'<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>(.*?)</script>', html, re.S)
-    items = []
+YT_HANDLE = "joy-relief-station"
+MAX_DETAIL_FETCH = 25  # 1日に詳しく見に行く本数（新しい投稿だけ・叩きすぎない）
+
+
+def _old_posts():
+    return {p["id"]: p for p in (_read_json(DAICHO, {}).get("posts") or []) if p.get("id")}
+
+
+def _json_str(raw):
+    try:
+        return json.loads('"' + raw + '"')
+    except Exception:
+        return raw
+
+
+def tiktok_detail(vid):
+    """TikTok の1本：公開の動画ページから「使った音（曲名・アーティスト）」と本文。取れなければ oEmbed の題。0円・ログイン無し。"""
+    url = "https://www.tiktok.com/@%s/video/%s" % (TIKTOK, vid)
+    html = _curl(url)
+    music, desc, ts = None, "", None
+    i = html.find('"music":{"id"')
+    if i >= 0:
+        seg = html[i:i + 4000]
+        t = re.search(r'"title":"((?:[^"\\]|\\.)*)"', seg)
+        a = re.search(r'"authorName":"((?:[^"\\]|\\.)*)"', seg)
+        orig = re.search(r'"original":(true|false)', seg)
+        if t and not (orig and orig.group(1) == "true"):
+            music = {"title": _json_str(t.group(1)), "artist": _json_str(a.group(1)) if a else ""}
+    m = re.search(r'"desc":"((?:[^"\\]|\\.)*)"', html)
     if m:
+        desc = _json_str(m.group(1))
+    m = re.search(r'"createTime":"?(\d{9,11})', html)
+    if m:
+        ts = int(m.group(1))
+    if not desc:
         try:
-            data = json.loads(m.group(1))
-            scope = data.get("__DEFAULT_SCOPE__") or {}
-            for k, v in scope.items():
-                if "item" in k.lower() and isinstance(v, dict):
-                    for it in (v.get("itemList") or []):
-                        items.append(it)
+            o = json.loads(_curl("https://www.tiktok.com/oembed?url=%s" % urllib.parse.quote(url, safe=":/")) or "{}")
+            desc = o.get("title") or ""
         except Exception:
             pass
-    out = []
-    for it in items:
-        vid = str(it.get("id") or "")
-        desc = it.get("desc") or ""
-        ts = it.get("createTime")
-        out.append({
-            "platform": "tiktok",
-            "via": "tiktok",
-            "at": _dt.datetime.fromtimestamp(int(ts), JST).isoformat() if ts else "",
-            "url": "https://www.tiktok.com/@%s/video/%s" % (TIKTOK, vid),
-            "songKey": song_key_from_text(desc),
-            "text": desc[:200],
-            "id": "tiktok:%s" % vid,
-        })
-    if not out:
-        return [], "TikTok の公開ページから投稿一覧が取れない（ログイン無しでは一覧を返さない形）"
-    return out, ""
+    return {"music": music, "desc": desc, "ts": ts}
+
+
+def from_tiktok():
+    """一覧は公開の「クリエイター埋め込み」ページ（tiktok.com/embed/@名前）から。本人ページはログイン無しだと一覧を返さない。
+    status/toukou_daicho_config.json の tiktok_urls に書いたURLも足す（たまごさんが個別に渡したもの）。"""
+    cfg = _read_json(CONFIG, {})
+    html = _curl("https://www.tiktok.com/embed/@%s" % TIKTOK)
+    ids = {}
+    for mm in re.finditer(r'"id":"(\d{18,20})".{0,400}?"desc":"((?:[^"\\]|\\.)*)"', html, re.S):
+        ids.setdefault(mm.group(1), _json_str(mm.group(2)))
+    for vid in re.findall(r"/video/(\d{18,20})", html):
+        ids.setdefault(vid, "")
+    for u in cfg.get("tiktok_urls") or []:
+        m = re.search(r"/video/(\d{18,20})", u)
+        if m:
+            ids.setdefault(m.group(1), "")
+    old = _old_posts()
+    out, fetched = [], 0
+    for vid, desc in ids.items():
+        pid = "tiktok:%s" % vid
+        prev = old.get(pid) or {}
+        music, ts = prev.get("music"), None
+        if (not prev or not prev.get("music")) and fetched < MAX_DETAIL_FETCH:
+            d = tiktok_detail(vid)
+            fetched += 1
+            music, desc, ts = d["music"] or music, d["desc"] or desc, d["ts"]
+        at = prev.get("at") or (_dt.datetime.fromtimestamp(ts, JST).isoformat() if ts else
+                                _dt.datetime.fromtimestamp(int(vid) >> 32, JST).isoformat())
+        text = desc or prev.get("text") or ""
+        out.append({"platform": "tiktok", "via": "tiktok-embed", "at": at,
+                    "url": "https://www.tiktok.com/@%s/video/%s" % (TIKTOK, vid),
+                    "songKey": song_key_from_text(text) or prev.get("songKey"),
+                    "music": music, "text": text[:300], "id": pid})
+    return out, ("" if out else "TikTok の公開埋め込みページから一覧が取れない")
+
+
+def youtube_detail(vid):
+    """YouTube の1本：公開の再生ページから説明文と「使っている曲」（ショートの音楽の表示）。0円・鍵なし。"""
+    html = _curl("https://www.youtube.com/watch?v=%s" % vid)
+    d = re.search(r'"shortDescription":"((?:[^"\\]|\\.)*)"', html)
+    t = re.search(r"<title>([^<]*)</title>", html)
+    music = None
+    m = re.search(r'"videoAttributeViewModel":\{(.{0,1500})', html)
+    if m:
+        seg = m.group(1)
+        tt = re.search(r'"title":"((?:[^"\\]|\\.)*)"', seg)
+        st = re.search(r'"subtitle":"((?:[^"\\]|\\.)*)"', seg)
+        if tt:
+            music = {"title": _json_str(tt.group(1)), "artist": _json_str(st.group(1)) if st else ""}
+    return {"desc": _json_str(d.group(1)) if d else "",
+            "title": (t.group(1).replace(" - YouTube", "") if t else ""), "music": music}
+
+
+def _yt_channel_id(cfg):
+    ch = cfg.get("youtube_channel_id")
+    if ch:
+        return ch
+    html = _curl("https://www.youtube.com/@%s" % (cfg.get("youtube_handle") or YT_HANDLE))
+    m = re.search(r'"externalId":"(UC[\w-]{20,})"', html) or re.search(r'"channelId":"(UC[\w-]{20,})"', html)
+    if m:
+        cfg["youtube_channel_id"] = m.group(1)
+        _write_json(CONFIG, cfg)
+        return m.group(1)
+    return None
 
 
 def from_youtube():
+    """@joy-relief-station（ショート含む）。新しい15本は公開RSS、それより前はチャンネルのショート一覧ページから。"""
     cfg = _read_json(CONFIG, {})
-    ch = cfg.get("youtube_channel_id")
+    ch = _yt_channel_id(cfg)
     if not ch:
-        return [], "YouTubeショートのチャンネルIDが未登録（status/toukou_daicho_config.json の youtube_channel_id）"
+        return [], "YouTube のチャンネルIDが取れない（@%s）" % (cfg.get("youtube_handle") or YT_HANDLE)
+    vids = {}
     xml = _curl("https://www.youtube.com/feeds/videos.xml?channel_id=%s" % ch)
-    out = []
     for e in re.findall(r"<entry>(.*?)</entry>", xml, re.S):
         vid = (re.search(r"<yt:videoId>([^<]+)", e) or [None, ""])[1]
-        title = (re.search(r"<title>([^<]*)", e) or [None, ""])[1]
-        desc = (re.search(r"<media:description>([^<]*)", e, re.S) or [None, ""])[1]
-        pub = (re.search(r"<published>([^<]+)", e) or [None, ""])[1]
-        out.append({
-            "platform": "youtube",
-            "via": "youtube-rss",
-            "at": pub,
-            "url": "https://www.youtube.com/shorts/%s" % vid,
-            "songKey": song_key_from_text(desc),
-            "text": ("%s %s" % (title, desc))[:200],
-            "id": "yt:%s" % vid,
-        })
-    return out, ("" if out else "YouTube の公開RSSが空")
+        vids[vid] = {"title": (re.search(r"<title>([^<]*)", e) or [None, ""])[1],
+                     "desc": (re.search(r"<media:description>([^<]*)", e, re.S) or [None, ""])[1],
+                     "at": (re.search(r"<published>([^<]+)", e) or [None, ""])[1]}
+    for path in ("shorts", "videos"):
+        page = _curl("https://www.youtube.com/channel/%s/%s" % (ch, path))
+        for vid in re.findall(r'/shorts/([\w-]{11})|"videoId":"([\w-]{11})"', page):
+            v = vid[0] or vid[1]
+            vids.setdefault(v, {"title": "", "desc": "", "at": ""})
+    old = _old_posts()
+    out, fetched = [], 0
+    for vid, info in vids.items():
+        pid = "yt:%s" % vid
+        prev = old.get(pid) or {}
+        music = prev.get("music")
+        title, desc = info["title"] or prev.get("title", ""), info["desc"]
+        if (not prev or not prev.get("music")) and fetched < MAX_DETAIL_FETCH:
+            d = youtube_detail(vid)
+            fetched += 1
+            music, desc, title = d["music"] or music, d["desc"] or desc, title or d["title"]
+        text = ("%s %s" % (title, desc)).strip() or prev.get("text") or ""
+        out.append({"platform": "youtube", "via": "youtube", "at": info["at"] or prev.get("at") or "",
+                    "url": "https://www.youtube.com/shorts/%s" % vid,
+                    "songKey": song_key_from_text(text) or prev.get("songKey"),
+                    "music": music, "title": title, "text": text[:300], "id": pid})
+    return out, ("" if out else "YouTube の公開RSS・一覧が空")
 
 
 def collect(jrs_dir=None, net=True):
@@ -267,6 +352,8 @@ def collect(jrs_dir=None, net=True):
             prev = posts.get(p["id"])
             if prev and prev.get("songKey") and not p.get("songKey"):
                 p["songKey"] = prev["songKey"]
+            if prev and prev.get("songKeys") and not p.get("songKeys"):
+                p["songKeys"] = prev["songKeys"]
             posts[p["id"]] = p
         sources[name] = {"n": len(got), "why": why}
     rows = sorted(posts.values(), key=lambda p: p.get("at") or "")
