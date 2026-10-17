@@ -347,7 +347,7 @@ async function main() {
         const html = document.body.innerHTML;
         const idx = html.indexOf(${JSON.stringify(needle)});
         if (idx < 0) return JSON.stringify({ found: false });
-        return JSON.stringify({ found: true, snippet: html.slice(Math.max(0, idx - 600), idx + 300) });
+        return JSON.stringify({ found: true, snippet: html.slice(Math.max(0, idx - 100), idx + 1400) });
       })()`;
       const r = await evalJson(send, expr);
       console.error("---DUMP_HTML_GREP_START---");
