@@ -245,6 +245,7 @@ INBOX = os.path.expanduser("~/tamago/_inbox")
 DRIVE_ROOT = "/tamago-inbox"
 PROD_BASE = "https://joy-relief-station.lovable.app/"
 RETRY_MAX = 8
+TEST_PREFIX = "_pipe-test"   # この名前で始まる納品は配管の試験（積まない）
 KOUKAI_NOTIFY_SEC = 45 * 60
 KOUKAI_GIVEUP_SEC = 14 * 86400
 
@@ -301,6 +302,12 @@ def prod_url(drive_path, haichi=None):
     if name.endswith(".html"):
         return PROD_BASE + "magazine/" + name
     return None
+
+
+def _ver(v):
+    """x-deployment-id は「psr2.<公開のID>.<時刻>.<毎回変わる文字>」。比べるのは公開のIDだけ（10/18 実測：後ろは1回ごとに変わる）。"""
+    m = re.match(r"(psr\d+\.[0-9a-f-]{36})", v or "")
+    return m.group(1) if m else v
 
 
 def _head(url):
@@ -382,6 +389,13 @@ def _take(st, repo, num, paths, src_url, haichi, why):
     if not got:
         return 0
     urls = [u for u in (prod_url(g, haichi) for g in got) if u]
+    if all(os.path.basename(g).startswith(TEST_PREFIX) for g in got):
+        # 配管の試験（10/18）：取る→受領→Dispatch までは本物と同じ道を通し、仕事は積まない
+        _safe_comment(num, repo, "%s\n【Claude Code】配管の試験：%d件を受け取りました（%s）。試験なので仕事は積みません。" % (FACTORY_MARK, len(got), why))
+        outbox("【納品受付・試験】#%s %d件" % (num, len(got)), "%s → 自動で取得（試験なので積まない）" % why, [src_url])
+        log("#%s 試験の納品 %d件を取得（%s）" % (num, len(got), why))
+        save_state(st)
+        return 1
     try:
         sys.path.insert(0, HERE)
         import command_ingest
@@ -529,7 +543,7 @@ def check_koukai(st):
     keep = []
     for x in st.get("koukaiMachi", []):
         code, ver = _head(x["url"])
-        changed = code == 200 and (x.get("code0") != 200 or (ver and ver != x.get("ver0")))
+        changed = code == 200 and (x.get("code0") != 200 or (_ver(ver) and _ver(ver) != _ver(x.get("ver0"))))
         if changed:
             _safe_comment(x["num"], x["repo"], "%s\n【Claude Code】公開しました：%s" % (FACTORY_MARK, x["url"]))
             outbox("【公開しました】#%s" % x["num"], x["url"], [x["url"]])
@@ -606,6 +620,7 @@ def self_test():
         ["/tamago-inbox/1015/a.html", "/tamago-inbox/1015/b.md"]
     assert _nouhin_paths("納品しました /x.html") == []
     assert _issue_no("https://api.github.com/repos/a/b/issues/1015") == "1015"
+    assert _ver("psr2.f7c018b5-9319-497d-a742-af5b7c6f881a.1792876389.1jdi9") == _ver("psr2.f7c018b5-9319-497d-a742-af5b7c6f881a.1792876392._gzv")
     assert _haichi("配置先: magazine/a.html\n配置先: /tamago-inbox/1/a.html") == ["magazine/a.html"]
     assert prod_url("/tamago-inbox/1018/x.html") == PROD_BASE + "magazine/x.html"
     assert prod_url("/tamago-inbox/1015/x.html", ["public/magazine/x.html"]) == PROD_BASE + "magazine/x.html"
