@@ -75,8 +75,8 @@ def bar(pos):
 SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]"),U=function(){return (c&&c.href)||location.href.split("#")[0].split("?")[0]},'
           'T=function(){return document.title.split("｜")[0].trim()},E=encodeURIComponent,'
           # 下書き（言語ごと）：p＝友だち1人に送る一言（LINE・WhatsApp）、s＝みんなに向けた一言（X・Threads）
-          'D={ja:{o:"「",c:"」",p:"これ、ちょっと読んでみて。おもしろかった。",s:"読み終えて、だれかに渡したくなった。"},en:{o:"“",c:"”",p:"Have a read of this — I enjoyed it.",s:"Finished this and wanted to pass it on."},'
-          '"zh-Hans":{o:"《",c:"》",p:"这篇你读读看，挺有意思的。",s:"读完了，想转给别人看看。"},es:{o:"«",c:"»",p:"Échale un ojo a esto, me ha gustado.",s:"Lo terminé y me dieron ganas de pasarlo."},ko:{o:"「",c:"」",p:"이거 한번 읽어 봐. 재밌더라.",s:"다 읽고 나니 누군가에게 건네고 싶어졌다."}},'
+          'D={ja:{o:"「",c:"」",p:"これ、ちょっと読んでみて。おもしろかった。",s:"読み終えて、だれかに渡したくなった。"},en:{o:"“",c:"”",p:"Have a read of this — I enjoyed it.",s:"Finished this and wanted to pass it on. "},'
+          '"zh-Hans":{o:"《",c:"》",p:"这篇你读读看，挺有意思的。",s:"读完了，想转给别人看看。"},es:{o:"«",c:"»",p:"Échale un ojo a esto, me ha gustado.",s:"Lo terminé y me dieron ganas de pasarlo. "},ko:{o:"「",c:"」",p:"이거 한번 읽어 봐. 재밌더라.",s:"다 읽고 나니 누군가에게 건네고 싶어졌다. "}},'
           'W=function(){return D[document.documentElement.lang]||D.ja};'
           'document.querySelectorAll("[data-share]").forEach(function(b){if(navigator.share)b.classList.add("can-sh");'
           'b.addEventListener("click",function(ev){var a=ev.target.closest("[data-sh]");if(!a)return;var k=a.getAttribute("data-sh"),u=U(),t=T(),h=null;'

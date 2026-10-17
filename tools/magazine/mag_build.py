@@ -96,7 +96,7 @@ def interlude(ph):
 def chapter(c, paper=False):
     parts = [chead(c),
              f'<div class="cw-main">{video(c["main"])}</div>',
-             '<div class="cw-body" style="margin-top:40px">' + ''.join(f'<p>{p}</p>' for p in c['body']) + '</div>']
+             '<div class="cw-body" style="margin-top:40px">' + ''.join(f'<p>{p}</p>' if isinstance(p, str) else say(p['say']) for p in c['body']) + '</div>']  # 本文の合間に吹き出し＝dict(say=…)（2026-10-18 箸休め）
     if c.get('pull'):
         parts.append(f'<blockquote class="cw-pull">{c["pull"]}</blockquote>')
     if c.get('more'):
@@ -283,7 +283,8 @@ TAIL_CSS_OLD = ['.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px
 BACKNUMBER_URL = BASE + 'backnumber.html'  # バックナンバー一覧（全マガジン共通の行き先）
 OTHERS['hoshikatsu'] = (BASE + 'kimi-wa-hoshi-katsu.html', '編曲家・作曲家', '君は星勝を知っているか')
 OTHERS['tsuki01'] = (BASE + 'hito-wa-naze-tsuki-wo-miru-01.html', '月の特集 vol.1', '人はなぜ月を見るのか')
-OTHERS_ORDER = ['tsuki01', 'hoshikatsu', 'harakami', 'ikareru', 'takoukan', 'josh', 'hikigatari', 'citypop']
+OTHERS['odoru01'] = (BASE + 'hito-ga-odoru-01.html', 'シリーズ 人はなぜ踊るのか vol.1', '人が踊るとき')  # 2026-10-18 Genspark納品（#1018）
+OTHERS_ORDER = ['odoru01', 'tsuki01', 'hoshikatsu', 'harakami', 'ikareru', 'takoukan', 'josh', 'hikigatari', 'citypop']
 COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_kk_label': ('▼ The video that started this article', '▼ 促成这篇文章的视频', '▼ El video que dio origen a este artículo', '▼ 이 글을 쓰게 된 계기의 영상'),
     'c_kk_role': ('Where it started', '起因的视频', 'El video que lo empezó', '계기가 된 영상'),
@@ -307,6 +308,8 @@ COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_ot_hikigatari_b': ('Songs that shake the heart, voice and instrument', '震撼心灵的自弹自唱', 'Canciones que estremecen, voz e instrumento', '마음을 울리는 弾き語り'),
     'c_ot_citypop_b': ('The world found Japan\'s night first.', '世界先发现的，日本之夜。', 'El mundo descubrió primero la noche de Japón.', '세계가 먼저 발견한, 일본의 밤.'),
     'c_ot_tsuki01_s': ('Series: When People Look at the Moon vol.1', '系列：人为什么看月亮 vol.1', 'Serie: Por qué miramos la luna vol.1', '시리즈: 사람은 왜 달을 보는가 vol.1'),
+    'c_ot_odoru01_s': ('Series: Why Do People Dance? vol.1', '系列：人为什么跳舞 vol.1', 'Serie: ¿Por qué bailamos? vol.1', '시리즈: 사람은 왜 춤추는가 vol.1'),
+    'c_ot_odoru01_b': ('When People Dance', '人跳舞的时候', 'Cuando la gente baila', '사람이 춤출 때'),
     'c_ot_tsuki01_b': ('Why Do We Look at the Moon?', '人为什么看月亮', '¿Por qué miramos la luna?', '사람은 왜 달을 보는가'),
 }
 _LG4 = ['en', 'zh-Hans', 'es', 'ko']
@@ -486,6 +489,9 @@ def unify_look(h):
     # ⑤ 共有ボタン（上と下の2か所・全マガジン共通）＝ tools/magazine/share_bar.py
     import share_bar
     h = share_bar.add(h)
+    # ⑩ 雰囲気の静止画（2026-10-18・全マガジン5〜6枚）＝ tools/magazine/fuukei.py
+    import fuukei
+    h = fuukei.add(h)
     return h
 
 
@@ -510,6 +516,8 @@ def look_check(h):
     if R.search(r'class="cw-video__play"[^>]*>\s*<svg', h): bad.append('再生ボタンの形が違う')
     import share_bar
     bad += share_bar.check(h)
+    import fuukei
+    bad += fuukei.check(h)
     return bad
 
 
