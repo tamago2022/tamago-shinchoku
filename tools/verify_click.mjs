@@ -170,13 +170,24 @@ async function evalJson(send, expression) {
 }
 
 // 押せる要素の「状態」を取る式（クリック前後で同じものを2回評価して比較する）
+//
+// 案件#35066実測（joy-relief-station「日本の美しい宿」棚）：動画の再生ボタンを
+// 複数連続でクリックすると、1回目（MiniPlayer新規マウント）は htmlLen が1000文字以上
+// 増えて正しく「変化あり」と判定されるが、2回目以降（既存iframeのsrc差し替えだけ）は
+// htmlLen の差が30〜-6文字程度（同じ11桁のYouTube動画IDが別の11桁に変わるだけ）に収まり、
+// textHash・scrollY・openDialogCountも動かないため、実際には再生曲が正しく切り替わって
+// いるのに「押しても無反応」と誤FAILしていた（実機確認：iframeのsrcはクリックごとに
+// 正しく別の動画IDへ変化していた＝実装は壊れていない、検品側の見落とし）。
+// iframe/video/audioのsrc属性（連結ハッシュ）をスナップショットに加え、
+// メディアの切り替えもここで検出できるようにする。
 const SNAPSHOT_EXPR = `JSON.stringify({
   url: location.href,
   scrollY: Math.round(window.scrollY),
   textLen: (document.body.innerText || '').length,
   textHash: (document.body.innerText || '').length + ':' + (document.body.innerText || '').slice(0, 40),
   htmlLen: document.documentElement.outerHTML.length,
-  openDialogCount: document.querySelectorAll('[role="dialog"], dialog[open], [aria-modal="true"]').length
+  openDialogCount: document.querySelectorAll('[role="dialog"], dialog[open], [aria-modal="true"]').length,
+  mediaSrcHash: Array.from(document.querySelectorAll('iframe[src], video[src], audio[src]')).map(el => el.src).join('|')
 })`;
 
 // 案件#800実測：querySelectorAllの通し番号(i)でクリック対象を再取得すると、直前のクリックで
@@ -337,53 +348,6 @@ async function main() {
       console.error("---DUMP_TEXT_START---");
       console.error(textRes.result?.value || "");
       console.error("---DUMP_TEXT_END---");
-    }
-
-    // 35066番一時デバッグ：指定文字列を含むHTML断片を周辺コンテキスト付きでダンプする。
-    // 調査終了後に削除する一時コード。
-    if (process.env.VC_DUMP_HTML_GREP) {
-      const needle = process.env.VC_DUMP_HTML_GREP;
-      const expr = `(() => {
-        const html = document.body.innerHTML;
-        const idx = html.indexOf(${JSON.stringify(needle)});
-        if (idx < 0) return JSON.stringify({ found: false });
-        return JSON.stringify({ found: true, snippet: html.slice(Math.max(0, idx - 100), idx + 1400) });
-      })()`;
-      const r = await evalJson(send, expr);
-      console.error("---DUMP_HTML_GREP_START---");
-      console.error(JSON.stringify(r, null, 2));
-      console.error("---DUMP_HTML_GREP_END---");
-    }
-
-    // 35066番一時デバッグ：VC_CLICK_SEQUENCE="ラベル1|ラベル2|..." を順にクリックし、
-    // 各クリック前後のhtmlLen等を記録する（2回目以降のクリックで変化が小さくなるか確認）。
-    if (process.env.VC_CLICK_SEQUENCE) {
-      const labels = process.env.VC_CLICK_SEQUENCE.split("|");
-      const snapExpr = `JSON.stringify({
-        textLen: (document.body.innerText||'').length,
-        htmlLen: document.documentElement.outerHTML.length,
-        hasMiniPlayer: !!document.querySelector('iframe[src*="youtube"]'),
-        iframeSrc: (document.querySelector('iframe[src*="youtube"]')||{}).src || null
-      })`;
-      const results = [];
-      for (const label of labels) {
-        const before = await evalJson(send, snapExpr);
-        const clickExpr = `(() => {
-          const btns = Array.from(document.querySelectorAll('button'));
-          const b = btns.find(x => (x.getAttribute('aria-label')||'') === ${JSON.stringify(label)});
-          if (!b) return JSON.stringify({ ok: false, reason: 'not found' });
-          b.scrollIntoView({ block: 'center' });
-          b.click();
-          return JSON.stringify({ ok: true });
-        })()`;
-        const clickRes = await evalJson(send, clickExpr);
-        await sleep(1500);
-        const after = await evalJson(send, snapExpr);
-        results.push({ label, clickRes, before, after, htmlLenDiff: (after?.htmlLen||0) - (before?.htmlLen||0) });
-      }
-      console.error("---CLICK_SEQUENCE_START---");
-      console.error(JSON.stringify(results, null, 2));
-      console.error("---CLICK_SEQUENCE_END---");
     }
 
     const beforeShot = await send("Page.captureScreenshot", { format: "png" });
@@ -590,7 +554,11 @@ async function main() {
               Math.abs((before.scrollY || 0) - (after.scrollY || 0)) > 5 ||
               before.textHash !== after.textHash ||
               Math.abs((before.htmlLen || 0) - (after.htmlLen || 0)) > HTML_LEN_NOISE_THRESHOLD ||
-              before.openDialogCount !== after.openDialogCount)));
+              before.openDialogCount !== after.openDialogCount ||
+              // 案件#35066：動画/音声の再生ボタンは、2回目以降の曲切り替えだと
+              // iframe・videoのsrc属性（同じ桁数のIDが別IDへ変わるだけ）しか動かず、
+              // htmlLenの差がノイズ閾値に収まってしまう。src自体の変化を直接見る。
+              (before.mediaSrcHash || "") !== (after.mediaSrcHash || ""))));
 
       // 案件#795実測（GitHub Pages版 tamago-shinchoku 進捗表・#740の教訓と同型）：
       // 「要素が見つかりませんでした（クリック前にDOMから消えた）」は、その要素自身が
