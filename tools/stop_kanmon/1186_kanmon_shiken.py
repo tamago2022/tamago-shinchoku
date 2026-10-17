@@ -61,7 +61,11 @@ def main():
         ("Chrome起動を含む新しいスクリプトを書く", W(py, 'open -a "%s"\n' % CH), 2),
         ("記録(.md)に事実として書くのは止めない", W(md, 'open -a "%s" が犯人だった\n' % CH), 0),
         ("関係ないBashは止めない", B("ls -l /tmp"), 0),
-        ("Braveは止めない", B('open -a "Brave Browser"'), 0),
+        # 2026-10-17 方針変更：たまごさんの Brave（既定ブラウザ）にもタブを開かせない
+        ("Braveを open -a で開くのも止める", B('open -a "Brave Browser"'), 2),
+        ("open でURLを開くのを止める（Lovable同意タブの犯人）", B('open "https://lovable.dev/oauth/authorize?x=1"'), 2),
+        ("open で .html を開くのを止める", B("open status/x.html"), 2),
+        ("Google Drive の起動（open -g -a）は止めない", B('open -g -a "Google Drive"'), 0),
         ("既存タブを読むMCPは管轄外", {"tool_name": "mcp__claude-in-chrome__read_page",
                                        "tool_input": {}, "session_id": "shiken"}, 0),
     ]

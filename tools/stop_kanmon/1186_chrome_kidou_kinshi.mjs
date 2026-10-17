@@ -44,6 +44,35 @@ try {
 
 // ── 止める形 ───────────────────────────────────────────────
 const RULES = [
+  // ── 2026-10-17 追加：たまごさんの Brave（既定ブラウザ）にタブを開かせない ──
+  //   実測：子セッション（q35008・10/16 12:39）が Bash で `open "https://lovable.dev/oauth/authorize…"` を2回打ち、
+  //   既定ブラウザ＝たまごさんの Brave に同じ丸いアイコン（Lovable）のタブを積んでいた。
+  //   承認・同意・ログインの画面は人の手が要る＝開かずに Dispatch に「押すURL」を1行出す（status/kagi_shounin_url.json）。
+  {
+    name: "open-url-default-browser",
+    rx: /(^|[\s;&|(`"'])open\s+(-[a-zA-Z]+\s+)*["']?https?:\/\//i,
+    say: "open でURLを開いている（既定ブラウザ＝たまごさんの Brave にタブが積まれる）。同意・承認URLは開かずに Dispatch へ1行",
+  },
+  {
+    name: "open-html-file",
+    rx: /(^|[\s;&|(`"'])open\s+(-[a-zA-Z]+\s+)*["']?[^\s"'<>|;&]+\.(html?|webloc|url)\b/i,
+    say: "open で .html を開いている（既定ブラウザ＝たまごさんの Brave で開く）",
+  },
+  {
+    name: "open-brave",
+    rx: /\bopen\b[^\n;|&]*-[a-zA-Z]*a[a-zA-Z]*\s+["']?(\/Applications\/)?(Brave Browser|Safari|Arc|Firefox)(\.app)?["']?/i,
+    say: "open -a でたまごさんのブラウザ（Brave 等）を開いている",
+  },
+  {
+    name: "webbrowser-open",
+    rx: /\bwebbrowser\.(open|open_new|open_new_tab)\s*\(|shell\.openExternal\(|\bimport\s+open\s+from\s+["']open["']/,
+    say: "プログラムから既定ブラウザでURLを開いている（Brave にタブが積まれる）",
+  },
+  {
+    name: "osascript-brave",
+    rx: /osascript[^\n]*Brave|tell application ["']Brave Browser["']/i,
+    say: "osascript で Brave を触っている",
+  },
   {
     name: "open-chrome",
     rx: /\bopen\b[^\n;|&]*-[a-zA-Z]*a[a-zA-Z]*\s+["']?(\/Applications\/)?Google Chrome(\.app)?["']?/i,

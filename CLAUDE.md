@@ -53,7 +53,7 @@
 - 誰がどこを読むか：チャットのClaude＝Vault／Codex・Jules＝GitHubのdocs/genzaichi.md／Claude Code＝この正本
 
 ## 鍵・ログインで人を動かさない（憲法・2026-10-04）
-- **「ログイン・許可・承認して」とたまごさんに頼む前に、自分で開けに行く（2026-10-04・たまごさん指示）。** まず `/Users/mac/tamago/tamago-shinchoku/status/kagi_seimei.md`（鍵の生死・毎朝自動）と `status/kagi_shounin_url.json`（同意の承認URL）を見て、別の道具（curl・gh・API・承認URLを自分で開く）で通す。頼んでよいのは**パスワード・二段階認証・初回登録・お金の支払い**だけ。
+- **「ログイン・許可・承認して」とたまごさんに頼む前に、自分で開けに行く（2026-10-04・たまごさん指示）。** まず `/Users/mac/tamago/tamago-shinchoku/status/kagi_seimei.md`（鍵の生死・毎朝自動）と `status/kagi_shounin_url.json`（同意の承認URL）を見て、別の道具（curl・gh・API）で通す。**承認・同意のURLを `open` でたまごさんのブラウザ（Brave）に開かない**（2026-10-17：子が `open "https://lovable.dev/oauth/authorize…"` を打ち、Brave に同じアイコンのタブが積まれた。関所 `tools/stop_kanmon/1186_chrome_kidou_kinshi.mjs` が `open URL`・`open *.html`・`open -a Brave`・`webbrowser.open` を拒否する）。人の手が要るURLは Dispatch に1行出す。頼んでよいのは**パスワード・二段階認証・初回登録・お金の支払い**だけ。
 
 ## 設定（ルール）は機械の裏付けとセットで書く（憲法・2026-08-07言われ→2026-10-09判定日赤を受けて明記・34683号）
 - **たまごさんの言葉（2026-08-07 02:06・一言）：「設定が効いていない気がする。CLAUDE.mdを読み直して」。** 何の設定かの指定は無かった。1ヶ月以上未着手のまま判定日赤になった。
