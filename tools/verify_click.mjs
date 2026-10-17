@@ -339,6 +339,53 @@ async function main() {
       console.error("---DUMP_TEXT_END---");
     }
 
+    // 35066番一時デバッグ：指定文字列を含むHTML断片を周辺コンテキスト付きでダンプする。
+    // 調査終了後に削除する一時コード。
+    if (process.env.VC_DUMP_HTML_GREP) {
+      const needle = process.env.VC_DUMP_HTML_GREP;
+      const expr = `(() => {
+        const html = document.body.innerHTML;
+        const idx = html.indexOf(${JSON.stringify(needle)});
+        if (idx < 0) return JSON.stringify({ found: false });
+        return JSON.stringify({ found: true, snippet: html.slice(Math.max(0, idx - 100), idx + 1400) });
+      })()`;
+      const r = await evalJson(send, expr);
+      console.error("---DUMP_HTML_GREP_START---");
+      console.error(JSON.stringify(r, null, 2));
+      console.error("---DUMP_HTML_GREP_END---");
+    }
+
+    // 35066番一時デバッグ：VC_CLICK_SEQUENCE="ラベル1|ラベル2|..." を順にクリックし、
+    // 各クリック前後のhtmlLen等を記録する（2回目以降のクリックで変化が小さくなるか確認）。
+    if (process.env.VC_CLICK_SEQUENCE) {
+      const labels = process.env.VC_CLICK_SEQUENCE.split("|");
+      const snapExpr = `JSON.stringify({
+        textLen: (document.body.innerText||'').length,
+        htmlLen: document.documentElement.outerHTML.length,
+        hasMiniPlayer: !!document.querySelector('iframe[src*="youtube"]'),
+        iframeSrc: (document.querySelector('iframe[src*="youtube"]')||{}).src || null
+      })`;
+      const results = [];
+      for (const label of labels) {
+        const before = await evalJson(send, snapExpr);
+        const clickExpr = `(() => {
+          const btns = Array.from(document.querySelectorAll('button'));
+          const b = btns.find(x => (x.getAttribute('aria-label')||'') === ${JSON.stringify(label)});
+          if (!b) return JSON.stringify({ ok: false, reason: 'not found' });
+          b.scrollIntoView({ block: 'center' });
+          b.click();
+          return JSON.stringify({ ok: true });
+        })()`;
+        const clickRes = await evalJson(send, clickExpr);
+        await sleep(1500);
+        const after = await evalJson(send, snapExpr);
+        results.push({ label, clickRes, before, after, htmlLenDiff: (after?.htmlLen||0) - (before?.htmlLen||0) });
+      }
+      console.error("---CLICK_SEQUENCE_START---");
+      console.error(JSON.stringify(results, null, 2));
+      console.error("---CLICK_SEQUENCE_END---");
+    }
+
     const beforeShot = await send("Page.captureScreenshot", { format: "png" });
     if (OUT_JSON) {
       writeFileSync(OUT_JSON.replace(/\.json$/, "") + ".before.png", Buffer.from(beforeShot.data, "base64"));
