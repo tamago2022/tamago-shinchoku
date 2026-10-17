@@ -83,6 +83,10 @@ def newest(p, limit=5000):
 def rm(p):
     if any(f in p for f in FORBIDDEN):
         return False
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import browser_mamoru  # 2026-10-17 ブラウザ（Brave・Chrome）のフォルダは一切触らない
+    if browser_mamoru.mamoru(p):
+        return False
     if os.path.isdir(p) and not os.path.islink(p):
         shutil.rmtree(p, ignore_errors=True)
     else:
