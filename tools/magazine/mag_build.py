@@ -3,6 +3,18 @@
 import html as H
 import os
 
+# 【10-18確定】マガジンの正式な型＝「怒れる人々 vol.1」（CLAUDE.md「マガジン」節と同じ内容。見本 https://joy-relief-station.lovable.app/magazine/ikareru-01.html）
+MAGAZINE_KATA_1018 = """
+1. つかみ（open・big・door）→ 章（10本前後）→ 締め（close）。章と章は「つなぎ」の一文（bridge）で物語として流す。
+2. 章頭（chead）：①小さくユーモアのある一言（catch）②曲名（artist - song）③形式（album）④年（year）⑤「この曲のページへ →」（song_pages.json から自動）。
+3. 本文は燃え殻の温度＋コラムニストの笑い。情報は削らず裏話でぎゅっと。事実は全部出典つき（src()）。生活の一コマを混ぜる。
+4. 吹き出し（卵コンシェルジュ。各章の末尾の欄か、本文の合間に dict で挿む）：運営アイコン・肩書きなし。1つに役割1つ。笑い（箸休め）と出典つきの濃い裏ネタを半々。章の半分〜3分の2に1つ。
+5. 雰囲気の静止画 5〜6枚以上（interlude()＝章の after／fuukei.py）。CC BY・BY-SA・CC0・PD だけ。撮影年・撮影者・ライセンス・元ページを小さく。軽いwebp・遅延読み込み。
+6. 終わり（unify_tail＋share_bar）：締め →「この特集をシェア」→ きっかけの動画 → 出典 → OTHER MAGAZINES → すべてのバックナンバー →「ごきげん補給所をフォロー」。
+7. 5言語（ja/en/zh-Hans/es/ko・tools/magazine/i18n_<key>.json）。曲名・アルバム名は意訳しない（「俺ら東京さ行ぐだ」はどの言語でも「俺ら東京さ行ぐだ」のまま。読みや意味を添えるのは可、置き換えは不可）。
+見た目は全マガジン同じ（unify_look・unify_look.py --check）。制作側の注記は読者に出さない（SEISAKU_NG）。存在しないことを書かない。
+"""
+
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CW_CSS = open(os.path.join(REPO, 'tools/magazine/cw_inline.css'), encoding='utf-8').read()
 AVATAR = 'assets/owner/x-avatar.jpg'
@@ -386,10 +398,24 @@ def stamp_keys(h):
     return ua.stamp(h)[0]
 
 
+# unify_tail／unify_look があとで外す部分（ほかの特集・参考動画・曲の一覧）。訳キーを振る前に外す。
+# 外さないと、ここの要素がキー番号を食い、OTHERS に特集が1つ増えるたびに後ろの訳（写真の説明・出典・吹き出し）が全部ずれる
+# （2026-10-18 実測：odoru01 を足したら怒れる人々の k146→k148 にずれ、英語を選ぶと写真の説明が隣の写真の文になる）。
+REMOVED_RE = [r'<section[^>]*class="cw-other"[^>]*>.*?</section>', r'<section[^>]*class="cw-ref"[^>]*>.*?</section>',
+              r'<section[^>]*class="cw-mapwrap"[^>]*>.*?</section>']
+
+
+def strip_removed(h):
+    import re as R
+    for p in REMOVED_RE:
+        h = R.sub(p, '', h, flags=R.S)
+    return h
+
+
 def build(m):  # noqa: F811
     h = _build_i18n(m)
     if m.get('i18n'):
-        h = stamp_keys(h)
+        h = stamp_keys(strip_removed(h))
     return unify_tail(h, m['key'])
 
 
@@ -526,3 +552,59 @@ _build_look = build
 
 def build(m):  # noqa: F811
     return unify_look(_build_look(m))
+
+
+# ===== 訳は「キー番号」でなく「日本語の文」で付け直す（2026-10-18・全マガジン共通）=====
+# stamp() は要素の出てくる順に k1.. を振るので、段落や写真を1つ足し引きすると後ろの番号が全部ずれる。
+# そこで write() のたびに、前回の本番の写し（status/magazine_prod）の「キー→日本語の文」と新しいHTMLを突き合わせ、
+# 同じ文には同じ訳を付け直す。文が変わった要素は訳なし（古い訳を違う文に当てない）。付け直した訳は訳ファイル（tools/magazine/i18n_<key>.json）へ書き戻す。
+def key_texts(h):
+    import re as R
+    from bs4 import BeautifulSoup
+    out = {}
+    for el in BeautifulSoup(h, 'html.parser').select('[data-i18n]'):
+        k = el.get('data-i18n') or ''
+        if k.startswith('k') and k[1:].isdigit():
+            out[k] = R.sub(r'\s+', ' ', el.decode_contents()).strip()
+    return out
+
+
+def remap_i18n(tr, old_html, new_html):
+    """返り：(付け直した訳, 訳の無いキー [(キー, 日本語の頭40字), …])"""
+    old, new = key_texts(old_html), key_texts(new_html)
+    by_text = {}
+    for k, t in old.items():
+        by_text.setdefault(t, []).append(k)
+    out = {l: {k: v for k, v in d.items() if not (k.startswith('k') and k[1:].isdigit())} for l, d in tr.items()}
+    missing = []
+    for nk, t in new.items():
+        oks = by_text.get(t) or []
+        ok = oks.pop(0) if oks else None
+        hit = False
+        for l, d in tr.items():
+            if l.startswith('_'):
+                continue
+            if ok and ok in d:
+                out[l][nk] = d[ok]; hit = True
+        if not hit:
+            missing.append((nk, t[:40]))
+    return out, missing
+
+
+_write_look = write
+
+
+def write(m):  # noqa: F811
+    if m.get('i18n'):
+        import json as J
+        old_p = os.path.join(REPO, 'status/magazine_prod', PROD[m['key']])
+        if os.path.exists(old_p):
+            tr, missing = remap_i18n(m['i18n'], open(old_p, encoding='utf-8').read(), build(m))
+            m['i18n'] = tr
+            src_json = m.get('i18n_path') or os.path.join(REPO, 'tools/magazine', f'i18n_{m["key"]}.json')
+            if os.path.exists(src_json):
+                open(src_json, 'w', encoding='utf-8').write(J.dumps(tr, ensure_ascii=False, indent=1))
+            if missing:
+                import sys as _s
+                print('★訳なし（新しい文・変わった文）: ' + '、'.join(f'{k}「{t}」' for k, t in missing), file=_s.stderr)
+    return _write_look(m)
