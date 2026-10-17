@@ -134,8 +134,6 @@ APP_CACHE_ROOTS = (
     # Sparkle(多くのMacアプリの自動更新機構)のダウンロード・インストールキャッシュ。
     # 更新後も旧バージョンのインストーラを消さずに溜め込む（Codex実測1.3GB）。
     os.path.join(HOME, "Library/Caches/com.openai.codex/org.sparkle-project.Sparkle"),
-    os.path.join(HOME, "Library/Caches/com.brave.Browser/org.sparkle-project.Sparkle/PersistentDownloads"),
-    os.path.join(HOME, "Library/Application Support/BraveSoftware/Brave-Browser/component_crx_cache"),
     os.path.join(HOME, "Library/Caches/notion-updater"),
     # pipのHTTPキャッシュ。再ダウンロードで作り直せる（実測439MB）。
     os.path.join(HOME, "Library/Caches/pip"),
@@ -602,6 +600,14 @@ def candidates():
 def safe_remove(path, kind):
     if not is_allowed(path):
         log("⛔スキップ(許可範囲外・壺金庫ガード): %s" % path)
+        return 0
+    try:  # 2026-10-17 ブラウザ（Brave・Chrome）のフォルダは一切触らない（tools/browser_mamoru.py）
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import browser_mamoru
+        if browser_mamoru.mamoru(path):
+            log("⛔スキップ(ブラウザのフォルダ): %s" % path)
+            return 0
+    except Exception:
         return 0
     before = dir_size_mb(path)
     try:

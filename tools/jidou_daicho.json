@@ -174,6 +174,12 @@
   "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
   "kari": true
  },
+ "_kimari_browser": {
+  "tsukuru": "-",
+  "okiba": "-",
+  "kesu": "-",
+  "kimari": "2026-10-17 どの片付け係もブラウザ（Brave・Chrome）のフォルダは一切触らない。消す関数の頭で tools/browser_mamoru.py の mamoru(path) を通す（shimau・youryou_jougen・youryou_kyuukyuu・disk_guardian に組み込み済み）。"
+ },
  "admin_login_mimawari.py": {
   "tsukuru": "記録だけ（status/ のファイル）",
   "okiba": "tamago-shinchoku/status",
@@ -305,7 +311,8 @@
  "com.tamago.disk-guardian": {
   "tsukuru": "記録だけ（掃除する側）",
   "okiba": "tamago-shinchoku/status",
-  "kesu": "自分が片付け役"
+  "kesu": "自分が片付け役",
+  "browser": "触らない（tools/browser_mamoru.py・2026-10-17）"
  },
  "com.tamago.genzaichi-sync": {
   "tsukuru": "記録だけ（status/ のファイル）",
@@ -709,7 +716,8 @@
  "shimau.py": {
   "tsukuru": "記録だけ（片付ける側）",
   "okiba": "status/public/shimau.json",
-  "kesu": "自分が片付け役"
+  "kesu": "自分が片付け役",
+  "browser": "触らない（tools/browser_mamoru.py・2026-10-17）"
  },
  "shukudai.py": {
   "tsukuru": "記録だけ（status/ のファイル）",
@@ -828,13 +836,15 @@
  "youryou_jougen.py": {
   "tsukuru": "記録だけ（片付ける側）",
   "okiba": "status/public/youryou_jougen.json",
-  "kesu": "自分が片付け役"
+  "kesu": "自分が片付け役",
+  "browser": "触らない（tools/browser_mamoru.py・2026-10-17）"
  },
  "youryou_kyuukyuu.py": {
   "tsukuru": "自動操作ブラウザ・動画・音の中間物・AI作業・制作フォルダ・キャッシュ・iMac HDD",
   "okiba": "自動操作ブラウザ・動画・音の中間物・AI作業・制作フォルダ・キャッシュ・iMac HDD",
   "kesu": "chukan_shimau（中間物2時間）・claude_nouhin（完成品→HDD/ドライブ）＋chukan_shimau・shimau（HDDの置き場を日数で）・youryou_jougen --tsukaisute（playwright*・puppeteer* を1時間）・youryou_jougen（キャッシュ上限6GB）",
-  "kari": true
+  "kari": true,
+  "browser": "触らない（tools/browser_mamoru.py・2026-10-17）"
  },
  "youryou_kyuukyuu2.py": {
   "tsukuru": "AI作業・制作フォルダ・iMac HDD",
@@ -896,5 +906,15 @@
   "okiba": "tamago-shinchoku/status",
   "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
   "kari": true
+ },
+ "claude_uketsuke.py": {
+  "tsukuru": "記録だけ（status/claude_uketsuke_state.json・status/claude_uketsuke.log・status/public/claude_uketsuke.json）。一時フォルダ・ブラウザ・複製は作らない",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "自分で刈る（log 300行・seen 2000件・driveSeen 5000件）＋youryou_jougen（status/*.log 上限50MB）"
+ },
+ "toukou_mimawari.py": {
+  "tsukuru": "記録（status/public/toukou_daicho.json 投稿の台帳・status/public/toukou_tenken.json 点検結果・status/toukou_mimawari.log）＋点検のときだけ joy-relief-station の一時の作業場（/private/tmp/toukou_wt_*・node_modulesは手元の複製へのリンク）",
+  "okiba": "tamago-shinchoku/status・/private/tmp/toukou_wt_*",
+  "kesu": "自分（点検の最後に git worktree remove＋rmtree）＋worktree_taihi（10分おき・置き去りの作業場）＋youryou_jougen（status/*.log 上限50MB・/private/tmp 3GB）"
  }
 }
