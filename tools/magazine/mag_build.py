@@ -282,7 +282,8 @@ TAIL_CSS_OLD = ['.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px
                 '.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}']
 BACKNUMBER_URL = BASE + 'backnumber.html'  # バックナンバー一覧（全マガジン共通の行き先）
 OTHERS['hoshikatsu'] = (BASE + 'kimi-wa-hoshi-katsu.html', '編曲家・作曲家', '君は星勝を知っているか')
-OTHERS_ORDER = ['hoshikatsu', 'harakami', 'ikareru', 'takoukan', 'josh', 'hikigatari', 'citypop']
+OTHERS['tsuki01'] = (BASE + 'hito-wa-naze-tsuki-wo-miru-01.html', '月の特集 vol.1', '人はなぜ月を見るのか')
+OTHERS_ORDER = ['tsuki01', 'hoshikatsu', 'harakami', 'ikareru', 'takoukan', 'josh', 'hikigatari', 'citypop']
 COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_kk_label': ('▼ The video that started this article', '▼ 促成这篇文章的视频', '▼ El video que dio origen a este artículo', '▼ 이 글을 쓰게 된 계기의 영상'),
     'c_kk_role': ('Where it started', '起因的视频', 'El video que lo empezó', '계기가 된 영상'),
@@ -305,6 +306,8 @@ COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_ot_hikigatari_s': ('A piano, a guitar, a single voice', '一架钢琴、一把吉他、一个声音', 'Un piano, una guitarra, una sola voz', '피아노, 기타, 목소리 하나'),
     'c_ot_hikigatari_b': ('Songs that shake the heart, voice and instrument', '震撼心灵的自弹自唱', 'Canciones que estremecen, voz e instrumento', '마음을 울리는 弾き語り'),
     'c_ot_citypop_b': ('The world found Japan\'s night first.', '世界先发现的，日本之夜。', 'El mundo descubrió primero la noche de Japón.', '세계가 먼저 발견한, 일본의 밤.'),
+    'c_ot_tsuki01_s': ('Series: When People Look at the Moon vol.1', '系列：人为什么看月亮 vol.1', 'Serie: Por qué miramos la luna vol.1', '시리즈: 사람은 왜 달을 보는가 vol.1'),
+    'c_ot_tsuki01_b': ('Why Do We Look at the Moon?', '人为什么看月亮', '¿Por qué miramos la luna?', '사람은 왜 달을 보는가'),
 }
 _LG4 = ['en', 'zh-Hans', 'es', 'ko']
 
