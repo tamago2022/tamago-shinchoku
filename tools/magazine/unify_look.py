@@ -8,7 +8,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import mag_build as MB
 PAGES = [('rei-harakami.html', 'tokushu-rei-harakami.html'), ('ikareru-01.html', 'tokushu-ikareru-01.html'),
          ('naze-ongaku-01-takoukan.html', 'naze-ongaku-01-takoukan.html'), ('hikigatari-josh-turner.html', 'hikigatari-josh-turner-b.html'),
-         ('kimi-wa-hoshi-katsu.html', 'tokushu-hoshi-katsu.html'), ('backnumber.html', 'backnumber.html')]
+         ('kimi-wa-hoshi-katsu.html', 'tokushu-hoshi-katsu.html'), ('backnumber.html', 'backnumber.html'),
+         ('hito-wa-naze-tsuki-wo-miru-01.html', 'hito-wa-naze-tsuki-wo-miru-01.html')]
 check = '--check' in sys.argv
 ng = 0
 for prod, chk in PAGES:

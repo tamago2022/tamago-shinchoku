@@ -43,6 +43,9 @@ GENRES = [
     ('シリーズ「怒れる人々」', ('Series: The Angry Ones', '系列「愤怒的人们」', 'Serie: La gente enfadada', '시리즈 「분노한 사람들」'), [
         ('怒れる人々 vol.1 〜ロックは死んだのか〜', 'Sex Pistols から Ado、Prince まで11曲', M + 'ikareru-01.html', None),
     ]),
+    ('シリーズ「月の特集」', ('Series: The Moon', '系列「月亮特辑」', 'Serie: La Luna', '시리즈 「달 특집」'), [
+        ('人はなぜ月を見るのか vol.1 〜月を見て歌う人々〜', '布袋寅泰からベートーヴェンまで13曲', M + 'hito-wa-naze-tsuki-wo-miru-01.html', None),
+    ]),
 ]
 I18N = {'b_eyebrow': ('Back issues', '往期', 'Números anteriores', '백넘버'),
         'b_h1': ('All back issues', '全部往期', 'Todos los números', '모든 백넘버'),
