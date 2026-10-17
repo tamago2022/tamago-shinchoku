@@ -486,6 +486,9 @@ def unify_look(h):
     # ⑤ 共有ボタン（上と下の2か所・全マガジン共通）＝ tools/magazine/share_bar.py
     import share_bar
     h = share_bar.add(h)
+    # ⑩ 雰囲気の静止画（2026-10-18・全マガジン5〜6枚）＝ tools/magazine/fuukei.py
+    import fuukei
+    h = fuukei.add(h)
     return h
 
 
@@ -510,6 +513,8 @@ def look_check(h):
     if R.search(r'class="cw-video__play"[^>]*>\s*<svg', h): bad.append('再生ボタンの形が違う')
     import share_bar
     bad += share_bar.check(h)
+    import fuukei
+    bad += fuukei.check(h)
     return bad
 
 

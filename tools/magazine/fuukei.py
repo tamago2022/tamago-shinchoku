@@ -67,7 +67,8 @@ def add(h, name=None):
         # 章のすぐ後ろに既存の写真（cw-interlude）があれば、その後ろ
         m2 = re.match(r'\s*<section class="cw-interlude"', h[end:])
         if m2:
-            end = _section_end(h, end + m2.end() - len('<section class="cw-interlude"')) or end
+            e2 = _section_end(h, end + m2.end() - len('<section class="cw-interlude"'))
+            end = e2 if e2 > 0 else end
         h = h[:end] + ''.join(figure(x) for x in xs) + h[end:]
     return h.replace('</head>', f'<style id="cw-fk">{CSS}</style></head>', 1)
 
