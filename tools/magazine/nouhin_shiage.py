@@ -192,7 +192,18 @@ def build(spec):
     h = re.sub(r'<div class="cw-wrap"><div[^>]*class="cw-share cw-sns"[^>]*>.*?</div></div>', '', h, flags=re.S)
     h = stamp_keep(h)
     h = MB.unify_look(h)   # 共有ボタン・フォロー・曲ページ導線・見た目の統一（共通部品は c_… の訳キーを最初から持つ）
-    return h, rep
+    return karuku(h), rep
+
+
+def karuku(h):
+    """送る量を後退させない（koutai_kanmon）：タグの間の空白を詰める（script/style の中は触らない）。
+    target=_blank の rel="noopener" は今のブラウザでは既定なので外す。"""
+    parts = re.split(r'(<script\b.*?</script>|<style\b.*?</style>)', h, flags=re.S)
+    for i in range(0, len(parts), 2):
+        parts[i] = re.sub(r'>\s+<', '><', parts[i])
+        parts[i] = re.sub(r'<a ([^>]*?)rel="noopener" ([^>]*?target="_blank")', r'<a \1\2', parts[i])
+        parts[i] = re.sub(r'<a ([^>]*?target="_blank"[^>]*?) rel="noopener"', r'<a \1', parts[i])
+    return ''.join(parts)
 
 
 def main(argv):
