@@ -436,6 +436,9 @@ def unify_look(h):
     h = R.sub(r'<link[^>]*assets/cw/styles\.css[^>]*>', '', h)
     h = R.sub(r'<style id="cw-base">.*?</style>', '', h, flags=R.S)
     h = h.replace('</head>', '<style id="cw-base">' + BASE_CSS + '</style></head>', 1)
+    # bs4 で組み直したページは属性の順が変わる。ヒーローの絵は関所（magazine_monogatari_kanmon）が読める形にそろえる
+    h = h.replace('<div aria-hidden="true" class="cw-hero__bg">', '<div class="cw-hero__bg" aria-hidden="true">')
+    h = R.sub(r'(<div class="cw-hero__bg" aria-hidden="true">)<img ([^>]*?)src="([^"]+)"([^>]*)/>', r'\1<img src="\3" \2\4/>', h)
     # ② Magazine Story を消す
     h = R.sub(r'<span>\s*Magazine Story\s*</span>', '', h)
     # ③ 章頭は「小さな一言 → アーティスト - 曲 → 年」（前の版の型）。一時期の「大きな一言が下」の型は戻す
