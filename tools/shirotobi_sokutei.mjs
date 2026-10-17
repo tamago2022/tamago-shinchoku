@@ -60,10 +60,11 @@ async function ev(expr) {
 
 try {
   let target;
-  for (let i = 0; i < 60; i++) {
-    try { const l = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); target = l.find((x) => x.type === "page"); if (target) break; } catch {}
-    await sleep(250);
+  for (let i = 0; i < 300; i++) {
+    try { const l = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); target = l.find((x) => x.type === "page" && x.webSocketDebuggerUrl); if (target) break; } catch {}
+    await sleep(300);
   }
+  if (!target) throw new Error("Chromeのデバッグ口が開かない");
   ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((r) => ws.addEventListener("open", r));
   ws.addEventListener("message", async (m) => {
