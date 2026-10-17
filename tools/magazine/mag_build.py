@@ -41,7 +41,7 @@ document.querySelectorAll('.cw-video__cover[data-yt-cover]').forEach(function(b)
   var img=b.querySelector('img');
   if(img){img.addEventListener('load',function(){if(img.naturalWidth>0&&img.naturalWidth<=200&&!img.dataset.fb){img.dataset.fb=1;img.src='https://i.ytimg.com/vi/'+b.dataset.ytCover+'/hqdefault.jpg';}});
           img.addEventListener('error',function(){if(!img.dataset.fb){img.dataset.fb=1;img.src='https://i.ytimg.com/vi/'+b.dataset.ytCover+'/hqdefault.jpg';}});}
-  b.addEventListener('click',function(){var f=b.parentNode;f.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+b.dataset.ytCover+'?autoplay=1&playsinline=1" title="'+(b.getAttribute('aria-label')||'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';});
+  b.addEventListener('click',function(){var f=b.parentNode;f.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+b.dataset.ytCover+'?cc_load_policy=0&autoplay=1&playsinline=1" title="'+(b.getAttribute('aria-label')||'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';});
 });
 </script>'''
 
@@ -289,6 +289,7 @@ COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_kk_title': ('"Why do we stop listening to new music as adults? [Ornithology × Music Psychology]" (Nanji, Hito wo Shire)', '《为什么长大后就不再听新歌【鸟类学×音乐心理学】》（汝，知人）', '«¿Por qué de adultos dejamos de escuchar música nueva? [Ornitología × Psicología musical]» (Nanji, Hito wo Shire)', '「왜 어른이 되면 새 노래를 듣지 않게 될까 【조류학×음악심리학】」(너 자신, 인간을 알라)'),
     'c_kk_note': ('"The season for learning songs never ends."', '“学歌的季节永不结束。”', '«La estación de aprender canciones nunca termina».', '\'노래를 익히는 계절은 끝나지 않는다.\''),
     'c_sns': ('Gokigen Station on social media', '好心情补给站的社交账号', 'Estación Gokigen en redes sociales', '고키겐 보급소 SNS 계정'),
+    'c_songpage': ('Go to this song\'s page →', '前往这首歌的页面 →', 'Ir a la página de esta canción →', '이 곡의 페이지로 →'),
     'c_allback': ('All back issues →', '全部往期 →', 'Todos los números →', '모든 백넘버 →'),
     'c_ot_label': ('OTHER MAGAZINES — more features', 'OTHER MAGAZINES — 其他专题', 'OTHER MAGAZINES — más especiales', 'OTHER MAGAZINES — 다른 특집'),
     'c_ot_hoshikatsu_s': ('Arranger / composer', '编曲家・作曲家', 'Arreglista y compositor', '편곡가・작곡가'),
@@ -466,6 +467,18 @@ def unify_look(h):
     h = R.sub(r'<section[^>]*class="cw-close"[^>]*>.*?</section>', _close, h, flags=R.S)
     # ⑥ 曲の一覧（THE MAP）は出さない（怒れる人々と同じ。目次と重複する）
     h = R.sub(r'<section[^>]*class="cw-mapwrap"[^>]*>.*?</section>', '', h, flags=R.S)
+    # ⑨ 曲ページへの導線：tools/magazine/song_pages.json（動画ID→曲ページ）にあるのに「この曲のページへ」が無い動画には必ず付ける（2026-10-17）
+    def _songlink(m):
+        fig = m.group(0)
+        if 'cw-video__page' in fig:
+            return fig
+        yt = R.search(r'data-yt-cover="([^"]+)"', fig)
+        url = SONG_PAGES.get(yt.group(1)) if yt else None
+        if not url:
+            return fig
+        link = f'<a href="{e(url)}" class="cw-video__page" data-i18n="c_songpage">この曲のページへ →</a>'
+        return fig.replace('</figcaption>', link + '</figcaption>', 1)
+    h = R.sub(r'<figure class="cw-video[^"]*">.*?</figure>', _songlink, h, flags=R.S)
     # ⑤ 共有ボタン（上と下の2か所・全マガジン共通）＝ tools/magazine/share_bar.py
     import share_bar
     h = share_bar.add(h)
@@ -480,6 +493,10 @@ def look_check(h):
     if 'id="cw-base"' not in h: bad.append('土台のCSSが無い（白い枠が出る）')
     if R.search(r'Magazine Story', h): bad.append('Magazine Story が出ている')
     if 'class="cw-mapwrap"' in h: bad.append('曲の一覧（THE MAP）が出ている')
+    for fig in R.findall(r'<figure class="cw-video[^"]*">.*?</figure>', h, flags=R.S):
+        yt = R.search(r'data-yt-cover="([^"]+)"', fig)
+        if yt and SONG_PAGES.get(yt.group(1)) and 'cw-video__page' not in fig:
+            bad.append('曲ページへの導線が無い：' + yt.group(1)); break
     for c in R.findall(r'class="cw-video__cap"[^>]*>([^<]*)<', h):
         if R.search(NOTE_RE, c): bad.append('制作側のメモ：' + c[:30]); break
     txt = R.sub(r'<script.*?</script>|<style.*?</style>', '', h, flags=R.S)
