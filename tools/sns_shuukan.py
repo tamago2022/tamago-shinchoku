@@ -57,6 +57,7 @@ CUTS = {
         "text": "2020年、当時まだ高校3年生だったAdoの「うっせぇわ」が、社会現象になった。\n\n歌われているのは、社会人の世界の理不尽。\nでも本人は、まだ社会に出ていなかった。\n\n社会を知らない高校生が、なぜあれを歌えたのか。\nあれは、誰の代わりに叫んでいたのか。\n\n#怒れる人々 #Ado",
         "cards": ["優等生が、\nキレた。", "2020年\n高校3年生\nAdo「うっせぇわ」", "社会には、\nまだ出ていなかった。", "誰の代わりに、\n叫んだのか。"],
         "answer_in_magazine": '08章：Ado「社会人の世界はドラマや映画で想像するしかなかった／怒りの感情は学生にも共通」(SCHOOL OF LOCK!)、syudouは誰かを狙わず自分の視点で書いた(テレ東プラス)、出た時期と顔を出さない新人の衝撃(Forbes JAPAN)、共感の声(ORICON)',
+        "thumb": ["うっせぇわ", "高校3年生が、社会現象になった。"],
         "konkyo": "08章（Wikipedia／SCHOOL OF LOCK!）"},
   "B": {"name": "THE TIMERS「FM東京」— 止める時間は、あった",
         "text": "1989年、テレビが事件になった夜。\n\nTHE TIMERS「FM東京」。\n実はあれ、生放送じゃなかった。夕方に撮って、そのまま流した。\n\n「流していいですか」に、返事は「いいんじゃない？」。\n止める時間はあった。なぜ止めなかったんだろう。\n\n#怒れる人々 #THETIMERS",
@@ -76,6 +77,7 @@ CUTS = {
         "text": "井上陽水「氷の世界」。RCサクセション「スローバラード」。安全地帯「ワインレッドの心」。\n\nぜんぶに、同じひとりの名前がある。星勝。\nしかも本人は、のちに「譜面が読めなかった」と明かしている。\n\n譜面の読めない人が、どうやって日本のうたを編んだのか。\n\n#星勝",
         "cards": ["譜面が、\n読めなかった。", "その人が、\n日本のうたを\n編んだ。", "氷の世界\nスローバラード\nワインレッドの心", "どうやって？"],
         "answer_in_magazine": '02章：音域表で書いて現場で書き直しグランプリ／03章：ほぼ独学で『断絶』の譜面を緻密に書き込んだ(Wikipedia・music-calendar.jp)',
+        "thumb": ["100万枚", "日本初。編曲は、譜面が読めなかった人。"],
         "konkyo": "03・04・07・09章（Wikipedia）"},
   "B": {"name": "「月光仮面」を歌っているのは星勝本人",
         "text": "モップスの「月光仮面」。\nあの声、鈴木ヒロミツだと思っていませんか。\n\n歌っているのは、ギターの星勝本人。\nモップスの曲の半分近くで、リード・ヴォーカルを取っていた。\n\nのちに日本のうたを編む人は、最初は歌っていた。\n\n#星勝 #モップス",
@@ -95,6 +97,7 @@ CUTS = {
         "text": "2022年、The Weeknd「Out of Time」。\nその土台に、1983年の東京の夜が入っていた。\n亜蘭知子「Midnight Pretenders」。\n\n日本の若い人が知らない曲が、なぜ海の向こうで鳴っているのか。\nその道は、ひとつではなかった。\n\n#シティポップ #CityPop",
         "cards": ["1983年の東京が、\nThe Weekndの\n中にいた。", "亜蘭知子\n「Midnight Pretenders」", "知らない曲が、\nなぜ\n海の向こうで？", "世界が先に見つけた、\n日本の夜。"],
         "answer_in_magazine": '01〜06：サンプリング(The Weeknd)、公式リエディット(Night Tempo)、カバー(Ms.OOJA・藤井風ほか)、YouTubeのおすすめで広がったリミックス。結び「夜は国境を越えて往復している」',
+        "thumb": ["東京の夜", "1983年の東京を、2022年にThe Weekndが。"],
         "konkyo": "01（Yahoo!ニュース／Mikiki／UNIVERSAL MUSIC JAPAN）"},
   "B": {"name": "松原みき「真夜中のドア」世界1位",
         "text": "1979年のデビュー曲が、世界1位になった。\n\n松原みき「真夜中のドア／Stay With Me」。\nSpotifyのグローバルバイラルチャートで世界1位。\n\n日本の若い人が知らない曲が、海外を盛り上げている。\nなぜ、いまこの曲だったんだろう。\n\n#シティポップ #真夜中のドア",
@@ -114,6 +117,7 @@ CUTS = {
         "text": "Aメロも、Bメロも、サビもない。\nそれなのに、一度聴いたら耳から離れない。\n\nrei harakami（レイ・ハラカミ）。\n京都でひとり、鳴らされていた音。\n\nあの音は、いったい何でできていたのか。\n\n#reiharakami #レイハラカミ",
         "cards": ["サビが、\nない。", "なのに、\n耳から離れない。", "rei harakami", "何で、\nできていたのか。"],
         "answer_in_magazine": '01章：ローランドのSC-88Proを長年買い換えずに使った／深いディレイ・左右に振れる音・ぬるっと滑る音程(TOWER RECORDS・Red Bull Music Academy)',
+        "thumb": ["サビがない", "なのに、耳から離れない。"],
         "konkyo": "冒頭・01章（All About／Wikipedia）"},
   "B": {"name": "出したら引退するつもりだった『red curb』",
         "text": "このアルバムを出したら、引退するつもりだった。\n\nrei harakami『red curb』（2001）。\n本人いわく、好きな事しか出来ないなあ、と考えながら作った。\n\n辞める気の人が、いちばん自由な音を出してしまった。\nその音、聴いてみますか。\n\n#reiharakami",
@@ -146,7 +150,7 @@ def weeks():
                 "magazine": m["key"], "magazine_title": m["title"], "magazine_url": m["url"],
                 "cut": cut, "cut_name": c["name"], "konkyo": c["konkyo"], "answer_in_magazine": c.get("answer_in_magazine"),
                 "houshin_tenken": "済（問いで止める・答えはマガジン）" if c.get("answer_in_magazine") else "未（その週の前に、問いで止める形へ直す）",
-                "post1_text": c["text"], "video_cards": c["cards"],
+                "post1_text": c["text"], "video_cards": c["cards"], "thumb": c.get("thumb"),
                 "reply_text": "フルはこちら→ " + m["url"],
             })
             n += 1
@@ -309,7 +313,7 @@ def _bg_image(key, i):
     return ImageEnhance.Brightness(du).enhance(0.6)
 
 
-def _draw_text(img, text, size, color, y_center, font=FS, spacing=1.25, track=0.04):
+def _draw_text(img, text, size, color, y_center, font=FS, spacing=1.25, track=0.04, maxw=0.86):
     from PIL import ImageDraw
     d = ImageDraw.Draw(img)
     f = _font(font, size)
@@ -317,7 +321,7 @@ def _draw_text(img, text, size, color, y_center, font=FS, spacing=1.25, track=0.
     # 横幅に収まるまで縮める
     while True:
         widths = [sum(f.getlength(c) for c in ln) + track * size * max(0, len(ln) - 1) for ln in lines]
-        if max(widths) <= W * 0.86 or size < 40:
+        if max(widths) <= W * maxw or size < 40:
             break
         size = int(size * 0.92)
         f = _font(font, size)
@@ -336,11 +340,11 @@ def _ease(t):
     return 1 - (1 - t) ** 3
 
 
-def _layer(text, size, color, y_center, font=FS, track=0.04):
+def _layer(text, size, color, y_center, font=FS, track=0.04, maxw=0.86):
     """文字だけの透明レイヤー（1回だけ描いて使い回す＝速い）。"""
     from PIL import Image
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    _draw_text(im, text, size, color + (255,), y_center, font=font, track=track)
+    _draw_text(im, text, size, color + (255,), y_center, font=font, track=track, maxw=maxw)
     return im
 
 
@@ -355,8 +359,11 @@ def render(week, outdir):
     key = w["magazine"]
     cards = w["video_cards"]
     # 時間割（テンポはゆるめ）。0〜0.5秒＝朱一色に一番強い一言（最初の1秒で掴む・ショック）
-    seg = [(0.0, 3.6), (3.6, 7.0), (7.0, 10.4), (10.4, 12.4)]   # 12.4〜15.0 は締め（題名＋ロゴ半分）
-    SHOCK = 0.5
+    # 2026-10-17 反応の学び：0〜1秒＝サムネになる1コマ（4〜6文字の見出し＋小さな一言）を静止。YouTubeで投稿時にこのコマを選ぶ。
+    # 文字は1字ずつ出す（Gensparkの出方が効いた）。
+    th = w.get("thumb") or [cards[0].replace("\n", ""), ""]
+    SHOCK = 1.0
+    seg = [(1.0, 4.2), (4.2, 7.4), (7.4, 10.6), (10.6, 12.6)]   # 12.6〜15.0 は締め（題名＋ロゴ半分）
     grain = _grain(w["week"]).convert("RGB").point(lambda v: v // 14)
     bgs = [_bg_image(key, i) for i in range(4)]
     icon = Image.open(ICON).convert("RGBA") if os.path.exists(ICON) else None
@@ -366,7 +373,24 @@ def render(week, outdir):
     png = os.path.join(outdir, base + "_1koma.png")
     # 文字レイヤーを先に作る
     shock = Image.new("RGB", (W, H), SHU)
-    shock.paste(_layer(cards[0], 200, KINARI, H * 0.46), (0, 0), _layer(cards[0], 200, KINARI, H * 0.46))
+    _lt = _layer(th[0], 240, KINARI, H * 0.44, track=-0.02, maxw=0.96)
+    shock.paste(_lt, (0, 0), _lt)
+    if th[1]:
+        _ls = _layer(th[1], 50, KINARI, H * 0.56, font=FR, track=0.06)
+        shock.paste(_ls, (0, 0), _ls)
+    # 1字ずつ出すための途中レイヤー（字数ぶん先に作る）
+    def _prefixes(text, size, color, y):
+        chars = [i for i, c in enumerate(text) if c != "\n"]
+        out = []
+        for n in range(1, len(chars) + 1):
+            cut = chars[n - 1] + 1
+            part = text[:cut]
+            # 行数をそろえるため、まだ出ていない字は透明の空白にする代わりに改行構造だけ残す
+            rest = "".join("\n" if c == "\n" else "\u3000" for c in text[cut:])
+            out.append(_layer(part + rest, size, color, y))
+        return out
+    P0 = _prefixes(cards[0], 190, KINARI if bgs[0] is not None else SHU, H * 0.46)
+    PS = [None] + [_prefixes(cards[i], 120 if i < 3 else 130, KINARI, H * 0.47) for i in (1, 2, 3)]
     L0 = _layer(cards[0], 190, KINARI if bgs[0] is not None else SHU, H * 0.46)
     LS = [None] + [_layer(cards[i], 120 if i < 3 else 130, KINARI, H * 0.47) for i in (1, 2, 3)]
     end = Image.new("RGB", (W, H), KINARI)
@@ -406,16 +430,13 @@ def render(week, outdir):
                 else:
                     frame = plain.copy()
                 if idx == 0:
-                    frame.paste(L0, (0, 0), L0)
+                    n = min(len(P0), int((t - a) / 0.07) + 1)
+                    frame.paste(P0[n - 1], (0, 0), P0[n - 1])
                     ImageDraw.Draw(frame).rectangle((W * 0.42, H * 0.66, W * 0.58, H * 0.665), fill=SHU)
                 else:
-                    al = _ease(lt / 0.22)
-                    dy = int(50 * (1 - al))
-                    lay = LS[idx]
-                    if al < 1:
-                        lay = lay.copy()
-                        lay.putalpha(lay.getchannel("A").point(lambda v: int(v * al)))
-                    frame.paste(lay, (0, dy), lay)
+                    n = min(len(PS[idx]), int((t - a) / 0.07) + 1)
+                    lay = PS[idx][n - 1]
+                    frame.paste(lay, (0, 0), lay)
                     if idx == 3:
                         ImageDraw.Draw(frame).ellipse((W / 2 - 14, H * 0.68, W / 2 + 14, H * 0.68 + 28), fill=SHU)
             else:
@@ -430,7 +451,7 @@ def render(week, outdir):
     return mp4, png
 
 
-HAN = "v2問いで止める版"   # 版を変えたらここを変える（ドライブで同名を上書きしない）
+HAN = "v3サムネ付き"   # 版を変えたらここを変える（ドライブで同名を上書きしない）
 JNAME = {"ikareru": "怒れる人々", "hoshikatsu": "星勝", "citypop": "シティポップ", "harakami": "レイハラカミ"}
 
 
