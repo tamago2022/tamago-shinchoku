@@ -21,7 +21,7 @@
   python3 tools/sns_shuukan.py tenken            … 投稿先マガジンの点検（80点・関連4曲以上・曲ページリンク）
   python3 tools/sns_shuukan.py douga <週番号|all> … 15秒縦動画（MP4）＋静止画（PNG）を作る
 """
-import datetime, io, json, os, re, subprocess, sys, urllib.parse
+import datetime, io, json, os, re, subprocess, sys, unicodedata, urllib.parse
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JRS = os.path.join(os.path.dirname(REPO), "jrs_fix")
@@ -473,7 +473,7 @@ def cmd_url(nums=(1, 2, 3, 4)):
         if folder and os.path.isdir(folder):
             for f in os.listdir(folder):
                 for n in want:
-                    if f.endswith("_" + n) and n not in found:
+                    if unicodedata.normalize("NFC", f).endswith("_" + n) and n not in found:   # Macの名前はNFD
                         u = cn.drive_url(os.path.join(folder, f))
                         if u:
                             found[n] = u
