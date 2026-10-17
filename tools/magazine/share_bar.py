@@ -75,8 +75,8 @@ def bar(pos):
 SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]"),U=function(){return (c&&c.href)||location.href.split("#")[0].split("?")[0]},'
           'T=function(){return document.title.split("｜")[0].trim()},E=encodeURIComponent,'
           # 下書き（言語ごと）：p＝友だち1人に送る一言（LINE・WhatsApp）、s＝みんなに向けた一言（X・Threads）
-          'D={ja:{o:"「",c:"」",p:"これ読んで、ちょっと笑ってしまった。",s:"読み終えて、だれかに渡したくなった。"},en:{o:"“",c:"”",p:"Read this — it made me laugh a little.",s:"Finished this and wanted to pass it on."},'
-          '"zh-Hans":{o:"《",c:"》",p:"读了这个，忍不住笑了一下。",s:"读完了，想转给别人看看。"},es:{o:"«",c:"»",p:"Lee esto, me ha hecho reír un poco.",s:"Lo terminé y me dieron ganas de pasarlo."},ko:{o:"「",c:"」",p:"이거 읽고 좀 웃었어.",s:"다 읽고 나니 누군가에게 건네고 싶어졌다."}},'
+          'D={ja:{o:"「",c:"」",p:"これ、ちょっと読んでみて。おもしろかった。",s:"読み終えて、だれかに渡したくなった。"},en:{o:"“",c:"”",p:"Have a read of this — I enjoyed it.",s:"Finished this and wanted to pass it on."},'
+          '"zh-Hans":{o:"《",c:"》",p:"这篇你读读看，挺有意思的。",s:"读完了，想转给别人看看。"},es:{o:"«",c:"»",p:"Échale un ojo a esto, me ha gustado.",s:"Lo terminé y me dieron ganas de pasarlo."},ko:{o:"「",c:"」",p:"이거 한번 읽어 봐. 재밌더라.",s:"다 읽고 나니 누군가에게 건네고 싶어졌다."}},'
           'W=function(){return D[document.documentElement.lang]||D.ja};'
           'document.querySelectorAll("[data-share]").forEach(function(b){if(navigator.share)b.classList.add("can-sh");'
           'b.addEventListener("click",function(ev){var a=ev.target.closest("[data-sh]");if(!a)return;var k=a.getAttribute("data-sh"),u=U(),t=T(),h=null;'
@@ -99,7 +99,7 @@ SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]
 SNS_PATH_TT = 'M16.6 3c.3 2.4 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.2c0 3.1-2.5 5.5-5.6 5.5S5.4 18.3 5.4 15.2c0-3.4 2.9-5.9 6.2-5.5v3.2c-1.7-.5-3.1.7-3.1 2.3 0 1.3 1 2.4 2.4 2.4 1.4 0 2.4-1 2.4-2.5V3h3.3z'
 SNS_CSS = ('.cw .cw-sns{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:40px 0 24px}'
            '.cw .cw-share.cw-sns>span{flex-basis:100%;font-size:12px;letter-spacing:.12em;opacity:.8;margin-bottom:2px}'
-           '.cw .cw-share.cw-sns a{width:auto;height:34px;border-radius:999px;padding:0 14px 0 11px;gap:7px;background:var(--ink);color:var(--bg,#111);border-color:var(--ink);font-size:12.5px;letter-spacing:.02em;text-decoration:none}'
+           '.cw .cw-share.cw-sns a{width:auto;height:34px;border-radius:999px;padding:0 14px 0 11px;gap:7px;background:var(--ink);color:var(--bg,#111);border-color:var(--ink);font-size:12px;letter-spacing:.02em;text-decoration:none}.cw .cw-share.cw-sns b{font-weight:500}'
            '.cw .cw-share.cw-sns a:hover{background:var(--ink);opacity:.85}.cw .cw-share.cw-sns svg{width:15px;height:15px}')
 
 
