@@ -1,7 +1,7 @@
 {
- "at": "2026-10-17T18:36:50.121059+09:00",
+ "at": "2026-10-17T19:10:05.273898+09:00",
  "ok": true,
- "generatedAt": "2026-10-17T18:36:46.759573+09:00",
+ "generatedAt": "2026-10-17T19:09:55.864577+09:00",
  "keys": [
   {
    "id": "buffer",
@@ -10,7 +10,7 @@
    "detail": "400 未実測",
    "fix": "publish.buffer.com/settings/api で1回だけ鍵を作り、~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す（/Users/mac/tamago/kagi/buffer_token.txt に貼るだけでも自動で写る）",
    "stops": "Xの予約が1本も入らない。毎回「ログインして」に戻る",
-   "measuredMinAgo": 0.3
+   "measuredMinAgo": 0.4
   },
   {
    "id": "claude",
@@ -19,7 +19,7 @@
    "detail": "通った（auth_keeperが実測）",
    "fix": "いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す",
    "stops": "工場の発車が全部止まる（44時間の実害）",
-   "measuredMinAgo": 93.8
+   "measuredMinAgo": 20.0
   },
   {
    "id": "gmail",
@@ -28,7 +28,7 @@
    "detail": "アプリパスワードのファイルが置かれていません",
    "fix": "Googleアカウントでアプリパスワードを作り、そのファイルに置く",
    "stops": "LINE審査・Anthropic・外部窓口の返信に**誰も気づかない**",
-   "measuredMinAgo": 0.3
+   "measuredMinAgo": 0.4
   },
   {
    "id": "github",
@@ -150,8 +150,8 @@
   {
    "id": "gobun",
    "what": "5分便（立て直す側）",
-   "status": "ok",
-   "detail": "動いています（7分前）",
+   "status": "ng",
+   "detail": "29分前 から止まっています",
    "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
    "stops": "心臓が落ちても誰も立て直さない",
    "measuredMinAgo": 0.2
@@ -159,8 +159,8 @@
   {
    "id": "hassha",
    "what": "発車（仕事が前に進むか）",
-   "status": "ng",
-   "detail": "発車が止められています（負荷の番人：ロード107.5（コア8×3超）。新規発車を止めました（2026-10-17 17:27:49）。5分落ち着いたら自動で外れます。）",
+   "status": "ok",
+   "detail": "止め札はありません（最後の発車記録 50秒前）",
    "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
    "stops": "仕事が1本も進まない",
    "measuredMinAgo": 0.2
@@ -178,7 +178,7 @@
    "id": "mac_omosa",
    "what": "Macの重さ（swapと負荷）",
    "status": "ng",
-   "detail": "swap 14.8GB・負荷 50.0（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（7.7GB）",
+   "detail": "swap 14.7GB・負荷 7.8（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（7.7GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
    "measuredMinAgo": 0.2
@@ -224,7 +224,7 @@
   {
    "id": "auto:1175_kagi_uketori",
    "label": "1175_kagi_uketori（名簿に無いので自動で台帳入り）",
-   "runs": 526,
+   "runs": 527,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -233,7 +233,7 @@
   {
    "id": "auto:aibou_mail",
    "label": "aibou_mail（名簿に無いので自動で台帳入り）",
-   "runs": 177,
+   "runs": 178,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -242,7 +242,7 @@
   {
    "id": "auto:aitara_mawasu",
    "label": "aitara_mawasu（名簿に無いので自動で台帳入り）",
-   "runs": 545,
+   "runs": 546,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -269,7 +269,7 @@
   {
    "id": "auto:claude_nouhin",
    "label": "claude_nouhin（名簿に無いので自動で台帳入り）",
-   "runs": 55,
+   "runs": 56,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -278,7 +278,7 @@
   {
    "id": "auto:cloud_credit_henji",
    "label": "cloud_credit_henji（名簿に無いので自動で台帳入り）",
-   "runs": 52,
+   "runs": 53,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -287,7 +287,7 @@
   {
    "id": "auto:daicho",
    "label": "daicho（名簿に無いので自動で台帳入り）",
-   "runs": 359,
+   "runs": 360,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -305,7 +305,7 @@
   {
    "id": "auto:dojisu_jougen",
    "label": "dojisu_jougen（名簿に無いので自動で台帳入り）",
-   "runs": 585,
+   "runs": 586,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -314,7 +314,7 @@
   {
    "id": "auto:fuka_mihari",
    "label": "fuka_mihari（名簿に無いので自動で台帳入り）",
-   "runs": 54,
+   "runs": 55,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -332,7 +332,7 @@
   {
    "id": "auto:haibun",
    "label": "haibun（名簿に無いので自動で台帳入り）",
-   "runs": 534,
+   "runs": 535,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -350,7 +350,7 @@
   {
    "id": "auto:hyoudai",
    "label": "hyoudai（名簿に無いので自動で台帳入り）",
-   "runs": 391,
+   "runs": 392,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -386,7 +386,7 @@
   {
    "id": "auto:kaitsuu",
    "label": "kaitsuu（名簿に無いので自動で台帳入り）",
-   "runs": 600,
+   "runs": 601,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -395,7 +395,7 @@
   {
    "id": "auto:kakeibo",
    "label": "kakeibo（名簿に無いので自動で台帳入り）",
-   "runs": 128,
+   "runs": 129,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -431,7 +431,7 @@
   {
    "id": "auto:modoseru",
    "label": "modoseru（名簿に無いので自動で台帳入り）",
-   "runs": 532,
+   "runs": 533,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -440,7 +440,7 @@
   {
    "id": "auto:nagekomi_list",
    "label": "nagekomi_list（名簿に無いので自動で台帳入り）",
-   "runs": 562,
+   "runs": 563,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -449,7 +449,7 @@
   {
    "id": "auto:obsidian_mamoru",
    "label": "obsidian_mamoru（名簿に無いので自動で台帳入り）",
-   "runs": 62,
+   "runs": 63,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -485,7 +485,7 @@
   {
    "id": "auto:okane_ichimai",
    "label": "okane_ichimai（名簿に無いので自動で台帳入り）",
-   "runs": 215,
+   "runs": 216,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -494,7 +494,7 @@
   {
    "id": "auto:okoshi",
    "label": "okoshi（名簿に無いので自動で台帳入り）",
-   "runs": 154,
+   "runs": 155,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -530,7 +530,7 @@
   {
    "id": "auto:shimau",
    "label": "shimau（名簿に無いので自動で台帳入り）",
-   "runs": 4,
+   "runs": 5,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -539,7 +539,7 @@
   {
    "id": "auto:shingou",
    "label": "shingou（名簿に無いので自動で台帳入り）",
-   "runs": 544,
+   "runs": 545,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -566,7 +566,7 @@
   {
    "id": "auto:sozai_hiroi",
    "label": "sozai_hiroi（名簿に無いので自動で台帳入り）",
-   "runs": 56,
+   "runs": 57,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -575,7 +575,7 @@
   {
    "id": "auto:subsc_calendar",
    "label": "subsc_calendar（名簿に無いので自動で台帳入り）",
-   "runs": 55,
+   "runs": 56,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -602,7 +602,7 @@
   {
    "id": "auto:tokushu",
    "label": "tokushu（名簿に無いので自動で台帳入り）",
-   "runs": 128,
+   "runs": 129,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -611,7 +611,7 @@
   {
    "id": "auto:tomaranai",
    "label": "tomaranai（名簿に無いので自動で台帳入り）",
-   "runs": 547,
+   "runs": 548,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -620,7 +620,7 @@
   {
    "id": "auto:vault_kanmon",
    "label": "vault_kanmon（名簿に無いので自動で台帳入り）",
-   "runs": 128,
+   "runs": 129,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -631,7 +631,7 @@
    "label": "worktree_taihi（名簿に無いので自動で台帳入り）",
    "runs": 46,
    "catches": 0,
-   "blocked": "skipped=['q35083-0904（走行中）', 'q35084-0904（最近さわられた）', 'verify-q34845-clone（git status 失敗）']",
+   "blocked": "skipped=['q35084-0904（走行中）']",
    "need": "",
    "why": ""
   },
@@ -719,7 +719,7 @@
   {
    "id": "auto:youryou_mihari",
    "label": "youryou_mihari（名簿に無いので自動で台帳入り）",
-   "runs": 119,
+   "runs": 120,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -773,11 +773,11 @@
   {
    "id": "queue",
    "label": "発車待ち（積んだのに走っていない）",
-   "runs": 4736,
+   "runs": 4880,
    "catches": 13,
-   "blocked": "★積んだのに一度も走っていない件が4574件（3日超え）。古い順に 42番（41.4日）アーティストページの無い曲に、アーティストページを作る／587番（40.9日）テストB／586番（40.9日）テストA／684番（38.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（38.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は4736件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください",
+   "blocked": "★積んだのに一度も走っていない件が4574件（3日超え）。古い順に 42番（41.4日）アーティストページの無い曲に、アーティストページを作る／587番（40.9日）テストB／586番（40.9日）テストA／684番（38.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（38.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は4880件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください",
    "need": "",
-   "why": "止められています：★積んだのに一度も走っていない件が4574件（3日超え）。古い順に 42番（41.4日）アーティストページの無い曲に、アーティストページを作る／587番（40.9日）テストB／586番（40.9日）テストA／684番（38.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（38.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は4736件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください"
+   "why": "止められています：★積んだのに一度も走っていない件が4574件（3日超え）。古い順に 42番（41.4日）アーティストページの無い曲に、アーティストページを作る／587番（40.9日）テストB／586番（40.9日）テストA／684番（38.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（38.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は4880件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください"
   }
  ],
  "nomikomi": [
@@ -823,16 +823,16 @@
   },
   {
    "who": "1142_fukkyuu（名簿に無いので自動で台帳入り）",
-   "mark": "blocked=書きかけのゴミ 2個（下見だけ）",
+   "mark": "blocked=順番待ちの幽霊項目 134件（下見だけ）／失敗台帳に今日の赤4件（下見だけ）",
    "words": [
     "blocked"
    ],
    "runs": 130,
-   "catches": 556
+   "catches": 557
   },
   {
    "who": "worktree_taihi（名簿に無いので自動で台帳入り）",
-   "mark": "skipped=['q35083-0904（走行中）', 'q35084-0904（最近さわられた）', 'verify-q34845-clone（git status 失敗）']",
+   "mark": "skipped=['q35084-0904（走行中）']",
    "words": [
     "skip",
     "skipped"
@@ -850,7 +850,7 @@
    "detail": "アプリパスワードのファイルが置かれていません",
    "fix": "Googleアカウントでアプリパスワードを作り、そのファイルに置く",
    "stops": "LINE審査・Anthropic・外部窓口の返信に**誰も気づかない**",
-   "measuredMinAgo": 0.3
+   "measuredMinAgo": 0.4
   },
   {
    "id": "xai",
@@ -889,19 +889,19 @@
    "measuredMinAgo": 0.2
   },
   {
-   "id": "hassha",
-   "what": "発車（仕事が前に進むか）",
+   "id": "gobun",
+   "what": "5分便（立て直す側）",
    "status": "ng",
-   "detail": "発車が止められています（負荷の番人：ロード107.5（コア8×3超）。新規発車を止めました（2026-10-17 17:27:49）。5分落ち着いたら自動で外れます。）",
-   "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
-   "stops": "仕事が1本も進まない",
+   "detail": "29分前 から止まっています",
+   "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
+   "stops": "心臓が落ちても誰も立て直さない",
    "measuredMinAgo": 0.2
   },
   {
    "id": "mac_omosa",
    "what": "Macの重さ（swapと負荷）",
    "status": "ng",
-   "detail": "swap 14.8GB・負荷 50.0（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（7.7GB）",
+   "detail": "swap 14.7GB・負荷 7.8（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（7.7GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
    "measuredMinAgo": 0.2
@@ -915,7 +915,7 @@
    "detail": "400 未実測",
    "fix": "publish.buffer.com/settings/api で1回だけ鍵を作り、~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す（/Users/mac/tamago/kagi/buffer_token.txt に貼るだけでも自動で写る）",
    "stops": "Xの予約が1本も入らない。毎回「ログインして」に戻る",
-   "measuredMinAgo": 0.3
+   "measuredMinAgo": 0.4
   },
   {
    "id": "buffer",

@@ -531,6 +531,14 @@ if __name__ == "__main__":
     # 2026-10-16 自動処理の棚卸し（1時間に1回・中で間引く）。台帳に無いものがあれば Dispatch に1行
     _okosu("jidou_tanaoroshi.py", "--hourly")
 
+    # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
+    #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
+    try:
+        if time.time() - _os.path.getmtime(_os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "status", ".toukou_mimawari_at")) > 20 * 3600:
+            _okosu("toukou_mimawari.py", "--daily")
+    except OSError:
+        _okosu("toukou_mimawari.py", "--daily")
+
     # 2026-10-01 鬼監督（Codex）の返事を拾う係。返事待ちが0なら gh も叩かず即戻る。
     #   合格/差し戻しを status/gaibu/soto_hantei.json と status/oni_codex/hantei.jsonl に戻し、
     #   差し戻しは作業票へ自動で積む（tools/oni_codex.py の冒頭に経緯）。
@@ -639,3 +647,8 @@ if __name__ == "__main__":
     # 2026-09-27（1166番）待機列を自分で積む係。候補1本を15分に1つだけ進める。
     # YouTubeの検索枠が尽きた日はその場で退き、翌日また続きから。止めたいときは status/1166.stop。
     _okosu("1166_machi_tsumu.py")
+
+    # 2026-10-17 Claude Code 受付係（たまごさん「Gensparkとの間で水汲みはしたくない」）。
+    #   joy-relief-station / tamago-shinchoku の open Issue でタイトルに【Claude Codeに頼む】の新着を
+    #   5分おきに拾い、発車待ちへ積む→Issueに受付コメント→Dispatchへ1行。AI Drive の新着も30分おき。中で間引き。
+    _okosu("claude_uketsuke.py")

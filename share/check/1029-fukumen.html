@@ -48,53 +48,43 @@ summary{font-size:11px;letter-spacing:2px;color:var(--usu);cursor:pointer}
 <h1>覆面調査員の報告</h1>
 <p class='en'>JOY RELIEF STATION &nbsp;/&nbsp; WHAT THE CUSTOMERS FELT</p>
 <p class='lead'>架空のお客さん4人が、本番のごきげん補給所を実際に触りました。ここに出ているのは全部、ブラウザが自分で測った数字です。人の感想もAIの採点も1つも入っていません。</p>
-<p class='meta'>2026-10-11 14:02:50 に実測　／　見たページ 8枚　／　案内人に 32問　／　本番 https://joy-relief-station.lovable.app
-　／　このときのMacの混み具合（load average）[8.9, 6.0, 5.5]。待ち時間の数字（下の「出てくるまで待たされる」）はこの影響を受けます。画面のズレと入力の数字は影響を受けません。
+<p class='meta'>2026-10-17 16:58:44 に実測　／　見たページ 22枚　／　案内人に 32問　／　本番 https://joy-relief-station.lovable.app
+　／　このときのMacの混み具合（load average）[24.3, 18.5, 16.2]。待ち時間の数字（下の「出てくるまで待たされる」）はこの影響を受けます。画面のズレと入力の数字は影響を受けません。
 </p>
 <h2>ひどい順 ・ 上から5つ</h2>
 <div class='card'>
 <div class='no'>01</div>
-<div class='sym'>ページが落ちる・開けない</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>8枚見て 8枚が最後まで開けなかった（うちブラウザのタブごと落ちたのが 0枚）</div></div>
-<div class='row'><div class='lbl'>どこで</div><div class='mono'>/／/shelf/music/night／/shelf/music/covers（ほか5枚）</div></div>
-<div class='row'><div class='lbl'>直すと</div><div class='fix'>お客さんが曲ページで放り出されなくなる</div></div>
+<div class='sym'>出てくるまで待たされる（パソコン1280px）</div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>一番大きい絵が出るまで 最悪 21.8秒（良い＝2.5秒以下／悪い＝4秒超）。13枚中2枚が2.5秒超</div></div>
+<div class='row'><div class='lbl'>どこで</div><div class='mono'>/（ほか1枚）</div></div>
+<div class='row'><div class='lbl'>直すと</div><div class='fix'>開いた瞬間に中身が見える。戻るボタンを押されなくなる</div></div>
+<div class='shots'>
+<figure><img src='assets/1029-fukumen/top-1280px-before.jpg' alt=''><figcaption>読み始めた瞬間（0.7秒）</figcaption></figure>
+</div>
+<details><summary>測った生データ</summary><pre>{
+ &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;,
+ &quot;lcp_ms&quot;: 21804,
+ &quot;longtasks_over50&quot;: 3,
+ &quot;kb&quot;: 178.9,
+ &quot;requests&quot;: 52
+}</pre></details>
+</div>
+<div class='card'>
+<div class='no'>02</div>
+<div class='sym'>打った手ごたえが返ってくるのが遅い</div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>1文字打ってから画面が応えるまで 最悪 952ms（良い＝200ms以下／悪い＝500ms超）。測った1箇所の最悪値</div></div>
+<div class='row'><div class='lbl'>どこで</div><div class='mono'>/cover-guide｜案内所のURL欄にYouTubeのURLを打つ</div></div>
+<div class='row'><div class='lbl'>直すと</div><div class='fix'>打っている最中に「固まった」と感じなくなる</div></div>
 <details><summary>測った生データ</summary><pre>[
  {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.app/\&quot;, wait&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/music/night&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/shelf/music/night\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lo&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/music/covers&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/shelf/music/covers\nCall log:\n  - navigating to \&quot;https://joy-relief-station.l&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta\nCall log:\n  - navigating to \&quot;https://joy-relief-s&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.app/\&quot;, wait&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/music/night&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/shelf/music/night\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lo&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/music/covers&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/shelf/music/covers\nCall log:\n  - navigating to \&quot;https://joy-relief-station.l&quot;
- },
- {
-  &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta&quot;,
-  &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta\nCall log:\n  - navigating to \&quot;https://joy-relief-s&quot;
+  &quot;label&quot;: &quot;案内所のURL欄にYouTubeのURLを打つ&quot;,
+  &quot;inp_ms&quot;: 952,
+  &quot;画面の要素が差し替わった回数&quot;: 0
  }
 ]</pre></details>
 </div>
 <div class='card'>
-<div class='no'>02</div>
+<div class='no'>03</div>
 <div class='sym'>案内人の返事が「おじさん、わかってるね」になっていない</div>
 <div class='row'><div class='lbl'>数字</div><div class='num'>32問中32問が不合格（開けない・投げられない 32問）</div></div>
 <div class='row'><div class='lbl'>どこで</div><div class='mono'>/cover-guide（卵コンシェルジュ）</div></div>
@@ -167,11 +157,79 @@ summary{font-size:11px;letter-spacing:2px;color:var(--usu);cursor:pointer}
 ]</pre></details>
 </div>
 <div class='card'>
-<div class='no'>03</div>
+<div class='no'>04</div>
+<div class='sym'>読んでいる途中で画面が動く（スマホ375px）<span class='worse'>前回より悪化</span></div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>CLS 最悪 0.398（良い＝0.1以下／悪い＝0.25超）。9枚中1枚が0.1超。一番大きなズレは開いてから 7.5秒後（＝もう読み始めている）</div></div>
+<div class='row'><div class='lbl'>どこで</div><div class='mono'>/shelf/music/night</div></div>
+<div class='row'><div class='lbl'>直すと</div><div class='fix'>読んでいる行が飛ばなくなる。押そうとしたカードが逃げなくなる</div></div>
+<div class='row'><div class='lbl'>ずれたのは</div><div class='mono'>li.card-host.relative 「Led Zeppelin「Dazed and Confuse」</div></div>
+<div class='shots'>
+<figure><img src='assets/1029-fukumen/shelf-music-night-375px-before.jpg' alt=''><figcaption>読み始めた瞬間（0.7秒）</figcaption></figure>
+<figure><img src='assets/1029-fukumen/shelf-music-night-375px-after.jpg' alt=''><figcaption>読んでいる途中（この間に画面が動いた）</figcaption></figure>
+</div>
+<details><summary>測った生データ</summary><pre>{
+ &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/shelf/music/night&quot;,
+ &quot;cls&quot;: 0.3976,
+ &quot;cls_while_reading&quot;: 0.3976,
+ &quot;shifts&quot;: [
+  {
+   &quot;t&quot;: 7527,
+   &quot;v&quot;: 0.3976,
+   &quot;srcs&quot;: [
+    {
+     &quot;el&quot;: &quot;li.card-host.relative 「Led Zeppelin「Dazed and Confuse」&quot;,
+     &quot;from&quot;: [
+      0,
+      367,
+      216,
+      344
+     ],
+     &quot;to&quot;: [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     &quot;el&quot;: &quot;li.card-host.relative 「巨勢典子「I Miss You」 夜の棚 夜の底で鳴るピアノ」&quot;,
+     &quot;from&quot;: [
+      0,
+      655,
+      216,
+      157
+     ],
+     &quot;to&quot;: [
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     &quot;el&quot;: &quot;li.card-host.relative 「森恵「エイリアンズ (キリンジ・カバー)」 夜の棚 女性の声」&quot;,
+     &quot;from&quot;: [
+      160,
+      655,
+      216,
+      157
+     ],
+     &quot;to&quot;: [
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ]
+  }
+ ]
+}</pre></details>
+</div>
+<div class='card'>
+<div class='no'>05</div>
 <div class='sym'>入力欄にたどり着けない</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/cover-guide
-Call log:
-  - navigating to &quot;https://joy-relief-station.lovable.</div></div>
+<div class='row'><div class='lbl'>数字</div><div class='num'>入力欄が見つかりません: input[placeholder*=&quot;気分でも&quot;]</div></div>
 <div class='row'><div class='lbl'>どこで</div><div class='mono'>/cover-guide｜案内人に話しかける欄（スマホ375px）</div></div>
 <div class='row'><div class='lbl'>直すと</div><div class='fix'>お客さんが言葉を打てるようになる</div></div>
 <details><summary>測った生データ</summary><pre>{
@@ -180,50 +238,26 @@ Call log:
  &quot;label&quot;: &quot;案内人に話しかける欄（スマホ375px）&quot;,
  &quot;text&quot;: &quot;雨の日にひとりで&quot;,
  &quot;width&quot;: 375,
- &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/cover-guide\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.&quot;
-}</pre></details>
-</div>
-<div class='card'>
-<div class='no'>04</div>
-<div class='sym'>入力欄にたどり着けない</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/cover-guide
-Call log:
-  - navigating to &quot;https://joy-relief-station.lovable.</div></div>
-<div class='row'><div class='lbl'>どこで</div><div class='mono'>/cover-guide｜案内所のURL欄にYouTubeのURLを打つ</div></div>
-<div class='row'><div class='lbl'>直すと</div><div class='fix'>お客さんが言葉を打てるようになる</div></div>
-<details><summary>測った生データ</summary><pre>{
- &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide&quot;,
- &quot;selector&quot;: &quot;input[placeholder*=\&quot;https://\&quot;]&quot;,
- &quot;label&quot;: &quot;案内所のURL欄にYouTubeのURLを打つ&quot;,
- &quot;text&quot;: &quot;https://www.youtube.com/watch?v=dQw4w9WgXcQ&quot;,
- &quot;width&quot;: 1280,
- &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/cover-guide\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.&quot;
-}</pre></details>
-</div>
-<div class='card'>
-<div class='no'>05</div>
-<div class='sym'>入力欄にたどり着けない</div>
-<div class='row'><div class='lbl'>数字</div><div class='num'>開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/cover-guide
-Call log:
-  - navigating to &quot;https://joy-relief-station.lovable.</div></div>
-<div class='row'><div class='lbl'>どこで</div><div class='mono'>/cover-guide｜案内人に話しかける欄（1280px）</div></div>
-<div class='row'><div class='lbl'>直すと</div><div class='fix'>お客さんが言葉を打てるようになる</div></div>
-<details><summary>測った生データ</summary><pre>{
- &quot;url&quot;: &quot;https://joy-relief-station.lovable.app/cover-guide&quot;,
- &quot;selector&quot;: &quot;input[placeholder*=\&quot;気分でも\&quot;]&quot;,
- &quot;label&quot;: &quot;案内人に話しかける欄（1280px）&quot;,
- &quot;text&quot;: &quot;ドライブで聴くやつ&quot;,
- &quot;width&quot;: 1280,
- &quot;error&quot;: &quot;開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/cover-guide\nCall log:\n  - navigating to \&quot;https://joy-relief-station.lovable.&quot;
+ &quot;error&quot;: &quot;入力欄が見つかりません: input[placeholder*=\&quot;気分でも\&quot;]&quot;
 }</pre></details>
 </div>
 <h2>そのほか</h2><table><tr><th>症状</th><th>数字</th><th>どこで</th><th>直すとどうなるか</th></tr>
-<tr><td>入力欄にたどり着けない</td><td>開けませんでした: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://joy-relief-station.lovable.app/
-Call log:
-  - navigating to &quot;https://joy-relief-station.lovable.app/&quot;, wait</td><td class='mono'>/｜トップの感想欄</td><td>お客さんが言葉を打てるようになる</td></tr>
+<tr><td>入力欄にたどり着けない</td><td>入力欄が見つかりません: input[placeholder*=&quot;気分でも&quot;]</td><td class='mono'>/cover-guide｜案内人に話しかける欄（1280px）</td><td>お客さんが言葉を打てるようになる</td></tr>
+<tr><td>入力欄にたどり着けない</td><td>入力欄が見つかりません: textarea[placeholder*=&quot;気になった点&quot;]</td><td class='mono'>/｜トップの感想欄</td><td>お客さんが言葉を打てるようになる</td></tr>
+<tr><td>出てくるまで待たされる（スマホ375px）</td><td>一番大きい絵が出るまで 最悪 6.2秒（良い＝2.5秒以下／悪い＝4秒超）。9枚中1枚が2.5秒超</td><td class='mono'>/</td><td>開いた瞬間に中身が見える。戻るボタンを押されなくなる</td></tr>
+<tr><td>読んでいる途中で画面が動く（パソコン1280px） <span class='worse'>悪化</span></td><td>CLS 最悪 0.191（良い＝0.1以下／悪い＝0.25超）。13枚中1枚が0.1超。一番大きなズレは開いてから 3.3秒後（＝もう読み始めている）</td><td class='mono'>/shelf/music/night</td><td>読んでいる行が飛ばなくなる。押そうとしたカードが逃げなくなる</td></tr>
+<tr><td>1枚が重い</td><td>一番重いページで 1462KB・126本の通信。ブラウザが固まっていた時間 最悪 7485ms（50ms超の長い処理 30回）</td><td class='mono'>/cover-guide?artist=sara-bareilles&amp;song=goodbye-yellow-brick-road</td><td>スクロールが滑らかになる。回線が細い所でも開く</td></tr>
+<tr><td>画面の裏でエラーが出ている <span class='worse'>悪化</span></td><td>22枚中1枚でエラー。種類は1通り。一番多いページで1件</td><td class='mono'>/cover-guide?artist=the-kiffness&amp;song=alugalug-cat</td><td>出ないはずの空欄・止まるボタンが減る</td></tr>
+</table>
+<h2>触ったが、異常が出なかったもの</h2><table><tr><th>触った所</th><th>数字</th></tr>
+<tr><td>案内所のURL欄にYouTubeのURLを打つ</td><td>43文字を1文字ずつ打って、作り直し0回・字の消失0回・フォーカス落ち0回</td></tr>
 </table>
 <h2>前回と比べて</h2>
-<table><tr><th>見ている数字</th><th>今回</th><th>前回（2026-10-10）</th><th></th></tr>
+<table><tr><th>見ている数字</th><th>今回</th><th>前回（2026-10-16）</th><th></th></tr>
+<tr><td>CLSの最悪値</td><td>0.3976</td><td>0.078</td><td><span class='worse'>悪化</span></td></tr>
+<tr><td>CLSが悪いページ数</td><td>1</td><td>0</td><td><span class='worse'>悪化</span></td></tr>
+<tr><td>LCPの最悪値(ms)</td><td>21804</td><td>23792</td><td></td></tr>
+<tr><td>console errorが出たページ数</td><td>1</td><td>0</td><td><span class='worse'>悪化</span></td></tr>
 <tr><td>入力欄の作り直し(最悪・1文字あたり)</td><td>0.0</td><td>0.0</td><td></td></tr>
 <tr><td>打った字が消えた回数(合計)</td><td>0</td><td>0</td><td></td></tr>
 <tr><td>案内人の不合格率</td><td>1.0</td><td>—</td><td></td></tr>
@@ -231,6 +265,10 @@ Call log:
 <h2>測った生データ（実測）</h2>
 <pre>実測: 見た画面の幅 375px / 1280px
 実測: {
+ &quot;CLSの最悪値&quot;: 0.3976,
+ &quot;CLSが悪いページ数&quot;: 1,
+ &quot;LCPの最悪値(ms)&quot;: 21804,
+ &quot;console errorが出たページ数&quot;: 1,
  &quot;入力欄の作り直し(最悪・1文字あたり)&quot;: 0.0,
  &quot;打った字が消えた回数(合計)&quot;: 0,
  &quot;案内人の不合格率&quot;: 1.0
