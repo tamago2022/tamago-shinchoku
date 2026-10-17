@@ -117,7 +117,7 @@ def add(h):
     import re as R
     h = R.sub(r'<section class="cw-sharebox".*?</section>', '', h, flags=R.S)
     h = R.sub(r'<div class="cw-share[^"]*" data-share="[a-z]+">.*?</div>(?=)', '', h, flags=R.S)
-    h = R.sub(r'<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-line".*?</svg>', '', h, flags=R.S)
+    h = R.sub(r'<svg [^>]*style="position:absolute"[^>]*>\s*<symbol id="i-line".*?</svg>', '', h, flags=R.S)  # 属性の順番が違っても外す
     h = R.sub(r'<script>\(function\(\)\{var c=document\.querySelector\("link\[rel=canonical\]"\).*?</script>', '', h, flags=R.S)
     h = R.sub(r'<style id="cw-share">.*?</style>', '', h, flags=R.S)
     # 上：2026-10-17 たまごさん「上の共有ボタンは一旦外す（別デザインを探し中）。下だけ残す」→ TOP=False の間は入れない
