@@ -131,9 +131,10 @@ def check_issues(st, budget):
         if picked >= budget:
             break
         try:
-            rc, out, err = run(["gh", "issue", "list", "-R", repo, "--state", "open", "--limit", "40",
-                                "--search", "Claude Codeに頼む in:title",
-                                "--json", "number,title,body,url,createdAt,author"], timeout=60)
+            # 検索API（--search）は今日の実測で60秒超のタイムアウトが続いたので使わない。
+            # 新しい順30件の軽い一覧だけ取り、本文は当たった号だけ取りに行く。
+            rc, out, err = run(["gh", "issue", "list", "-R", repo, "--state", "open", "--limit", "30",
+                                "--json", "number,title,url,createdAt,author"], timeout=90)
         except Exception as e:
             st["stats"]["errors"] += 1
             log("%s 一覧が取れない: %r" % (repo, e))
@@ -155,6 +156,11 @@ def check_issues(st, budget):
             if _iso(it.get("createdAt")) < st["since"]:
                 seen.add(key)   # 基準線より前の古い号は掘り返さない
                 continue
+            try:
+                rc2, o2, _ = run(["gh", "issue", "view", str(it["number"]), "-R", repo, "--json", "body"], timeout=90)
+                it["body"] = json.loads(o2).get("body") if rc2 == 0 else ""
+            except Exception:
+                it["body"] = ""   # 本文が取れなくても積む（着手側が gh issue view で読み直す）
             sys.path.insert(0, HERE)
             try:
                 import command_ingest
