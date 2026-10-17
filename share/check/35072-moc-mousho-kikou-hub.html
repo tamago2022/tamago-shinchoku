@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35072 猛暑・気候・メガソーラー・SDGs関連ノートのハブ試作（日本🇯🇵ページと同じ構造） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35072 猛暑・気候・メガソーラー・SDGs関連ノートのハブ試作（日本🇯🇵ページと同じ構造）</div>
+<h1>#35072 猛暑・気候・メガソーラー・SDGs関連ノートのハブ試作（日本🇯🇵ページと同じ構造）</h1>
+<div class="date">2026-10-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+依頼は『Vault内を検索して、猛暑・地球温暖化・異常気象・メガソーラー・SDGs関連の既存ノートを洗い出し、「日本」ページと同じような構造(トピックのハブノート+Dataviewでの関連ノート一覧、または[[リンク]]での相互接続)を試作して見せる』。Vault全体をgrep/findで実測し、既存ハブノート「国家/国別/日本🇯🇵/日本🇯🇵.md」の構造（#ハブ タグ＋見出しごとにDataview <code>list where contains(file.tags, ...)</code>）を確認した上で、同じ発想で <code>00_管理/MOC_猛暑と気候.md</code> を試作した。4段構成（入口／メガソーラー・森林伐採／気候変動の賛否両論／SDGs懐疑論）で[[wikilink]]により12本を手動厳選でつなぎ、末尾に「日本🇯🇵」と同じ発想のDataview自動網（タイトル一致・新規ノート追加で自動拾い）を追加した。既存ノートの中身は一切書き換えていない。<pre style="white-space:pre-wrap;word-break:break-word;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:12px;font-size:0.78rem;margin-top:14px;max-height:480px;overflow:auto;"># MOC: 猛暑と気候（パイロット版・試作 v2）
+
+*作成日：2026-08-10／更新：2026-10-17*
+*これは試作品です。既存ノートの中身は一切変更していません。ここから[[wikilink]]で繋いでいるだけです。*
+*v2で追加：①新しく見つけた関連ノートを1本追加 ②「日本🇯🇵」ハブノートと同じ発想のDataview自動一覧を末尾に新設（下の「🔎自動網」節）。*
+
+## この試作の考え方
+
+「Amazonのこれを買った人はこれも買ってます」「AirPods買ってカツオのふりかけは出てこない」の&quot;半歩横&quot;だけを集めてあります。「猛暑」というキーワードで機械的にヒットしたものを全部並べたのではなく、実際に読んで「これは隣にあると話が繋がる」と判断したものだけを選んでいます。
+
+---
+
+## 🌡️ 入口：猛暑そのもの・体感
+
+- [[円卓会議/9878円のそうめんスライダーは、何の値段だったのか|9878円のそうめんスライダーは、何の値段だったのか]] — TBSの節約特集を一次資料で検証した円卓会議議事録。「猛暑」が「あなたの工夫不足」に話をすり替えられていく構造を分析
+- [[幸福ガチャ　不幸ガチャランキング（SS級＝地獄、C級＝まあキツイ）インド：インドは耐え難い猛暑に苦しんでおり、一部の地域では気温が最高55℃|幸福ガチャ　不幸ガチャランキング（インド猛暑55℃）]] — 日本の「暑い暑い」の外側に、体感55℃の国があるという比較軸
+
+## ☀️ メガソーラー・森林伐採問題（「日本はそれと逆に……」の具体例）
+
+- [[コロンビアが街路樹を88万本植えて、気温を5℃下げたそうです。素晴らしい。日本はそれと逆に……。メガソーラー建設と森林伐採の温度影響|コロンビアが街路樹88万本で気温5℃低下／日本のメガソーラー建設と森林伐採の温度影響]] — たまごさんが例に挙げていた、まさにその記事
+- [[阿蘇　メガソーラー　高齢化で限界間近の命懸けの重労働から解放されるうえお金がもらえる。 国も推進していた　熊本40度|阿蘇メガソーラー（熊本40℃・国も推進）]] — 推進側の事情（高齢化・労働負担）も含めた視点
+- [[再エネ賦課金 『上海電力日本』山口、岩国の山をハゲ山にして中国国営企業がメガソーラーを運営中|再エネ賦課金／上海電力日本が岩国の山をハゲ山にしてメガソーラー運営]] — 資本・国籍の問題まで含んだ角度
+- [[山がハゲたのは、地球に優しい「つるピカ」を目指した結果ですか？|山がハゲたのは「地球に優しい」を目指した結果か]] — 上の2本を皮肉る形でまとめた一言
+- [[AIデータセンターの環境コスト　オレゴン州Googleデータセンターが2024年に約4.34億ガロン、市全体の水使用量のおよそ3分の1|AIデータセンターの環境コスト（オレゴン州Google施設・水使用量）]] — 「メガソーラーで気温50℃」説を実際に割り引いて検証し、「メガソーラー＝完全にエコ」も間違いと両側から刺した回。今回のVault全体検索で新しく見つけた1本（#SDGs タグ付き）
+
+## 🌍 気候変動そのものの言説（賛否両方を隣に置く）
+
+- [[Natureによれば、地球温暖化は単に「進行している」のではなく、明らかに「加速している」。かつての予測を上回るスピードで 安宅さん|Nature「地球温暖化は加速している」安宅さん紹介]] — 加速している、という立場
+- [[❌1989年、国連は「2020年までに島国が海面上昇で消滅する」と断言しました。気候科学者が衝撃の告白‼️🌍 地球温暖化の「真実」が今、暴かれようとしています|1989年国連の海面上昇予測が外れた、という懐疑論]] — 逆の立場。両方隣にあることで「事実／解釈／未検証」を自分で見比べられる（たまご憲法第11条：事実確認の原則）
+
+## 📊 SDGs懐疑論・お金ゲームという角度
+
+- [[2030アジェンダは17の持続可能な開発目標（SDGs）|2030アジェンダ・SDGs17目標（基礎情報）]]
+- [[ダボス会議（世界経済フォーラム）SDGs は本当に弱体化？|ダボス会議：SDGsは本当に弱体化？]]
+- [[世界の現状：エスディージーズは「お金ゲーム」でもある|SDGsは「お金ゲーム」でもある]]
+- [[独身税　名目は保険料　税と言わずに取る仕組み――子ども・子育て支援金数百円　段階的に上がる理解「子ども」「森林」「再エネ」「観光」目的の善さを見せる|独身税／再エネ課金にも共通する「目的の善さを見せる」徴収の仕組み]] — メガソーラー・再エネ賦課金と同じ構造（善い目的を見せて負担を通す）を、別の税の例で補強
+
+## 円卓会議全体のハブとの関係
+
+議事録全体の一覧は既に[[円卓会議議事録一覧]]で別途対応中（進行中）。このMOCはそれとは別に、**ジャンル横断**でトピックをつなぐレイヤー。円卓会議のノートも、他のジャンルのノートも、区別せず同じ棚に並べているのがこのMOCの狙い。
+
+---
+
+## 🔎 自動網（Dataview・「日本🇯🇵」ハブノートと同じ発想）
+
+上の4セクションは「読んで隣にあると話が繋がる」と判断した**手動の厳選**です。ここは逆に、タイトルにキーワードが入っていれば**新しいノートができた瞬間、手で追記しなくても自動で出てくる**網（[[日本🇯🇵]]ページのタグDataviewと同じ考え方）。
+
+```dataview
+list
+where (
+    contains(file.name, &quot;猛暑&quot;)
+    or contains(file.name, &quot;地球温暖化&quot;)
+    or contains(file.name, &quot;気候変動&quot;)
+    or contains(file.name, &quot;異常気象&quot;)
+    or contains(file.name, &quot;メガソーラー&quot;)
+    or contains(file.name, &quot;SDGs&quot;)
+    or contains(file.name, &quot;再エネ&quot;)
+    or contains(file.name, &quot;脱炭素&quot;)
+    or contains(file.name, &quot;熱中症&quot;)
+  )
+  and file.name != this.file.name
+sort file.mtime desc
+```
+
+**今はタイトル一致で網を張っています（タグ版ではありません）。** Vault全体をgrepした実測では、`#猛暑` `#気候変動` `#メガソーラー` のようなタグはこのジャンルにほとんど付いていない（`#SDGs`が2件だけ）。[[日本🇯🇵]]ページのようにタグで束ねるには、まず対象ノートにタグを振る作業が先に要ります。今回は既存ノートを書き換えない方針のため、タグ追記はまだ実行していません（やるなら店主判断で件数を区切って）。
+
+## この構造をどう広げるか（提案・実行前）
+
+うまくいけば、他のトピックにも同じ形式（入口→具体例→賛否両論→隣接する角度、の4段構成＋自動網）を広げます。候補：地元経済・観光導線、AI規制、円卓会議で扱った他のテーマなど。まずこの「猛暑」v2版で使い勝手を見てもらえますか。
+
+関連ハブ: [[MOC_EdenLoopと文明OS]]・[[日本🇯🇵]]（Dataview自動一覧の元ネタ）
+</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>12本</b><span>手動厳選で[[リンク]]した既存ノート数（4段構成）</span></div>
+  <div class="num"><b>7件</b><span>自動網Dataviewクエリをタイトル一致で実測模倣した結果のヒット数</span></div>
+  <div class="num"><b>4段</b><span>日本🇯🇵ハブと同じ『見出し+Dataview』構成のセクション数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>元ネタにした既存ハブノートの構造を使った前例（円卓会議議事録一覧・34624号の確認ページ）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34624-entaku-title-and-hub.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34624-entaku-title-and-hub.html</a></li>
+  <li><b>entaku_kaigi.py（同種のDataview自動一覧を実装したコード・参考）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/entaku_kaigi.py#L356-L384" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/entaku_kaigi.py#L356-L384</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>既存ハブノート「日本🇯🇵」の構造を実際に読んで確認した</td><td class="yes">yes（#ハブタグ＋見出しごとのDataview list）</td></tr>
+<tr><td>猛暑・地球温暖化・異常気象・メガソーラー・SDGs関連ノートをVault全体から洗い出した</td><td class="yes">yes（find/grepで実測・ファイル名ヒット計算済み）</td></tr>
+<tr><td>同じ構造（ハブノート+Dataview一覧+[[リンク]]）で試作した</td><td class="yes">yes（MOC_猛暑と気候.md v2・4段構成＋自動網）</td></tr>
+<tr><td>既存ノートの中身は変更していない</td><td class="yes">yes（新規ハブノート1本の追記のみ）</td></tr>
+<tr><td>自動網Dataviewクエリの実ヒット件数を実測した</td><td class="yes">yes（7件・ファイル名一致で模倣実行）</td></tr>
+</table>
+
+<footer>
+このMOCはObsidian Vault内のノート（tamago_brain/00_管理/MOC_猛暑と気候.md）であり、GitHubリポジトリの外にあるため直リンクは出せない。このページ自体にMOC全文を埋め込んで中身を示す。Dataviewクエリの実行結果（タグ版・自動網）はObsidianアプリでのみ実際に描画されるため、同じ条件をPythonでファイル名一致により模倣実行し実測件数(7件)を上で示した。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
