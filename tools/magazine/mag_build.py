@@ -96,7 +96,7 @@ def interlude(ph):
 def chapter(c, paper=False):
     parts = [chead(c),
              f'<div class="cw-main">{video(c["main"])}</div>',
-             '<div class="cw-body" style="margin-top:40px">' + ''.join(f'<p>{p}</p>' if isinstance(p, str) else say(p['say']) for p in c['body']) + '</div>'  # 本文の合間に吹き出し＝dict(say=…)（2026-10-18 箸休め）]
+             '<div class="cw-body" style="margin-top:40px">' + ''.join(f'<p>{p}</p>' if isinstance(p, str) else say(p['say']) for p in c['body']) + '</div>']  # 本文の合間に吹き出し＝dict(say=…)（2026-10-18 箸休め）
     if c.get('pull'):
         parts.append(f'<blockquote class="cw-pull">{c["pull"]}</blockquote>')
     if c.get('more'):
