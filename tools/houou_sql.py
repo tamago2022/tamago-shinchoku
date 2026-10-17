@@ -19,6 +19,11 @@ spec.loader.exec_module(tanaire)
 def main():
     src, dst = sys.argv[1], sys.argv[2]
     parts = [p.strip() for p in open(src, encoding="utf-8").read().split("-- @@") if p.strip()]
+    try:
+        import lovable_token_keeper as keeper
+        print("keeper", keeper.ensure_fresh())
+    except Exception as e:  # noqa: BLE001
+        print("keeper err", e)
     db = tanaire.DB()
     out = []
     for p in parts:
