@@ -15,6 +15,10 @@ DRY = "--dry" in sys.argv
 
 
 def gh(*a, inp=None):
+    # ★2026-10-18 緊急停止（戻すには status/codex_jules.stop を消す）：@codex を含む書き込みを止める。
+    if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "status", "codex_jules.stop")) \
+            and "@codex" in (" ".join(a) + (inp or "")):
+        raise RuntimeError("codex_jules.stop により停止中")
     r = subprocess.run([GH, *a], capture_output=True, text=True, input=inp)
     if r.returncode:
         raise RuntimeError(r.stderr.strip())
