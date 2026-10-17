@@ -168,6 +168,11 @@ def add_switch(h, name):
 
 def build(spec):
     h = open(spec['in'], encoding='utf-8').read()
+    # fix：[[元, 新]] の完全一致の置き換え（壊れたタグの修理・読者に出す注記の削除・見出しの規格合わせ。本文の言い回しは変えない）
+    for old, new in spec.get('fix', []):
+        if old not in h:
+            raise SystemExit('fix が当たらない: ' + old[:60])
+        h = h.replace(old, new, 1)
     if '<main class="cw"' not in h:  # Genspark は <div class="cw"> で組んでくる。訳・共有ボタンは main.cw を目印にする
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(h, 'html.parser')
