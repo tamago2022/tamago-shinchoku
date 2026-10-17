@@ -240,6 +240,8 @@ def from_tiktok():
     for vid in re.findall(r"/video/(\d{18,20})", html):
         ids.setdefault(vid, "")
     for u in cfg.get("tiktok_urls") or []:
+        if "vt.tiktok.com" in u or "vm.tiktok.com" in u:
+            u = _final_url(u) or u  # 短いリンクは飛び先（/video/数字）を見る
         m = re.search(r"/video/(\d{18,20})", u)
         if m:
             ids.setdefault(m.group(1), "")
@@ -330,12 +332,125 @@ def from_youtube():
     return out, ("" if out else "YouTube の公開RSS・一覧が空")
 
 
+def _final_url(u):
+    try:
+        r = subprocess.run(["curl", "-sIL", "-m", "20", "-o", "/dev/null", "-w", "%{url_effective}", u],
+                           capture_output=True, timeout=25)
+        return r.stdout.decode("utf-8", "ignore").strip()
+    except Exception:
+        return ""
+
+
+def tweet_result(tid):
+    """X の1本：公式の埋め込み用の口（cdn.syndication tweet-result）。0円・鍵なし・GETだけ。"""
+    try:
+        d = json.loads(_curl("https://cdn.syndication.twimg.com/tweet-result?id=%s&lang=ja&token=a" % tid) or "{}")
+    except Exception:
+        return {}
+    txt = d.get("text") or ""
+    for u in (d.get("entities") or {}).get("urls") or []:
+        if u.get("url") and u.get("expanded_url"):
+            txt = txt.replace(u["url"], u["expanded_url"])
+    d["_text"] = txt
+    return d
+
+
+def from_x_urls():
+    """たまごさんが渡したXの投稿URL（status/toukou_daicho_config.json の x_urls）。Buffer を通らずに出したものを拾う。"""
+    cfg = _read_json(CONFIG, {})
+    old = _old_posts()
+    out = []
+    for u in cfg.get("x_urls") or []:
+        m = re.search(r"/status/(\d+)", u)
+        if not m:
+            continue
+        tid = m.group(1)
+        pid = "x:%s" % tid
+        prev = old.get(pid) or {}
+        text, at = prev.get("text") or "", prev.get("at") or ""
+        if not text:
+            d = tweet_result(tid)
+            text, at = d.get("_text") or "", d.get("created_at") or ""
+        out.append({"platform": "x", "via": "x-url", "at": at, "url": "https://x.com/oasisjoyrelief/status/%s" % tid,
+                    "songKey": song_key_from_text(text) or prev.get("songKey"), "text": text[:300], "id": pid})
+    return out, ""
+
+
+# ────────────────────────── 反応（再生数・いいね）を日々記録 ──────────────────────────
+HANNOU = os.path.join(REPO, "status", "sns_hannou.json")
+HANNOU_DAYS = 30  # 出してから30日までの投稿を毎日見る（叩きすぎない）
+
+
+def _num(x):
+    try:
+        return int(str(x).replace(",", ""))
+    except Exception:
+        return None
+
+
+def stats_of(post):
+    """1投稿の反応。取れた数字だけ入れる（取れないものは書かない＝0で埋めない）。すべて0円・鍵なし。"""
+    url = post.get("url") or ""
+    if post.get("platform") == "tiktok":
+        vid = url.rsplit("/", 1)[-1]
+        html = _curl("https://www.tiktok.com/@%s/video/%s" % (TIKTOK, vid))
+        i = html.find('"stats":{')
+        seg = html[i:i + 600] if i >= 0 else ""
+        g = lambda k: _num((re.search(r'"%s":"?(\d+)' % k, seg) or [None, None])[1])
+        return {"views": g("playCount"), "likes": g("diggCount"), "comments": g("commentCount"),
+                "shares": g("shareCount"), "saves": g("collectCount")}
+    if post.get("platform") == "youtube":
+        vid = url.rsplit("/", 1)[-1]
+        html = _curl("https://www.youtube.com/watch?v=%s" % vid)
+        v = re.search(r'"viewCount":"(\d+)"', html)
+        lk = re.search(r'"likeCount":"?(\d+)', html) or re.search(r'"likeCountIfIndifferentNumber":"(\d+)"', html)
+        return {"views": _num(v.group(1)) if v else None, "likes": _num(lk.group(1)) if lk else None}
+    if post.get("platform") == "x":
+        m = re.search(r"/status/(\d+)", url)
+        if not m:
+            return {}
+        d = tweet_result(m.group(1))
+        return {"likes": _num(d.get("favorite_count")), "replies": _num(d.get("conversation_count"))}
+    return {}
+
+
+def record_hannou(daicho):
+    """status/sns_hannou.json に1日1行ずつ足す（Dispatch が読む）。同じ日に2回走ったら上書き。"""
+    h = _read_json(HANNOU, {"what": "SNS投稿の反応（再生数・いいね等）。tools/toukou_mimawari.py が毎日記録。取れない数字は書かない。", "posts": {}})
+    today = _now().strftime("%Y-%m-%d")
+    cutoff = (_dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(days=HANNOU_DAYS)).isoformat()
+    n = 0
+    for p in daicho.get("posts") or []:
+        at = p.get("at") or ""
+        if p.get("platform") not in ("tiktok", "youtube", "x") or (at and at[:19] < cutoff[:19]):
+            continue
+        if p.get("platform") == "x" and "/status/" not in (p.get("url") or ""):
+            continue  # Buffer 経由で投稿IDがまだ分からないもの
+        st = {k: v for k, v in (stats_of(p) or {}).items() if v is not None}
+        if not st:
+            continue
+        rec = h["posts"].setdefault(p["id"], {"platform": p["platform"], "url": p.get("url"), "songKey": p.get("songKey"),
+                                              "postedAt": at, "history": []})
+        rec["songKey"] = rec.get("songKey") or p.get("songKey")
+        rec["history"] = [x for x in rec["history"] if x.get("date") != today] + [dict(date=today, **st)]
+        rec["latest"] = dict(date=today, **st)
+        n += 1
+    h["updatedAt"] = _now().isoformat()
+    _write_json(HANNOU, h)
+    try:  # 進捗表・Dispatch が外から読めるように公開側にも写す（数字だけ・個人情報なし）
+        _write_json(os.path.join(REPO, "status", "public", "sns_hannou.json"), h)
+    except Exception:
+        pass
+    log("反応 %d本を記録" % n)
+    return n
+
+
 def collect(jrs_dir=None, net=True):
     now_utc = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     old = _read_json(DAICHO, {})
     posts = {p["id"]: p for p in old.get("posts") or [] if p.get("id")}
     sources = {}
-    getters = [("x_buffer", lambda: from_buffer(now_utc)), ("x_live", from_x_live)]
+    getters = [("x_buffer", lambda: from_buffer(now_utc)), ("x_live", from_x_live), ("x_urls", from_x_urls)]
     if jrs_dir:
         getters.append(("sns_post_log", lambda: from_sns_log(jrs_dir)))
     if net:
@@ -356,6 +471,10 @@ def collect(jrs_dir=None, net=True):
                 p["songKeys"] = prev["songKeys"]
             posts[p["id"]] = p
         sources[name] = {"n": len(got), "why": why}
+    # 手で結んだ曲（status/toukou_daicho_config.json の post_song_keys：{投稿ID: [曲キー…]}）。マガジン紹介の投稿など、1本で何曲も扱う時
+    for pid, keys in (_read_json(CONFIG, {}).get("post_song_keys") or {}).items():
+        if pid in posts:
+            posts[pid]["songKeys"] = sorted(set((posts[pid].get("songKeys") or []) + list(keys)))
     rows = sorted(posts.values(), key=lambda p: p.get("at") or "")
     daicho = {
         "updatedAt": _now().isoformat(),
@@ -497,7 +616,11 @@ def daily(force=False):
         subprocess.run(["python3", os.path.join(HERE, "x_toukou.py")], capture_output=True, timeout=180)
     except Exception:
         pass
-    collect(jrs_dir=JRS, net=True)
+    d = collect(jrs_dir=JRS, net=True)
+    try:
+        record_hannou(d)
+    except Exception as e:
+        log("反応の記録で落ちた：%r" % (e,))
     try:
         c = check()
     except Exception as e:  # 落ちた理由を必ず残す（黙って死なない）
@@ -524,6 +647,8 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     if "--self-test" in a:
         self_test()
+    elif "--hannou" in a:
+        print("反応", record_hannou(_read_json(DAICHO, {})))
     elif "--collect" in a:
         d = collect(jrs_dir=JRS if os.path.isdir(JRS) else None, net="--no-net" not in a)
         print("台帳 %d件 曲%d" % (len(d["posts"]), d["songs"]))
