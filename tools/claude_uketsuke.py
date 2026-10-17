@@ -255,6 +255,14 @@ def _download(drive_path, num):
     return dst if ok else None, (out or err or "")[:200]
 
 
+def _safe_comment(num, repo, body):
+    """GitHub が詰まっても受付を止めない（10/17 実測：TLS タイムアウトで例外→二重積みの危険）。"""
+    try:
+        run(["gh", "issue", "comment", str(num), "-R", repo, "--body", body], timeout=60)
+    except Exception as e:
+        log("#%s コメントを書けない（受付は済み）: %r" % (num, e))
+
+
 def check_nouhin(st):
     st.setdefault("nouhinSeen", [])
     st.setdefault("nouhinSince", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - 6 * 3600)))
@@ -301,16 +309,18 @@ def check_nouhin(st):
                 log("#%s 納品を積めない: %r" % (num, e))
                 seen.discard(cid)
                 continue
-            run(["gh", "issue", "comment", num, "-R", repo, "--body",
+            _safe_comment(num, repo,
                  "%s\n【Claude Code】納品を受け取りました（%d件）。工場の発車待ちに積みました（%s）。公開とBuffer予約が済んだらここに本番URLを書きます。"
-                 % (FACTORY_MARK, len(got), qmsg)], timeout=40)
+                 % (FACTORY_MARK, len(got), qmsg))
+            st["nouhinSeen"] = list(seen)[-3000:]
+            save_state(st)
             outbox("【納品受付】#%s %d件" % (num, len(got)), "AI Drive から自動で取得→発車待ちへ（%s）" % qmsg, [c.get("html_url")])
             log("#%s 納品 %d件を取得・積んだ（%s）" % (num, len(got), qmsg))
             n_ok += 1
         if bad:
-            run(["gh", "issue", "comment", num, "-R", repo, "--body",
+            _safe_comment(num, repo,
                  "%s\n【Claude Code】納品のうち取れなかったもの：%s。AI Drive の `/tamago-inbox/%s/` に同じ名前で置き直してください。"
-                 % (FACTORY_MARK, "、".join(bad), num)], timeout=40)
+                 % (FACTORY_MARK, "、".join(bad), num))
             log("#%s 納品の取得失敗: %s" % (num, bad))
     st["nouhinSeen"] = list(seen)[-3000:]
     st["nouhinSince"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - 1800))
