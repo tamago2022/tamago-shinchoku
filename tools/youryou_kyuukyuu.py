@@ -88,6 +88,12 @@ def forbidden(path):
 def rm(path, kind, deleted):
     if not os.path.lexists(path) or forbidden(path):
         return
+    try:  # 2026-10-17 ブラウザ（Brave・Chrome）のフォルダは一切触らない（tools/browser_mamoru.py）
+        import browser_mamoru
+        if browser_mamoru.mamoru(path):
+            return 
+    except Exception:
+        return 
     # 2026-10-12：消す前後に du を回すと負荷21のMacで1件数分かかったため、空きの差で測る（目安）
     before = free_gb() or 0
     try:

@@ -9,7 +9,7 @@
      ・$TMPDIR（/var/folders/…/T）：3日以上さわられていないもの（com.apple.*・claude*・TemporaryItems は除く）
        自動操作ブラウザの使い捨てプロフィール（puppeteer/playwright/chromium の一時フォルダ）は1日で
      ・Claude の古いセッション（local-agent-mode-sessions）の outputs：7日以上前のもの（今のセッションは除く）
-     ・ブラウザ（Chrome のみ。Brave には触らない）のキャッシュだけ（Cache/Code Cache/GPUCache/シェーダー/Service Worker の CacheStorage）
+     ・（2026-10-17 廃止・ブラウザ（Brave・Chrome）のフォルダは一切触らない）以前の対象＝ブラウザのキャッシュ（Cache/Code Cache/GPUCache/シェーダー/Service Worker の CacheStorage）
        ＝Cookie・Local Storage・IndexedDB（ログイン状態やサイトのデータ）は消さない
      ・自動操作用の Chrome（Application Support/Google/Chrome-headless）はまるごと（作り直せる）
   ③ HDD の置き場を日数で片付ける：作業場の控え 14日・控え(_1142_gomi) 30日・Claude上げ済み 30日
@@ -51,6 +51,9 @@ def du_gb(p, t=900):
 
 
 def rm(p):
+    import browser_mamoru  # 2026-10-17 ブラウザ（Brave・Chrome）のフォルダは一切触らない
+    if browser_mamoru.mamoru(p):
+        return
     if os.path.isdir(p) and not os.path.islink(p):
         shutil.rmtree(p, ignore_errors=True)
     elif os.path.lexists(p):
@@ -258,7 +261,7 @@ def main():
     save(res)
     step(res, "$TMPDIR の古いもの", tmpdir)
     step(res, "Claude の古いセッションの outputs", claude_sessions)
-    step(res, "ブラウザのキャッシュ", browser_cache)
+    # 2026-10-17 ブラウザ（Brave・Chrome）のフォルダは一切触らない＝ブラウザのキャッシュ掃除は廃止（tools/browser_mamoru.py）
     step(res, "HDD の置き場（日数で）", hdd_okiba_souji)
     step(res, "場所ごとの上限（youryou_jougen）", jougen_run)
     step(res, "動画・音声の中間ファイル（chukan_shimau）", lambda: __import__("chukan_shimau").run())
