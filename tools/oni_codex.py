@@ -93,6 +93,10 @@ def append(p, o):
 
 
 def gh(args, inp=None):
+    # ★2026-10-18 緊急停止（戻すには status/codex_jules.stop を消す）：書き込み系の gh を止める。読むだけは通す。
+    if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "status", "codex_jules.stop")) \
+            and any(a in ("create", "comment", "edit", "-f", "--field", "-X", "--method", "POST") for a in args):
+        raise RuntimeError("codex_jules.stop により停止中")
     p = subprocess.run([GH] + args, input=inp, capture_output=True, text=True, timeout=90)
     if p.returncode != 0:
         raise RuntimeError("gh %s rc=%s %s" % (args[:2], p.returncode, (p.stderr or "")[-300:]))

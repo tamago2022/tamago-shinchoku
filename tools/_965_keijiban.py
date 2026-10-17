@@ -113,6 +113,13 @@ def run_job(payload):
                 "totalYen": 0.0}
 
     action = payload.get("action") or "bots"
+    # ★2026-10-18 緊急停止：Codex/Jules への自動依頼（【〜に頼む】Issue・@codex コメント・jules/codex 札）を止める。
+    #   Codex の利用上限（10/22 15:29 まで）を食い潰したため。戻すには status/codex_jules.stop を消すだけ。
+    if os.path.exists(os.path.join(HERE, "..", "status", "codex_jules.stop")) and action in ("issue", "comment", "label"):
+        _t = " ".join(str(payload.get(k) or "") for k in ("title", "body", "labels"))
+        if ("@codex" in _t.lower() or "に頼む】" in _t or "jules" in _t.lower() or "'codex'" in _t.lower()
+                or "@devin" in _t.lower() or "@copilot" in _t.lower()):
+            return {"ok": False, "error": "codex_jules.stop により停止中", "stopped": True, "totalYen": 0.0}
     try:
         if action == "bots":
             return {"ok": True, "repo": repo, "action": action,

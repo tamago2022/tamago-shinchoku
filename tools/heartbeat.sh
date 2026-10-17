@@ -520,7 +520,8 @@ while :; do
   #   ★1本ずつ（3本同時は2026-09-20にACUが尽きて3本とも凍った）。走っている1本があれば見るだけで戻る。
   #   ★お金：財布の栓（yosan devin）が0円なら Devinには1本も投げない。列は0円の口（Jules）で回す。
   #   投げっぱなしにして心臓は待たない。新しい常駐も定期タスクも作らない。
-  tick_every 4 && ( python3 "$REPO/tools/1142_nagashi.py" >> "$REPO/status/1142/nagashi.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-10-18 Codex上限を食い潰した自動【Julesに頼む】の発生源。戻すには下の行頭の # を外す】
+  # tick_every 4 && ( python3 "$REPO/tools/1142_nagashi.py" >> "$REPO/status/1142/nagashi.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1074番）秋の投稿・今日の1本。たまごさん「たまごさんがやるのはOKかこれじゃないかだけ」
   #   ★朝07:00と夜20:30に、ドラフトを1本だけ出す（投稿の30分前）。文面はこちらが書いてある。
   #   ★中で1便1回に間引く（status/aki_toko.json の lastKey）ので、ここは緩く呼べばよい。
