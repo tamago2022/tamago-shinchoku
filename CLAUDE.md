@@ -1,6 +1,10 @@
 # tamago-shinchoku（公開リポ：鍵・個人情報は絶対に置かない）
 グローバル憲法は ~/.claude/CLAUDE.md を参照（そちらにも下記ルールあり）。
 
+## SNSに出した曲は、曲ページを5点そろえる（憲法・2026-10-17・たまごさん優先順位1位）
+- **5点：** ①検索（曲名・アーティスト名＋曲名・カタカナ⇔英語）で出る ②関連4本以上（理由の言えるもの）③メモと出典（src）④マガジンに載った曲はマガジンへの入口 ⑤動画が生きている。
+- **機械の裏付け：** `tools/toukou_mimawari.py`（投稿済み曲の見回り・心臓から1日1回）。台帳 `status/public/toukou_daicho.json`＝X（Bufferの控え dashita.jsonl が正本＋x_toukou＋`x_urls`）・YouTube @joy-relief-station（公開RSS＋一覧、曲は再生ページの「使っている曲」）・TikTok（公開埋め込み `tiktok.com/embed/@joyreliefstation`＋動画ページの「使った音」・oEmbed・`tiktok_urls`）。渡されたURL・1本で何曲も扱う告知（`post_song_keys`）は `status/toukou_daicho_config.json`。点検は joy-relief-station `scripts/patrol/check-posted-songs.mts` → `status/public/toukou_tenken.json`、落ちた曲があれば直す仕事を1日1件積む。**反応（再生数・いいね等）は出して30日以内の投稿を毎日 `status/sns_hannou.json`（写し `status/public/sns_hannou.json`）に記録。取れない数字は書かない。** 有料API・ブラウザなし。`--self-test`。
+
 ## サイトを後退させない（憲法・2026-10-16・101885番・たまごさん指名）
 - **軽くした・整えたサイトを、次の変更で元に戻さない。** 出す前に `python3 tools/koutai_kanmon.py --check --output <.output>` を通し、`KOUTAI_KANMON_RESULT: PASS` 以外は main に合流させない・公開を押さない。
 - **機械の裏付け：** 基準値 `status/public/koutai_kijun.json`（トップ／棚／曲／マガジンの 1ページ目の時間・送る量・見た目の点数）。関所 `tools/koutai_kanmon.py`（時間+10%超・送る量+5%超・点数低下で exit 2、何が増えたかを1行で出す、良くなった時だけ基準値更新、`--self-test` 付き）。公開押し係 `kohyou_osu.py --pre-publish`／公開後の見る係 `kohyou_kanshi.py --after-publish`／マガジン `put_prod.sh --check-files` に組み込み済み。詳細は `AGENTS.md`「サイトを後退させない関所」。
@@ -119,6 +123,7 @@
 - **叩きでも完成形（2026-10-14）。** たまごさんは完成前でも確認ページからシェアするので、毎回シティポップ特集と同じ完成形まで持っていく。シェア表示（OGP：og:title／og:description／og:image＝ヘッダーの曲のサムネイル／twitter:card）も必ず入れる。
 - **公開は毎回本番へ（2026-10-15）。** 各マガジンは本番URLを1つだけ持ち（`https://joy-relief-station.lovable.app/magazine/<名前>.html`＝joy-relief-station の `public/magazine/`）、直すたびに同じURLを上書きする。作り方：`python3 tools/magazine/spec_<名前>.py`（確認ページと本番用の写し `status/magazine_prod/` を同時に作る）→ `bash tools/magazine/put_prod.sh` → Lovable の `deploy_project`。一覧は Obsidian の「マガジン一覧」ノート1枚。
 - **マガジンはサイトと同じ全言語で読めるようにする（2026-10-16・たまごさん指示・全マガジン共通）：** 対応言語はサイトの `src/i18n/config.ts` の `SUPPORTED_LANGUAGES`（今は 日本語・English・中文・Español・한국어 の5つ）。spec に `i18n={言語:{キー:訳}}` を渡すと `mag_build.py` が地球マークの切替（サイトと同じ `gokigen-lang` を共有）を入れる。キー一覧は `python3 tools/magazine/mag_build.py --i18n-keys <html>`。英語などは直訳でなく、その言語の読者の心に届く文にする。
+- **シェアとSNSは2段に分ける（2026-10-18・たまごさん指示・全マガジン／特集共通）：** 段1「この特集をシェア」＝記事を読み終えた直後（締めの直後。OTHER MAGAZINESより上）。並び LINE → WhatsApp → X → Facebook → Threads → コピー → 端末の共有。押したら送るだけの下書き入り。根拠：LINE `line.me/R/share?text=`・WhatsApp `wa.me/?text=`・X `x.com/intent/tweet?text=&url=`・Threads `threads.com/intent/post?text=&url=` は公式文書に事前入力あり、Facebook sharer はURLだけ（原文は status/share_btn/evidence/）。下書きは LINE・WhatsApp＝友だちへの一言＋題名＋URL、X・Threads＝短い一言＋題名。段2「ごきげん補給所をフォロー」＝ページのいちばん下、X @oasisjoyrelief・TikTok @joyreliefstation・YouTube @joy-relief-station を塗りの札で。部品は tools/magazine/share_bar.py（静的マガジン）と src/components/ShareBar.tsx（特集・全ページ）。
 - **子セッションは web_fetch 禁止・調べ物は工場の道具経由（2026-10-16・たまごさんの画面に許可ポップアップが20個以上出た事故）：** 出典確認は `tools/wiki_lookup.py`（Wikipedia API・一般ページの本文）を `status/mac_jobs/pending/*.sh` で Mac 上で走らせて読む。Lovable などの承認が要るコネクタも子セッションからは呼ばない（公開は `tools/98403_lovable_publish_mcp.py` を mac_jobs で）。
 - **マガジンは「1個の本番URLを上書きしていく」運用（2026-10-16・たまごさん指示・全マガジン共通）：** 読者にもたまごさんにも渡すのは本番URL（`https://joy-relief-station.lovable.app/magazine/<名前>.html` または `/feature/<名前>`）だけ。GitHubの確認ページ（share/check）では読ませない・一覧にも載せない。直すたびに同じ本番URLを直接上書き→ `deploy_project` →本番で200と中身を確かめる。「まだ読者がいないので公開して改定していく。ただし嘘は書かない」。
 - **時代の空気が伝わる風景写真を、各マガジンに1〜3枚入れる（2026-10-16・たまごさん指示・全マガジン共通の型）：** Wikimedia Commons などの自由ライセンス（CC BY / BY-SA / CC0 / PD）だけ。撮影年を確かめ、写真の下に撮影者・ライセンス・元ページへのリンクを必ず書く。部品は `mag_build.interlude()`（章の `after` に渡す）。添える一言は出典で確かめた事実だけ。
