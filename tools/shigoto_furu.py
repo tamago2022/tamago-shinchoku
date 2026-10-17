@@ -52,10 +52,11 @@ REPO_NAME = "tamago2022/joy-relief-station"
 # 社ごとの「呼び方」。全部、向こうが公式に決めている形。こちらの発明は1つも無い。
 AITE = {
     # ★2026-10-04 たまごさん判断：Julesはチームから外した。gemini窓口はCodexへ付け替え（記録は消さない）。
-    "gemini":   {"label": "codex",    "mention": "@codex",
+    # ★2026-10-18 たまごさん判断：この付け替えも廃止。gemini/codex は furu() の入口（HAISHI）で断る。mention も外した。
+    "gemini":   {"label": "codex",    "mention": None,
                  "name": "ChatGPT(Codex)", "yen": 0, "auto": True,
                  "doc": "https://developers.openai.com/codex/integrations/github"},
-    "codex":    {"label": "codex",    "mention": "@codex",
+    "codex":    {"label": "codex",    "mention": None,
                  "name": "ChatGPT(Codex)", "yen": 0, "auto": True,
                  "doc": "https://developers.openai.com/codex/integrations/github"},
     "claude":   {"label": "claude",   "mention": None,
@@ -100,7 +101,12 @@ def _job(payload, wait=240):
         {"ok": False, "error": "工場からの返事が待ち切れませんでした"}
 
 
+HAISHI = ("gemini", "codex", "chatgpt", "jules")  # ★2026-10-18 たまごさん判断：Jules／Codexへの自動依頼は廃止（「使えない。全部閉じていい」）。
+
+
 def furu(who, question, title=None):
+    if who in HAISHI:
+        return {"ok": False, "error": "Jules／Codexへの自動依頼は廃止（2026-10-18 たまごさん判断）"}
     a = AITE[who]
     r = _job({"action": "issue", "repo": REPO_NAME,
               "title": title or ("【%sに頼む】%s" % (a["name"], question[:40])),

@@ -180,6 +180,8 @@ def issue_no():
 
 
 def nage(url, title, irai, key=None, aru="", nai=()):
+    # ★2026-10-18 たまごさん判断：Jules／Codexへの自動依頼は廃止（「使えない。全部閉じていい」）。
+    raise RuntimeError("Codexへの自動依頼（鬼監督Codex）は廃止（2026-10-18 たまごさん判断）")
     code, body = tataku(url)
     toriKata = "HTTPで直接取得"
     mieta, shot_url = [], None
