@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#122708 122708番：サイト全体の見直し（導線・重さ・迷子） 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #122708 122708番：サイト全体の見直し（導線・重さ・迷子）</div>
+<h1>#122708 122708番：サイト全体の見直し（導線・重さ・迷子）</h1>
+<div class="date">2026-10-18 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+①同じ曲が2系統（読み物の部屋／曲ページ）に分かれて行き来できなかったのを、両側に戻り口を付けてつないだ（部屋16本＋曲ページ側は対応表の全曲）。②棚ページがスマホでも名簿2,425KBを落としていたのを、サムネから動画IDが取れる時は読まない形に。③音の扉に同じ棚が2回並んでいたのを1回に。④扉の見出し番号「SHELF · 010」の崩れ。⑤棚名の「（暫定）」「（実験中）」を外した。⑥名カバー棚のコピー末尾「原曲側にも戻れる。」を6枚から外した。⑦扉の足元に「≡ すべての棚を一覧で見る」を追加。<br>見た目を変える案（戻るボタン名の統一／下段ナビに「棚」／トップに特集札）は本番に出さず、下の A/B/C に並べた。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2,425KB</b><span>棚ページがスマホで落としていた名簿（実測: koutai_last_prod.json 10-18 10:28・/shelf/music/covers・JS coverguide-data-DJy28Wig.js 2425KB）</span></div>
+  <div class="num"><b>1.6秒</b><span>トップ→扉／扉→曲ページ の切り替え（実測: kirikae_prod.json・4G相当・iPhone幅）</span></div>
+  <div class="num"><b>16本</b><span>曲ページへの戻り口を付けた部屋ページ（直書き10＋MinimalRoom部品6）</span></div>
+  <div class="num"><b>99本</b><span>対応表 roomToCoverGuide の件数（うち転送でない実ページ24・summer/dance の8本は未対応）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>曲ページ（部屋への行き口が付く）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=mariya&amp;song=plastic-love" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=mariya&amp;song=plastic-love</a></li>
+  <li><b>部屋ページ（曲ページへの戻り口が付く）</b><a href="https://joy-relief-station.lovable.app/room/citypop/plastic-love" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/citypop/plastic-love</a></li>
+  <li><b>音の扉（重複棚が1回に・足元に棚一覧）</b><a href="https://joy-relief-station.lovable.app/world/music" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/music</a></li>
+  <li><b>名カバーの棚（スマホで名簿を落とさない）</b><a href="https://joy-relief-station.lovable.app/shelf/music/covers" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/covers</a></li>
+  <li><b>食の扉（SHELF番号）</b><a href="https://joy-relief-station.lovable.app/world/food" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/food</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>曲ページ /cover-guide?artist=mariya&amp;song=plastic-love に「この曲の部屋へ（読み物）→」</td><td class="no">公開後に確認</td></tr>
+<tr><td>部屋ページ /room/citypop/plastic-love に「この曲のページへ（カバー・関連曲）→」</td><td class="no">公開後に確認</td></tr>
+<tr><td>音の扉で「心に火を戻す歌」が1回だけ</td><td class="no">公開後に確認</td></tr>
+<tr><td>棚ページ /shelf/music/covers のスマホ送る量が 4,616KB → 約2,200KB</td><td class="no">公開後に after-publish で実測</td></tr>
+<tr><td>翻訳の関所（i18n-parity／kana）・内部リンク・sitemap</td><td class="yes">PASS</td></tr>
+</table>
+
+<footer>
+A案：戻るボタンの名前（いま「笑いの部屋に戻る」「ごきげん補給所へ戻る」「前のページに戻る」「案内所に戻る」「商店街に戻る」など15種）を「案内所に戻る」1本に。／B案：下段ナビを「ホーム／検索／棚／案内所」の4つに（いま3つ）。／C案：トップに「特集・マガジン」行きの札を1枚（いま裏表紙 /magazine/backnumber.html への1本だけ）。どれも本番には出していない。詳細一覧：tamago-shinchoku/status/zenkai_1018yu/Y6-site/ichiran.md。本番反映はLovableの公開ボタン待ち（1186番の関所で工場からは押せない）。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
