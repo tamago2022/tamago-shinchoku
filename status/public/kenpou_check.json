@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-10-17T09:10:35+09:00",
+ "checkedAt": "2026-10-18T09:11:01+09:00",
  "overallColor": "red",
- "redCount": 3,
+ "redCount": 4,
  "items": [
   {
    "key": "ctx_1m",
@@ -23,8 +23,8 @@
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
-   "count": 11,
-   "detail": "最終記録から約0.1時間経過（2026-10-17T09:03:42+09:00）／直近24時間の完了36件中、鬼監督の記録が付いているのは25件"
+   "count": 6,
+   "detail": "最終記録から約0.8時間経過（2026-10-18T08:20:32+09:00）／直近24時間の完了14件中、鬼監督の記録が付いているのは8件"
   },
   {
    "key": "done_missing_url",
@@ -38,29 +38,29 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "green",
    "count": 0,
-   "detail": "最終発車から0.1時間・発車待ち5226件・空き4枠あり"
+   "detail": "意図的な一時停止中（status/no_launch.flag）なので工場停止としては扱わない"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
-   "color": "green",
-   "count": 0,
-   "detail": "前回107551番 → 今回120804番（減少なし）"
+   "color": "red",
+   "count": 552,
+   "detail": "前回120804番 → 今回120252番（減少＝タスクが消えた疑い）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
-   "count": 62,
-   "detail": "status/public/dispatch_outbox.jsonl(23.5MB)、share/done/index.html(18.9MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/9c92e5c5.mp3(11.1MB)"
+   "count": 61,
+   "detail": "status/public/dispatch_outbox.jsonl(23.6MB)、share/done/index.html(21.0MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)、share/zunda/9c92e5c5.mp3(11.1MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
    "color": "green",
    "count": 0,
-   "sample": 15,
-   "detail": "直近15件の確認ページはすべて200だった"
+   "sample": 12,
+   "detail": "直近12件の確認ページはすべて200だった"
   },
   {
    "key": "orphan_sessions",
@@ -80,14 +80,20 @@
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 51121,
-   "detail": "未報告の完了が51121件たまっている（最古は約555.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 51175,
+   "detail": "未報告の完了が51175件たまっている（最古は約579.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
    "key": "ctx_1m",
    "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
+   "key": "queue_max_regression",
+   "status": "done",
+   "message": "120253番として発車待ちに追加しました（P2）",
+   "n": 120253
   },
   {
    "key": "big_files",
