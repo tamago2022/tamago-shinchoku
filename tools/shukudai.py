@@ -818,10 +818,16 @@ def build_html(rows, t, countrow, hist, pace, quota, health):
         banner = ('<div class="banner"><b>赤</b><br>%s</div>'
                   % "<br>".join(x.replace("<", "&lt;") for x in (haibun.get("reds") or [])))
 
-    def card(label, value, sub, red=False):
+    def card(label, value, sub, red=False, inyou=False):
+        # inyou=True：sub は別の機械（pace.py 等）の文をそのまま写した引用で、この紙の主張ではない。
+        # 2026-10-19 実測：haibun.why の「週の予算を+20.0%超過」を関所(sekisho)が「20%の主張」と読み、
+        #   実測値と合わず全員の push が止まった（120054）。data-sekisho="inyou" で主張から外す
+        sub_html = esc(sub)
+        if inyou:
+            sub_html = '<span data-sekisho="inyou">%s</span>' % sub_html
         return ('<div class="c%s"><div class="k">%s</div><div class="v">%s</div>'
                 '<div class="s">%s</div></div>' % (" red" if red else "", esc(label),
-                                                   esc(str(value)), esc(sub)))
+                                                   esc(str(value)), sub_html))
 
     # 題名と完了条件は**台帳から一字一句そのまま写した引用**であって、この紙自身の主張ではない。
     # <code> で括るのはそのため（見た目は変えていない。CSSで地の文と同じにしてある）。
@@ -894,7 +900,7 @@ a{color:#36c}
             card("週の残り", "%.0f%%" % remain,
                  "リセット %s（実測: %.0f%%）" % (quota.get("resetAt") or "—", remain),
                  red=(remain > 75)),
-            card("いま出してよい本数", haibun.get("cap", "—"), (haibun.get("why") or "")[:40]),
+            card("いま出してよい本数", haibun.get("cap", "—"), (haibun.get("why") or "")[:40], inyou=True),
         ]),
         "rows": "".join(trs),
         "spark": esc(spark or "（今日が初日）"),
