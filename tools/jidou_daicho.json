@@ -85,7 +85,8 @@
   "tsukuru": "動画・音の中間物",
   "okiba": "動画・音の中間物",
   "kesu": "chukan_shimau（中間物2時間）",
-  "kari": true
+  "kari": true,
+  "mabiki_1018": "2026-10-18（120042番）heartbeat.sh tick_every 2（30秒おき）に一本化。top_status.py の _okosu（15秒ごと）から外した"
  },
  "1163_taion.py": {
   "tsukuru": "記録だけ（status/ のファイル）",
@@ -128,13 +129,15 @@
   "tsukuru": "$TMPDIR の一時フォルダ・動画・音の中間物",
   "okiba": "$TMPDIR の一時フォルダ・動画・音の中間物",
   "kesu": "chukan_shimau（中間物2時間）・youryou_jougen（使い捨て1時間・$TMPDIR上限5GB）",
-  "kari": true
+  "kari": true,
+  "mabiki_1018": "2026-10-18（120042番）tar 展開の一時フォルダ（140MB）を消さずに帰っていた→ atexit で自分で消す＋youryou_jougen の使い捨て（1時間）に追加"
  },
  "1192_title_romaji.py": {
   "tsukuru": "$TMPDIR の一時フォルダ",
   "okiba": "$TMPDIR の一時フォルダ",
   "kesu": "youryou_jougen（使い捨て1時間・$TMPDIR上限5GB）",
-  "kari": true
+  "kari": true,
+  "mabiki_1018": "2026-10-18（120042番）tar 展開の一時フォルダを消さずに帰っていた（92個）→ atexit で自分で消す＋youryou_jougen の使い捨て（1時間）に追加"
  },
  "1200_tatamu.py": {
   "tsukuru": "記録だけ（status/ のファイル）",
@@ -270,6 +273,20 @@
   "okiba": "クラウド・GitHub",
   "kesu": "クラウド（セッションごとに捨てられる）",
   "yotei": "2026-10-17 A"
+ },
+ "claude-teiki:lovable-deploy-every-30min-oct18": {
+  "tsukuru": "記録だけ（status/ のファイル）",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
+  "kari": true,
+  "memo": "2026-10-18 120042番の棚卸しで未登録を発見。機械の下見と同じ『仮』。作った係が見直して外す"
+ },
+ "claude-teiki:reason-network-recheck": {
+  "tsukuru": "記録だけ（status/ のファイル）",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
+  "kari": true,
+  "memo": "2026-10-18 120042番の棚卸しで未登録を発見。機械の下見と同じ『仮』。作った係が見直して外す"
  },
  "claude-teiki:rusuban-mimawari-30min": {
   "tsukuru": "Claudeアプリのセッション（30分おき）＋たまごさんの画面に「見回り30分が開始されました」の通知",
@@ -461,6 +478,12 @@
   "kari": true,
   "teishi": "2026-10-17 実績ゼロ（APIが読めず10/08の数字のまま）"
  },
+ "fuka_hassha.py": {
+  "tsukuru": "記録だけ（status/health.json の発車本数判定・status/fuka_hassha.jsonl）",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "自分で直近2000行に切る",
+  "mabiki_1018": "2026-10-18（120042番）ロード比だけで止めず CPU使用率（iostat）とメモリ圧で判定。top は使わない（41秒かかる）"
+ },
  "fuka_mihari.py": {
   "tsukuru": "記録だけ（status/ のファイル）",
   "okiba": "tamago-shinchoku/status",
@@ -613,7 +636,8 @@
   "tsukuru": "自動操作ブラウザ・動画・音の中間物・キャッシュ",
   "okiba": "自動操作ブラウザ・動画・音の中間物・キャッシュ",
   "kesu": "chukan_shimau（中間物2時間）・youryou_jougen --tsukaisute（playwright*・puppeteer* を1時間）・youryou_jougen（キャッシュ上限6GB）",
-  "kari": true
+  "kari": true,
+  "mabiki_1018": "2026-10-18（120042番）2分おきの top -l 1（実測41秒・system CPU 7.6秒）を iostat（1.2秒）に置き換え。data[\"top\"] の読者は無かった"
  },
  "main_kanmon.py": {
   "tsukuru": "記録だけ（status/ のファイル）",
@@ -686,7 +710,8 @@
   "tsukuru": "記録だけ（status/ のファイル）",
   "okiba": "tamago-shinchoku/status",
   "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
-  "kari": true
+  "kari": true,
+  "mabiki_1018": "2026-10-18（120042番）heartbeat.sh tick_every 8（2分おき）に一本化。top_status.py の _okosu（15秒ごと）から外した"
  },
  "oni_kuchi.py": {
   "tsukuru": "記録だけ（status/ のファイル）",
@@ -736,6 +761,14 @@
   "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
   "kari": true
  },
+ "sns_shuukan.py": {
+  "tsukuru": "マガジン週1告知の予定表（status/sns_weekly_plan.json）・15秒縦動画MP4/1コマ目PNG/文章TXT・点検結果（status/sns_shuukan/tenken_honban.json）",
+  "okiba": "tamago-shinchoku/status/sns_shuukan/nouhin → Googleドライブ AI制作物/Claude/その他（非公開）",
+  "kesu": "nouhin/ の中身は put --move で上げ待ちへ移す（手元に残さない）。動画のフレームは作らずffmpegへ直接流す（中間ファイル0）。予約後のMP4一時公開URLは投稿確認後に消す（未実装：予約は承認後）",
+  "kari": true,
+  "hajimeta": "2026-10-17 たまごさん「もう本格的に始まる」",
+  "yoyaku": "たまごさんの「これで」（approved=true）後のみ。.TOMERU があれば予約しない"
+ },
  "soto_hatarakite.py": {
   "tsukuru": "記録だけ（status/ のファイル）",
   "okiba": "tamago-shinchoku/status",
@@ -782,7 +815,8 @@
   "tsukuru": "記録だけ（status/ のファイル）",
   "okiba": "tamago-shinchoku/status",
   "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
-  "kari": true
+  "kari": true,
+  "mabiki_1018": "2026-10-18（120042番）launchd（1分おき）が正本。heartbeat.sh 側は1分→10分に間引き（保険は残す）。中で5分に1回に間引くので仕事の頻度は変わらない"
  },
  "tomaranai_install.sh": {
   "tsukuru": "$TMPDIR の一時フォルダ・作業場・複製・動画・音の中間物・AI作業・制作フォルダ・iMac HDD",
@@ -795,7 +829,8 @@
   "tsukuru": "記録だけ（status/ のファイル）",
   "okiba": "tamago-shinchoku/status",
   "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
-  "kari": true
+  "kari": true,
+  "mabiki_1018": "2026-10-18（120042番）相乗りの _okosu を60秒に1回へ間引き（窓口 oneshot_runner・起動係 1401_kidou は毎周）。15秒ごとに約25本の python が一斉起動していた（最大4,300本/時）→ 約1,100本/時。oni_codex hirou・1163_kagi_machi は heartbeat.sh と二重だったので心臓側に一本化"
  },
  "toukou_mimawari.py": {
   "tsukuru": "記録（status/public/toukou_daicho.json 投稿の台帳・status/public/toukou_tenken.json 点検結果・status/toukou_mimawari.log）＋点検のときだけ joy-relief-station の一時の作業場（/private/tmp/toukou_wt_*・node_modulesは手元の複製へのリンク）・status/sns_hannou.json（反応の記録・30日分の投稿を毎日1回）",
@@ -922,13 +957,5 @@
   "okiba": "tamago-shinchoku/status",
   "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）",
   "kari": true
- },
- "sns_shuukan.py": {
-  "tsukuru": "マガジン週1告知の予定表（status/sns_weekly_plan.json）・15秒縦動画MP4/1コマ目PNG/文章TXT・点検結果（status/sns_shuukan/tenken_honban.json）",
-  "okiba": "tamago-shinchoku/status/sns_shuukan/nouhin → Googleドライブ AI制作物/Claude/その他（非公開）",
-  "kesu": "nouhin/ の中身は put --move で上げ待ちへ移す（手元に残さない）。動画のフレームは作らずffmpegへ直接流す（中間ファイル0）。予約後のMP4一時公開URLは投稿確認後に消す（未実装：予約は承認後）",
-  "kari": true,
-  "hajimeta": "2026-10-17 たまごさん「もう本格的に始まる」",
-  "yoyaku": "たまごさんの「これで」（approved=true）後のみ。.TOMERU があれば予約しない"
  }
 }

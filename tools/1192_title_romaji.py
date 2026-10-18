@@ -338,6 +338,7 @@ def build(push=False):
     subprocess.run(["git", "fetch", "origin", "main", "-q"], cwd=JOY, timeout=300)
     sha = subprocess.run(["git", "rev-parse", "origin/main"], cwd=JOY, capture_output=True, text=True).stdout.strip()
     tmp = tempfile.mkdtemp(prefix="1192_")
+    __import__("atexit").register(__import__("shutil").rmtree, tmp, True)  # 2026-10-18 使ったらしまう（$TMPDIR に92個残っていた）
     tg = os.path.join(tmp, "a.tar")
     subprocess.run(["git", "archive", "-o", tg, "origin/main", "src/i18n/overlay", "scripts/i18n"], cwd=JOY, check=True, timeout=300)
     tarfile.open(tg).extractall(tmp)
@@ -440,6 +441,7 @@ def hourly():
     try:
         subprocess.run(["git", "fetch", "origin", "main", "-q"], cwd=JOY, timeout=300)
         tmp = tempfile.mkdtemp(prefix="1192h_")
+        __import__("atexit").register(__import__("shutil").rmtree, tmp, True)  # 2026-10-18 使ったらしまう
         tg = os.path.join(tmp, "a.tar")
         subprocess.run(["git", "archive", "-o", tg, "origin/main", "src/lib/coverGuide.ts", "src/lib/songTitleTidy.ts",
                         "src/lib/hikigatariSongs.ts"], cwd=JOY, check=True, timeout=300)
