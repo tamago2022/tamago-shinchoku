@@ -1,14 +1,14 @@
 {
- "measuredAt": "2026-09-27T05:52:52+0900",
- "diskFreeGB": 95.0,
+ "measuredAt": "2026-10-19T05:35:17+0900",
+ "diskFreeGB": 217.0,
  "purgeableGB": null,
  "snapshots": 0,
- "load": 69,
+ "load": 62,
  "memPressure": "green",
- "memAvailGB": 9.0,
- "sessions": 2,
+ "memAvailGB": 7.2,
+ "sessions": 1,
  "safeMax": 4,
- "moreOK": 2,
+ "moreOK": 3,
  "target": 1,
  "cap": 1,
  "calibratedSafeN": 4,
@@ -16,17 +16,9 @@
  "shedCandidates": [],
  "items": [
   {
-   "label": "ゴミ箱を空にする",
-   "effect": "空き 20.52GB",
-   "gb": 20.52,
-   "kind": "disk",
-   "safe": false,
-   "how": "捨てたつもりのもの。中身を一度見てから"
-  },
-  {
    "label": "Braveを閉じる",
-   "effect": "メモリ 9.38GB",
-   "gb": 9.38,
+   "effect": "メモリ 7.66GB",
+   "gb": 7.66,
    "kind": "mem",
    "safe": true,
    "app": "Brave Browser",
@@ -34,92 +26,285 @@
   },
   {
    "label": "~/Library/Caches を空にする",
-   "effect": "空き 7.44GB",
-   "gb": 7.44,
+   "effect": "空き 5.42GB",
+   "gb": 5.42,
    "kind": "disk",
    "safe": true,
    "how": "アプリのキャッシュ。作り直される。使用中のものは飛ばす"
   },
   {
+   "label": "Notionを閉じる",
+   "effect": "メモリ 1.85GB",
+   "gb": 1.85,
+   "kind": "mem",
+   "safe": true,
+   "app": "Notion",
+   "how": "8プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "Chromeを閉じる",
+   "effect": "メモリ 1.66GB",
+   "gb": 1.66,
+   "kind": "mem",
+   "safe": true,
+   "app": "Google Chrome",
+   "how": "18プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
    "label": "Googleドライブのローカルキャッシュ",
-   "effect": "空き 2.32GB",
-   "gb": 2.32,
+   "effect": "空き 1.32GB",
+   "gb": 1.32,
    "kind": "disk",
    "safe": false,
    "how": "アップロード待ちが残っていると消せない"
   },
   {
-   "label": "Notionを閉じる",
-   "effect": "メモリ 1.93GB",
-   "gb": 1.93,
-   "kind": "mem",
-   "safe": true,
-   "app": "Notion",
-   "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
-  },
-  {
-   "label": "Chromeを閉じる",
-   "effect": "メモリ 1.31GB",
-   "gb": 1.31,
-   "kind": "mem",
-   "safe": true,
-   "app": "Google Chrome",
-   "how": "13プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
-  },
-  {
    "label": "Spotifyを閉じる",
-   "effect": "メモリ 1.0GB",
-   "gb": 1.0,
+   "effect": "メモリ 0.8GB",
+   "gb": 0.8,
    "kind": "mem",
    "safe": true,
    "app": "Spotify",
-   "how": "8プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+   "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
   },
   {
    "label": "node_modules を消す（1箇所）",
-   "effect": "空き 0.56GB",
-   "gb": 0.56,
+   "effect": "空き 0.47GB",
+   "gb": 0.47,
    "kind": "disk",
    "safe": true,
    "how": "npm install で戻る。~/Desktop/joy-relief-station/node_modules"
   },
   {
    "label": "LINEを閉じる",
-   "effect": "メモリ 0.39GB",
-   "gb": 0.39,
+   "effect": "メモリ 0.41GB",
+   "gb": 0.41,
    "kind": "mem",
    "safe": true,
    "app": "LINE",
    "how": "7プロセス。閉じれば戻る。作業中のタブがあれば先に保存"
+  },
+  {
+   "label": "~/.npm/_npx を空にする",
+   "effect": "空き 0.38GB",
+   "gb": 0.38,
+   "kind": "disk",
+   "safe": true,
+   "how": "npx の一時置き場。作り直される"
   }
  ],
- "_duAt": 1790454822.940408,
+ "_duAt": 1792355708.237507,
  "_du": {
-  "caches": 7.44,
-  "npx": 0.05,
-  "trash": 20.52,
-  "driveCache": 2.32,
-  "nodeModules": 0.56,
+  "caches": 5.42,
+  "npx": 0.38,
+  "trash": 0.02,
+  "driveCache": 1.32,
+  "nodeModules": 0.47,
   "nodeModulesList": [
    [
     "~/Desktop/joy-relief-station/node_modules",
-    0.56
+    0.47
    ]
   ]
+ },
+ "kyokaZero": {
+  "label": "許可ゼロ設定",
+  "state": "入",
+  "at": "2026-10-08T23:54:32+0900",
+  "culprits": {
+   "mcp__Claude_Browser__*": 1
+  },
+  "undo": "cp '/Users/mac/.tamago/backup/settings.json.20261008-235432' ~/.claude/settings.json"
+ },
+ "okoshi": {
+  "label": "自動で起こした回数",
+  "at": "2026-10-19T05:31:44+0900",
+  "count": {
+   "total": 0,
+   "today": 0,
+   "kosession": 0,
+   "genspark": 0,
+   "betsu": 0
+  }
+ },
+ "aki": {
+  "label": "Macの空き容量",
+  "at": "2026-10-19 05:25:00",
+  "freeGB": 233.57,
+  "diff24hGB": 18.35,
+  "min7dGB": 18.74,
+  "warnGB": 100,
+  "stopGB": 50,
+  "points": [
+   [
+    1792236352,
+    218.88
+   ],
+   [
+    1792240779,
+    218.34
+   ],
+   [
+    1792245208,
+    216.2
+   ],
+   [
+    1792249102,
+    215.72
+   ],
+   [
+    1792253079,
+    215.01
+   ],
+   [
+    1792256941,
+    213.11
+   ],
+   [
+    1792261138,
+    217.46
+   ],
+   [
+    1792265022,
+    216.34
+   ],
+   [
+    1792269344,
+    215.22
+   ],
+   [
+    1792274380,
+    208.92
+   ],
+   [
+    1792278924,
+    210.82
+   ],
+   [
+    1792283446,
+    207.7
+   ],
+   [
+    1792288137,
+    202.55
+   ],
+   [
+    1792292742,
+    205.81
+   ],
+   [
+    1792297011,
+    214.23
+   ],
+   [
+    1792301049,
+    216.49
+   ],
+   [
+    1792305487,
+    216.64
+   ],
+   [
+    1792309855,
+    241.04
+   ],
+   [
+    1792314246,
+    233.74
+   ],
+   [
+    1792318523,
+    233.35
+   ],
+   [
+    1792323232,
+    229.77
+   ],
+   [
+    1792327604,
+    221.42
+   ],
+   [
+    1792331928,
+    224.68
+   ],
+   [
+    1792336689,
+    227.28
+   ],
+   [
+    1792341209,
+    224.85
+   ],
+   [
+    1792345234,
+    229.23
+   ],
+   [
+    1792349539,
+    232.47
+   ],
+   [
+    1792353792,
+    232.51
+   ]
+  ]
+ },
+ "jidou": {
+  "label": "自動処理の棚卸し",
+  "at": "2026-10-19 04:43:27",
+  "total": 135,
+  "kinds": {
+   "心臓": 91,
+   "心臓の相乗り": 20,
+   "launchd": 17,
+   "Claudeの定期タスク（画面に通知が出る）": 3,
+   "GitHub Actions": 4
+  },
+  "mitouroku": [],
+  "kari": 112,
+  "zure": [
+   {
+    "name": "jidou_tanaoroshi.py",
+    "zure": "下見では chukan_shimau・claude_nouhin・shimau・worktree_taihi・youryou_jougen が要りそう"
+   },
+   {
+    "name": "com.tamago.joy-relief-station.link-watch",
+    "zure": "下見では worktree_taihi が要りそう"
+   },
+   {
+    "name": "com.tamago.joy-relief-station.role-sweep",
+    "zure": "下見では worktree_taihi が要りそう"
+   },
+   {
+    "name": "com.tamago.joy-relief-station.video-patrol",
+    "zure": "下見では chukan_shimau・worktree_taihi が要りそう"
+   },
+   {
+    "name": "com.tamago.machine-status",
+    "zure": "下見では chukan_shimau・claude_nouhin・shimau・worktree_taihi・youryou_jougen が要りそう"
+   },
+   {
+    "name": "claude-teiki:rusuban-mimawari-30min",
+    "zure": "下見では claude_nouhin が要りそう"
+   }
+  ],
+  "ichiran": "status/public/jidou_tanaoroshi.json"
  },
  "同時上限": {
   "本数": 1,
   "根拠": [
-   "首は「スワップ」（メモリ34本／スワップ0本／ロード3本）",
-   "減便せず：スワップは低い（残り0.75GB（4.0GB未満）／使用94%（70%超））が、空きメモリ14.24GB・5分ロード比1.35＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
-   "試し増便は見送り：スワップ使用94%／5分ロード比1.35＝静かでない"
+   "負荷判定の天井4本（メモリ圧=緑・CPU42%（50%未満）→ 上限4本（ロード比0.931））",
+   "首は「スワップ」（メモリ35本／スワップ0本／ロード5本）",
+   "減便せず：スワップは低い（残り0.67GB（4.0GB未満）／使用90%（70%超））が、空きメモリ14.76GB・5分ロード比0.91＝実体は苦しくない。macOSのswapFreeは割り当て済みファイルの余りで、健康なMacでも1〜2GBに張り付くため、この数字だけで落とすとブレーキが溶接される（2026-09-26〜27の実害）",
+   "試し増便は見送り：スワップ使用90%／5分ロード比0.91＝静かでない"
   ],
   "天井": {
-   "メモリ": 34,
+   "メモリ": 35,
    "スワップ": 0,
-   "ロード": 3
+   "ロード": 5
   },
-  "測った時刻": "2026-09-27T08:51:21+0900",
+  "測った時刻": "2026-10-19T05:35:19+0900",
   "自動減便": null,
   "試し増便": null
  }
