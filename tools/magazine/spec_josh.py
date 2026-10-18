@@ -6,6 +6,7 @@ _I18N_PATH = os.path.join(_D, 'i18n_josh.json')
 I18N = json.load(open(_I18N_PATH, encoding='utf-8')) if os.path.exists(_I18N_PATH) else {'en': {}, 'zh-Hans': {}, 'es': {}, 'ko': {}}  # 5言語（訳だけ直すときはこのファイル）
 
 # 2026-10-18 全開便：型＝「怒れる人々 vol.1」（MAGAZINE_KATA_1018）にそろえた版。5曲→11曲。
+# 動画の説明文を出典にする所は本文中の1回だけ（鬼監督R8＝同じ動画URLが2回以上で止まる）。出典欄には載せない
 # 事実は下の出典で本文を確かめたものだけ（wiki_lookup.py・oEmbed・動画の説明文。2026-10-18 取得）。
 WKZ = 'https://ja.wikipedia.org/wiki/%E9%A2%A8%E3%82%92%E3%81%82%E3%81%A4%E3%82%81%E3%81%A6_(%E3%81%AF%E3%81%A3%E3%81%B4%E3%81%84%E3%81%88%E3%82%93%E3%81%A9%E3%81%AE%E6%9B%B2)'
 REM = 'https://reminder.top/669882129/'
@@ -60,12 +61,13 @@ M = dict(
              body=['送りバントの高山さんが「これ最高だから聴いてください」と投げていた。高山さんは、めっちゃ面白い人だ。その人が「最高」と言うんだから、押すしかない。押したら、本当に最高だった。……と書きつつ、正直に言うと、Priscilla Ahn の版を聴いていたのが先だったかもしれない。どっちが先でもいい。たどり着いた先が、この人だった。',
                    f'ブルックリンを拠点にする、ギターも歌も鍵盤もやるミュージシャン。15歳だった2007年にYouTubeチャンネルを始めた。2014年、ポール・サイモン「Graceland」のカバーで『Good Morning America』に出ている{src("公式サイト", JLT)}{src("Wikipedia", WJLT)}。',
                    f'決めごとがある。口パクも、ごまかしも一切なし。聴こえている音を、そのまま弾いて見せる。カバーする曲はアルゴリズムではなく、自分の好奇心で選ぶ{src("公式サイト", JLT)}。',
-                   f'この動画で、歌とギターとベースと鍵盤がジョシュ、ドラムともう一本のギターと歌が相棒のカーソン・マッキー{src("本人の動画説明", YT_KAZE)}。公開の4日後、作詞した松本隆本人がこう書いた。「ドラムのフィルまで感じつかんでる。細野さんから、最近アメリカ人が日本語のままカバーしてるよと聞いてたけど、ほんとなんだね」{src("松本隆のX", XM)}。はっぴいえんど、まだ連絡網が生きている。'],
-             bridge='ところで、ジョシュ本人は、この歌をどこで知ったのか。答えは、もうひとりの歌い手だった。'),
+                   f'この動画で、歌とギターとベースと鍵盤がジョシュ、ドラムともう一本のギターと歌が相棒のカーソン・マッキー。そして説明文に、こうある。「この曲を最初に知ったのは、Priscilla Ahn の美しい版だった。日本人の家族ぐるみの友人が、J-POPのコンピレーションをくれて、その中に入っていた」{src("本人の動画説明", YT_KAZE)}。',
+                   f'公開の4日後、作詞した松本隆本人がこう書いた。「ドラムのフィルまで感じつかんでる。細野さんから、最近アメリカ人が日本語のままカバーしてるよと聞いてたけど、ほんとなんだね」{src("松本隆のX", XM)}。はっぴいえんど、まだ連絡網が生きている。'],
+             bridge='ジョシュがこの歌を知った入口は、僕と同じだった。もうひとりの歌い手へ。'),
         dict(no='03', artist='Priscilla Ahn', song='風をあつめて', album='アルバム『ナチュラル・カラーズ』', year='2012',
              catch='ジョシュがこの歌を知った、もうひとつの入口',
              main=dict(id='SWBVVgLBWvA', role='Cover 2012', artist='Priscilla Ahn', song='Kaze Wo Atsumete', cap=''),
-             body=[f'ジョシュは動画の説明文に、こう書いている。「この曲を最初に知ったのは、Priscilla Ahn の美しい版だった。日本人の家族ぐるみの友人が、J-POPのコンピレーションをくれて、その中に入っていた」{src("本人の動画説明", YT_KAZE)}。僕と同じ入口だった。',
+             body=['ジョシュが入口にした、その版がこれだ。',
                    f'Priscilla Ahn はアメリカのシンガー・ソングライター。J-POPのカバー集『ナチュラル・カラーズ』に「風をあつめて」が入っていて、ほとんどの曲を日本語の詞のまま歌っている{src("BARKS", BARKS_AHN)}{src("Wikipedia", WNC)}。',
                    f'選んだのは本人だった。「〈風をあつめて〉は、私からやりたいとリクエストした曲です。映画『ロスト・イン・トランスレーション』のサントラを聴いて、歌詞の内容はまったくわかりませんでしたが、すごく好きになりました。私もバンドの一員として部屋の中にいるような感覚になるんです」{src("CDJournal", CDJ)}。'],
              say='「歌詞の内容はまったくわからなかったけど、すごく好きになった」。分かる。僕も洋楽をそうやって30年聴いてきた。意味を調べた瞬間に恋が冷めた曲、3曲あります。曲名は言いません。',
@@ -89,7 +91,7 @@ M = dict(
         dict(no='06', artist='The Other Favorites', song='Angelina', album='EP『Fools』', year='2017',
              catch='ブルックリンのアパートが、スタジオ',
              main=dict(id='BOn919FtA8k', role='Original 2017', artist='The Other Favorites', song='Angelina', cap=''),
-             body=[f'The Other Favorites は、ジョシュと、長年の相棒カーソン・マッキーのフォーク・デュオ。2017年にEP『Fools』、2018年にオリジナル・アルバム『Naysayer』、2019年にライブ盤『Live in London』、2021年に『Unamericana』{src("Wikipedia", WJLT)}。「風をあつめて」でドラムを叩いていたのも、このカーソンだ{src("本人の動画説明", YT_KAZE)}。',
+             body=[f'The Other Favorites は、ジョシュと、長年の相棒カーソン・マッキーのフォーク・デュオ。2017年にEP『Fools』、2018年にオリジナル・アルバム『Naysayer』、2019年にライブ盤『Live in London』、2021年に『Unamericana』{src("Wikipedia", WJLT)}。「風をあつめて」でドラムを叩いていたのも、このカーソンだ。',
                    f'「Angelina」は二人で書いたオリジナル。説明文には一行、「自分のアパートで、ライブで録った」{src("本人の動画説明", YT_ANG)}。2016年にニューヨークへ移り、音楽一本で食べていくと決めてからの、部屋の音だ{src("公式サイト", JLT)}。',
                    '大きなスタジオはない。あるのは、部屋と、マイクと、隣の相棒。それで十分だと、この動画が証明している。'],
              bridge='部屋には、友だちも来る。2021年、ジョシュは車で国を横断して、友だちの家を順番に回った。'),
@@ -139,11 +141,9 @@ M = dict(
            'トイレの落書きから始まった歌は、まだ旅の途中だ。次回の弾き語りもお楽しみに。'],
     sources=[('Wikipedia — 風をあつめて', WKZ), ('CREA — 松本隆と「風街」', CREA), ('Re:minder — 「風をあつめて」誕生', REM), ('CINEMORE — ロスト・イン・トランスレーション', CINE), ('The Guardian — Happy End', GUA),
              ('Joshua Lee Turner 公式サイト', JLT), ('Wikipedia — Joshua Lee Turner', WJLT), ('松本隆（X・2020年5月30日）', XM),
-             ('Josh Turner Guitar — 風をあつめて（動画の説明文）', YT_KAZE), ('Josh Turner Guitar — Sultans of Swing（動画の説明文）', YT_SOS), ('Josh Turner Guitar — Graceland（動画の説明文）', YT_GRACE),
-             ('Josh Turner Guitar — Angelina（動画の説明文）', YT_ANG), ('Josh Turner Guitar — The Chain（動画の説明文）', YT_CHAIN), ('Josh Turner Guitar — Crazy（動画の説明文）', YT_CRAZY),
              ('Wikipedia — Elle Cordova', WELLE),
              ('CDJournal — Priscilla Ahn インタビュー', CDJ), ('BARKS — ナチュラル・カラーズ', BARKS_AHN), ('Wikipedia — ナチュラル・カラーズ', WNC),
-             ('Wikipedia — HOSONO HOUSE', WHH), ('Wikipedia — HOCHONO HOUSE', WHCH), ('細野晴臣 — 終りの季節（公式の音源）', YT_OWARI), ('NiEW — 『HOSONO HOUSE』再訪', NIEW),
+             ('Wikipedia — HOSONO HOUSE', WHH), ('Wikipedia — HOCHONO HOUSE', WHCH), ('NiEW — 『HOSONO HOUSE』再訪', NIEW),
              ('CINRA — Tahiti 80', CINRA_T), ('Tahiti 80 公式サイト', T80), ('Time Out Tokyo — Tahiti 80', TO)],
     note='',
     i18n=I18N,
