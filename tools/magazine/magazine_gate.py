@@ -139,15 +139,16 @@ def resolve(song, lite):
         s = next((x for x in (a or {}).get('songs', []) if x['id'] == linked[1]), None) if a else None
         if not s:
             return None, 'link_dead', 'リンク先の曲が名簿に無い：%s/%s' % linked
-        same_video = s.get('youtubeId') == song['yt']
-        if same_video or (an and an in artist_names(a)):
+        if names_overlap(an, a):
             return '%s/%s' % linked, 'ok', ''
-        return None, 'link_wrong', 'リンク先のアーティスト「%s」がマガジンの表記「%s」と違う' % (a['name'], song['artist'])
-    if len(hits) == 1:
+        return '%s/%s' % linked, 'link_wrong', 'リンク先のアーティスト「%s」とマガジンの表記「%s」が合わない（取り違えの疑い。同じ人の別表記なら名簿の aliases に足す）' % (a['name'], song['artist'])
+    if len(hits) == 1 and names_overlap(an, lite['byid'][hits[0][0]]):
         return '%s/%s' % (hits[0][0], hits[0][2]), 'no_link', ''
+    if len(hits) == 1:
+        return None, 'suspect', '同じ動画が「%s」の棚に入っている（マガジンの表記「%s」と合わない＝取り違えの疑い）：%s/%s' % (hits[0][1], song['artist'], hits[0][0], hits[0][2])
     if len(hits) > 1:
         # 同じ動画が複数の棚にある：マガジンのアーティスト表記と合う1つだけなら確定
-        ok = [h for h in hits if an and an in artist_names(lite['byid'][h[0]])]
+        ok = [h for h in hits if names_overlap(an, lite['byid'][h[0]])]
         if len(ok) == 1:
             return '%s/%s' % (ok[0][0], ok[0][2]), 'no_link', ''
         return None, 'ambiguous', '同じ動画が%d曲に入っている：%s' % (len(hits), '、'.join('%s/%s' % (h[0], h[2]) for h in hits[:4]))
@@ -159,7 +160,19 @@ def resolve(song, lite):
             for x in a['songs']:
                 if tn and len(tn) >= 2 and norm(x['title']).startswith(tn):
                     cand.append('%s/%s' % (a['id'], x['id']))
-    return None, 'no_page', ('名前が合う候補（動画は別）：' + '、'.join(cand[:3])) if cand else '曲ページが無い'
+    if cand:
+        return None, 'cand', '名前が合う曲ページ（動画は別。同じ曲か確かめてからリンク）：' + '、'.join(cand[:3])
+    return None, 'no_page', '曲ページが無い'
+
+
+def names_overlap(an, a):
+    """マガジンの表記と名簿のアーティスト（名前・別名）が合うか。「忌野清志郎 / RCサクセション」⇔「忌野清志郎 / RCサクセション / ザ・タイマーズ」のような包含も可。"""
+    if not an:
+        return False
+    for n in artist_names(a):
+        if n and (n == an or (len(min(n, an, key=len)) >= 3 and (n in an or an in n))):
+            return True
+    return False
 
 
 # ────────── 作業場（本番 main の写し）──────────
@@ -243,6 +256,9 @@ def add_link(h, yt, key):
 
 # ────────── 一巡 ──────────
 def run(only=None, tsumu=True, put=True):
+    import fcntl
+    lf = open(os.path.join(ST, '.magazine_gate.lock'), 'a+')
+    fcntl.flock(lf.fileno(), fcntl.LOCK_EX)   # 二重に回さない（毎日便と即公開がぶつかっても順番に）
     t0 = time.time()
     w = workspace()
     try:
@@ -289,17 +305,19 @@ def run(only=None, tsumu=True, put=True):
                 changed.append(n)
         json.dump(sp, open(SONG_PAGES, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
         # 判定
-        cnt = {'mags': len(mags), 'songs': 0, 'no_page': 0, 'link_ng': 0, 'prod_ng': 0, 'related_lt4': 0, 'copy_memo_ng': 0, 'fixed': 0}
+        cnt = {'mags': len(mags), 'songs': 0, 'no_page': 0, 'cand': 0, 'link_ng': 0, 'prod_ng': 0, 'related_lt4': 0, 'copy_memo_ng': 0, 'fixed': 0}
         prod_cache = {}
         for n, rows in mags.items():
             for s in rows:
                 cnt['songs'] += 1
                 f = facts.get(s['key']) if s['key'] else None
                 fails = []
-                if s['state'] in ('no_page', 'ambiguous') or (s['key'] and not (f or {}).get('exists')):
-                    fails.append('曲ページが無い' + ('（%s）' % s['memo'] if s['memo'] else ''))
+                if s['state'] == 'cand':
+                    fails.append(s['memo']); cnt['cand'] += 1
+                elif s['state'] in ('no_page', 'ambiguous', 'suspect') or (s['key'] and not (f or {}).get('exists')):
+                    fails.append('曲ページが無い' + ('（%s）' % s['memo'] if s['memo'] and s['memo'] != '曲ページが無い' else ''))
                     cnt['no_page'] += 1
-                elif s['state'] in ('link_wrong', 'link_dead'):
+                if s['state'] in ('link_wrong', 'link_dead'):
                     fails.append(s['memo']); cnt['link_ng'] += 1
                 if f and f.get('exists'):
                     if s['key'] not in prod_cache:
@@ -409,8 +427,8 @@ def report(res):
     sys.path.insert(0, TOOLS)
     import claude_uketsuke as cu
     cu.outbox('【マガジンの関所】%d号・曲%d' % (c['mags'], c['songs']),
-              '曲%d／ページが無かった%d／関連4未満%d／コピー・メモ不足%d／リンク取り違え%d／本番で開かない%d／その場で直した%d（直す便：%s）' % (
-                  c['songs'], c['no_page'], c['related_lt4'], c['copy_memo_ng'], c['link_ng'], c['prod_ng'], c['fixed'], '、'.join(res.get('jobs') or []) or 'なし'),
+              '曲%d／ページが無かった%d（ほか名前の合う候補あり%d）／関連4未満%d／コピー・メモ不足%d／リンク取り違え%d／本番で開かない%d／その場で直した%d（直す便：%s）' % (
+                  c['songs'], c['no_page'], c.get('cand', 0), c['related_lt4'], c['copy_memo_ng'], c['link_ng'], c['prod_ng'], c['fixed'], '、'.join(res.get('jobs') or []) or 'なし'),
               [SITE + '/magazine/backnumber.html'])
 
 
@@ -421,7 +439,7 @@ def self_test():
     assert resolve(s, lite)[:2] == ('ado/usseewa', 'no_link')
     s = {'yt': 'ZZ', 'artist': 'Ado', 'title': 'うっせぇわ', 'link': None}
     k, stt, memo = resolve(s, lite)
-    assert k is None and stt == 'no_page' and 'ado/usseewa' in memo   # 名前の一致は候補止まり
+    assert k is None and stt == 'cand' and 'ado/usseewa' in memo   # 名前の一致は候補止まり
     s = {'yt': 'ZZ', 'artist': 'Ado', 'title': 'x', 'link': SITE + '/cover-guide?artist=ado2&song=x'}
     assert resolve(s, lite)[1] == 'link_wrong'                        # 別人の棚へのリンクは取り違え
     h = '<figure class="cw-video cw-video--main"><button data-yt-cover="Q1"></button><figcaption><span class="cw-video__name"><b>Ado</b><i>「うっせぇわ」（MV）</i></span></figcaption></figure>'
@@ -429,6 +447,10 @@ def self_test():
     assert rows[0]['title'] == 'うっせぇわ' and rows[0]['artist'] == 'Ado'
     h2, url = add_link(h, 'Q1', 'ado/usseewa')
     assert 'cw-video__page' in h2 and songs_in(h2)[0]['link'] == url
+    # 同じ動画でも、別人の棚なら確定しない（来生たかお「夢の途中」の動画が別の人の棚に入っていた件）
+    lite2 = parse_lite('  {"id":"rg","name":"Rufus Gumede","songs":[{"id":"y","title":"夢の途中","youtubeId":"V1"}]},')
+    assert resolve({'yt': 'V1', 'artist': '来生たかお', 'title': '夢の途中', 'link': None}, lite2)[1] == 'suspect'
+    assert resolve({'yt': 'V1', 'artist': '来生たかお', 'title': '夢の途中', 'link': SITE + '/cover-guide?artist=rg&song=y'}, lite2)[1] == 'link_wrong'
     print('SELF-TEST OK')
     return 0
 
