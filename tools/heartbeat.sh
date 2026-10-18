@@ -595,7 +595,8 @@ while :; do
   # ⑥ 止まらない係：走行0本を検知したら聞かずに台帳の上から自分で発車する。
   #    launchd（1分おき）が正本。心臓からも呼んでおくのは、launchd が落ちても死なせないため。
   #    中で5分に1回に間引くので、二重に呼んでも二重に積まない。
-  tick_every 4  && ( python3 "$REPO/tools/tomaranai.py" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
+  #    2026-10-18（120042番）launchd の1分おきと二重だったので、心臓側は10分おき（tick_every 40）に間引いた（保険は残す）。
+  tick_every 40 && ( python3 "$REPO/tools/tomaranai.py" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
   # 1170番（2026-09-27）出荷便（push-queue）の見張り。5分おき（15秒×20）。
   #   09-27 17:07〜18:11 の3周、出荷便が連続で落ちていたのに**どこにも出ていなかった**。
   #   この係は押し出さない（押す係は role-sweep にある＝二重実装しない）。

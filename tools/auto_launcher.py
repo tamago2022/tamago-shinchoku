@@ -2135,6 +2135,22 @@ def urgent_lane_safe_max(alive, safe_max, measured_safe_max, items, now=None):
 FABLE_LANE_MAX = 3
 
 
+def fable_lane_borrow_pick(items, now=None):
+    """Fableレーンの席を貸す相手（2026-10-18・120051番）。
+
+    実測：納品の仕上げ便 120098番（urgent・P1）が 06:28 から3時間以上発車できなかった。
+    負荷が重いと通常レーンは上限1本に絞られ、その間 Fable便が6本埋めているので永久に席が回ってこない
+    （1372番の緊急横入り+1本は「上限+1」であって「走行+1」ではないため、Fable便6本の前では効かない）。
+    → urgent:true・URGENT_WAIT_MIN分超えで待つ普通の仕事（Fable便でない）があれば、Fableレーンの次の1席をそれに貸す。
+      お金が出る仕事（costsMoney かつ未承認）とテスト項目は貸さない。長く待つ順の先頭を返す。無ければ None。"""
+    cands = [it for it in urgent_wait_list(items, now)
+             if it.get("urgent")
+             and not (it.get("fableLane") and it.get("fixedModel") == FABLE)
+             and not it.get("test")
+             and not (it.get("costsMoney") and not it.get("costApproved"))]
+    return cands[0] if cands else None
+
+
 def _fable_lane(q, items):
     """Fableレーン：fableLane:true かつ fixedModel=Fable の待ち仕事を、空きがあれば出す。出したら True。"""
     try:
@@ -2144,7 +2160,8 @@ def _fable_lane(q, items):
         ok, why = False, str(e)
     if not ok:
         return False
-    lane = [it for it in items if it.get("fableLane") and it.get("fixedModel") == FABLE]
+    # 席を貸した仕事（fableLaneBorrow）もレーンの走行本数に数える＝7本目は作らない
+    lane = [it for it in items if (it.get("fableLane") and it.get("fixedModel") == FABLE) or it.get("fableLaneBorrow")]
     if not lane:
         return False
 
@@ -2155,7 +2172,7 @@ def _fable_lane(q, items):
         except Exception:
             return False
     running = [it for it in lane if it.get("status") == "running" and it.get("pid") and _alive(it.get("pid"))]
-    waiting = sorted([it for it in lane if it.get("status") == "waiting"],
+    waiting = sorted([it for it in lane if it.get("status") == "waiting" and it.get("fableLane")],
                      key=lambda it: (it.get("fableLaneOrder") or 99, it.get("n") or 0))
     # 2026-10-18 全開モード（tools/zenkai.py・status/zenkai.json の until まで）：上限をその場で決め直す。
     #   期限を過ぎれば zenkai.lane_max() が 3 を返す＝自動で元に戻る。
@@ -2171,7 +2188,8 @@ def _fable_lane(q, items):
             _lane_max = max(FABLE_LANE_MAX, _zk.lane_max(mem_free_pct=_mf))
     except Exception:
         _lane_max = FABLE_LANE_MAX
-    if not waiting or len(running) >= _lane_max:
+    borrow = fable_lane_borrow_pick(items)
+    if (not waiting and borrow is None) or len(running) >= _lane_max:
         return False
     # 本当に危ないときだけ止める（ロード比とスワップ%はここでは見ない＝Brave分で常時95%前後のため）
     _flag = os.path.join(REPO, "status", "no_launch.flag")
@@ -2191,6 +2209,15 @@ def _fable_lane(q, items):
     if _m.get("pressureLevel") not in (None, 1) or (_m.get("memFreePct") is not None and _m["memFreePct"] < 15):
         log("Fableレーン見送り: メモリが苦しい（圧=%s・空き%s%%）" % (_m.get("pressureLevel"), _m.get("memFreePct")))
         return False
+    # 2026-10-18夕 たまごさん「Fableで全開。ただしMacが重くなるのはダメ（負荷判定は守る）」
+    #   → fuka_hassha の「固まる手前」（CPU張り付き・空きメモリ枯れ等）ならFableレーンも出さない。
+    try:
+        _k = _fuka.kiken(_m) if _m else None
+    except Exception:
+        _k = None
+    if _k:
+        log("Fableレーン見送り: 固まる手前（%s）" % _k)
+        return False
     try:  # その場で測る（machine.json は数分〜数十分古いことがある）
         _st = os.statvfs("/System/Volumes/Data")
         _free = _st.f_bavail * _st.f_frsize / 1e9
@@ -2199,6 +2226,12 @@ def _fable_lane(q, items):
     if _free < 20:
         log("Fableレーン見送り: ディスク空き20GB未満")
         return False
+    if borrow is not None:
+        # 2026-10-18（120051番）：90分以上待つ urgent の普通の仕事に、Fableレーンの次の1席を貸す（モデルは pick_model＝Sonnet）
+        borrow["fableLaneBorrow"] = True
+        log("🤝 Fableレーンの席を貸す：urgentの%s番（%d分待ち）を発車（レーン走行%d本→%d本・上限%d本）"
+            % (borrow.get("n"), queued_minutes_ago(borrow) or 0, len(running), len(running) + 1, _lane_max))
+        return bool(launch_one(borrow, q, len(running), _lane_max))
     it = waiting[0]
     log("🦄 Fableレーン：%s番を発車（レーン走行%d本→%d本・上限%d本・%s）"
         % (it.get("n"), len(running), len(running) + 1, _lane_max, why))

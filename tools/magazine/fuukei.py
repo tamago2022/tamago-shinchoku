@@ -43,8 +43,14 @@ def _section_end(h, start):
 
 
 def page_name(h):
-    m = re.search(r'<link rel="canonical" href="[^"]*/magazine/([^"/]+\.html)"', h)
-    return m.group(1) if m else None
+    """本番のページ名（canonical か og:url から）。bs4 を通すと属性の順が入れ替わる（href が先に来る）ので、順番に依らず読む
+    （2026-10-18・122703番：順番が変わって読めず、月の特集の写真が0枚のまま「合格」していた）。"""
+    for pat in (r'<link\b[^>]*rel="canonical"[^>]*>', r'<meta\b[^>]*property="og:url"[^>]*>'):
+        for tag in re.findall(pat, h):
+            m = re.search(r'(?:href|content)="[^"]*/magazine/([^"/]+\.html)"', tag)
+            if m:
+                return m.group(1)
+    return None
 
 
 def add(h, name=None):
@@ -74,6 +80,9 @@ def add(h, name=None):
 
 
 def check(h, name=None):
-    items = load().get(name or page_name(h) or '', [])
+    nm = name or page_name(h)
+    if not nm and '<section class="cw-chapter"' in h:
+        return ['静止画：ページ名が読めない（canonical／og:url が無い）']
+    items = load().get(nm or '', [])
     n = h.count('data-fk="1"')
     return [] if n == len(items) else [f'静止画 {n}/{len(items)}']

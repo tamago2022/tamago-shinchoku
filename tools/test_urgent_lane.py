@@ -96,13 +96,40 @@ def run():
         if matched:
             failures.append("急ぎの依頼が誤って急がない扱いにされました：%r（%s）" % (text, kw))
 
+    # ③ 2026-10-18（120051番）：Fableレーンの席貸し（fable_lane_borrow_pick）。
+    #    urgent・90分超待ち・Fable便でない・お金/テストでない仕事だけが対象。queuedAt の無い古い項目は対象外。
+    import time as _t
+    now = _t.time()
+    def _qat(mins):
+        return _t.strftime("%Y-%m-%dT%H:%M:%S", _t.localtime(now - mins * 60))
+    items3 = [
+        {"n": 1, "status": "waiting", "urgent": True, "priority": 1, "queuedAt": _qat(200)},                       # 貸す相手（いちばん長く待つ）
+        {"n": 2, "status": "waiting", "urgent": True, "priority": 1, "queuedAt": _qat(120)},                       # 2番手
+        {"n": 3, "status": "waiting", "urgent": True, "priority": 1, "queuedAt": _qat(30)},                        # まだ90分未満
+        {"n": 4, "status": "waiting", "urgent": True, "priority": 1, "queuedAt": _qat(300), "costsMoney": True},   # お金・未承認
+        {"n": 5, "status": "waiting", "urgent": True, "priority": 1, "queuedAt": _qat(300), "test": True},         # テスト項目
+        {"n": 6, "status": "waiting", "urgent": True, "priority": 1, "queuedAt": _qat(300),
+         "fableLane": True, "fixedModel": al.FABLE},                                                                 # Fable便は貸す相手ではない
+        {"n": 7, "status": "waiting", "urgent": True, "priority": 1},                                               # queuedAt 無し
+        {"n": 8, "status": "waiting", "priority": 1, "queuedAt": _qat(500)},                                        # urgent でない P1 は対象外
+        {"n": 9, "status": "running", "urgent": True, "priority": 1, "queuedAt": _qat(500)},                        # 走っている
+    ]
+    pick = al.fable_lane_borrow_pick(items3, now)
+    if not pick or pick.get("n") != 1:
+        failures.append("Fableレーンの席貸しの相手が違います：期待1番、実際%r" % (pick and pick.get("n")))
+    pick2 = al.fable_lane_borrow_pick([it for it in items3 if it["n"] != 1], now)
+    if not pick2 or pick2.get("n") != 2:
+        failures.append("Fableレーンの席貸し（2番手）が違います：期待2番、実際%r" % (pick2 and pick2.get("n")))
+    if al.fable_lane_borrow_pick([it for it in items3 if it["n"] not in (1, 2)], now) is not None:
+        failures.append("貸してはいけない項目（90分未満・お金・テスト・Fable便・queuedAt無し・urgent無し・走行中）に席を貸しています")
+
     if failures:
         print("FAIL（%d件）" % len(failures))
         for f in failures:
             print(" - " + f)
         return 1
     print("PASS：urgent別枠の並び替え（queue_rank_key）と急がない自動仕分け"
-          "（_auto_demote_priority）、どちらも793番の要求どおりに動いています")
+          "（_auto_demote_priority）、Fableレーンの席貸し（fable_lane_borrow_pick）、全部そろって動いています")
     return 0
 
 

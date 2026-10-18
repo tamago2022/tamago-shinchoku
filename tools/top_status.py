@@ -507,9 +507,28 @@ if __name__ == "__main__":
     except Exception:
         _daicho = None   # 台帳が読めない時は止めない（心臓を止めない側に倒す）
 
+    # 2026-10-18（120042番）相乗りの間引き。ここは心臓から15秒ごとに呼ばれ、下の約25本の _okosu が毎周
+    #   「走っていなければ起こす」＝ほぼ全部が数秒で終わるので、15秒ごとに約25本の python が一斉に立ち上がっていた
+    #   （1時間に最大約4,300本）。ロード平均はこの一斉起動で跳ねる（実測：ロード26・CPU合計59%）。
+    #   → 窓口（oneshot_runner）と起動係（1401_kidou）だけ毎周、それ以外は60秒に1回だけ起こす。
+    #   中で「N分に1回」に間引いている係ばかりなので、仕事の頻度は変わらない。
+    _OKOSU_MAIshuu = ("oneshot_runner.py", "1401_kidou.py")
+    _OKOSU_STAMP = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "status", ".top_status_okosu_at")
+    try:
+        _okosu_ban = (time.time() - _os.path.getmtime(_OKOSU_STAMP)) >= 60
+    except OSError:
+        _okosu_ban = True
+    if _okosu_ban:
+        try:
+            open(_OKOSU_STAMP, "w").close()
+        except Exception:
+            pass
+
     def _okosu(name, *extra):
         """同じスクリプトが既に走っていたら起こさない。投げっぱなしで心臓は待たない。"""
         try:
+            if name not in _OKOSU_MAIshuu and not _okosu_ban:
+                return False
             if _daicho is not None and name not in _daicho:
                 return False
             if ("/tools/" + name) in _ps:
@@ -531,6 +550,10 @@ if __name__ == "__main__":
     # 2026-10-16 自動処理の棚卸し（1時間に1回・中で間引く）。台帳に無いものがあれば Dispatch に1行
     _okosu("jidou_tanaoroshi.py", "--hourly")
 
+    # 2026-10-18 マガジンの関所（1日1回・中で20時間の間引き）：全マガジンの曲が全部「曲ページ・正しいリンク・関連4曲以上・コピーとメモ」か。
+    #   リンクを貼れる所は貼り、足りない所は直す便を積み、Dispatch へ1行（tools/magazine/magazine_gate.py）
+    _okosu("magazine/magazine_gate.py", "--daily")
+
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:
@@ -542,7 +565,7 @@ if __name__ == "__main__":
     # 2026-10-01 鬼監督（Codex）の返事を拾う係。返事待ちが0なら gh も叩かず即戻る。
     #   合格/差し戻しを status/gaibu/soto_hantei.json と status/oni_codex/hantei.jsonl に戻し、
     #   差し戻しは作業票へ自動で積む（tools/oni_codex.py の冒頭に経緯）。
-    _okosu("oni_codex.py", "hirou")
+    pass  # 2026-10-18（120042番）間引き：heartbeat.sh が tick_every 8（2分おき）で同じものを呼んでいて二重。心臓側に一本化。 _okosu("oni_codex.py", "hirou")
 
     # 1401番（2026-09-28）起動係。①固まった oneshot_runner を外から落として窓口を生き返らせる
     #   ②Chromeタブ掃除便(launchd)を冪等に載せる。★_okosu より前に置く意味は無いが、
@@ -594,7 +617,7 @@ if __name__ == "__main__":
     # **その周回で**、たまごさんがコマンドを1つも打たずに溜まっている分を全部棚へ入れる。
     # ★heartbeat.sh は走り出したら読み直されないので、枷5番どおり「毎周回読み直される
     #   Pythonファイル（ここ）」から呼ぶ。鍵が無い周回は exists を1回見て即戻る。
-    _okosu("1163_kagi_machi.py")
+    pass  # 2026-10-18（120042番）間引き：heartbeat.sh が tick_every 2（30秒おき）で同じものを呼んでいて二重。心臓側に一本化。 _okosu("1163_kagi_machi.py")
 
     # 2026-09-28（1500番）枠番＝含まれてる枠が空いた瞬間に勝手にDevinへ発車する係。
     #   リセット時刻を狙わない。**空振り（403 out_of_quota・0円）を繰り返して、通った瞬間に乗る。**

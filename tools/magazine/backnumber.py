@@ -44,10 +44,10 @@ GENRES = [
         ('怒れる人々 vol.1 〜ロックは死んだのか〜', 'Sex Pistols から Ado、Prince まで11曲', M + 'ikareru-01.html', None),
     ]),
     ('シリーズ「月の特集」', ('Series: The Moon', '系列「月亮特辑」', 'Serie: La Luna', '시리즈 「달 특집」'), [
-        ('人はなぜ月を見るのか vol.1 〜月を見て歌う人々〜', '布袋寅泰からベートーヴェンまで13曲', M + 'hito-wa-naze-tsuki-wo-miru-01.html', None),
+        ('月に吠える 〜月を見て歌う人々〜 月の特集 vol.1', '布袋寅泰からムーンウォークまで17曲', M + 'hito-wa-naze-tsuki-wo-miru-01.html', None),
     ]),
     ('シリーズ「人はなぜ踊るのか」', ('Series: Why Do People Dance?', '系列「人为什么跳舞」', 'Serie: ¿Por qué bailamos?', '시리즈 「사람은 왜 춤추는가」'), [
-        ('人が踊るとき vol.1 〜人はなぜ踊るのか〜', '9,000年前の岩壁からジェームス・ブラウン、ドナ・サマーまで11曲', M + 'hito-ga-odoru-01.html', None),
+        ('人が踊るとき vol.1 〜人はなぜ踊るのか〜', '1万年前の壁から、ジェームス・ブラウン、ドナ・サマー、モントルーまで11曲', M + 'hito-ga-odoru-01.html', None),
     ]),
 ]
 I18N = {'b_eyebrow': ('Back issues', '往期', 'Números anteriores', '백넘버'),
@@ -56,7 +56,19 @@ I18N = {'b_eyebrow': ('Back issues', '往期', 'Números anteriores', '백넘버
         'b_en': ('English edition', '英文版', 'Edición en inglés', '영어판')}
 
 
+def _auto():
+    """即公開（tools/magazine/sokkou.py）で出た号を「新着」に載せる。GENRES に手で足したら自動の側からは消える（二重に載せない）。"""
+    p = os.path.join(HERE, 'backnumber_auto.json')
+    if not os.path.exists(p):
+        return []
+    known = {u for _, _, items in GENRES for _, _, u, _ in items}
+    items = [(x['title'], x.get('kicker') or '新着', x['url'], None) for x in json.load(open(p, encoding='utf-8')) if x['url'] not in known]
+    return [('新着', ('New', '新刊', 'Novedades', '신착'), items)] if items else []
+
+
 def build():
+    global GENRES
+    GENRES = _auto() + [g for g in GENRES if g[0] != '新着']
     e = lambda t: H.escape(t, quote=True)
     tr = {l: {} for l in MB._LG4}
     for k, v in I18N.items():

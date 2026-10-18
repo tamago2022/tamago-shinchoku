@@ -11,9 +11,12 @@
 ★サンプリング禁止。全件。推定で書かない。数えた数字だけ。
 
 読む場所（1行で言える形）:
-  本来の正本 = /Users/mac/Desktop/joy-relief-station/src/lib/coverGuide.ts
-  この便は上が繋がっていないので、進捗表内の最新スナップショットを読む:
-    status/1132_kansei/files/src/lib/coverGuide.ts   （2026-09-25 03:36・6,503,347 byte）
+  本来の正本 = GitHub origin/main の src/lib/coverGuide.ts（joy-relief-station）
+  読む前に origin/main から取り直して、進捗表内のスナップショットを更新してから読む:
+    status/1132_kansei/files/src/lib/coverGuide.ts
+  ★2026-10-18（122705番）：スナップショットが 2026-09-25 で止まり、その後に動画が入った曲
+    （シュガー・ベイブ「DOWN TOWN」・レイ・ハラカミ「owari no kisetsu」など）を「noVideo」のまま
+    隠し続けていた。生きている動画を隠すのが一番の恥なので、毎回取り直す（取れなければ今の控えのまま）。
   補助表 = status/_1039/lib/{deadYoutube,videoReplacements,coverGuide.curated.generated,warehousedSongs}.ts
 
 出す場所:
@@ -22,12 +25,33 @@
   status/1140/summary.json      型ごとの件数・合計
 """
 from __future__ import annotations
-import io, json, os, re, sys, unicodedata
+import io, json, os, re, subprocess, sys, unicodedata
 from collections import defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ST = os.path.join(ROOT, "status")
 CG = os.path.join(ST, "1132_kansei", "files", "src", "lib", "coverGuide.ts")
+MAIN_REPO = "/Users/mac/Desktop/joy-relief-station"   # origin/main を取りに行くための clone（作業ツリーは読まない）
+
+
+def refresh_snapshot():
+    """origin/main の coverGuide.ts を取り直してスナップショットへ書く（122705番・2026-10-18）。
+    取れない時（ネット無し・clone 無し）は False を返し、今あるスナップショットをそのまま読む。"""
+    try:
+        if not os.path.isdir(os.path.join(MAIN_REPO, ".git")):
+            return False
+        subprocess.run(["git", "-C", MAIN_REPO, "fetch", "-q", "origin", "main"],
+                       capture_output=True, timeout=180)
+        r = subprocess.run(["git", "-C", MAIN_REPO, "show", "origin/main:src/lib/coverGuide.ts"],
+                           capture_output=True, timeout=180)
+        if r.returncode != 0 or len(r.stdout) < 1_000_000 or b"export const artists" not in r.stdout:
+            return False
+        os.makedirs(os.path.dirname(CG), exist_ok=True)
+        with io.open(CG, "wb") as f:
+            f.write(r.stdout)
+        return True
+    except Exception:
+        return False
 LIB = os.path.join(ST, "_1039", "lib")
 OUT = os.path.join(ST, "1140")
 SITE = "https://joy-relief-station.lovable.app"
@@ -271,6 +295,8 @@ def norm(s: str) -> str:
 
 
 def main():
+    fresh = refresh_snapshot()
+    print("coverGuide.ts: %s" % ("origin/main から取り直した" if fresh else "取り直せず、今あるスナップショットを読む"), file=sys.stderr)
     src = read(CG)
     if not src:
         print("coverGuide.ts が読めない: %s" % CG, file=sys.stderr)
@@ -545,7 +571,7 @@ def main():
     summary["実測済みID数"] = jissoku_n
 
     # ── ★直し：隠す表を作る（消さない。直れば次の生成で自動的に外れる） ──
-    emit_hidden(hide, summary)
+    emit_hidden(hide, summary, key_exists)
 
     json.dump(summary, io.open(os.path.join(OUT, "summary.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
@@ -553,7 +579,7 @@ def main():
     return 0
 
 
-def emit_hidden(hide, summary):
+def emit_hidden(hide, summary, key_exists=frozenset()):
     """1132番の関所がそのまま読む形で、隠す一覧を書き出す。
 
     ★消していない。隠しているだけ。動画が入れば次の生成でこの表から外れ、元どおり出る。
@@ -570,8 +596,11 @@ def emit_hidden(hide, summary):
     # あれは名簿に無いので、名簿を舐める側（この検査）からは絶対に見つからない型。
     old = read(os.path.join(ST, "1132_kansei", "new", "src", "lib", "kanseiHidden.generated.ts"))
     keep = 0
+    # ★2026-10-18（122705番）：ここで旧表の行を無条件に引き継いでいたため、動画が入って「隠す対象」から
+    #   外れた曲（上田正樹「悲しい色やね」・シュガー・ベイブ「DOWN TOWN」等）が永久に隠れたままだった。
+    #   引き継ぐのは「名簿に無い行き先（missing）」だけ。名簿にある曲は、今回の検査結果だけで決める。
     for k, v in re.findall(r'\n  "([^"]+)": "([^"]+)",', old):
-        if k not in reasons:
+        if k not in reasons and k not in key_exists:
             reasons[k] = v
             keep += 1
     reasons = dict(sorted(reasons.items()))

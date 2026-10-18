@@ -22,7 +22,7 @@ OTHERS = {
     'hoshikatsu': (BASE + 'kimi-wa-hoshi-katsu.html', '編曲家・作曲家', '君は星勝を知っているか'),
     'citypop': ('https://joy-relief-station.lovable.app/feature/citypop-sekai', 'City Pop × World', '世界が先に見つけた、日本の夜。'),
 }
-PROD = {'josh': 'hikigatari-josh-turner.html', 'takoukan': 'naze-ongaku-01-takoukan.html', 'ikareru': 'ikareru-01.html', 'harakami': 'rei-harakami.html', 'hoshikatsu': 'kimi-wa-hoshi-katsu.html'}
+PROD = {'josh': 'hikigatari-josh-turner.html', 'takoukan': 'naze-ongaku-01-takoukan.html', 'ikareru': 'ikareru-01.html', 'harakami': 'rei-harakami.html', 'hoshikatsu': 'kimi-wa-hoshi-katsu.html', 'tsuki01': 'hito-wa-naze-tsuki-wo-miru-01.html'}
 PLAY = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5.5v13l11-6.5z"></path></svg>'
 # 吹き出しと「つなぎ」だけは、このシリーズの決まり（CLAUDE.md）で要る部品。元の型の色・字に合わせる
 EXTRA_CSS = '''
@@ -282,7 +282,7 @@ TAIL_CSS_OLD = ['.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px
                 '.cw .cw-note .cw-video--small{max-width:360px;margin:14px 0 6px}.cw .cw-note .cw-video--small figcaption{font-size:12.5px}']
 BACKNUMBER_URL = BASE + 'backnumber.html'  # バックナンバー一覧（全マガジン共通の行き先）
 OTHERS['hoshikatsu'] = (BASE + 'kimi-wa-hoshi-katsu.html', '編曲家・作曲家', '君は星勝を知っているか')
-OTHERS['tsuki01'] = (BASE + 'hito-wa-naze-tsuki-wo-miru-01.html', '月の特集 vol.1', '人はなぜ月を見るのか')
+OTHERS['tsuki01'] = (BASE + 'hito-wa-naze-tsuki-wo-miru-01.html', '月の特集 vol.1', '月に吠える 〜月を見て歌う人々〜')
 OTHERS['odoru01'] = (BASE + 'hito-ga-odoru-01.html', 'シリーズ 人はなぜ踊るのか vol.1', '人が踊るとき')  # 2026-10-18 Genspark納品（#1018）
 OTHERS_ORDER = ['odoru01', 'tsuki01', 'hoshikatsu', 'harakami', 'ikareru', 'takoukan', 'josh', 'hikigatari', 'citypop']
 COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
@@ -310,7 +310,7 @@ COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_ot_tsuki01_s': ('Series: When People Look at the Moon vol.1', '系列：人为什么看月亮 vol.1', 'Serie: Por qué miramos la luna vol.1', '시리즈: 사람은 왜 달을 보는가 vol.1'),
     'c_ot_odoru01_s': ('Series: Why Do People Dance? vol.1', '系列：人为什么跳舞 vol.1', 'Serie: ¿Por qué bailamos? vol.1', '시리즈: 사람은 왜 춤추는가 vol.1'),
     'c_ot_odoru01_b': ('When People Dance', '人跳舞的时候', 'Cuando la gente baila', '사람이 춤출 때'),
-    'c_ot_tsuki01_b': ('Why Do We Look at the Moon?', '人为什么看月亮', '¿Por qué miramos la luna?', '사람은 왜 달을 보는가'),
+    'c_ot_tsuki01_b': ('Howling at the Moon — People Who Sing to the Moon', '对月长啸 〜望月而歌的人们〜', 'Aullando a la luna — Quienes le cantan a la luna', '달에게 짖다 〜달을 보며 노래하는 사람들〜'),
 }
 _LG4 = ['en', 'zh-Hans', 'es', 'ko']
 
