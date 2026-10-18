@@ -1,7 +1,7 @@
 #!/bin/bash
 # マガジン4本を本番（joy-relief-station public/magazine/）へ置く。gh api contents（ローカルgitに触らない）
 export PATH="$HOME/.local/bin:$HOME/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
-cd "$(cd "$(dirname "$0")/../.." && pwd)"   # 置いてあるリポジトリの根（本体でも作業場（worktree）でも同じに動く・2026-10-18）
+cd "$HOME/tamago/tamago-shinchoku"
 R=tamago2022/joy-relief-station
 put() { # $1=ローカル $2=リポ内パス $3=repo
   SHA=$(gh api "repos/$3/contents/$2?ref=main" --jq .sha 2>/dev/null)
