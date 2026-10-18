@@ -116,6 +116,10 @@ def build(src, name):
     h = re.sub(r'<label class="cw-lang".*?</label>', '', h, flags=re.S)           # 訳ができるまで切替は出さない
     h = re.sub(r'<script>\(function\(\)\{var L=.*?</script>', '', h, flags=re.S)
     h, gone2 = strip_notes(h)
+    # 出典は本文に出さず、記事の最後に章ごと（2026-10-19・全マガジン共通の型）。Gensparkの叩きの文中リンクもここで外す
+    import shutten
+    h, pairs = shutten.convert(h, name)
+    shutten.save_pairs(name, pairs)
     open(os.path.join(PROD, name), 'w', encoding='utf-8').write(h)
     bad = MB.look_check(h)
     return h, {'gone': gone + gone2, 'img': rep + rep2, 'songs': len(spec['songs']), 'bad': bad, 'key': spec['key'], 'title': spec['title']}

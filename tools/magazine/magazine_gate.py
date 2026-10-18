@@ -7,6 +7,11 @@
   ③ 飛んだ先の関連（おすすめ）が4曲以上（1〜2曲は禁止）
   ④ コピーとメモがある（メモに年号・数字があれば出典 src も）
 を機械で確かめる。
+2026-10-19 追加（たまごさん至急）：
+  ⑤ 壊れた画像＝不合格。main の写しで参照先のファイルが無い画像（マガジンの <img>・og:image・特集の写真の表 fuukeiPhotos.ts）と、
+     本番の全マガジン・特集で読み込みに失敗する画像（404 等）を tools/magazine/img_kenpin.py で探す
+  ⑥ 本文の中に出典リンク（a.cw-src）が残っている号＝不合格（出典は記事の最後に章ごと・tools/magazine/shutten.py）。
+     特集（React）は出典の表 shuttenGroups.generated.ts がソースの <Src> と合っているか（tools/magazine/shutten_tsx.py --check）
 
 曲の決め方（アーティストの取り違え禁止＝sekisho-artist-song の基準）：
   ・マガジンの動画ID が coverGuideLite の曲の動画ID と完全一致（1曲だけ）→ その曲
@@ -337,7 +342,26 @@ def run(only=None, tsumu=True, put=True):
                 if s.get('fixed'):
                     cnt['fixed'] += 1
                 s['related'] = (f or {}).get('related'); s['fails'] = fails; s['ok'] = not fails
+        # ⑤ 壊れた画像（main の写し＋本番）・⑥ 本文に残った出典リンク（2026-10-19）
+        import img_kenpin, shutten, shutten_tsx
+        img_ng = [{'where': 'main', 'page': pg, 'src': r} for pg, r in img_kenpin.check_local(w)]
+        if not only:
+            try:
+                bad, _, _ = img_kenpin.check_prod()
+                img_ng += [{'where': '本番', 'page': pg, 'src': u, 'status': st} for pg, u, st in bad]
+            except Exception as e:
+                log('本番の画像を見られない %r' % (e,))
+        sh_ng = [{'page': n, 'links': k} for n in names
+                 for k in [shutten.left_in_body(open(os.path.join(md, n), encoding='utf-8').read())] if k]
+        try:
+            cur = open(os.path.join(w, shutten_tsx.OUT), encoding='utf-8').read()
+            if shutten_tsx.build(w) != cur:
+                sh_ng.append({'page': shutten_tsx.OUT, 'links': '特集の出典の表がソースと合っていない'})
+        except Exception as e:
+            log('特集の出典の表を見られない %r' % (e,))
+        cnt['img_404'] = len(img_ng); cnt['shutten_ng'] = len(sh_ng)
         res = {'at': time.strftime('%F %T'), 'sec': int(time.time() - t0), 'count': cnt, 'changed': changed,
+               'img_ng': img_ng, 'shutten_ng': sh_ng, 'gokaku': not img_ng and not sh_ng,
                'mags': {n: rows for n, rows in mags.items()}}
         if put and changed:
             res['pushed'] = push(w, changed)
@@ -418,6 +442,25 @@ def enqueue(res):
             jobs.append('%s=%s' % (n, m.group(1) if m else msg))
         except Exception as e:
             log('積めない %s: %r' % (n, e))
+    if res.get('img_ng') or res.get('shutten_ng'):
+        if not (st.get('_img') and _open_job(st['_img'])):
+            lines = ['- [%s] %s → %s %s' % (x['where'], x['page'], x['src'], x.get('status', '')) for x in res.get('img_ng', [])[:60]]
+            lines += ['- 本文に出典リンク：%s（%s）' % (x['page'], x['links']) for x in res.get('shutten_ng', [])]
+            text = '\n'.join(['【タスク】マガジン・特集の壊れた画像／本文に残った出典リンクを直す（マガジンの関所 %s）' % res['at'],
+                              '【たまごさん】壊れた画像（紺の空白に壊れたアイコンと代替テキストだけ）は不合格。出典は記事の最後に章ごと。'] + lines + [
+                              '【直し方】画像を外すときは、ファイルだけでなく枠（img・figure・クレジット・余白）ごと消す。特集の写真は tools/magazine/fuukei.json から外して gen_fuukei_ts.py で作り直す。',
+                              '　出典は python3 tools/magazine/shutten.py <ページ>（静的マガジン）／python3 tools/magazine/shutten_tsx.py <jrs>（特集）。',
+                              '【点検】python3 tools/magazine/img_kenpin.py --local <jrs> --prod と shutten.py --check が0件。main に入れたら Dispatch へ1行（公開は Dispatch）。'])
+            try:
+                _, msg = ci.queue_add(text, priority=1, label='マガジンの壊れた画像・出典（%d件）' % (len(res.get('img_ng', [])) + len(res.get('shutten_ng', []))), origin='factory')
+                m = re.search(r'(\d+)番', msg or '')
+                if m:
+                    st['_img'] = m.group(1)
+                jobs.append('画像・出典=%s' % (m.group(1) if m else msg))
+            except Exception as e:
+                log('積めない 画像・出典: %r' % (e,))
+        else:
+            jobs.append('画像・出典=既存%s' % st['_img'])
     json.dump(st, open(STATE, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     return jobs
 
@@ -427,7 +470,7 @@ def report(res):
     sys.path.insert(0, TOOLS)
     import claude_uketsuke as cu
     cu.outbox('【マガジンの関所】%d号・曲%d' % (c['mags'], c['songs']),
-              '曲%d／ページが無かった%d（ほか名前の合う候補あり%d）／関連4未満%d／コピー・メモ不足%d／リンク取り違え%d／本番で開かない%d／その場で直した%d（直す便：%s）' % (
+              ('不合格：壊れた画像%d・本文の出典リンク%d／' % (c.get('img_404', 0), c.get('shutten_ng', 0)) if (c.get('img_404') or c.get('shutten_ng')) else '') + '曲%d／ページが無かった%d（ほか名前の合う候補あり%d）／関連4未満%d／コピー・メモ不足%d／リンク取り違え%d／本番で開かない%d／その場で直した%d（直す便：%s）' % (
                   c['songs'], c['no_page'], c.get('cand', 0), c['related_lt4'], c['copy_memo_ng'], c['link_ng'], c['prod_ng'], c['fixed'], '、'.join(res.get('jobs') or []) or 'なし'),
               [SITE + '/magazine/backnumber.html'])
 
@@ -451,6 +494,9 @@ def self_test():
     lite2 = parse_lite('  {"id":"rg","name":"Rufus Gumede","songs":[{"id":"y","title":"夢の途中","youtubeId":"V1"}]},')
     assert resolve({'yt': 'V1', 'artist': '来生たかお', 'title': '夢の途中', 'link': None}, lite2)[1] == 'suspect'
     assert resolve({'yt': 'V1', 'artist': '来生たかお', 'title': '夢の途中', 'link': SITE + '/cover-guide?artist=rg&song=y'}, lite2)[1] == 'link_wrong'
+    # ⑤⑥ 壊れた画像・本文の出典リンク（2026-10-19）
+    import img_kenpin, shutten
+    assert img_kenpin.self_test() == 0 and shutten.self_test() == 0
     print('SELF-TEST OK')
     return 0
 

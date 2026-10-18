@@ -1366,7 +1366,14 @@ def harvest(q):
         # 認証切れと同じ思想：失敗として数えず列に静かに戻す。ただし週次上限は"人が動かなくても
         #   時間が経てば直る"ので、resets時刻を読み取れれば自動再開する（読めなければ60分後に再試行、
         #   まだ上限中ならこのブロックがまた検知して再セットする＝自己修復）。
-        if "weekly limit" in (raw or "").lower() or "weekly limit" in (result or "").lower():
+        # 2026-10-19 たまごさん「5時間枠が尽きて止まっても、リセット後に自動で発車を再開」
+        #   → 週次だけでなく5時間枠（"hit your limit"/"session limit"/"5-hour limit" + resets）も同じ扱い。
+        _lim_txt = ((raw or "") + " " + (result or "")).lower()
+        _is_weekly = "weekly limit" in _lim_txt
+        _is_5h = (not _is_weekly) and ("resets" in _lim_txt) and (
+            "hit your limit" in _lim_txt or "session limit" in _lim_txt or "5-hour limit" in _lim_txt
+            or "usage limit" in _lim_txt or "limit reached" in _lim_txt)
+        if _is_weekly or _is_5h:
             _wl_resume = None
             _wl_m = re.search(r"resets\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?", raw or result or "", re.IGNORECASE)
             if _wl_m:
@@ -1386,9 +1393,9 @@ def harvest(q):
                 _wl_resume = (datetime.now() + timedelta(minutes=60)).strftime("%Y-%m-%dT%H:%M:%S+09:00")
             flag = os.path.join(REPO, "status", "no_launch.flag")
             io.open(flag, "w", encoding="utf-8").write(
-                "Claudeの週次利用上限に達しています（weekly limit）。"
-                "resumeAt=%s まで新規発車を止めます。検知時刻:%s\n"
-                % (_wl_resume, time.strftime("%Y-%m-%d %H:%M")))
+                "Claudeの%sに達しています。"
+                "resumeAt=%s まで新規発車を止めます（過ぎたら自動で外します）。検知時刻:%s\n"
+                % ("週次利用上限（weekly limit）" if _is_weekly else "利用上限（5時間枠）", _wl_resume, time.strftime("%Y-%m-%d %H:%M")))
             io.open(os.path.join(REPO, "status", "weekly_limit.flag"), "w", encoding="utf-8").write(
                 json.dumps({"detectedAt": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
                             "resumeAt": _wl_resume}, ensure_ascii=False))
@@ -1397,7 +1404,7 @@ def harvest(q):
                 it.pop(k, None)
             it.pop("pid", None)
             changed = True
-            log("⏳ 週次利用上限を検知。%d番は列に戻し、発車を%sまで止めます" % (it.get("n"), _wl_resume))
+            log("⏳ %sを検知。%d番は列に戻し、発車を%sまで止めます" % ("週次利用上限" if _is_weekly else "5時間枠の上限", it.get("n"), _wl_resume))
             continue
         # 2026-09-05 たまごさん「何も動いてない状態は作らないで。クレジット消費最小で」
         #   → 空回し（keepalive）は終わったら台帳から静かに消す。
@@ -2281,7 +2288,7 @@ def _main_impl():
           auth_only = "ログインが切れています" in _flag_text
           # 2026-09-15（874番）：週次利用上限で止めているだけなら、resumeAtを過ぎた時点で
           #   自分で気づいて自動解除する（認証切れと違い、人が動かなくても時間が経てば直るため）。
-          if "週次利用上限" in _flag_text:
+          if "利用上限" in _flag_text:  # 週次・5時間枠どちらも（2026-10-19）
               _wl = load(os.path.join(REPO, "status", "weekly_limit.flag"), {}) or {}
               _resume_at = _wl.get("resumeAt") or ""
               _past = False
@@ -2296,7 +2303,7 @@ def _main_impl():
                           os.remove(_f)
                       except Exception:
                           pass
-                  log("⏳ 週次利用上限のresumeAtを過ぎたので発車を再開します")
+                  log("⏳ 利用上限のresumeAtを過ぎたので発車を再開します")
               else:
                   return 0
           elif not auth_only:

@@ -199,6 +199,10 @@ def probe(use_token):
     if r.returncode == 75:
         return None, "関所が空くのを待って諦めた(待ち)"
     out = (r.stdout or "") + (r.stderr or "")
+    # 2026-10-19：利用上限（5時間枠・週次）の応答をログイン切れと取り違えない（10-18 11:40 に誤って旗を立てた）
+    _lo = out.lower()
+    if "resets" in _lo and ("limit" in _lo):
+        return None, "利用上限中（ログインは生きている）"
     if "OAuth session expired" in out:
         return False, "OAuth session expired（更新用の鍵ごと無効）"
     if "OAuth access token is invalid" in out:

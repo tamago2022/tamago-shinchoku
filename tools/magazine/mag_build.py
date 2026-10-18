@@ -293,6 +293,9 @@ COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_sns': ('Follow Gokigen Station', '关注好心情补给站', 'Sigue a Estación Gokigen', '고키겐 보급소 팔로우'),
     'c_share_h': ('Share this feature', '分享这篇专题', 'Comparte este especial', '이 특집 공유하기'),
     'c_songpage': ('Go to this song\'s page →', '前往这首歌的页面 →', 'Ir a la página de esta canción →', '이 곡의 페이지로 →'),
+    'c_sh_intro': ('Introduction', '引言', 'Introducción', '들어가며'),
+    'c_sh_close': ('Closing', '结语', 'Cierre', '맺으며'),
+    'c_sh_other': ('Other sources', '其他出处', 'Otras fuentes', '그 밖의 출처'),
     'c_allback': ('All back issues →', '全部往期 →', 'Todos los números →', '모든 백넘버 →'),
     'c_ot_label': ('OTHER MAGAZINES — more features', 'OTHER MAGAZINES — 其他专题', 'OTHER MAGAZINES — más especiales', 'OTHER MAGAZINES — 다른 특집'),
     'c_ot_hoshikatsu_s': ('Arranger / composer', '编曲家・作曲家', 'Arreglista y compositor', '편곡가・작곡가'),
@@ -492,6 +495,10 @@ def unify_look(h):
     # ⑩ 雰囲気の静止画（2026-10-18・全マガジン5〜6枚）＝ tools/magazine/fuukei.py
     import fuukei
     h = fuukei.add(h)
+    # ⑪ 出典は本文に出さず、記事の最後に章ごとにまとめる（2026-10-19 たまごさん）＝ tools/magazine/shutten.py
+    import shutten
+    h, _pairs = shutten.convert(h)
+    shutten.save_pairs(fuukei.page_name(h), _pairs)
     return h
 
 
