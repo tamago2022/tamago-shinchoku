@@ -53,7 +53,9 @@ def check(html):
     if re.search(r"(class=\"talk__nm\"|class=\"nm\"|>店主<|タマゴコンシェルジュ<)", html):
         errs.append("吹き出しに肩書き（店主／コンシェルジュ）が書いてある")
     hero = re.search(r'(cw-hero__bg"(?: aria-hidden="true")?><img src="|class="hero-img" src=")([^"]+)', html)
-    if not hero or "i.ytimg.com/vi/" not in hero.group(2):
+    # 店主が「この写真」と指定したヘッダー（例：月の特集＝月の写真・#1028 2026-10-18）は data-hero-by="tamago" を付けて通す（風景写真の仮置きではない）
+    tamago_hero = re.search(r'cw-hero__bg"[^>]*><img [^>]*data-hero-by="tamago"', html)
+    if not tamago_hero and (not hero or "i.ytimg.com/vi/" not in hero.group(2)):
         errs.append("ヘッダーの絵が曲のジャケット／動画サムネイルではない")
     for h2 in re.findall(r'<h2 class="cw-chead__title">(.*?)</h2>', html):
         if " - " not in h2:
