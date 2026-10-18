@@ -82,6 +82,30 @@ Genspark が GitHub の Issue に「【納品】」と書くと、工場が原�
 <tr><td>uke-01.html が本番に出ている</td><td class="yes">出ている（HTTP 200・10/18 10:31 公開・Issue #1018 と #1029 に本番URLを書いた）</td></tr>
 </table>
 
+<h2>⑥ 2回目の直し（10/18 22:1x）：「リンクをコピー」を押した瞬間に返事が出るように</h2>
+<div class="what">
+触る検品で「Copy link / リンクをコピー」が押しても無反応と出ました。原因は、全マガジン共通の共有ボタン（<code>tools/magazine/share_bar.py</code>）が、コピーを拒否された環境（未許可・無人ブラウザ・古い端末）で何も表示を変えず、成功したときもアイコンを✓に替えるだけで文字が出なかったこと。<br>
+直し：押した瞬間に「コピーしました」（5言語）の文字を出す。クリップボードが使えなければ旧式のコピーを試し、それも駄目ならURLを選択状態の欄で見せる。同時に共有部品の台本を書き直して軽くし、ページの送る量は増やさない（1ページあたり −8 バイト）。
+</div>
+<div class="nums">
+  <div class="num"><b>9本</b><span>直した本番マガジン（ikareru-01・naze-ongaku-01・rei-harakami・hikigatari-josh-turner・kimi-wa-hoshi-katsu・hito-wa-naze-tsuki-wo-miru-01・hito-ga-odoru-01・backnumber・uke-01）＝GitHub main に置いた</span></div>
+  <div class="num"><b>−8 バイト</b><span>1ページの送る量の増減（実測：ikareru-01 97869→97861）。後退の関所 KOUTAI_KANMON_RESULT: PASS（9件）</span></div>
+  <div class="num"><b>0件</b><span>直した版を手元で配信して押す検品（verify_click.mjs）にかけた結果の「押しても無反応」（hito-ga-odoru-01：9件中9件反応・ikareru-01：23件中23件反応）</span></div>
+</div>
+<pre>実測（2026-10-18 22:1x・node tools/verify_click.mjs / python3 tools/koutai_kanmon.py --check-files）
+hito-ga-odoru-01.html  tested=9  noResponseCount=0  consoleErrorCount=0  CLICK_VERDICT: PASS
+ikareru-01.html        tested=23 noResponseCount=0  consoleErrorCount=0  CLICK_VERDICT: PASS
+送る量（GitHub main の版 → 直した版・バイト）
+ikareru-01 97869→97861 / naze-ongaku-01-takoukan 56390→56382 / rei-harakami 83589→83581 / hikigatari-josh-turner 52803→52795
+kimi-wa-hoshi-katsu 112862→112854 / hito-wa-naze-tsuki-wo-miru-01 125932→125924 / hito-ga-odoru-01 89915→89907 / backnumber 34479→34498 / uke-01 111757→111689
+KOUTAI_KANMON_RESULT: PASS（9件、送る量は基準以内）</pre>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>GitHub main（joy-relief-station public/magazine/）に9本置いた</td><td class="yes">置いた（gh api contents・10/18 22:10）</td></tr>
+<tr><td>Lovable の「公開」を押して本番が変わった</td><td class="no">公開待ち（Lovable の鍵）。deploy_project の入口が http 403「Lovable Error」を返し押せない（22:12 実測。20:16・20:23 も同じ）。本番の deployment-id は e69ca2f5… のまま。鍵が戻り次第、公開押し係（kohyou_osu）が押す</td></tr>
+<tr><td>本番URLで押す検品（2段目）</td><td class="no">未実施（本番が変わっていないため。公開後に再検品）</td></tr>
+</table>
+
 <footer>
 技術メモ：tools/claude_uketsuke.py（受付係）・tools/auto_launcher.py fable_lane_borrow_pick（席貸し）・tools/test_urgent_lane.py ③。数字は 2026-10-18 09:4x に gh api / curl / status/claude_uketsuke_state.json から取った実測。
 </footer>
