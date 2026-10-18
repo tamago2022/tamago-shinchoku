@@ -293,6 +293,7 @@ COMMON_I18N = {  # 共通部品の訳（en, zh-Hans, es, ko）
     'c_sns': ('Follow Gokigen Station', '关注好心情补给站', 'Sigue a Estación Gokigen', '고키겐 보급소 팔로우'),
     'c_share_h': ('Share this feature', '分享这篇专题', 'Comparte este especial', '이 특집 공유하기'),
     'c_songpage': ('Go to this song\'s page →', '前往这首歌的页面 →', 'Ir a la página de esta canción →', '이 곡의 페이지로 →'),
+    'c_toc_hint': ('Tap to jump', '点一下就能跳过去', 'Toca para ir', '누르면 바로 이동해요'),
     'c_sh_intro': ('Introduction', '引言', 'Introducción', '들어가며'),
     'c_sh_close': ('Closing', '结语', 'Cierre', '맺으며'),
     'c_sh_other': ('Other sources', '其他出处', 'Otras fuentes', '그 밖의 출처'),
@@ -495,6 +496,9 @@ def unify_look(h):
     # ⑩ 雰囲気の静止画（2026-10-18・全マガジン5〜6枚）＝ tools/magazine/fuukei.py
     import fuukei
     h = fuukei.add(h)
+    # ⑫ 目次から章へ滑らかに飛ぶ＋「押すとそこに飛びます」（2026-10-19 たまごさん確定）＝ tools/magazine/toc_smooth.py
+    import toc_smooth
+    h = toc_smooth.add(h)
     # ⑪ 出典は本文に出さず、記事の最後に章ごとにまとめる（2026-10-19 たまごさん）＝ tools/magazine/shutten.py
     import shutten
     h, _pairs = shutten.convert(h)

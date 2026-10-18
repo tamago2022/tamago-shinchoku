@@ -359,6 +359,16 @@ def run(only=None, tsumu=True, put=True):
                 sh_ng.append({'page': shutten_tsx.OUT, 'links': '特集の出典の表がソースと合っていない'})
         except Exception as e:
             log('特集の出典の表を見られない %r' % (e,))
+        # ⑦ 目次から滑らかに飛ぶ＋「押すとそこに飛びます」（2026-10-19 確定の型）
+        import toc_smooth
+        for n in names:
+            for why in toc_smooth.check(open(os.path.join(md, n), encoding='utf-8').read()):
+                sh_ng.append({'page': n, 'links': why})
+        try:
+            for why in toc_smooth.check_tsx(w):
+                sh_ng.append({'page': '特集', 'links': why})
+        except Exception as e:
+            log('特集の目次を見られない %r' % (e,))
         cnt['img_404'] = len(img_ng); cnt['shutten_ng'] = len(sh_ng)
         res = {'at': time.strftime('%F %T'), 'sec': int(time.time() - t0), 'count': cnt, 'changed': changed,
                'img_ng': img_ng, 'shutten_ng': sh_ng, 'gokaku': not img_ng and not sh_ng,
@@ -496,7 +506,8 @@ def self_test():
     assert resolve({'yt': 'V1', 'artist': '来生たかお', 'title': '夢の途中', 'link': SITE + '/cover-guide?artist=rg&song=y'}, lite2)[1] == 'link_wrong'
     # ⑤⑥ 壊れた画像・本文の出典リンク（2026-10-19）
     import img_kenpin, shutten
-    assert img_kenpin.self_test() == 0 and shutten.self_test() == 0
+    import toc_smooth
+    assert img_kenpin.self_test() == 0 and shutten.self_test() == 0 and toc_smooth.self_test() == 0
     print('SELF-TEST OK')
     return 0
 
