@@ -300,10 +300,25 @@ def moon_hero(h):
     return h
 
 
+def dedupe_src(h):
+    """同じ段落の中で同じ出典リンクが2回以上出たら、2回目以降を消す（送る量を増やさない・読みやすい）。"""
+    import re as R
+    def one(m):
+        seen = set()
+        def a(q):
+            if q.group(1) in seen:
+                return ''
+            seen.add(q.group(1)); return q.group(0)
+        return R.sub(r'<a class="cw-src" href="([^"]+)"[^>]*>[^<]*</a>', a, m.group(0))
+    return R.sub(r'<p\b[^>]*>.*?</p>|<div class="say__bub">.*?</div>', one, h, flags=R.S)
+
+
 def write(m):
     """mag_build.write と同じ（確認ページ＋本番の写し＋訳のJSON）。ヘッダーだけ月の写真にしてから書く。"""
     h = MB.build(m)
     h = moon_hero(h)
+    h = dedupe_src(h)
+    h = h.replace('<a class="cw-src" href="', '<a class="cw-src" href="').replace('" target="_blank" rel="noopener">', '" target="_blank">')  # rel=noopener は target=_blank の既定（軽く）
     MB.kanmon(m, h)
     p = os.path.join(MB.REPO, 'share/check', m['file'])
     open(p, 'w', encoding='utf-8').write(h)
