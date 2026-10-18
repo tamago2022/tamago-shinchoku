@@ -23,12 +23,12 @@ OFFICIAL_TIKTOK = 'https://www.tiktok.com/@joyreliefstation'  # サイト内の�
 OFFICIAL_YOUTUBE = 'https://www.youtube.com/@joy-relief-station'  # 2026-10-18 たまごさん指定
 
 P = {  # Simple Icons（CC0）
- 'line': 'M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314',
- 'wa': 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z',
- 'yt': 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
- 'x': 'M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z',
- 'fb': 'M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z',
- 'th': 'M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z',
+ 'line': 'M19.36 9.86c.349 0 .63.28.63.63 0 .345-.281.63-.63.63H17.61v1.12h1.75c.349 0 .63.28.63.63 0 .344-.281.62-.63.62h-2.38c-.345 0-.627-.285-.627-.629V8.10c0-.345.28-.63.63-.63h2.38c.346 0 .627.28.627.63 0 .349-.281.63-.63.63H17.61v1.12h1.75zm-3.85 3.01c0 .27-.174.51-.432.59-.064.02-.133.03-.199.03-.211 0-.391-.09-.51-.25l-2.44-3.31v2.94c0 .344-.279.62-.631.62-.346 0-.626-.285-.626-.629V8.10c0-.27.17-.51.43-.595.06-.023.13-.033.19-.033.19 0 .375.10.495.25l2.46 3.33V8.10c0-.345.28-.63.63-.63.34 0 .63.28.63.63v4.77zm-5.74 0c0 .344-.282.62-.631.62-.345 0-.627-.285-.627-.629V8.10c0-.345.28-.63.63-.63.34 0 .628.28.628.63v4.77zm-2.46.629H4.91c-.345 0-.63-.285-.63-.629V8.10c0-.345.28-.63.63-.63.34 0 .63.28.63.63v4.14h1.75c.348 0 .629.28.629.63 0 .344-.282.62-.629.62M24 10.31C24 4.94 18.61.572 12 .572S0 4.94 0 10.31c0 4.81 4.27 8.84 10.03 9.60.391.08.923.25 1.05.59.12.30.079.76.038 1.08l-.164 1.02c-.045.30-.24 1.18 1.04.645 1.29-.539 6.91-4.07 9.43-6.97C23.17 14.39 24 12.45 24 10.31',
+ 'wa': 'M17.47 14.38c-.297-.149-1.75-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.29-.767.96-.94 1.16-.173.19-.347.22-.644.07-.297-.15-1.25-.463-2.39-1.47-.883-.788-1.48-1.76-1.65-2.05-.173-.297-.018-.458.13-.606.13-.133.29-.347.44-.52.14-.174.19-.298.29-.497.09-.198.05-.371-.025-.52-.075-.149-.669-1.61-.916-2.20-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.07-.792.37-.272.29-1.04 1.01-1.04 2.47 0 1.46 1.06 2.87 1.21 3.07.149.19 2.09 3.2 5.07 4.48.709.30 1.26.489 1.69.625.71.227 1.36.19 1.87.118.57-.085 1.75-.719 2.00-1.41.248-.694.24-1.28.173-1.41-.074-.124-.272-.198-.57-.347m-5.42 7.40h-.004a9.87 9.87 0 01-5.03-1.37l-.361-.214-3.74.982.99-3.64-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.43-9.88 9.88-9.88 2.64 0 5.12 1.03 6.98 2.89a9.82 9.82 0 012.89 6.99c-.003 5.45-4.43 9.88-9.88 9.88m8.41-18.29A11.81 11.81 0 0012.05 0C5.49 0 .16 5.33.157 11.89c0 2.09.547 4.14 1.58 5.94L.057 24l6.30-1.65a11.88 11.88 0 005.68 1.44h.005c6.55 0 11.89-5.33 11.89-11.89a11.82 11.82 0 00-3.48-8.41Z',
+ 'yt': 'M23.49 6.18a3.01 3.01 0 0 0-2.12-2.13C19.50 3.54 12 3.54 12 3.54s-7.50 0-9.37.505A3.01 3.01 0 0 0 .502 6.18C0 8.07 0 12 0 12s0 3.93.50 5.81a3.01 3.01 0 0 0 2.12 2.13c1.87.505 9.37.505 9.37.505s7.50 0 9.37-.505a3.01 3.01 0 0 0 2.12-2.13C24 15.93 24 12 24 12s0-3.93-.502-5.81zM9.54 15.56V8.43L15.81 12l-6.27 3.56z',
+ 'x': 'M18.90 1.15h3.68l-8.04 9.19L24 22.84h-7.40l-5.8-7.58-6.63 7.58H.474l8.6-9.83L0 1.15h7.59l5.24 6.93ZM17.61 20.64h2.03L6.48 3.24H4.29Z',
+ 'fb': 'M9.10 23.69v-7.98H6.62v-3.66h2.47v-1.58c0-4.08 1.84-5.97 5.85-5.97.401 0 .955.04 1.46.103a8.68 8.68 0 0 1 1.14.195v3.32a8.62 8.62 0 0 0-.653-.036 26.80 26.80 0 0 0-.733-.009c-.707 0-1.25.096-1.67.309a1.68 1.68 0 0 0-.679.62c-.258.42-.374.99-.374 1.75v1.29h3.91l-.386 2.10-.287 1.56h-3.24v8.24C19.39 23.23 24 18.17 24 12.04c0-6.62-5.37-12-12-12s-12 5.37-12 12c0 5.62 3.87 10.35 9.10 11.64Z',
+ 'th': 'M12.18 24h-.007c-3.58-.024-6.33-1.20-8.18-3.50C2.35 18.44 1.5 15.58 1.47 12.01v-.017c.03-3.57.879-6.43 2.52-8.48C5.84 1.20 8.6.02 12.18 0h.014c2.74.02 5.04.725 6.82 2.09 1.67 1.29 2.85 3.13 3.50 5.46l-2.04.56c-1.10-3.96-3.89-5.98-8.30-6.01-2.91.02-5.11.93-6.54 2.71C4.30 6.50 3.61 8.91 3.58 12c.027 3.08.718 5.49 2.05 7.16 1.43 1.78 3.63 2.69 6.54 2.71 2.62-.02 4.35-.631 5.8-2.04 1.64-1.61 1.61-3.59 1.09-4.79-.31-.71-.873-1.3-1.63-1.75-.192 1.35-.622 2.44-1.28 3.27-.886 1.10-2.14 1.70-3.73 1.79-1.20.065-2.36-.218-3.25-.801-1.06-.689-1.68-1.74-1.75-2.96-.065-1.19.40-2.28 1.33-3.08.88-.76 2.11-1.20 3.58-1.29a13.85 13.85 0 0 1 3.02.14c-.126-.742-.375-1.33-.75-1.75-.513-.586-1.30-.883-2.35-.89h-.029c-.844 0-1.99.232-2.72 1.32L7.73 7.84c.98-1.45 2.56-2.25 4.47-2.25h.044c3.19.02 5.09 1.97 5.28 5.38.108.04.216.09.321.14 1.49.7 2.58 1.76 3.15 3.07.79 1.82.87 4.79-1.54 7.15-1.85 1.81-4.09 2.62-7.27 2.65Zm1.00-11.69c-.242 0-.487.00-.739.02-1.83.103-2.98.94-2.91 2.14.067 1.25 1.45 1.83 2.78 1.76 1.22-.065 2.81-.543 3.08-3.71a10.5 10.5 0 0 0-2.21-.221z',
  'cp': 'M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 1 1 4.2 4.2l-1.8 1.8a1 1 0 0 1-1.4-1.4l1.8-1.8a1 1 0 1 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0Zm2.8-2.8a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 1 1-4.2-4.2l1.8-1.8a1 1 0 0 1 1.4 1.4l-1.8 1.8a1 1 0 1 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0Z',
  'ok': 'M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6 11-11-1.4-1.4z',
  'sh': 'M12 2.6 7.3 7.3l1.4 1.4L11 6.4V15h2V6.4l2.3 2.3 1.4-1.4L12 2.6ZM5 11v9.5c0 .8.7 1.5 1.5 1.5h11c.8 0 1.5-.7 1.5-1.5V11h-2v9H7v-9H5Z',
@@ -41,11 +41,8 @@ CSS = ('.cw .cw-share{display:flex;flex-wrap:wrap;align-items:center;gap:10px;ma
        '.cw .cw-share a:hover,.cw .cw-share button:hover{background:rgba(237,230,214,.1)}'
        '.cw .cw-share svg{width:18px;height:18px;fill:currentColor}'
        '.cw .cw-share [data-sh=sh]{display:none}.cw .cw-share.can-sh [data-sh=sh]{display:inline-flex}'
-       '.cw .cw-share .cw-share__sep{flex:1}'
-       '.cw .cw-share .cw-share__msg{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;letter-spacing:.04em;opacity:.9}'
-       '.cw .cw-share .cw-share__msg:empty{display:none}'
-       '.cw .cw-share .cw-share__raw{flex-basis:100%;width:100%;max-width:420px;height:32px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink);font-size:12px}'
-       '.cw .cw-share--top{margin:0 0 8px}'
+       '.cw .cw-share__msg{font-size:12px;opacity:.9}.cw .cw-share__msg:empty{display:none}'
+       '.cw .cw-share__raw{display:block;width:100%;max-width:420px;height:32px;margin-top:6px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:none;color:var(--ink);font-size:12px}'
        '.cw .cw-sharebox{margin:36px 0 8px;padding:18px 0 4px;border-top:1px solid var(--line)}'
        '.cw .cw-sharebox__h{margin:0;font-size:13px;letter-spacing:.14em;font-weight:700}'
        '.cw .cw-sharebox .cw-share{margin:12px 0 0}')
@@ -61,7 +58,7 @@ def ic(k):
 
 
 def bar(pos):
-    btn = ''.join(f'<a href="#" data-sh="{k}" aria-label="{LABEL[k]}" rel="noopener">{ic(k)}</a>' for k in ('line', 'wa', 'x', 'fb', 'th'))
+    btn = ''.join(f'<a href="#" data-sh="{k}" aria-label="{LABEL[k]}">{ic(k)}</a>' for k in ('line', 'wa', 'x', 'fb', 'th'))
     btn += f'<button type="button" data-sh="cp" aria-label="{LABEL["cp"]}">{ic("cp")}</button>'
     btn += f'<button type="button" data-sh="sh" aria-label="{LABEL["sh"]}">{ic("sh")}</button>'
     follow = ''
@@ -75,33 +72,33 @@ def bar(pos):
     return b
 
 
-SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]"),U=function(){return (c&&c.href)||location.href.split("#")[0].split("?")[0]},'
-          'T=function(){return document.title.split("｜")[0].trim()},E=encodeURIComponent,'
-          # 下書き（言語ごと）：p＝友だち1人に送る一言（LINE・WhatsApp）、s＝みんなに向けた一言（X・Threads）
-          'D={ja:{o:"「",c:"」",p:"これ、ちょっと読んでみて。おもしろかった。",s:"読み終えて、だれかに渡したくなった。",k:"コピーしました",r:"長押しして選んでコピー"},en:{o:"“",c:"”",p:"Have a read of this — I enjoyed it.",s:"Finished this and wanted to pass it on. ",k:"Copied",r:"Select and copy"},'
-          '"zh-Hans":{o:"《",c:"》",p:"这篇你读读看，挺有意思的。",s:"读完了，想转给别人看看。",k:"已复制",r:"长按选择后复制"},es:{o:"«",c:"»",p:"Échale un ojo a esto, me ha gustado.",s:"Lo terminé y me dieron ganas de pasarlo. ",k:"Copiado",r:"Selecciona y copia"},ko:{o:"「",c:"」",p:"이거 한번 읽어 봐. 재밌더라.",s:"다 읽고 나니 누군가에게 건네고 싶어졌다. ",k:"복사했어요",r:"길게 눌러 선택해서 복사"}},'
-          'W=function(){return D[document.documentElement.lang]||D.ja};'
+SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]"),E=encodeURIComponent,'
+          # 下書き（言語ごと）：p＝友だち1人に送る一言（LINE・WhatsApp）、s＝みんなに向けた一言（X・Threads）、k＝コピーできた、r＝コピーできない時の案内
+          'D={ja:{o:"「",c:"」",p:"これ、ちょっと読んでみて。おもしろかった。",s:"読み終えて、だれかに渡したくなった。",k:"コピーしました",r:"長押しして選んでコピー"},'
+          'en:{o:"“",c:"”",p:"Have a read of this — I enjoyed it.",s:"Finished this and wanted to pass it on. ",k:"Copied",r:"Select and copy"},'
+          '"zh-Hans":{o:"《",c:"》",p:"这篇你读读看，挺有意思的。",s:"读完了，想转给别人看看。",k:"已复制",r:"长按选择后复制"},'
+          'es:{o:"«",c:"»",p:"Échale un ojo a esto, me ha gustado.",s:"Lo terminé y me dieron ganas de pasarlo. ",k:"Copiado",r:"Selecciona y copia"},'
+          'ko:{o:"「",c:"」",p:"이거 한번 읽어 봐. 재밌더라.",s:"다 읽고 나니 누군가에게 건네고 싶어졌다. ",k:"복사했어요",r:"길게 눌러 선택해서 복사"}};'
           'document.querySelectorAll("[data-share]").forEach(function(b){if(navigator.share)b.classList.add("can-sh");'
-          'b.addEventListener("click",function(ev){var a=ev.target.closest("[data-sh]");if(!a)return;var k=a.getAttribute("data-sh"),u=U(),t=T(),h=null;'
-          'var cpy=function(str,done){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(str).then(done,function(){})}else{var x=document.createElement("textarea");x.value=str;document.body.appendChild(x);x.select();try{document.execCommand("copy");done()}catch(e){}x.remove()}};'
-          'var flash=function(id){var y=a.querySelector("use");if(!y)return;y.setAttribute("href","#i-ok");setTimeout(function(){y.setAttribute("href",id)},1800)};'
+          'b.addEventListener("click",function(ev){var a=ev.target.closest("[data-sh]");if(!a)return;'
+          'var k=a.getAttribute("data-sh"),u=(c&&c.href)||location.href.split("#")[0].split("?")[0],t=document.title.split("｜")[0].trim(),w=D[document.documentElement.lang]||D.ja,q=w.o+t+w.c,pt=w.p+"\\n"+q+"\\n"+u,st=w.s+q,h;'
+          # fl＝アイコンを一瞬✓にする／cp＝クリップボード→駄目なら旧式（textarea）→それも駄目なら ng
+          'var fl=function(id){var y=a.querySelector("use");if(y){y.setAttribute("href","#i-ok");setTimeout(function(){y.setAttribute("href",id)},1800)}},'
+          'cp=function(s,ok,ng){var f=function(){var x=document.createElement("textarea");x.value=s;x.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(x);x.focus();x.select();var r=0;try{r=document.execCommand("copy")}catch(e){}x.remove();r?ok():ng&&ng()};'
+          'navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(s).then(ok,f):f()};'
           # LINE（2026-10-17 店主指示）：スマホ＝line.me/R/share（アプリの送り先選択）、PC＝共有シート→無ければコピー＋line://。ログイン画面には飛ばさない
-          'var w=W(),q=w.o+t+w.c,pt=w.p+"\\n"+q+"\\n"+u,st=w.s+q;'
-          'if(k==="line"){ev.preventDefault();var lt=pt;if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){location.href="https://line.me/R/share?text="+E(lt);return}'
-          'var fb=function(){cpy(lt,function(){flash("#i-line")});var l=document.createElement("a");l.href="line://msg/text/"+E(lt);l.style.display="none";document.body.appendChild(l);try{l.click()}catch(e){}l.remove()};'
-          'if(navigator.share){navigator.share({title:t,text:w.p+q,url:u}).catch(function(e){if(!e||e.name!=="AbortError")fb()})}else fb();return}'
+          'if(k==="line"){ev.preventDefault();if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){location.href="https://line.me/R/share?text="+E(pt);return}'
+          'var fb=function(){cp(pt,function(){fl("#i-line")});var l=document.createElement("a");l.href="line://msg/text/"+E(pt);l.style.display="none";document.body.appendChild(l);try{l.click()}catch(e){}l.remove()};'
+          'navigator.share?navigator.share({title:t,text:w.p+q,url:u}).catch(function(e){if(!e||e.name!=="AbortError")fb()}):fb();return}'
           'if(k==="wa")h="https://wa.me/?text="+E(pt);else if(k==="x")h="https://x.com/intent/tweet?text="+E(st)+"&url="+E(u);'
           'else if(k==="fb")h="https://www.facebook.com/sharer/sharer.php?u="+E(u);else if(k==="th")h="https://www.threads.com/intent/post?text="+E(st)+"&url="+E(u);'
           'if(h){ev.preventDefault();window.open(h,"_blank","noopener");return}'
           'if(k==="sh"){navigator.share({title:t,text:t,url:u}).catch(function(){});return}'
           # リンクをコピー（2026-10-18 120051：押しても無反応の指摘→押した瞬間に必ず画面で返事する）
-          #   成功＝アイコンを✓にして「コピーしました」の文字を出す／クリップボードが使えない（未許可・無人ブラウザ・古い端末）＝
-          #   textarea の旧式コピーを試し、それも駄目ならURLを選択状態の欄で見せる（押して何も起きない、を無くす）
-          'if(k==="cp"){var s=t+" "+u,m=b.querySelector(".cw-share__msg");if(!m){m=document.createElement("span");m.className="cw-share__msg";m.setAttribute("role","status");m.setAttribute("aria-live","polite");b.appendChild(m)}'
-          'var ok=function(){m.innerHTML="";m.textContent=w.k;flash("#i-cp");clearTimeout(m._t);m._t=setTimeout(function(){m.textContent=""},2400)},'
-          'raw=function(){m.textContent="";var l=document.createElement("span");l.textContent=w.r;var i=document.createElement("input");i.type="text";i.readOnly=true;i.value=s;i.className="cw-share__raw";i.setAttribute("aria-label",w.r);m.appendChild(l);m.appendChild(i);try{i.focus();i.select()}catch(e){}},'
-          'old=function(){var x=document.createElement("textarea");x.value=s;x.setAttribute("readonly","");x.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(x);x.focus();x.select();var r=false;try{r=document.execCommand("copy")}catch(e){}x.remove();r?ok():raw()};'
-          'if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(ok,old)}else old()}'
+          #   成功＝✓＋「コピーしました」の文字／クリップボードが使えない（未許可・無人ブラウザ・古い端末）＝URLを選択状態の欄で見せる
+          'if(k==="cp"){var s=t+" "+u,m=b.querySelector(".cw-share__msg");if(!m){m=document.createElement("span");m.className="cw-share__msg";m.setAttribute("role","status");b.appendChild(m)}'
+          'cp(s,function(){m.textContent=w.k;fl("#i-cp");clearTimeout(m._t);m._t=setTimeout(function(){m.textContent=""},2400)},'
+          'function(){m.textContent=w.r;var i=document.createElement("input");i.readOnly=true;i.value=s;i.className="cw-share__raw";m.appendChild(i);try{i.select()}catch(e){}})}'
           '})})})();</script>')
 
 
