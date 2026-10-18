@@ -42,6 +42,9 @@ CSS = ('.cw .cw-share{display:flex;flex-wrap:wrap;align-items:center;gap:10px;ma
        '.cw .cw-share svg{width:18px;height:18px;fill:currentColor}'
        '.cw .cw-share [data-sh=sh]{display:none}.cw .cw-share.can-sh [data-sh=sh]{display:inline-flex}'
        '.cw .cw-share .cw-share__sep{flex:1}'
+       '.cw .cw-share .cw-share__msg{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;letter-spacing:.04em;opacity:.9}'
+       '.cw .cw-share .cw-share__msg:empty{display:none}'
+       '.cw .cw-share .cw-share__raw{flex-basis:100%;width:100%;max-width:420px;height:32px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink);font-size:12px}'
        '.cw .cw-share--top{margin:0 0 8px}'
        '.cw .cw-sharebox{margin:36px 0 8px;padding:18px 0 4px;border-top:1px solid var(--line)}'
        '.cw .cw-sharebox__h{margin:0;font-size:13px;letter-spacing:.14em;font-weight:700}'
@@ -75,8 +78,8 @@ def bar(pos):
 SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]"),U=function(){return (c&&c.href)||location.href.split("#")[0].split("?")[0]},'
           'T=function(){return document.title.split("｜")[0].trim()},E=encodeURIComponent,'
           # 下書き（言語ごと）：p＝友だち1人に送る一言（LINE・WhatsApp）、s＝みんなに向けた一言（X・Threads）
-          'D={ja:{o:"「",c:"」",p:"これ、ちょっと読んでみて。おもしろかった。",s:"読み終えて、だれかに渡したくなった。"},en:{o:"“",c:"”",p:"Have a read of this — I enjoyed it.",s:"Finished this and wanted to pass it on. "},'
-          '"zh-Hans":{o:"《",c:"》",p:"这篇你读读看，挺有意思的。",s:"读完了，想转给别人看看。"},es:{o:"«",c:"»",p:"Échale un ojo a esto, me ha gustado.",s:"Lo terminé y me dieron ganas de pasarlo. "},ko:{o:"「",c:"」",p:"이거 한번 읽어 봐. 재밌더라.",s:"다 읽고 나니 누군가에게 건네고 싶어졌다. "}},'
+          'D={ja:{o:"「",c:"」",p:"これ、ちょっと読んでみて。おもしろかった。",s:"読み終えて、だれかに渡したくなった。",k:"コピーしました",r:"長押しして選んでコピー"},en:{o:"“",c:"”",p:"Have a read of this — I enjoyed it.",s:"Finished this and wanted to pass it on. ",k:"Copied",r:"Select and copy"},'
+          '"zh-Hans":{o:"《",c:"》",p:"这篇你读读看，挺有意思的。",s:"读完了，想转给别人看看。",k:"已复制",r:"长按选择后复制"},es:{o:"«",c:"»",p:"Échale un ojo a esto, me ha gustado.",s:"Lo terminé y me dieron ganas de pasarlo. ",k:"Copiado",r:"Selecciona y copia"},ko:{o:"「",c:"」",p:"이거 한번 읽어 봐. 재밌더라.",s:"다 읽고 나니 누군가에게 건네고 싶어졌다. ",k:"복사했어요",r:"길게 눌러 선택해서 복사"}},'
           'W=function(){return D[document.documentElement.lang]||D.ja};'
           'document.querySelectorAll("[data-share]").forEach(function(b){if(navigator.share)b.classList.add("can-sh");'
           'b.addEventListener("click",function(ev){var a=ev.target.closest("[data-sh]");if(!a)return;var k=a.getAttribute("data-sh"),u=U(),t=T(),h=null;'
@@ -91,8 +94,14 @@ SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]
           'else if(k==="fb")h="https://www.facebook.com/sharer/sharer.php?u="+E(u);else if(k==="th")h="https://www.threads.com/intent/post?text="+E(st)+"&url="+E(u);'
           'if(h){ev.preventDefault();window.open(h,"_blank","noopener");return}'
           'if(k==="sh"){navigator.share({title:t,text:t,url:u}).catch(function(){});return}'
-          'if(k==="cp"){var s=t+" "+u,ok=function(){var y=a.querySelector("use");y.setAttribute("href","#i-ok");setTimeout(function(){y.setAttribute("href","#i-cp")},1600)};'
-          'if(navigator.clipboard)navigator.clipboard.writeText(s).then(ok,function(){});else{var x=document.createElement("textarea");x.value=s;document.body.appendChild(x);x.select();try{document.execCommand("copy");ok()}catch(e){}x.remove()}}'
+          # リンクをコピー（2026-10-18 120051：押しても無反応の指摘→押した瞬間に必ず画面で返事する）
+          #   成功＝アイコンを✓にして「コピーしました」の文字を出す／クリップボードが使えない（未許可・無人ブラウザ・古い端末）＝
+          #   textarea の旧式コピーを試し、それも駄目ならURLを選択状態の欄で見せる（押して何も起きない、を無くす）
+          'if(k==="cp"){var s=t+" "+u,m=b.querySelector(".cw-share__msg");if(!m){m=document.createElement("span");m.className="cw-share__msg";m.setAttribute("role","status");m.setAttribute("aria-live","polite");b.appendChild(m)}'
+          'var ok=function(){m.innerHTML="";m.textContent=w.k;flash("#i-cp");clearTimeout(m._t);m._t=setTimeout(function(){m.textContent=""},2400)},'
+          'raw=function(){m.textContent="";var l=document.createElement("span");l.textContent=w.r;var i=document.createElement("input");i.type="text";i.readOnly=true;i.value=s;i.className="cw-share__raw";i.setAttribute("aria-label",w.r);m.appendChild(l);m.appendChild(i);try{i.focus();i.select()}catch(e){}},'
+          'old=function(){var x=document.createElement("textarea");x.value=s;x.setAttribute("readonly","");x.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(x);x.focus();x.select();var r=false;try{r=document.execCommand("copy")}catch(e){}x.remove();r?ok():raw()};'
+          'if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(ok,old)}else old()}'
           '})})})();</script>')
 
 
@@ -115,7 +124,7 @@ def sns():
 def add(h):
     """組み上がったマガジンのHTMLに共有ボタンを入れる（何度通しても同じ）。上＝ヘッダー（cw-hero）の直後、下＝締め（cw-close）の直後。"""
     import re as R
-    h = R.sub(r'<section class="cw-sharebox".*?</section>', '', h, flags=R.S)
+    h = R.sub(r'<section[^>]*class="cw-sharebox"[^>]*>.*?</section>', '', h, flags=R.S)  # 属性の順番が違っても外す（uke-01 の残骸・2026-10-18）
     h = R.sub(r'<div class="cw-share[^"]*" data-share="[a-z]+">.*?</div>(?=)', '', h, flags=R.S)
     h = R.sub(r'<svg [^>]*style="position:absolute"[^>]*>\s*<symbol id="i-line".*?</svg>', '', h, flags=R.S)  # 属性の順番が違っても外す
     h = R.sub(r'<script>\(function\(\)\{var c=document\.querySelector\("link\[rel=canonical\]"\).*?</script>', '', h, flags=R.S)
