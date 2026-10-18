@@ -571,7 +571,7 @@ def main():
     summary["実測済みID数"] = jissoku_n
 
     # ── ★直し：隠す表を作る（消さない。直れば次の生成で自動的に外れる） ──
-    emit_hidden(hide, summary)
+    emit_hidden(hide, summary, key_exists)
 
     json.dump(summary, io.open(os.path.join(OUT, "summary.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
@@ -579,7 +579,7 @@ def main():
     return 0
 
 
-def emit_hidden(hide, summary):
+def emit_hidden(hide, summary, key_exists=frozenset()):
     """1132番の関所がそのまま読む形で、隠す一覧を書き出す。
 
     ★消していない。隠しているだけ。動画が入れば次の生成でこの表から外れ、元どおり出る。
@@ -596,8 +596,11 @@ def emit_hidden(hide, summary):
     # あれは名簿に無いので、名簿を舐める側（この検査）からは絶対に見つからない型。
     old = read(os.path.join(ST, "1132_kansei", "new", "src", "lib", "kanseiHidden.generated.ts"))
     keep = 0
+    # ★2026-10-18（122705番）：ここで旧表の行を無条件に引き継いでいたため、動画が入って「隠す対象」から
+    #   外れた曲（上田正樹「悲しい色やね」・シュガー・ベイブ「DOWN TOWN」等）が永久に隠れたままだった。
+    #   引き継ぐのは「名簿に無い行き先（missing）」だけ。名簿にある曲は、今回の検査結果だけで決める。
     for k, v in re.findall(r'\n  "([^"]+)": "([^"]+)",', old):
-        if k not in reasons:
+        if k not in reasons and k not in key_exists:
             reasons[k] = v
             keep += 1
     reasons = dict(sorted(reasons.items()))
