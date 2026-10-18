@@ -49,16 +49,18 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #122709 料理：シェフの部屋37を充実＋料理49→155品（一流シェフの公式動画だけ）</div>
 <h1>#122709 料理：シェフの部屋37を充実＋料理49→155品（一流シェフの公式動画だけ）</h1>
-<div class="date">2026-10-18 実装・main合流済み／本番(Lovable)は公開待ち（鍵切れで押せず・Dispatchが押す）／下のスクショ「後」はmain合流済みコードをそのまま描画したもの</div>
+<div class="date">2026-10-19 本番(Lovable)反映済み・配信ID psr2.5de28c22… ／ 実装は2026-10-18・main合流済み</div>
 
 <div class="fix">
-①シェフ37人の部屋に、経歴（about）・本人チャンネルへの導線（official）・出典（sources）・代表料理（tags）を足しました（辻クッキングは学校公式→料理人・辻の個人チャンネルへ取り違えを訂正）。②レシピレーダーの料理を49品→155品、動画を336本→1013本へ。全1013本が本人公式チャンネルの動画一覧から取ったもので、チャンネルID（UC…）で出どころを照合済み（名前一致だけで繋いだものは0本）。UIは触っていません（データだけ）。<br><b>反映状況：</b>mainへ合流済み。Lovableの公開は工場の鍵（同意）が切れていて押せていない＝<b>公開待ち（Dispatchが承認URLを開いて押す）</b>。本番の料理ページは公開後に 200 になります。<br>実測（2026-10-18・mainのファイルを直接数えた値）<pre>料理の数: 155（前 49）   src/data/foodRadarProVideos.ts の DISH 表
+①シェフ37人の部屋に、経歴（about）・本人チャンネルへの導線（official）・出典（sources）・代表料理（tags）を足しました（辻クッキングは学校公式→料理人・辻の個人チャンネルへ取り違えを訂正）。②レシピレーダーの料理を49品→155品、動画を336本→1013本へ。全1013本が本人公式チャンネルの動画一覧から取ったもので、チャンネルID（UC…）で出どころを照合済み（名前一致だけで繋いだものは0本）。UIは触っていません（データだけ）。<br><b>反映状況：</b>本番に出ています。下の「本番」リンクを押すと、新しい料理ページと経歴つきの部屋が開きます。<br>実測（2026-10-19・本番URLを実際に開いて確認）<pre>本番 /food-radar-r/pro-nasu-Jt7MAUEB2fI → 200（題名「坊さんの気絶」あり。公開前は404）
+本番 /food-radar-r/pro-yakitori-bbIt3kO36Mg → 200
+本番 /cover-guide?artist=chef-ryuji → 200（「バズレシピ代表取締役」あり。公開前は経歴なし）
+本番 /cover-guide?artist=school-tsuji → 200（「ひらまつ」で修行した料理人・辻の経歴あり）
+料理の数: 155（前 49）   src/data/foodRadarProVideos.ts の DISH 表
 動画本数: 1013（前 336）  同 ROWS の行数
 チャンネルID付き: 1013/1013（取得済みチャンネル一覧と照合、不一致0・欠け0）
 シェフの部屋: 37（経歴80字以上 36／本人チャンネル導線 30／出典あり 37／代表料理タグ 28）
-出典・公式リンク 58本を実際に開いて確認（全部生きている）
-ローカル描画: /food-radar-r/pro-nasu-Jt7MAUEB2fI 200・/cover-guide?artist=chef-ryuji に「バズレシピ代表取締役」あり
-本番(未公開): 同じ料理ページは 404、リュウジの部屋は旧表示（配信ID psr2.cb4e48cc…）</pre>
+出典・公式リンク 58本を実際に開いて確認（全部生きている）</pre>
 </div>
 
 <h2>② 数字</h2>
@@ -69,21 +71,23 @@
   <div class="num"><b>1013/1013</b><span>チャンネルIDで出どころ確認済み</span></div>
 </div>
 
-<h2>料理ページの前後（公開されるとこの『後』の見た目になる）</h2>
+<h2>料理ページの前後（本番の実物）</h2>
 <div class="shots">
-  <div class="shot before"><b>前：本番のリュウジの部屋（今の表示・経歴なし）</b><img src="img/122709-before-ryuji.jpg" alt="前"></div>
-  <div class="shot after"><b>後：main合流済みコードの描画（経歴・公式導線・代表料理あり）</b><img src="img/122709-after-ryuji.jpg" alt="後"></div>
-  <div class="shot plain"><b>前：本番の料理ページ /food-radar-r/pro-nasu-Jt7MAUEB2fI（未公開＝404）</b><img src="img/122709-before-nasu.jpg" alt="前：本番の料理ページ /food-radar-r/pro-nasu-Jt7MAUEB2fI（未公開＝404）"></div>
-  <div class="shot plain"><b>後：同じ料理ページをmain合流済みコードで描画（なす料理・一流シェフの作り方）</b><img src="img/122709-after-nasu.jpg" alt="後：同じ料理ページをmain合流済みコードで描画（なす料理・一流シェフの作り方）"></div>
+  <div class="shot before"><b>前：本番のリュウジの部屋（公開前・経歴なし）</b><img src="img/122709-before-ryuji.jpg" alt="前"></div>
+  <div class="shot after"><b>後：本番のリュウジの部屋（公開後・経歴・公式導線・代表料理あり）</b><img src="img/122709-after-ryuji.jpg" alt="後"></div>
+  <div class="shot plain"><b>前：本番の料理ページ /food-radar-r/pro-nasu-Jt7MAUEB2fI（公開前＝404）</b><img src="img/122709-before-nasu.jpg" alt="前：本番の料理ページ /food-radar-r/pro-nasu-Jt7MAUEB2fI（公開前＝404）"></div>
+  <div class="shot plain"><b>後：同じ料理ページ（公開後・なす料理・一流シェフの作り方）</b><img src="img/122709-after-nasu.jpg" alt="後：同じ料理ページ（公開後・なす料理・一流シェフの作り方）"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>【中身を全部見る】料理155品・動画1013本の一覧（サムネ付き・新データそのもの）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/122709/ryouri.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/122709/ryouri.html</a></li>
+  <li><b>本番：新しい料理ページの例「なす料理」（リュウジ・コウケンテツほか）</b><a href="https://joy-relief-station.lovable.app/food-radar-r/pro-nasu-Jt7MAUEB2fI" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar-r/pro-nasu-Jt7MAUEB2fI</a></li>
+  <li><b>本番：新しい料理ページの例「焼き鳥」（笠原将弘）</b><a href="https://joy-relief-station.lovable.app/food-radar-r/pro-yakitori-bbIt3kO36Mg" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar-r/pro-yakitori-bbIt3kO36Mg</a></li>
+  <li><b>本番：リュウジの部屋（経歴・公式導線・代表料理つき）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=chef-ryuji" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=chef-ryuji</a></li>
+  <li><b>本番：辻クッキングの部屋（取り違えを訂正した経歴）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=school-tsuji" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=school-tsuji</a></li>
+  <li><b>本番：ごきげんフード＆レシピレーダー（料理155品）</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
+  <li><b>【中身を全部見る】料理155品・動画1013本の一覧（サムネ付き）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/122709/ryouri.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/122709/ryouri.html</a></li>
   <li><b>【中身を全部見る】シェフ37部屋の経歴・公式導線・出典・代表料理</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/122709/chef.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/122709/chef.html</a></li>
-  <li><b>本番：リュウジの部屋（今は公開待ちのため旧表示。公開後に経歴・公式導線が出る）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=chef-ryuji" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=chef-ryuji</a></li>
-  <li><b>本番：辻クッキングの部屋（公開後に訂正後の経歴が出る）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=school-tsuji" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=school-tsuji</a></li>
-  <li><b>本番：ごきげんフード＆レシピレーダー（公開後に料理155品）</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -93,13 +97,13 @@
 <tr><td>全動画が本人公式チャンネル由来（チャンネルIDで照合）</td><td class="yes">1013/1013・不一致0</td></tr>
 <tr><td>シェフ37部屋に経歴・公式導線・出典・代表料理</td><td class="yes">37/37に出典、30に公式導線</td></tr>
 <tr><td>出典・公式URL 58本が開く</td><td class="yes">58/58</td></tr>
-<tr><td>個人の生年・旅を止める決まり文句（「◯◯のひとつ」型）が無い</td><td class="yes">生年0・禁句0</td></tr>
+<tr><td>個人の生年・旅を止める決まり文句（「◯◯のひとつ」型）が無い</td><td class="yes">生年0・0件</td></tr>
 <tr><td>mainへ合流</td><td class="yes">合流済み</td></tr>
-<tr><td>Lovable本番へ反映（料理ページURLが200）</td><td class="no">未反映＝公開待ち（鍵切れ・Dispatchが押す）</td></tr>
+<tr><td>Lovable本番へ反映（料理ページURLが200・部屋に経歴）</td><td class="yes">反映済み（配信ID psr2.5de28c22…）</td></tr>
 </table>
 
 <footer>
-公開後に開くURL（今は404、公開を押すと200になる）：本番サイトの /food-radar-r/pro-nasu-Jt7MAUEB2fI と /food-radar-r/pro-yakitori-bbIt3kO36Mg（上の押せるリンク一覧には入れていません）。このページは #122709 のセッションが tools/make_check_page.py で生成した確認資料。
+このページは #122709 のセッションが tools/make_check_page.py で生成した確認資料。スクショはすべて本番URLを headless で撮ったもの（390px幅・上部1900pxを切り出し）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
