@@ -56,7 +56,19 @@ I18N = {'b_eyebrow': ('Back issues', '往期', 'Números anteriores', '백넘버
         'b_en': ('English edition', '英文版', 'Edición en inglés', '영어판')}
 
 
+def _auto():
+    """即公開（tools/magazine/sokkou.py）で出た号を「新着」に載せる。GENRES に手で足したら自動の側からは消える（二重に載せない）。"""
+    p = os.path.join(HERE, 'backnumber_auto.json')
+    if not os.path.exists(p):
+        return []
+    known = {u for _, _, items in GENRES for _, _, u, _ in items}
+    items = [(x['title'], x.get('kicker') or '新着', x['url'], None) for x in json.load(open(p, encoding='utf-8')) if x['url'] not in known]
+    return [('新着', ('New', '新刊', 'Novedades', '신착'), items)] if items else []
+
+
 def build():
+    global GENRES
+    GENRES = _auto() + [g for g in GENRES if g[0] != '新着']
     e = lambda t: H.escape(t, quote=True)
     tr = {l: {} for l in MB._LG4}
     for k, v in I18N.items():

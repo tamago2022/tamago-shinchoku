@@ -36,6 +36,7 @@ BASE = 3          # 通常のFableレーン上限（auto_launcher.FABLE_LANE_MAX
 DISK_OFF_GB = 30  # これ未満は全開を無効
 DISK_ADD_GB = 40  # 4本目以降を足すのに要る空き
 MEM_ADD_PCT = 40  # 4本目以降を足すのに要るメモリ空き%
+CPU_ADD_PCT = 65  # 4本目以降を足すのに要るCPU使用率の上限（fuka_hassha.CPU_3 と同じ線・2026-10-18夕「負荷判定は守る」）
 
 
 def _load(path):
@@ -73,7 +74,16 @@ def _disk_free_gb():
     return st.f_bavail * st.f_frsize / 1e9
 
 
-def lane_max(mem_free_pct=None, disk_free_gb=None, now=None, conf_path=CONF):
+def _cpu_busy():
+    try:
+        sys.path.insert(0, HERE)
+        import fuka_hassha as _f
+        return _f.cpu_busy_pct()
+    except Exception:
+        return None
+
+
+def lane_max(mem_free_pct=None, disk_free_gb=None, now=None, conf_path=CONF, cpu_busy_pct=None):
     """Fableレーンの上限本数。全開でなければ BASE。"""
     ok, c, _ = active(now, conf_path)
     if not ok:
@@ -89,6 +99,10 @@ def lane_max(mem_free_pct=None, disk_free_gb=None, now=None, conf_path=CONF):
         return BASE
     if mem_free_pct is not None and mem_free_pct < MEM_ADD_PCT:
         return BASE
+    if cpu_busy_pct is None and conf_path == CONF:
+        cpu_busy_pct = _cpu_busy()
+    if cpu_busy_pct is not None and cpu_busy_pct >= CPU_ADD_PCT:
+        return BASE  # 2026-10-18夕：Macを重くしない（負荷判定は守る）
     return want
 
 
@@ -103,6 +117,8 @@ def _self_test():
     assert lane_max(30, 200, now, cp) == 3                         # メモリ空き少→3
     assert lane_max(80, 35, now, cp) == 3                          # ディスク40GB未満→3
     assert lane_max(80, 25, now, cp) == 3                          # 30GB未満→無効
+    assert lane_max(80, 200, now, cp, cpu_busy_pct=70) == 3        # CPU65%以上→3（負荷判定は守る）
+    assert lane_max(80, 200, now, cp, cpu_busy_pct=40) == 6
     later = datetime(2026, 10, 18, 12, 0, tzinfo=JST)
     assert lane_max(80, 200, later, cp) == 3                       # 12:00で自動で戻る
     assert active(later, cp)[0] is False
