@@ -2705,3 +2705,10 @@
 - **二度と起こさないための仕掛け**：まだ無い。解除フラグ`status/1186_chrome_kidou.json`に`{"enabled":false}`を店主が書けば以後は既存の公開便がそのまま機能する見込みだが、恒久的な代替経路（公開便専用プロフィール限定の例外・Lovable公式API等）は未着手。
 - **日付**：2026-10-17（累積9件以上・joy-relief-station側 `.claude/PENDING_DECISIONS.md` に全件記録）
 - **根拠**：`joy-relief-station/tools/stop_kanmon/1186_chrome_kidou_kinshi.mjs`、`joy-relief-station/status/lovable_publish_state.json`（mainUnpublished:true）
+
+## 120051番：Genspark納品の仕上げ便（120098・urgent）がFable便44本に席を取られ3時間発車できなかった
+- **症状**：#1018 の2本目 uke-01.html を受付係が 06:28 に積んだ（urgent・P1・kubun=mitai）のに、09:40 まで発車せず。07:20 には仕事が終わる前に「公開ボタン待ち」を Dispatch へ出していた（誤報）。
+- **原因**：負荷が重いと通常レーンは上限1本に絞られ、その間 Fableレーンが6本埋めるので永久に席が回ってこない（1372番の緊急横入り+1本は「上限+1」で「走行+1」ではないため効かない）。公開見張りは「受付から45分」で数えており、仕上げの仕事が終わったかを見ていなかった。あわせて、GitHub の一覧が取れなかった回も基準線（since）を進めていた＝取れなかった間に立った Issue を永久に飛ばす穴、受領コメントが応答待ちで落ちると二度と書かない穴（#1028・#1015 で実害）。
+- **直し方**：`tools/auto_launcher.py` `fable_lane_borrow_pick()`＝90分超待つ urgent の普通の仕事に Fableレーンの次の1席を貸す（お金・テスト・Fable便は対象外、貸した分も走行本数に数える）。`tools/claude_uketsuke.py`＝一覧が1つでも取れなかった回は since を進めない／書けなかったコメントは commentRetry に残して次の回から書く（8回で諦めて Dispatch）／公開ボタン待ちは積んだ仕事（qn）が終わってから45分で出す。
+- **二度と起こさないための仕掛け**：`python3 tools/test_urgent_lane.py`（席貸しの検査③）・`python3 tools/claude_uketsuke.py --self-test`（コメント取り直しの検査）。
+- **日付**：2026-10-18
