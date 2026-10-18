@@ -165,12 +165,6 @@ def main(argv):
     h, r = build(src, name)
     print(json.dumps({k: (v if k != 'gone' else len(v)) for k, v in r.items()}, ensure_ascii=False))
     add_backnumber(name, r['title'], '新着')
-    # 曲ページの関所：公開と同時に回し、足りない所を埋める便を積む
-    try:
-        import magazine_gate as MG
-        MG.run([name], tsumu=True)
-    except Exception as e:
-        print('magazine_gate で例外', repr(e))
     if '--put' not in argv:
         return 0
     if not put_all(name, r['key']):
@@ -183,6 +177,30 @@ def main(argv):
     cu.outbox('【即公開】%s' % r['title'] if ok else '【公開待ち】%s' % r['title'],
               ('本番：%s' % url) if ok else ('main に入りました。Lovable の公開（deploy_project）を押してください：%s' % url), [url])
     print('deploy', ok, out[-160:])
+    # 曲ページの関所：公開と同時に回し、リンクを貼れる所は貼り、足りない所を埋める便を積む（公開は止めない）
+    try:
+        import magazine_gate as MG
+        res = MG.run([name], tsumu=True)
+        MG.report(res)
+        print('gate', json.dumps(res['count'], ensure_ascii=False), res.get('jobs'))
+    except Exception as e:
+        print('magazine_gate で例外', repr(e))
+    # 公開見張り：本番が変わったら Issue に「公開しました」＋Dispatch
+    if num:
+        try:
+            import fcntl
+            lf = open(cu.LOCK, 'a+')
+            for _ in range(60):
+                try:
+                    fcntl.flock(lf.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB); break
+                except Exception:
+                    time.sleep(2)
+            st = cu.load_state(); code, ver = cu._head(url)
+            if not any(x['url'] == url for x in st.get('koukaiMachi', [])):
+                st.setdefault('koukaiMachi', []).append({'url': url, 'repo': JRS, 'num': num, 'since': time.time(), 'code0': code, 'ver0': ver, 'notified': not ok})
+            cu.save_state(st)
+        except Exception as e:
+            print('見張りに入れられない', repr(e))
     return 0
 
 
