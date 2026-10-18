@@ -44,7 +44,7 @@ GENRES = [
         ('怒れる人々 vol.1 〜ロックは死んだのか〜', 'Sex Pistols から Ado、Prince まで11曲', M + 'ikareru-01.html', None),
     ]),
     ('シリーズ「月の特集」', ('Series: The Moon', '系列「月亮特辑」', 'Serie: La Luna', '시리즈 「달 특집」'), [
-        ('人はなぜ月を見るのか vol.1 〜月を見て歌う人々〜', '布袋寅泰からベートーヴェンまで13曲', M + 'hito-wa-naze-tsuki-wo-miru-01.html', None),
+        ('月に吠える 〜月を見て歌う人々〜 月の特集 vol.1', '布袋寅泰からムーンウォークまで17曲', M + 'hito-wa-naze-tsuki-wo-miru-01.html', None),
     ]),
     ('シリーズ「人はなぜ踊るのか」', ('Series: Why Do People Dance?', '系列「人为什么跳舞」', 'Serie: ¿Por qué bailamos?', '시리즈 「사람은 왜 춤추는가」'), [
         ('人が踊るとき vol.1 〜人はなぜ踊るのか〜', '9,000年前の岩壁からジェームス・ブラウン、ドナ・サマーまで11曲', M + 'hito-ga-odoru-01.html', None),
