@@ -163,6 +163,10 @@ def check_issues(st, budget):
             if _iso(it.get("createdAt")) < st["since"]:
                 seen.add(key)   # 基準線より前の古い号は掘り返さない
                 continue
+            if any((a.get("title") or "").startswith("GH%s 納品" % it.get("number")) for a in _active_items()):
+                seen.add(key)   # 【納品】経由の便がもう列にいる（同じ号を2本にしない・10/18）
+                log("%s は納品の便がもう列にいる → 題名からは積まない" % key)
+                continue
             try:
                 rc2, o2, _ = run(["gh", "issue", "view", str(it["number"]), "-R", repo, "--json", "body"], timeout=90)
                 it["body"] = json.loads(o2).get("body") if rc2 == 0 else ""
@@ -392,6 +396,77 @@ def mark_mitai(qmsg):
     return False
 
 
+def _md5(path):
+    import hashlib
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _active_items():
+    """列にいる仕事（waiting／running／hold）。読めなければ空（＝重複と見ずに積む側へ倒す）。"""
+    try:
+        q = json.load(open(os.path.join(ST, "queue.json"), encoding="utf-8"))
+        return [it for it in q.get("items", []) if it.get("status") in ("waiting", "running", "hold")]
+    except Exception:
+        return []
+
+
+def find_dup(items, num, urls, md5s, hashmap, published=None):
+    """同じ原稿・同じ号の便がもう列にあるか（10/18 実測：uke-01.html が #1018 と #1029 から同じ中身で届き、
+    120098・122649・122654 の3本が同じページを別々に仕上げて push した）。
+    戻り値 (理由, 便の番号) か None。
+      "same_file"  : 中身（md5）が同じ原稿を前に受け取っていて、その便が列にいる／もう本番に出ている → 積まない
+      "same_issue" : 同じ Issue の便（題名 GH<番号>）がまだ waiting → その便に合わせる（別々に走らせない）
+      "same_url"   : 本番URLが同じ便が列にいる（別の号から同じページの新しい版）→ 積むが、注意書きを付ける
+    """
+    published = published or (lambda h: bool(h.get("published")))
+    for m in md5s:
+        h = hashmap.get(m)
+        if not h:
+            continue
+        if any(str(it.get("n")) == str(h.get("qn")) for it in items) or published(h):
+            return "same_file", str(h.get("qn"))
+    lab = "GH%s " % num
+    for it in items:
+        t = it.get("title") or ""
+        # 返信・コメント起こしの便（別の道具が積む）には合わせない。合わせるのは題名受付（GH<番号> <題名>）か納品の便だけ
+        if t.startswith(lab) and it.get("status") == "waiting" and not re.search(r"返信|コメント[:：]", t):
+            return "same_issue", str(it.get("n"))
+    for it in items:
+        txt = (it.get("what") or it.get("text") or "")
+        if any(u and u in txt for u in urls):
+            return "same_url", str(it.get("n"))
+    return None
+
+
+def _append_to_job(qn, block):
+    """まだ発車していない便（qn番）の指示文に、あとから届いた納品の情報を足す。"""
+    try:
+        sys.path.insert(0, HERE)
+        import command_ingest as ci
+        with ci.queue_lock():
+            q = ci._load_queue()
+            for it in q.get("items", []):
+                if str(it.get("n")) == str(qn) and it.get("status") == "waiting":
+                    key = "what" if it.get("what") is not None else "text"
+                    it[key] = (it.get(key) or "") + "\n\n" + block
+                    ci._save_queue(q)
+                    return True
+    except Exception as e:
+        log("%s番に足せない: %r" % (qn, e))
+    return False
+
+
+def _is_live(h):
+    """控え h の原稿がもう本番に出ているか（公開見張りの印、または便が終わっていて本番が200）。"""
+    if h.get("published"):
+        return True
+    return bool(h.get("url")) and _job_done(h.get("qn")) and _head(h["url"])[0] == 200
+
+
 def _nouhin_text(repo, num, got, src_url, haichi, urls):
     return "\n".join([
         "【タスク】GitHub %s #%s に届いた【納品】を、その Issue の依頼どおりに仕上げて本番公開→Issueに完了まで通す" % (repo, num),
@@ -444,16 +519,48 @@ def _take(st, repo, num, paths, src_url, haichi, why):
         log("#%s 試験の納品 %d件を取得（%s）" % (num, len(got), why))
         save_state(st)
         return 1
+    # 二重積みの関所（2026-10-18・120051）：同じ中身・同じ号の便が列にいるなら、別の便を立てない
+    md5s = {}
+    for g in got:
+        try:
+            md5s[g] = _md5(g)
+        except Exception:
+            pass
+    hashmap = st.setdefault("nouhinHash", {})
+    sokkou_done = st.setdefault("sokkouDone", {})
+    dup = find_dup(_active_items(), num, urls, list(md5s.values()), hashmap, published=_is_live)
+    if dup and dup[0] == "same_file":
+        h = next(hashmap[m] for m in md5s.values() if m in hashmap)
+        if _is_live(h):
+            _safe_comment(num, repo, "%s\n【Claude Code】受け取りました。同じ中身の原稿が #%s からすでに届いていて、本番に出ています：%s（二重には積みません。直しは差分をこの Issue にコメントしてください）"
+                          % (FACTORY_MARK, h.get("num"), h["url"]))
+        else:
+            _safe_comment(num, repo, "%s\n【Claude Code】受け取りました。同じ中身の原稿が #%s から届いていて %s番の便で進行中です（二重には積みません）。本番に出たら、ここにも本番URLを書きます。"
+                          % (FACTORY_MARK, h.get("num"), h.get("qn")))
+            machi = st.setdefault("koukaiMachi", [])
+            for u in urls:
+                if u and not any(x["url"] == u and x["num"] == num for x in machi):
+                    code, ver = _head(u)
+                    machi.append({"url": u, "repo": repo, "num": num, "qn": h.get("qn"), "since": time.time(), "code0": code, "ver0": ver, "notified": True})
+        outbox("【納品受付・同じ中身】#%s" % num, "#%s と同じ原稿（%s）。%s番に任せて二重には積まない" % (h.get("num"), "、".join(os.path.basename(g) for g in got), h.get("qn")), urls or [src_url])
+        log("#%s 納品は #%s と同じ中身（%s番）→ 積まない" % (num, h.get("num"), h.get("qn")))
+        save_state(st)
+        return 1
     # 即公開（2026-10-18 たまごさん方針確定）：マガジンの叩きは60点でもすぐ本番へ。審査・配分ゲートで止めない。
     #   型の最低限（制作メモ・未確認の表示を消す／ライセンスの無い写真を外す／共有・フォロー）→ main → 公開 → バックナンバー
     #   → 本番URLを Dispatch → マガジンの関所（曲ページ・関連4曲・コピーとメモ）。重いので投げっぱなし（受付係を待たせない）。
     sokkou = []
     for g, u in zip(got, [prod_url(g, haichi) for g in got]):
         if g.endswith('.html') and u and '/magazine/' in u:
+            if md5s.get(g) in sokkou_done:
+                log('#%s 即公開はもう済んでいる（同じ中身） %s' % (num, u))
+                continue
             try:
                 subprocess.Popen([sys.executable, os.path.join(HERE, 'magazine', 'sokkou.py'), g, os.path.basename(u), '--num', str(num), '--put'],
                                  cwd=REPO, env=ENV, stdout=open(os.path.join(ST, 'sokkou.log'), 'a'), stderr=subprocess.STDOUT, start_new_session=True)
                 sokkou.append(u)
+                if md5s.get(g):
+                    sokkou_done[md5s[g]] = u
                 log('#%s 即公開を起こした %s' % (num, u))
             except Exception as e:
                 log('#%s 即公開を起こせない: %r' % (num, e))
@@ -462,6 +569,23 @@ def _take(st, repo, num, paths, src_url, haichi, why):
         text = ('【即公開済み】%s は受付係が tools/magazine/sokkou.py で型の最低限だけ付けて本番に出した（60点で出して直す）。'
                 'この便は85点への改善便：画像を自由ライセンスで5〜6枚に・事実の裏取り・5言語・吹き出しの役割・曲ページ（magazine_gate の便と重ねない）。'
                 '直しは同じ本番URLを上書き。\n' % '、'.join(sokkou)) + text
+    if dup and dup[0] == "same_url":
+        text = "【注意】同じ本番URLを %s番の便も進行中（別の版）。後から出す側が上書きになる。先に %s番の結果を見て差分だけ当てる。\n" % (dup[1], dup[1]) + text
+    if dup and dup[0] == "same_issue" and _append_to_job(dup[1], "---- あとから届いた【納品】（受付係が合わせた）----\n" + text):
+        qn = dup[1]
+        for g, m in md5s.items():
+            hashmap[m] = {"num": str(num), "qn": qn, "url": prod_url(g, haichi), "at": time.time()}
+        machi = st.setdefault("koukaiMachi", [])
+        for u in urls:
+            if not any(x["url"] == u for x in machi):
+                code, ver = _head(u)
+                machi.append({"url": u, "repo": repo, "num": num, "qn": qn, "since": time.time(), "code0": code, "ver0": ver, "notified": False})
+        _safe_comment(num, repo, "%s\n【Claude Code】納品を受け取りました（%d件・%s）。この Issue の便（%s番・発車待ち）に合わせました（別の便は立てません）。本番に出たら、ここに本番URLを書きます。"
+                      % (FACTORY_MARK, len(got), why, qn))
+        outbox("【納品受付】#%s %d件" % (num, len(got)), "%s → %s番（同じ号の便）に合わせた" % (why, qn), urls or [src_url])
+        log("#%s 納品 %d件を取得・%s番に合わせた（%s）" % (num, len(got), qn, why))
+        save_state(st)
+        return 1
     try:
         sys.path.insert(0, HERE)
         import command_ingest
@@ -478,6 +602,8 @@ def _take(st, repo, num, paths, src_url, haichi, why):
     mark_mitai(qmsg)
     _m = re.search(r"(\d+)番", qmsg or "")
     qn = _m.group(1) if _m else None
+    for g, m in md5s.items():
+        hashmap[m] = {"num": str(num), "qn": qn, "url": prod_url(g, haichi), "at": time.time()}
     machi = st.setdefault("koukaiMachi", [])
     for u in urls:
         if not any(x["url"] == u for x in machi):
@@ -618,6 +744,9 @@ def check_koukai(st):
             _safe_comment(x["num"], x["repo"], "%s\n【Claude Code】公開しました：%s" % (FACTORY_MARK, x["url"]))
             outbox("【公開しました】#%s" % x["num"], x["url"], [x["url"]])
             log("#%s 本番に出た %s（%s→%s）" % (x["num"], x["url"], x.get("code0"), code))
+            for h in st.get("nouhinHash", {}).values():
+                if h.get("url") == x["url"]:
+                    h["published"] = True
             continue
         if not x.get("doneAt"):
             if _job_done(x.get("qn")):
@@ -708,6 +837,25 @@ def self_test():
     assert prod_url("/tamago-inbox/1018/t.skill") is None
     assert _repo_of("https://api.github.com/repos/tamago2022/tamago-shinchoku/issues/5") == "tamago2022/tamago-shinchoku"
     assert _job_done(None) is True
+    # 二重積みの関所（120051）
+    import tempfile
+    tf = tempfile.NamedTemporaryFile("w", suffix=".html", delete=False); tf.write("<html>x</html>"); tf.close()
+    tf2 = tempfile.NamedTemporaryFile("w", suffix=".html", delete=False); tf2.write("<html>x</html>"); tf2.close()
+    try:
+        assert _md5(tf.name) == _md5(tf2.name)
+        m = _md5(tf.name)
+    finally:
+        os.unlink(tf.name); os.unlink(tf2.name)
+    items = [{"n": 120098, "title": "GH1018 納品の受け取り", "status": "running", "what": "【本番URL（予定）】" + PROD_BASE + "magazine/uke-01.html"},
+             {"n": 122649, "title": "GH1029 次号を公開", "status": "waiting", "what": "x"}]
+    hm = {m: {"num": "1018", "qn": "120098", "url": PROD_BASE + "magazine/uke-01.html"}}
+    assert find_dup(items, "1029", [PROD_BASE + "magazine/uke-01.html"], [m], hm) == ("same_file", "120098")
+    assert find_dup(items, "1029", [PROD_BASE + "magazine/uke-01.html"], ["other"], hm) == ("same_issue", "122649")
+    assert find_dup(items, "1030", [PROD_BASE + "magazine/uke-01.html"], ["other"], hm) == ("same_url", "120098")
+    assert find_dup(items, "1030", [PROD_BASE + "magazine/new.html"], ["other"], hm) is None
+    assert find_dup([{"n": 1, "title": "GH1029 tamago2022さんの返信（10-18）", "status": "waiting", "what": ""}], "1029", [], ["other"], {}) is None
+    assert find_dup([], "1029", [], [m], hm) is None                     # 便が終わっていて未公開 → 積む
+    assert find_dup([], "1029", [], [m], {m: dict(hm[m], published=True)}) == ("same_file", "120098")   # 公開済み → 積まない
     global _ST
     _ST = {}
     global run

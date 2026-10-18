@@ -52,14 +52,14 @@
 <div class="date">2026-10-18 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-Genspark が GitHub の Issue に「【納品】」と書くと、工場が原稿を自動で受け取り、仕上げの便を積み、本番に出たら同じ Issue に「公開しました＋URL」を書きます（#1015・#1018 のコメント欄に実物あり。本体リポは非公開のためここからはリンクしません）。今日見つけた穴を4つ埋めました：①緊急の納品便が Fable 便44本に席を取られて3時間発車できなかった→Fable レーンの席を1つ貸す ②GitHub の一覧が取れなかった回に、その間に立った Issue を永久に飛ばしていた→基準線を進めない ③受領コメントが応答待ちで落ちると二度と書かなかった→次の回から書き直す ④仕上げが終わる前に「公開ボタンを押して」と知らせていた→仕事が終わってから知らせる。
+Genspark が GitHub の Issue に「【納品】」と書くと、工場が原稿を自動で受け取り、仕上げの便を積み、本番に出たら同じ Issue に「公開しました＋URL」を書きます（#1015・#1018 のコメント欄に実物あり。本体リポは非公開のためここからはリンクしません）。今日見つけた穴を4つ埋めました：①緊急の納品便が Fable 便44本に席を取られて3時間発車できなかった→Fable レーンの席を1つ貸す ②GitHub の一覧が取れなかった回に、その間に立った Issue を永久に飛ばしていた→基準線を進めない ③受領コメントが応答待ちで落ちると二度と書かなかった→次の回から書き直す ④仕上げが終わる前に「公開ボタンを押して」と知らせていた→仕事が終わってから知らせる。 ⑤（夜に追加）同じ原稿が2つの Issue（#1018・#1029）から届き、便が3本（120098・122649・122654）立って同じページを別々に仕上げていた→受付係が積む前に「中身（md5）が同じ／同じ号の便が発車待ち／同じ本番URLの便が走行中」を見て、二重には積まず先の便に合わせる（Issue にはその旨を書き、公開したら両方の Issue に本番URLを書く）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>5件中5件</b><span>10/16以降の【納品】コメントのうち受け取れた数（取りこぼし0）</span></div>
   <div class="num"><b>2本</b><span>本番で200が返る納品ページ（月・踊る）</span></div>
-  <div class="num"><b>1本</b><span>仕上げ待ち（#1018 の2本目 uke-01.html＝120098番・発車待ち）</span></div>
+  <div class="num"><b>3本→1本</b><span>同じ原稿 uke-01.html に立っていた便の数（夜の関所で、同じ中身は先の便に合わせる）</span></div>
 </div>
 
 
@@ -68,7 +68,8 @@ Genspark が GitHub の Issue に「【納品】」と書くと、工場が原�
 <ul class="links">
   <li><b>本番：人はなぜ月を見るのか vol.1（#1015 の納品が通った実物）</b><a href="https://joy-relief-station.lovable.app/magazine/hito-wa-naze-tsuki-wo-miru-01.html" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/magazine/hito-wa-naze-tsuki-wo-miru-01.html</a></li>
   <li><b>本番：人が踊るとき vol.1（#1018 の納品が通った実物）</b><a href="https://joy-relief-station.lovable.app/magazine/hito-ga-odoru-01.html" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/magazine/hito-ga-odoru-01.html</a></li>
-  <li><b>受付係の進捗（5分おきに更新・公開JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/claude_uketsuke.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/claude_uketsuke.json</a></li>
+  <li><b>本番：ユニークな曲たち vol.1（#1018・#1029 の同じ原稿が1本のページとして通った実物）</b><a href="https://joy-relief-station.lovable.app/magazine/uke-01.html">https://joy-relief-station.lovable.app/magazine/uke-01.html</a></li>
+<li><b>受付係の進捗（5分おきに更新・公開JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/claude_uketsuke.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/claude_uketsuke.json</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -77,7 +78,8 @@ Genspark が GitHub の Issue に「【納品】」と書くと、工場が原�
 <tr><td>【納品】コメントを両リポで5分おきに拾う</td><td class="yes">動いている（統計 runs=169 時点で納品2件・取り直し1件・AI Drive 1件）</td></tr>
 <tr><td>本番に出たら Issue に「公開しました＋URL」</td><td class="yes">#1015・#1018 に書けている</td></tr>
 <tr><td>緊急の納品便が Fable 便の後ろで止まらない</td><td class="yes">席貸しを入れた（回帰テスト PASS）。120098番が実際に発車するのは次に Fable レーンの席が空いた時</td></tr>
-<tr><td>uke-01.html が本番に出ている</td><td class="no">まだ（仕上げ待ち・HTTP 404）。公開は Lovable の鍵待ち</td></tr>
+<tr><td>同じ中身の納品を二重に積まない</td><td class="yes">関所を入れた（python3 tools/claude_uketsuke.py --self-test PASS。実データで #1029 の uke-01 は「#1018 と同じ中身・120098番」と判定）</td></tr>
+<tr><td>uke-01.html が本番に出ている</td><td class="yes">出ている（HTTP 200・10/18 10:31 公開・Issue #1018 と #1029 に本番URLを書いた）</td></tr>
 </table>
 
 <footer>
