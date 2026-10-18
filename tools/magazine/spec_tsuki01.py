@@ -313,12 +313,20 @@ def dedupe_src(h):
     return R.sub(r'<p\b[^>]*>.*?</p>|<div class="say__bub">.*?</div>', one, h, flags=R.S)
 
 
+def unquote_wiki(h):
+    """出典リンクの ja.wikipedia の %E3%81… を日本語のまま書く（送る量 −1KB。ブラウザが送るときに同じ形に戻す）。"""
+    import re as R
+    from urllib.parse import unquote
+    return R.sub(r'href="(https://ja\.wikipedia\.org/wiki/[^"]+)"', lambda q: 'href="' + unquote(q.group(1)).replace('"', '%22') + '"', h)
+
+
 def write(m):
     """mag_build.write と同じ（確認ページ＋本番の写し＋訳のJSON）。ヘッダーだけ月の写真にしてから書く。"""
     h = MB.build(m)
     h = moon_hero(h)
     h = dedupe_src(h)
-    h = h.replace('<a class="cw-src" href="', '<a class="cw-src" href="').replace('" target="_blank" rel="noopener">', '" target="_blank">')  # rel=noopener は target=_blank の既定（軽く）
+    h = h.replace('" target="_blank" rel="noopener">', '" target="_blank">')  # rel=noopener は target=_blank の既定（軽く）
+    h = unquote_wiki(h)
     MB.kanmon(m, h)
     p = os.path.join(MB.REPO, 'share/check', m['file'])
     open(p, 'w', encoding='utf-8').write(h)
