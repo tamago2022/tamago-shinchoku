@@ -444,11 +444,29 @@ def _take(st, repo, num, paths, src_url, haichi, why):
         log("#%s 試験の納品 %d件を取得（%s）" % (num, len(got), why))
         save_state(st)
         return 1
+    # 即公開（2026-10-18 たまごさん方針確定）：マガジンの叩きは60点でもすぐ本番へ。審査・配分ゲートで止めない。
+    #   型の最低限（制作メモ・未確認の表示を消す／ライセンスの無い写真を外す／共有・フォロー）→ main → 公開 → バックナンバー
+    #   → 本番URLを Dispatch → マガジンの関所（曲ページ・関連4曲・コピーとメモ）。重いので投げっぱなし（受付係を待たせない）。
+    sokkou = []
+    for g, u in zip(got, [prod_url(g, haichi) for g in got]):
+        if g.endswith('.html') and u and '/magazine/' in u:
+            try:
+                subprocess.Popen([sys.executable, os.path.join(HERE, 'magazine', 'sokkou.py'), g, os.path.basename(u), '--num', str(num), '--put'],
+                                 cwd=REPO, env=ENV, stdout=open(os.path.join(ST, 'sokkou.log'), 'a'), stderr=subprocess.STDOUT, start_new_session=True)
+                sokkou.append(u)
+                log('#%s 即公開を起こした %s' % (num, u))
+            except Exception as e:
+                log('#%s 即公開を起こせない: %r' % (num, e))
+    text = _nouhin_text(repo, num, got, src_url, haichi, urls)
+    if sokkou:
+        text = ('【即公開済み】%s は受付係が tools/magazine/sokkou.py で型の最低限だけ付けて本番に出した（60点で出して直す）。'
+                'この便は85点への改善便：画像を自由ライセンスで5〜6枚に・事実の裏取り・5言語・吹き出しの役割・曲ページ（magazine_gate の便と重ねない）。'
+                '直しは同じ本番URLを上書き。\n' % '、'.join(sokkou)) + text
     try:
         sys.path.insert(0, HERE)
         import command_ingest
         # urgent：たまごさん 10/17「店主が1回言うだけで自動投稿まで」＝納品は列の後ろに並ばせない
-        status, qmsg = command_ingest.queue_add(_nouhin_text(repo, num, got, src_url, haichi, urls), priority=1,
+        status, qmsg = command_ingest.queue_add(text, priority=1,
                                                 label="GH%s 納品の受け取り" % num, origin="factory", urgent=True)
     except Exception as e:
         log("#%s 納品を積めない: %r" % (num, e))

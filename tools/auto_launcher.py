@@ -2209,6 +2209,15 @@ def _fable_lane(q, items):
     if _m.get("pressureLevel") not in (None, 1) or (_m.get("memFreePct") is not None and _m["memFreePct"] < 15):
         log("Fableレーン見送り: メモリが苦しい（圧=%s・空き%s%%）" % (_m.get("pressureLevel"), _m.get("memFreePct")))
         return False
+    # 2026-10-18夕 たまごさん「Fableで全開。ただしMacが重くなるのはダメ（負荷判定は守る）」
+    #   → fuka_hassha の「固まる手前」（CPU張り付き・空きメモリ枯れ等）ならFableレーンも出さない。
+    try:
+        _k = _fuka.kiken(_m) if _m else None
+    except Exception:
+        _k = None
+    if _k:
+        log("Fableレーン見送り: 固まる手前（%s）" % _k)
+        return False
     try:  # その場で測る（machine.json は数分〜数十分古いことがある）
         _st = os.statvfs("/System/Volumes/Data")
         _free = _st.f_bavail * _st.f_frsize / 1e9
