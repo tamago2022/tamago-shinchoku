@@ -411,10 +411,15 @@ def _load_state():
 
 
 def _save_state(state):
-    tmp = STATE_PATH + ".tmp"
+    # 2026-10-19（120054）：固定名 .tmp だと、心臓と push 関所が同時に走った時に
+    # 片方の os.replace が相手の .tmp を奪って FileNotFoundError で落ちていた。プロセスごとに別名にする
+    tmp = "%s.%d.tmp" % (STATE_PATH, os.getpid())
     with io.open(tmp, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, STATE_PATH)
+    try:
+        os.replace(tmp, STATE_PATH)
+    except FileNotFoundError:
+        pass  # 同時に別プロセスが書き終えていた＝記録は向こうの分で足りる
 
 
 def _record(n, passed, reasons):
