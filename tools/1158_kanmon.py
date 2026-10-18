@@ -104,6 +104,16 @@ def fable_lane(argv):
         return False
 
 
+def fable_jougen():
+    """Fableレーンの本数。通常3本、全開モード中（tools/zenkai.py）だけ増える。期限後は自動で3本。"""
+    try:
+        sys.path.insert(0, HERE)
+        import zenkai
+        return max(3, int(zenkai.lane_max()))
+    except Exception:
+        return 3
+
+
 def toru(n, prefix="slot"):
     """空きスロットを1つ取る。取れたら fd を返す。取れなければ None。"""
     os.makedirs(LOCKDIR, exist_ok=True)
@@ -144,7 +154,7 @@ def main():
     hajime = time.time()
     lane = fable_lane(argv)
     prefix = "fable_slot" if lane else "slot"
-    n = 3 if lane else jougen()
+    n = fable_jougen() if lane else jougen()
     while True:
         fd = toru(n, prefix)
         if fd is not None:
@@ -157,7 +167,7 @@ def main():
                 "（失敗ではなく待ち。やり直し回数に数えないこと）\n" % (n, int(matta)))
             return RC_MACHI
         time.sleep(1.0 + random.random())  # 同時に群がらないよう少しずらす
-        n = 3 if lane else jougen()  # 待っている間に上限が変わることがある
+        n = fable_jougen() if lane else jougen()  # 待っている間に上限が変わることがある
 
     matta = int(time.time() - hajime)
     if matta > 0:

@@ -2157,7 +2157,21 @@ def _fable_lane(q, items):
     running = [it for it in lane if it.get("status") == "running" and it.get("pid") and _alive(it.get("pid"))]
     waiting = sorted([it for it in lane if it.get("status") == "waiting"],
                      key=lambda it: (it.get("fableLaneOrder") or 99, it.get("n") or 0))
-    if not waiting or len(running) >= FABLE_LANE_MAX:
+    # 2026-10-18 全開モード（tools/zenkai.py・status/zenkai.json の until まで）：上限をその場で決め直す。
+    #   期限を過ぎれば zenkai.lane_max() が 3 を返す＝自動で元に戻る。
+    _lane_max = FABLE_LANE_MAX
+    try:
+        import zenkai as _zk
+        if _zk.active()[0]:
+            try:
+                import fuka_hassha as _fk0
+                _mf = (_fk0.measure() or {}).get("memFreePct")
+            except Exception:
+                _mf = None
+            _lane_max = max(FABLE_LANE_MAX, _zk.lane_max(mem_free_pct=_mf))
+    except Exception:
+        _lane_max = FABLE_LANE_MAX
+    if not waiting or len(running) >= _lane_max:
         return False
     # 本当に危ないときだけ止める（ロード比とスワップ%はここでは見ない＝Brave分で常時95%前後のため）
     _flag = os.path.join(REPO, "status", "no_launch.flag")
@@ -2187,8 +2201,8 @@ def _fable_lane(q, items):
         return False
     it = waiting[0]
     log("🦄 Fableレーン：%s番を発車（レーン走行%d本→%d本・上限%d本・%s）"
-        % (it.get("n"), len(running), len(running) + 1, FABLE_LANE_MAX, why))
-    return bool(launch_one(it, q, len(running), FABLE_LANE_MAX))
+        % (it.get("n"), len(running), len(running) + 1, _lane_max, why))
+    return bool(launch_one(it, q, len(running), _lane_max))
 
 
 def _main_impl():

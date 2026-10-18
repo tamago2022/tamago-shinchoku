@@ -1,0 +1,47 @@
+{
+ "n": 120042,
+ "mae": {
+  "at": "2026-10-18 06:0x",
+  "load_avg": [
+   26.08,
+   18.05,
+   21.25
+  ],
+  "cpu_busy_pct": 59.1,
+  "mem_free_pct": 83,
+  "pressure_level": null,
+  "swap_used_gb": 19.6,
+  "disk_free_gb": 248,
+  "python_douji_hon": "15〜17",
+  "fuka_hantei": {
+   "cap": 1,
+   "reason": "重い（ロード比1.12〜9.29）→ 上限1本（400件中399件）"
+  },
+  "how": "top -l 2 -n 0 -s 2／df -g／sysctl vm.swapusage／memory_pressure"
+ },
+ "ato_sakujo_chokugo": {
+  "at": "2026-10-18 07:44:53",
+  "load_avg": [
+   12.36,
+   14.07,
+   16.15
+  ],
+  "cpu_busy_pct": 41.0,
+  "mem_free_pct": 84,
+  "pressure_level": 1,
+  "swap_used_gb": 20.0,
+  "disk_free_gb": 247,
+  "python_douji_hon": 9,
+  "fuka_hantei": {
+   "color": "green",
+   "ratio1": 1.545,
+   "stopNew": false,
+   "mode": "自動",
+   "cpuBusyPct": 41.0,
+   "cap": 4,
+   "reason": "メモリ圧=緑・CPU41%（50%未満）→ 上限4本（ロード比1.545）"
+  }
+ },
+ "chuui": "『後』はこの作業場で直した直後の値。心臓の間引き（top_status.py／heartbeat.sh）は本家（main）に反映されてから効く。heartbeat.sh の変更は心臓の次回再起動から。削除で空きは 206.3→211.4GB（+5.2GB）。",
+ "how": "iostat -c 2 -w 1（CPU）／sysctl vm.loadavg・vm.swapusage／memory_pressure -Q／df -g"
+}
