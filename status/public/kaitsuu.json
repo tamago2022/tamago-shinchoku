@@ -1,7 +1,7 @@
 {
- "at": "2026-10-18T17:08:48.907696+09:00",
+ "at": "2026-10-18T18:11:52.598748+09:00",
  "ok": true,
- "generatedAt": "2026-10-18T17:08:29.835450+09:00",
+ "generatedAt": "2026-10-18T18:11:51.377745+09:00",
  "keys": [
   {
    "id": "buffer",
@@ -15,11 +15,11 @@
   {
    "id": "claude",
    "what": "Claudeの鍵（発車そのもの）",
-   "status": "ng",
-   "detail": "通らない（OAuth session expired（更新用の鍵ごと無効）／もう片方も 実行はできたがエラー応答）",
+   "status": "ok",
+   "detail": "通った（auth_keeperが実測）",
    "fix": "いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す",
    "stops": "工場の発車が全部止まる（44時間の実害）",
-   "measuredMinAgo": 14.9
+   "measuredMinAgo": 20.2
   },
   {
    "id": "gmail",
@@ -37,7 +37,7 @@
    "detail": "200 通った",
    "fix": "gh auth login",
    "stops": "チャッピーがIssueを置いても誰も気づかない（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.3
   },
   {
    "id": "openai",
@@ -46,7 +46,7 @@
    "detail": "200 通った",
    "fix": "platform.openai.com で鍵を作り直して鍵ファイルへ",
    "stops": "鬼監督の外部検品と、詰まった仕事の逃がし先が消える",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.3
   },
   {
    "id": "gemini",
@@ -55,7 +55,7 @@
    "detail": "200 通った",
    "fix": "Google AI Studio で無料発行して鍵ファイルへ",
    "stops": "安い代行先が消えてClaudeの枠を食う（※ページの「話す」が使うのはブラウザ側の別の鍵 tamago_gemini_key。それは 969_kagi_kanmon.py が見ている）",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.3
   },
   {
    "id": "xai",
@@ -64,7 +64,7 @@
    "detail": "鍵が置かれていません",
    "fix": "この鍵のチーム(goodvibes)に残高が要る。console.x.ai で入れる。★声は別の鍵で既に通っている（下の行）ので、声のために入れる必要は無い",
    "stops": "Grokへの相談ができない",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.3
   },
   {
    "id": "xai_koe",
@@ -136,34 +136,34 @@
    "detail": "スマホの箱と同じ道で空荷が通りました。棚へ書く鍵もあります",
    "fix": "relay_watch がトンネルを張り直す／鍵は lovable_auth_keeper の受け皿で同意を1回",
    "stops": "たまごさんが投げても棚に入らない（黙って失敗していた）",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.1
   },
   {
    "id": "heart",
    "what": "心臓（15秒おきの本体）",
    "status": "ok",
-   "detail": "動いています（1秒前）",
+   "detail": "動いています（3秒前）",
    "fix": "5分便が自分で立て直す。立て直らなければ launchctl kickstart",
    "stops": "着火と受信箱が止まる＝ボタンが効かない",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.1
   },
   {
    "id": "gobun",
    "what": "5分便（立て直す側）",
-   "status": "ng",
-   "detail": "33分前 から止まっています",
+   "status": "ok",
+   "detail": "動いています（1分前）",
    "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
    "stops": "心臓が落ちても誰も立て直さない",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.1
   },
   {
    "id": "hassha",
    "what": "発車（仕事が前に進むか）",
-   "status": "ng",
-   "detail": "発車が止められています（Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も 実行はできたがエラー応答）。枠の問題ではありません。status/LOGIN.md の1行をターミナルに）",
+   "status": "ok",
+   "detail": "止め札はありません（最後の発車記録 9秒前）",
    "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
    "stops": "仕事が1本も進まない",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.1
   },
   {
    "id": "relay",
@@ -172,16 +172,16 @@
    "detail": "200 返事があります",
    "fix": "relay_watch が自分で立て直す",
    "stops": "たまごさんがボタンを押しても何も起きない",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.1
   },
   {
    "id": "mac_omosa",
    "what": "Macの重さ（swapと負荷）",
-   "status": "ng",
-   "detail": "swap 2.9GB・負荷 14.2（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（1.9GB）",
+   "status": "ok",
+   "detail": "swap 4.4GB・負荷 11.2／一番食っているのは com.apple.Virtualization.VirtualMachine（2.0GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.1
   }
  ],
  "karamawari": [
@@ -224,7 +224,7 @@
   {
    "id": "auto:1175_kagi_uketori",
    "label": "1175_kagi_uketori（名簿に無いので自動で台帳入り）",
-   "runs": 542,
+   "runs": 543,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -233,7 +233,7 @@
   {
    "id": "auto:aibou_mail",
    "label": "aibou_mail（名簿に無いので自動で台帳入り）",
-   "runs": 191,
+   "runs": 192,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -242,7 +242,7 @@
   {
    "id": "auto:aitara_mawasu",
    "label": "aitara_mawasu（名簿に無いので自動で台帳入り）",
-   "runs": 561,
+   "runs": 562,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -269,7 +269,7 @@
   {
    "id": "auto:claude_nouhin",
    "label": "claude_nouhin（名簿に無いので自動で台帳入り）",
-   "runs": 69,
+   "runs": 70,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -278,7 +278,7 @@
   {
    "id": "auto:cloud_credit_henji",
    "label": "cloud_credit_henji（名簿に無いので自動で台帳入り）",
-   "runs": 66,
+   "runs": 67,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -287,7 +287,7 @@
   {
    "id": "auto:daicho",
    "label": "daicho（名簿に無いので自動で台帳入り）",
-   "runs": 374,
+   "runs": 375,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -305,7 +305,7 @@
   {
    "id": "auto:dojisu_jougen",
    "label": "dojisu_jougen（名簿に無いので自動で台帳入り）",
-   "runs": 601,
+   "runs": 602,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -314,7 +314,7 @@
   {
    "id": "auto:fuka_mihari",
    "label": "fuka_mihari（名簿に無いので自動で台帳入り）",
-   "runs": 70,
+   "runs": 71,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -332,7 +332,7 @@
   {
    "id": "auto:haibun",
    "label": "haibun（名簿に無いので自動で台帳入り）",
-   "runs": 548,
+   "runs": 549,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -350,7 +350,7 @@
   {
    "id": "auto:hyoudai",
    "label": "hyoudai（名簿に無いので自動で台帳入り）",
-   "runs": 405,
+   "runs": 406,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -368,7 +368,7 @@
   {
    "id": "auto:kagi_jidou_makinaoshi",
    "label": "kagi_jidou_makinaoshi（名簿に無いので自動で台帳入り）",
-   "runs": 365,
+   "runs": 366,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -386,7 +386,7 @@
   {
    "id": "auto:kaitsuu",
    "label": "kaitsuu（名簿に無いので自動で台帳入り）",
-   "runs": 616,
+   "runs": 617,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -395,7 +395,7 @@
   {
    "id": "auto:kakeibo",
    "label": "kakeibo（名簿に無いので自動で台帳入り）",
-   "runs": 142,
+   "runs": 143,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -431,7 +431,7 @@
   {
    "id": "auto:modoseru",
    "label": "modoseru（名簿に無いので自動で台帳入り）",
-   "runs": 546,
+   "runs": 547,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -440,7 +440,7 @@
   {
    "id": "auto:nagekomi_list",
    "label": "nagekomi_list（名簿に無いので自動で台帳入り）",
-   "runs": 578,
+   "runs": 579,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -449,7 +449,7 @@
   {
    "id": "auto:obsidian_mamoru",
    "label": "obsidian_mamoru（名簿に無いので自動で台帳入り）",
-   "runs": 76,
+   "runs": 77,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -485,7 +485,7 @@
   {
    "id": "auto:okane_ichimai",
    "label": "okane_ichimai（名簿に無いので自動で台帳入り）",
-   "runs": 229,
+   "runs": 230,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -494,7 +494,7 @@
   {
    "id": "auto:okoshi",
    "label": "okoshi（名簿に無いので自動で台帳入り）",
-   "runs": 170,
+   "runs": 171,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -539,7 +539,7 @@
   {
    "id": "auto:shingou",
    "label": "shingou（名簿に無いので自動で台帳入り）",
-   "runs": 560,
+   "runs": 561,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -566,7 +566,7 @@
   {
    "id": "auto:sozai_hiroi",
    "label": "sozai_hiroi（名簿に無いので自動で台帳入り）",
-   "runs": 72,
+   "runs": 73,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -575,7 +575,7 @@
   {
    "id": "auto:subsc_calendar",
    "label": "subsc_calendar（名簿に無いので自動で台帳入り）",
-   "runs": 69,
+   "runs": 70,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -602,7 +602,7 @@
   {
    "id": "auto:tokushu",
    "label": "tokushu（名簿に無いので自動で台帳入り）",
-   "runs": 142,
+   "runs": 143,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -611,7 +611,7 @@
   {
    "id": "auto:tomaranai",
    "label": "tomaranai（名簿に無いので自動で台帳入り）",
-   "runs": 562,
+   "runs": 563,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -620,7 +620,7 @@
   {
    "id": "auto:vault_kanmon",
    "label": "vault_kanmon（名簿に無いので自動で台帳入り）",
-   "runs": 142,
+   "runs": 143,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -631,7 +631,7 @@
    "label": "worktree_taihi（名簿に無いので自動で台帳入り）",
    "runs": 53,
    "catches": 0,
-   "blocked": "",
+   "blocked": "skipped=['q1117-0904（最近さわられた）', 'q120098-0904（最近さわられた）', 'q122702-0904（走行中）', 'q122703-0904（走行中）', 'q122704-0904（走行中）', 'q122705-0904（走行中）', 'q122706-0904（走行中）', 'q122707-0904（走行中）']",
    "need": "",
    "why": ""
   },
@@ -719,7 +719,7 @@
   {
    "id": "auto:youryou_mihari",
    "label": "youryou_mihari（名簿に無いので自動で台帳入り）",
-   "runs": 135,
+   "runs": 136,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -764,7 +764,7 @@
   {
    "id": "auto:zaiko_build",
    "label": "zaiko_build（名簿に無いので自動で台帳入り）",
-   "runs": 49,
+   "runs": 50,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -773,11 +773,11 @@
   {
    "id": "queue",
    "label": "発車待ち（積んだのに走っていない）",
-   "runs": 4809,
+   "runs": 4938,
    "catches": 13,
-   "blocked": "★積んだのに一度も走っていない件が4583件（3日超え）。古い順に 42番（42.4日）アーティストページの無い曲に、アーティストページを作る／587番（41.8日）テストB／586番（41.8日）テストA／688番（39.4日）falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を／684番（39.4日）鬼監督を復活させて、完了したタスクを毎回チェックさせる。発車待ち全体は4809件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください",
+   "blocked": "★積んだのに一度も走っていない件が4583件（3日超え）。古い順に 42番（42.4日）アーティストページの無い曲に、アーティストページを作る／587番（41.9日）テストB／586番（41.9日）テストA／684番（39.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（39.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は4938件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください",
    "need": "",
-   "why": "止められています：★積んだのに一度も走っていない件が4583件（3日超え）。古い順に 42番（42.4日）アーティストページの無い曲に、アーティストページを作る／587番（41.8日）テストB／586番（41.8日）テストA／688番（39.4日）falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を／684番（39.4日）鬼監督を復活させて、完了したタスクを毎回チェックさせる。発車待ち全体は4809件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください"
+   "why": "止められています：★積んだのに一度も走っていない件が4583件（3日超え）。古い順に 42番（42.4日）アーティストページの無い曲に、アーティストページを作る／587番（41.9日）テストB／586番（41.9日）テストA／684番（39.5日）鬼監督を復活させて、完了したタスクを毎回チェックさせる／675番（39.5日）わえちゃん(Cosmic Wae)のInstagramをAIが毎日運用する仕。発車待ち全体は4938件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください"
   }
  ],
  "nomikomi": [
@@ -823,43 +823,26 @@
   },
   {
    "who": "1142_fukkyuu（名簿に無いので自動で台帳入り）",
-   "mark": "blocked=順番待ちの幽霊項目 7件（下見だけ）／ログイン切れ（2026-10-18 11:40から）",
+   "mark": "blocked=順番待ちの幽霊項目 127件（下見だけ）",
    "words": [
     "blocked"
    ],
    "runs": 132,
-   "catches": 572
+   "catches": 573
   },
   {
-   "who": "Claudeの鍵（発車そのもの）",
-   "mark": "通らない（OAuth session expired（更新用の鍵ごと無効）／もう片方も 実行はできたがエラー応答）",
+   "who": "worktree_taihi（名簿に無いので自動で台帳入り）",
+   "mark": "skipped=['q1117-0904（最近さわられた）', 'q120098-0904（最近さわられた）', 'q122702-0904（走行中）', 'q122703-0904（走行中）', 'q122704-0904（走行中）', 'q122705-0904（走行中）', 'q122706-0904（走行中）', 'q122707-0904（走行中）']",
    "words": [
-    "expired"
+    "skip",
+    "skipped"
    ],
-   "runs": null,
-   "catches": null
-  },
-  {
-   "who": "発車（仕事が前に進むか）",
-   "mark": "発車が止められています（Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も 実行はできたがエラー応答）。枠の問題ではありません。status/LOGIN.md の1行をターミナルに）",
-   "words": [
-    "expired"
-   ],
-   "runs": null,
-   "catches": null
+   "runs": 53,
+   "catches": 0
   }
  ],
  "missing": [],
  "redKeys": [
-  {
-   "id": "claude",
-   "what": "Claudeの鍵（発車そのもの）",
-   "status": "ng",
-   "detail": "通らない（OAuth session expired（更新用の鍵ごと無効）／もう片方も 実行はできたがエラー応答）",
-   "fix": "いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す",
-   "stops": "工場の発車が全部止まる（44時間の実害）",
-   "measuredMinAgo": 14.9
-  },
   {
    "id": "gmail",
    "what": "Gmail（メールの見張り4本の目）",
@@ -876,7 +859,7 @@
    "detail": "鍵が置かれていません",
    "fix": "この鍵のチーム(goodvibes)に残高が要る。console.x.ai で入れる。★声は別の鍵で既に通っている（下の行）ので、声のために入れる必要は無い",
    "stops": "Grokへの相談ができない",
-   "measuredMinAgo": 0.2
+   "measuredMinAgo": 0.3
   },
   {
    "id": "copilot",
@@ -894,33 +877,6 @@
    "detail": "鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）",
    "fix": "developers.facebook.com でアプリを作りトークンを発行 → ~/.tamago/keys/api_keys.env へ",
    "stops": "Meta系への投稿・取得が一切できない。★台帳に無い間は「無い」ことにも気づけなかった",
-   "measuredMinAgo": 0.2
-  },
-  {
-   "id": "gobun",
-   "what": "5分便（立て直す側）",
-   "status": "ng",
-   "detail": "33分前 から止まっています",
-   "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
-   "stops": "心臓が落ちても誰も立て直さない",
-   "measuredMinAgo": 0.2
-  },
-  {
-   "id": "hassha",
-   "what": "発車（仕事が前に進むか）",
-   "status": "ng",
-   "detail": "発車が止められています（Claudeのログインが切れています（OAuth session expired（更新用の鍵ごと無効）／もう片方も 実行はできたがエラー応答）。枠の問題ではありません。status/LOGIN.md の1行をターミナルに）",
-   "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
-   "stops": "仕事が1本も進まない",
-   "measuredMinAgo": 0.2
-  },
-  {
-   "id": "mac_omosa",
-   "what": "Macの重さ（swapと負荷）",
-   "status": "ng",
-   "detail": "swap 2.9GB・負荷 14.2（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（1.9GB）",
-   "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
-   "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
    "measuredMinAgo": 0.2
   }
  ],
@@ -944,6 +900,6 @@
    "measuredMinAgo": 0.2
   }
  ],
- "redCount": 74,
+ "redCount": 70,
  "red": true
 }
