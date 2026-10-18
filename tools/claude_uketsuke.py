@@ -52,6 +52,7 @@ FACTORY_MARK = "<!-- tamago-factory -->"
 PATHS = [os.path.expanduser(p) for p in ("~/.local/bin", "~/bin", "~/.npm-global/bin")] + \
         ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"]
 ENV = dict(os.environ, PATH=":".join(PATHS + [os.environ.get("PATH", "")]))
+_ST = None   # main() で覚え書きを差す（_safe_comment が「書けなかったコメント」を取り直し待ちに残すため・10/18）
 
 
 def log(msg):
@@ -130,6 +131,7 @@ def instruction(repo, it):
 def check_issues(st, budget):
     picked = 0
     seen = set(st["seen"])
+    st["listOk"] = True   # 一覧が1つでも取れなかった回は main() が since を進めない（取れなかった間に立った Issue を永久に飛ばさない・10/18）
     for repo in REPOS:
         if picked >= budget:
             break
@@ -140,10 +142,12 @@ def check_issues(st, budget):
                                 "--json", "number,title,url,createdAt,author"], timeout=90)
         except Exception as e:
             st["stats"]["errors"] += 1
+            st["listOk"] = False
             log("%s 一覧が取れない: %r" % (repo, e))
             continue
         if rc != 0:
             st["stats"]["errors"] += 1
+            st["listOk"] = False
             log("%s 一覧が取れない rc=%s %s" % (repo, rc, (err or "")[:200]))
             continue
         try:
@@ -178,12 +182,9 @@ def check_issues(st, budget):
             seen.add(key)
             picked += 1
             short = it["title"].replace(TITLE_MARK, "")[:60]
-            try:
-                run(["gh", "issue", "comment", str(it["number"]), "-R", repo, "--body",
-                     "%s\n受け付けました。工場の発車待ちに積み、順に着手します（%s）。終わったらここにコミット番号と本番URLを書きます。"
-                     % (FACTORY_MARK, msg)], timeout=40)
-            except Exception as e:
-                log("%s 受付コメントを書けない: %r" % (key, e))
+            _safe_comment(it["number"], repo,
+                          "%s\n受け付けました。工場の発車待ちに積み、順に着手します（%s）。終わったらここにコミット番号と本番URLを書きます。"
+                          % (FACTORY_MARK, msg))
             outbox("【受付】%s #%s %s" % (repo.split("/")[1], it["number"], short),
                    "【Claude Codeに頼む】を自動受付→発車待ちへ（%s）" % msg, [it.get("url")])
             log("%s「%s」→ 積んだ（%s）" % (key, short, msg))
@@ -285,13 +286,57 @@ def _download(drive_path, num):
 
 
 def _safe_comment(num, repo, body):
-    """GitHub が詰まっても受付を止めない（10/17 実測：TLS タイムアウトで例外→二重積みの危険）。"""
+    """GitHub が詰まっても受付を止めない（10/17 実測：TLS タイムアウトで例外→二重積みの危険）。
+    書けなかったら取り直し待ち（commentRetry）に残し、次の回から retry_comments() が書く（10/18：#1028 の受付・#1015 の受領が消えていた）。"""
     try:
         rc, _, err = run(["gh", "issue", "comment", str(num), "-R", repo, "--body", body], timeout=60)
-        return rc == 0
+        ok = rc == 0
+        if not ok:
+            log("#%s コメントを書けない rc=%s %s" % (num, rc, (err or "")[:120]))
     except Exception as e:
         log("#%s コメントを書けない（受付は済み）: %r" % (num, e))
-        return False
+        ok = False
+    if not ok and _ST is not None:
+        _ST.setdefault("commentRetry", []).append({"num": str(num), "repo": repo, "body": body, "tries": 1, "at": time.time()})
+    return ok
+
+
+def retry_comments(st):
+    """書けなかった Issue コメントを取り直す（1回3件まで）。RETRY_MAX 回だめなら Dispatch に1行出して諦める。"""
+    keep, n = [], 0
+    for c in st.get("commentRetry", []):
+        if n >= 3:
+            keep.append(c)
+            continue
+        n += 1
+        try:
+            rc, _, err = run(["gh", "issue", "comment", c["num"], "-R", c["repo"], "--body", c["body"]], timeout=60)
+        except Exception as e:
+            rc, err = 1, repr(e)
+        if rc == 0:
+            log("#%s 書けなかったコメントを書いた（%d回目）" % (c["num"], c["tries"] + 1))
+            continue
+        c["tries"] += 1
+        if c["tries"] >= RETRY_MAX:
+            outbox("【Issueに書けない】#%s" % c["num"], "%s へのコメントを%d回試しても書けない：%s" % (c["repo"], c["tries"], (err or "")[:100]), [])
+            continue
+        keep.append(c)
+    st["commentRetry"] = keep
+    return 0
+
+
+def _job_done(qn):
+    """積んだ仕事（qn 番）が終わっているか。waiting／running／hold なら False。見つからなければ True（控えへ移っている）。"""
+    if not qn:
+        return True
+    try:
+        q = json.load(open(os.path.join(ST, "queue.json"), encoding="utf-8"))
+        for it in q.get("items", []):
+            if str(it.get("n")) == str(qn):
+                return it.get("status") not in ("waiting", "running", "hold")
+    except Exception:
+        return True
+    return True
 
 
 def prod_url(drive_path, haichi=None):
@@ -413,11 +458,13 @@ def _take(st, repo, num, paths, src_url, haichi, why):
                     got_map.pop(k)
         return 0
     mark_mitai(qmsg)
+    _m = re.search(r"(\d+)番", qmsg or "")
+    qn = _m.group(1) if _m else None
     machi = st.setdefault("koukaiMachi", [])
     for u in urls:
         if not any(x["url"] == u for x in machi):
             code, ver = _head(u)
-            machi.append({"url": u, "repo": repo, "num": num, "since": time.time(), "code0": code, "ver0": ver, "notified": False})
+            machi.append({"url": u, "repo": repo, "num": num, "qn": qn, "since": time.time(), "code0": code, "ver0": ver, "notified": False})
     _safe_comment(num, repo, "%s\n【Claude Code】納品を受け取りました（%d件・%s）。工場の発車待ちに積みました（%s）。本番に出たら、ここに本番URLを書きます。"
                   % (FACTORY_MARK, len(got), why, qmsg))
     outbox("【納品受付】#%s %d件" % (num, len(got)), "%s → 自動で取得→発車待ちへ（%s）" % (why, qmsg), urls or [src_url])
@@ -554,11 +601,20 @@ def check_koukai(st):
             outbox("【公開しました】#%s" % x["num"], x["url"], [x["url"]])
             log("#%s 本番に出た %s（%s→%s）" % (x["num"], x["url"], x.get("code0"), code))
             continue
-        age = time.time() - x["since"]
+        if not x.get("doneAt"):
+            if _job_done(x.get("qn")):
+                x["doneAt"] = time.time()
+            else:
+                # 仕上げの仕事（qn番）がまだ走っていない／走っている間は「公開ボタン待ち」を出さない
+                # （10/18 07:20：uke-01 がまだ main にも無いのに「押してください」を出した誤報の再発防止）
+                if time.time() - x["since"] < KOUKAI_GIVEUP_SEC:
+                    keep.append(x)
+                continue
+        age = time.time() - x["doneAt"]
         if age > KOUKAI_NOTIFY_SEC and not x.get("notified"):
             outbox("【公開ボタン待ち】#%s" % x["num"], "Lovable の公開（deploy_project）を押してください：%s（今 HTTP %s）" % (x["url"], code), [x["url"]])
             x["notified"] = True
-        if age < KOUKAI_GIVEUP_SEC:
+        if time.time() - x["since"] < KOUKAI_GIVEUP_SEC:
             keep.append(x)
     st["koukaiMachi"] = keep
 
@@ -580,6 +636,8 @@ def main(force=False):
     except Exception:
         return 0
     st = load_state()
+    global _ST
+    _ST = st
     now = time.time()
     if not force and now < st["next"]:
         return 0
@@ -589,15 +647,15 @@ def main(force=False):
     started = now - 10
     picked = check_issues(st, MAX_PER_RUN)
     st["stats"]["picked"] += picked
-    for name, fn in (("nouhin", check_nouhin), ("nouhinRetry", retry_nouhin), ("koukai", check_koukai)):
+    for name, fn in (("nouhin", check_nouhin), ("nouhinRetry", retry_nouhin), ("comments", retry_comments), ("koukai", check_koukai)):
         try:
             r = fn(st)
             if isinstance(r, int):
                 st["stats"][name] = st["stats"].get(name, 0) + r
         except Exception as e:
             log("納品受付（%s）で例外: %r" % (name, e))
-    if picked < MAX_PER_RUN:
-        st["since"] = started
+    if picked < MAX_PER_RUN and st.get("listOk", True):
+        st["since"] = started   # 一覧が取れなかった回は進めない（取れなかった間に立った Issue を飛ばさない）
     dnew = 0
     if force or now >= st["driveNext"]:
         st["driveNext"] = now + DRIVE_GATE_SEC
@@ -631,8 +689,23 @@ def self_test():
     assert prod_url("/tamago-inbox/1015/x.html", ["public/magazine/x.html"]) == PROD_BASE + "magazine/x.html"
     assert prod_url("/tamago-inbox/1018/t.skill") is None
     assert _repo_of("https://api.github.com/repos/tamago2022/tamago-shinchoku/issues/5") == "tamago2022/tamago-shinchoku"
+    assert _job_done(None) is True
+    global _ST
+    _ST = {}
     global run
     _run = run
+    run = lambda cmd, timeout=60: (1, "", "error connecting to api.github.com")
+    try:
+        assert _safe_comment(1, "a/b", "x") is False
+        assert _ST["commentRetry"][0]["num"] == "1" and _ST["commentRetry"][0]["tries"] == 1
+        retry_comments(_ST)   # まだ書けない → tries 2
+        assert _ST["commentRetry"][0]["tries"] == 2
+        run = lambda cmd, timeout=60: (0, "", "")
+        retry_comments(_ST)   # 書けた → 取り直し待ちから消える
+        assert _ST["commentRetry"] == []
+    finally:
+        run = _run
+        _ST = None
     run = lambda cmd, timeout=60: (0, json.dumps({"data": {"root": {"entry_id": "R"}, "entries": [
         {"entry_id": "F1", "parent_id": "D1", "kind": "file", "name": "a.html", "size_bytes": 3},
         {"entry_id": "D1", "parent_id": "R", "kind": "directory", "name": "1018"}]}}) + "\nAlarm", "")
