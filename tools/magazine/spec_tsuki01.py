@@ -297,8 +297,9 @@ def moon_hero(h):
     h = h.replace(f'<link rel="preload" as="image" href="{yt}"/>', f'<link rel="preload" as="image" href="{HERO_IMG}"/>')
     h = h.replace(f'content="{yt}"', f'content="{HERO_OG}"')
     h = h.replace('<meta property="og:image:width" content="1280"/><meta property="og:image:height" content="720"/>', '<meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/>')
-    h = h.replace(f'<div class="cw-hero__bg" aria-hidden="true"><img src="{yt}" alt="" decoding="async"/>',
-                  f'<div class="cw-hero__bg" aria-hidden="true"><img src="{HERO_IMG}" data-hero-by="tamago" width="1600" height="1198" alt="" decoding="async"/>')
+    import re as R
+    h = R.sub(r'(<div class="cw-hero__bg" aria-hidden="true">)<img [^>]*?src="' + R.escape(yt) + r'"[^>]*/>',
+              lambda q: q.group(1) + f'<img src="{HERO_IMG}" data-hero-by="tamago" width="1600" height="1198" alt="" decoding="async"/>', h, count=1)
     assert 'data-hero-by="tamago"' in h and HERO_OG in h, 'ヘッダーの差し替えが当たらない'
     return h
 
