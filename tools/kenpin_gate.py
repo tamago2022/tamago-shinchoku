@@ -583,8 +583,38 @@ def cmd_submit(n, kind, body_path, body_text, url, cost, note):
 # ③外部AIへ投げる（11章：伝書鳩ゼロ化の本体）
 # ---------------------------------------------------------------------------
 
+_URL_TAG = re.compile(r"<(script|style)[^>]*>.*?</\1>|<[^>]+>", re.S | re.I)
+
+
+def _url_nakami(url, limit=6000):
+    """★1623号・7回連続FIXの実測で発見：build_prompt()はURL文字列だけを渡し、
+    その先の中身(確認ページの実測ログ)を外部AIに渡していなかった。
+    外部AIは『URLを貼ってあるだけで中身を確認できない』を理由にFIXを繰り返す。
+    ここでURLを実際に1回だけ取得し、タグを落とした本文を同梱する（中身が読めない、を無くす）。
+    取得できなければ正直に理由を書く（黙って空にしない）。
+    """
+    if not url or not str(url).strip().startswith("http"):
+        return "(URLなし)"
+    u = str(url).strip().splitlines()[0].strip()
+    try:
+        import urllib.request
+        req = urllib.request.Request(u, headers={"User-Agent": "kenpin-gate/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            raw = resp.read(200000).decode("utf-8", "ignore")
+        t = _URL_TAG.sub(" ", raw)
+        t = re.sub(r"\s+", " ", t).strip()
+        return t[:limit] if t else "(中身が空でした)"
+    except Exception as e:  # noqa: BLE001
+        return "(取得できませんでした：%s: %s)" % (type(e).__name__, e)
+
+
 def build_prompt(ticket):
-    """4章でたまごさんが指定した「毎回渡す内容」そのままの並び。"""
+    """4章でたまごさんが指定した「毎回渡す内容」そのままの並び。
+
+    ★1623号：成果物URLの中身(_url_nakami)を追加した。URLを貼るだけでは
+    外部AIが実物を確認できず、何度投げても『自己申告のまま』と判定され続けるため。
+    """
+    url = ticket.get("url") or ""
     return (
         "【号番号】%(n)s号 第%(seq)d回（%(kindjp)s）\n"
         "題名：%(title)s\n"
@@ -594,6 +624,7 @@ def build_prompt(ticket):
         "\n■過去の失敗記録（同じ落とし方を繰り返していないか）\n%(fail)s\n"
         "\n■費用\n%(cost)s\n"
         "\n■成果物URL\n%(url)s\n"
+        "\n■成果物URLの中身（このURLを実際に取得した実物。タグを除いた本文の抜粋。ここに書かれていることを実物の証拠として扱ってよい）\n%(urlbody)s\n"
     ) % {
         "n": ticket.get("n"),
         "seq": ticket.get("seq") or 1,
@@ -604,7 +635,8 @@ def build_prompt(ticket):
         "body": (ticket.get("submission") or "")[:12000],
         "fail": ticket.get("pastFailures") or "(なし)",
         "cost": ticket.get("cost") or "(お金は出ない)",
-        "url": ticket.get("url") or "(URLなし)",
+        "url": url or "(URLなし)",
+        "urlbody": _url_nakami(url),
     }
 
 
