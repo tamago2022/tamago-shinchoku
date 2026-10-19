@@ -32,6 +32,18 @@ GHOST_FRAGMENTS = [
     "「直したページを1つだけ貼る」のは禁止です。",
 ]
 
+# ①' 1764番（2026-10-20判明）：session_preamble.mdの「追記のしかた」節にある
+#    記入例そのものが、自動発車の仕組みで【タスク】【完了条件】テンプレートに
+#    包まれてqueue_addされ、2026-09-28〜2026-10-20まで実体のないまま発車・失敗を
+#    繰り返していた。本文が独自ラベルでラップされ、文言も改変されているため
+#    _is_rule_document_fragment()（先頭120文字の完全一致）はすり抜ける。
+#    _contains_known_ghost_snippet()のブラックリストで拾う（queue_add()の
+#    ガードは両方のORなので、どちらで検知してもqueue_add()レベルでは弾かれる）。
+KNOWN_SNIPPET_FRAGMENTS = [
+    "【タスク】書式**：`- **禁止/必須の一文。",
+    "【完了条件】書式**：`- **禁止/必須の一文。——が本番に出ていて、開いたURLが200で返る",
+]
+
 # ② 対照群：実際にたまごさんが依頼しそうな、具体的で正当な新規依頼。
 #    これらは誤ってガードに弾かれてはいけない（弾かれたら依頼が消えてしまう事故になる）。
 REAL_REQUESTS = [
@@ -53,16 +65,24 @@ def run():
                 "回帰：実際に事故になった断片 %r がガードで弾かれませんでした" % frag
             )
 
-    # ② 対照群（正当な依頼）は弾かれないこと
+    # ①' 1764番型（独自テンプレートに包まれた断片）はブラックリストで弾かれること
+    for frag in KNOWN_SNIPPET_FRAGMENTS:
+        got = ci._contains_known_ghost_snippet(frag)
+        if not got:
+            failures.append(
+                "回帰：1764番型の断片 %r がブラックリストで弾かれませんでした" % frag
+            )
+
+    # ② 対照群（正当な依頼）は弾かれないこと（両方のガードを見る）
     for req in REAL_REQUESTS:
-        got = ci._is_rule_document_fragment(req)
+        got = ci._is_rule_document_fragment(req) or ci._contains_known_ghost_snippet(req)
         if got:
             failures.append(
                 "誤検知：正当な依頼 %r が誤ってルール文書断片として弾かれました" % req
             )
 
     # ③ queue_add()自体がGHOST_FRAGMENTSを"skipped"で返すこと（force_dup無し）
-    for frag in GHOST_FRAGMENTS[:2]:
+    for frag in GHOST_FRAGMENTS[:2] + KNOWN_SNIPPET_FRAGMENTS:
         status, msg = ci.queue_add(frag, priority=None, label=None, origin="user")
         if status != "skipped":
             failures.append(
@@ -76,8 +96,9 @@ def run():
             print(" - " + f)
         return 1
     print(
-        "PASS：ルール文書断片（%d件）は全て弾かれ、正当な依頼（%d件）は誤検知されていません"
-        % (len(GHOST_FRAGMENTS), len(REAL_REQUESTS))
+        "PASS：ルール文書断片（%d件＋1764番型%d件）は全て弾かれ、"
+        "正当な依頼（%d件）は誤検知されていません"
+        % (len(GHOST_FRAGMENTS), len(KNOWN_SNIPPET_FRAGMENTS), len(REAL_REQUESTS))
     )
     return 0
 

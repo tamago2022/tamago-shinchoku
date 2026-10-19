@@ -455,6 +455,22 @@ _RULE_DOC_GLOBS = [
 ]
 _RULE_DOC_CACHE = {"mtime": 0.0, "text": ""}
 
+# 1764番（2026-10-20）：自動発車の仕組みが、ルール文書の「記入例」の断片を
+# 【タスク】【完了条件】…という独自テンプレートに包んでqueue_addすることがあり、
+# その場合は全体の先頭120文字が完全一致しなくなって _is_rule_document_fragment()
+# をすり抜ける（実測：1764番は2026-09-28〜2026-10-20まで1ヶ月近く、本番URLの
+# 出しようが無いまま発車・失敗を繰り返していた＝実体のないゴーストタスク）。
+# 1785番のGHOST_FRAGMENTS方式を踏襲し、既知の「埋め忘れたプレースホルダー文言」は
+# 部分一致で直接弾く。見つかるたびにこのタプルへ1行足す。
+_KNOWN_GHOST_SNIPPETS = (
+    "禁止/必須の一文",
+)
+
+
+def _contains_known_ghost_snippet(text):
+    t = text or ""
+    return any(frag in t for frag in _KNOWN_GHOST_SNIPPETS)
+
 
 def _load_rule_texts():
     """1785番事故（2026-09-30）：`tools/prompt_rules/always-15-cache-expires-in-an-hour.md`
@@ -493,18 +509,22 @@ def _load_rule_texts():
     return text
 
 
+def _strip_markdown_and_label(s):
+    """先頭の【タスク】【完了条件】等のラベルとMarkdown装飾（太字・見出し記号・
+    コード用バッククォート）を剥がす。ルール文書側の正規化（**と`を除去）と
+    揃えるための共通処理。"""
+    s = re.sub(r"^【[^】]*】\s*", "", s or "")
+    s = re.sub(r"^[\*\-\s#>`]+", "", s)
+    s = s.replace("**", "").replace("`", "").strip()
+    return s
+
+
 def _is_rule_document_fragment(text):
-    """本文（の先頭部分）がルール文書(prompt_rules/session_preamble)の一節とほぼ
-    そのまま一致するなら、たまごさんの新規依頼ではなくルール文の誤登録とみなす。
+    """本文がルール文書(prompt_rules/session_preamble)の一節とほぼそのまま一致するなら、
+    たまごさんの新規依頼ではなくルール文の誤登録とみなす。
     短い文字列は偶然の一致が起きやすいので8文字未満は対象外にする。"""
     t = (text or "").strip()
     if len(t) < 8:
-        return False
-    # ルール文はMarkdown装飾（太字・見出し記号・コード用バッククォート）が多いので、
-    # 剥がしてから照合する
-    stripped = re.sub(r"^[\*\-\s#>`]+", "", t)
-    stripped = stripped.replace("**", "").replace("`", "").strip()
-    if len(stripped) < 8:
         return False
     _load_rule_texts()  # キャッシュ（"normalized"含む）を最新化する
     rule_text = _RULE_DOC_CACHE.get("normalized") or ""
@@ -512,8 +532,20 @@ def _is_rule_document_fragment(text):
         return False
     # 依頼文の途中にルール文の引用が混ざるケースを誤検知しないよう、
     # 「本文の先頭120文字」がルール文書のどこかにそのまま現れるかだけを見る
-    probe = stripped[:120]
-    return probe in rule_text
+    stripped = _strip_markdown_and_label(t)
+    if len(stripped) >= 8 and stripped[:120] in rule_text:
+        return True
+    # 1764番の再発防止（2026-10-20）：自動発車の仕組みが短い断片を
+    # 【タスク】【完了条件】…という独自テンプレートで包んでqueue_addすることがあり、
+    # その場合は全体の先頭120文字では一致しなくなる（ラベルで分断されるため）。
+    # 行ごとにラベルを剥がして照合する（誤検知を避けるため20文字未満の行は見ない）。
+    for line in t.splitlines():
+        s = _strip_markdown_and_label(line)
+        if len(s) < 20:
+            continue
+        if s[:80] in rule_text:
+            return True
+    return False
 
 
 def queue_add(text, priority=None, label=None, origin=None, model=None, urgent=False):
@@ -544,10 +576,12 @@ def _queue_add_unlocked(text, priority=None, label=None, origin=None, model=None
     # 2026-09-30 1785番事故の再発防止：ルール文書(prompt_rules/session_preamble)の
     # 一節そのままなら積まない。label に「重複OK」がある時だけ通す（正当な依頼が
     # たまたまルール文と同じ言い回しになった場合の逃げ道、421番と同じ設計）。
-    if "重複OK" not in (label or "") and _is_rule_document_fragment(text):
+    if "重複OK" not in (label or "") and (
+        _is_rule_document_fragment(text) or _contains_known_ghost_snippet(text)
+    ):
         return "skipped", (
             "ルール文書（tools/prompt_rules または tools/session_preamble.md）の一節と"
-            "同じ内容のため積みませんでした（1785番の再発防止ガード）。"
+            "同じ内容のため積みませんでした（1785番・1764番の再発防止ガード）。"
             "実際の依頼なら label に『重複OK』と書いて送り直してください"
         )
     # ---- 653番（2026-09-08）タイトル命名基準 ----
