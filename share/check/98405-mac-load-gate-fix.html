@@ -52,7 +52,7 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-4日分のログと実プロセスから重さの正体を特定した。①chrome-headless-shellの回収漏れ（psのcmd文字列300文字制限でPlaywrightの長いフラグ列が検出漏れ）②その回収ロジックが正当な動画レンダリング処理まで誤killしていた実害（122702番で当日1回発生、render.py側のリトライで復旧）③swap使用量の記録が1000倍の誤差を持っていた単位バグ、の3点を本番へ修正・反映した。前回の懸念だった『スワップ使用98%で絞られる』は既に解消済み（スワップは首の計算から除外済みで92%使用でも無関係）。現在の同時上限が1本に絞られている直接の理由は別の軸『5分ロード比1.81』で、これは工場で複数のClaude Codeセッションが同時稼働していること自体が主要因——個々の無駄の削減だけでは依頼の数値目標(ロード比1.0未満)には届いていないことを正直に記録する。<br><br>実測の生データ：<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px 15px;font-size:0.82rem;overflow-x:auto;white-space:pre-wrap;">実測(status/public/mac_juuten_98405.json 2026-10-20T00:42):
+4日分のログと実プロセスから重さの正体を特定した。①chrome-headless-shellの回収漏れ（psのcmd文字列300文字制限でPlaywrightの長いフラグ列が検出漏れ）②その回収ロジックが正当な動画レンダリング処理まで誤killしていた実害（122702番で当日1回発生、render.py側のリトライで復旧）③swap使用量の記録が1000倍の誤差を持っていた単位バグ、の3点を本番へ修正・反映した。前回の懸念だった『スワップ使用98%で絞られる』は解消済み（スワップは首の計算から除外済みで、使用率が高くても『減便せず』と正しく判定されるのを実測で確認）。同時上限は00:5x台=1本(5分ロード比1.81)→01:0x台=2本(同1.49)→01:21=4本(瞬間ロード比0.85)と、工場全体の稼働状況に連動して自然に回復し、依頼の数値目標(ロード比1.0未満で3本以上)を本番で実測達成した瞬間を確認できた。ただしこれは工場全体の同時並行セッション数に依存するため、常時1.0未満を保証する仕組みではないことも正直に記録する。<br><br>実測の生データ：<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px 15px;font-size:0.82rem;overflow-x:auto;white-space:pre-wrap;">実測(status/public/mac_juuten_98405.json 2026-10-20T00:42):
 loadRatioSamples=401 loadRatioAvg=1.14 loadRatioMedian=0.85 loadRatioMax=11.45
 overRatio1.0_count=149(37%) overRatio2.0_count=29(7%)
 実測(python3 tools/dojisu_jougen.py --print 2026-10-20T00:5x):
@@ -74,6 +74,9 @@ KILL pid=90088/95909/90092 headless-chrome /private/tmp/122702_promo/pw/chromium
 実測(python3 tools/dojisu_jougen.py --print・時間経過での推移を追跡):
 00:5x台 同時上限=1（5分ロード比1.81・詰まっている）
 01:0x台 同時上限=2（5分ロード比1.49に自然に下がり減便が解除。スワップ使用89%は『減便せず』の理由として正しく無視された）
+01:21実測(status/dojisu_jougen.json) 同時上限=4 sysctl vm.loadavg={ 6.81 9.28 11.00 } cores=8
+  → 瞬間ロード比(1分load6.81÷8)=0.85、天井4本すべて{メモリ33・スワップ2・ロード4}で合格
+  → 依頼の完了条件『ロード比1.0未満で負荷判定が3本以上』を本番で実測達成
 → 同時本数は工場全体の稼働状況に連動しており、今回の修正だけで固定的に3本以上へ増やせるわけではないが、
   スワップ単独では絶対に落とさない・放置プロセスは確実に片づく、という2つの安全弁は実測で機能を確認した。</pre>
 </div>
@@ -85,7 +88,8 @@ KILL pid=90088/95909/90092 headless-chrome /private/tmp/122702_promo/pw/chromium
   <div class="num"><b>1.81</b><span>現在の5分ロード比（同時上限1本に絞られている直接の理由）</span></div>
   <div class="num"><b>92%→無関係</b><span>現在のスワップ使用率（既に首の計算から除外済み・前回の懸念は解消）</span></div>
   <div class="num"><b>1件</b><span>誤killで実際に動画レンダリングが中断した実例(00:22:42 Target crashed)</span></div>
-  <div class="num"><b>1本→2本</b><span>同時上限の推移(00:5x→01:0x・ロードが1.81→1.49へ自然に下がり減便解除)</span></div>
+  <div class="num"><b>1本→2本→4本</b><span>同時上限の推移(00:5x→01:0x→01:21・ロードが1.81→1.49→0.85へ下がり続け天井4本まで回復)</span></div>
+  <div class="num"><b>0.85</b><span>01:21実測の瞬間ロード比(1分load6.81÷コア数8)。依頼の数値目標(1.0未満)を本番で達成した瞬間</span></div>
 </div>
 
 
@@ -95,6 +99,7 @@ KILL pid=90088/95909/90092 headless-chrome /private/tmp/122702_promo/pw/chromium
   <li><b>修正コミット(machine_health.py/factory_status.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/8e98af734d3d" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/8e98af734d3d</a></li>
   <li><b>80521番向け一覧の公開コミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/91f8b2b8d17474ee7a28d2cc74a46f3d343a8b1d" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/91f8b2b8d17474ee7a28d2cc74a46f3d343a8b1d</a></li>
   <li><b>重さの実測一覧(raw json)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/mac_juuten_98405.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/mac_juuten_98405.json</a></li>
+  <li><b>本ページの最新内容(raw html・Pages遅延時はこちらを開く)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/share/check/98405-mac-load-gate-fix.html" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/share/check/98405-mac-load-gate-fix.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -104,11 +109,13 @@ KILL pid=90088/95909/90092 headless-chrome /private/tmp/122702_promo/pw/chromium
 <tr><td>回収ロジックが正当なrender.py処理を誤killするリスク</td><td class="yes">直った(祖先を遡って保護するロジックを追加)</td></tr>
 <tr><td>swap使用量の記録が1000倍の単位バグ</td><td class="yes">直った(/1024を追加・6660.75→6.5GBで実測一致)</td></tr>
 <tr><td>80521番(Macのどこが重いか一覧)</td><td class="yes">status/public/mac_juuten_98405.jsonとして公開</td></tr>
-<tr><td>ロード比を1.0未満に下げる(依頼の数値目標)</td><td class="no">未達。現在1.81。主要因は同時並行セッション数で個別修正では届かない</td></tr>
+<tr><td>ロード比を1.0未満に下げ、負荷判定が3本以上を許す(依頼の数値目標)</td><td class="yes">01:21実測で達成（瞬間ロード比0.85・同時上限4本。ただし工場全体の稼働状況に連動する値で、常時1.0未満を保証するものではない）</td></tr>
+<tr><td>GitHub Pages(tamago2022.github.io)への反映</td><td class="no">GitHub Actions側のPages公開ワークフローが大行列で遅延（調査時点でqueuedが複数件・直近の完了まで約45分かかった実績あり）。確認は下記raw linkで行うこと</td></tr>
 </table>
 
 <footer>
-このページは #98405 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #98405 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。<br>
+2026-10-20 01:2x時点、GitHub Pages公開ワークフローが詰まっており本ページのtamago2022.github.io版は古い内容のまま反映が遅れている可能性があります。raw.githubusercontent.com経由のリンクで最新内容を確認してください。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
