@@ -756,13 +756,18 @@ function renderHold(h){
 function loadQueue(fallback){
   getJson("status/public/queue_next.json", 12000).then(function(q){
     var w = ((q && q.items) || []).filter(function(x){ return x.status === "waiting"; });
+    /* 98407番：queue_next.jsonは待機が多い時、上限件数に切って軽くしてから配っている
+       （切らないと1MBを超えて本番から無言で消えるため）。表に出す「残っている仕事 N件」は
+       切る前の本当の総数(totalWaiting)を使う。古いキャッシュ等でフィールドが無い時だけ
+       配列の長さにフォールバックする（今までの挙動のまま）。 */
+    var totalW = (q && q.totalWaiting != null) ? Number(q.totalWaiting) : w.length;
     var hasNonF = w.some(function(x){ return pri(x) !== 6; });
     var pool = hasNonF ? w.filter(function(x){ return pri(x) !== 6; }) : w;
     /* 会話の切れ端しか無いときだけ、それを出す（空欄にしない） */
     var honban = pool.filter(function(x){ return dan(x) < 3; });
     if(honban.length) pool = honban;
     pool.sort(rankCmp);
-    renderNext(pool.slice(0,5), w.length);
+    renderNext(pool.slice(0,5), totalW);
   }).catch(function(){
     if((fallback||[]).length){ renderNext(fallback, fallback.length); return; }
     $("next").innerHTML = '<li class="note">待機列を読み込めませんでした（「読み直す」でもう一度）</li>';
