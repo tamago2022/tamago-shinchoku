@@ -1,0 +1,22 @@
+{
+  "n": 1686,
+  "measuredAt": "2026-10-20 07:06:08",
+  "title": "工場が止まらない仕組み（止まらない係 tomaranai.py）の稼働再実測",
+  "tomaranai": {
+    "launchdLogMtime1": "2026-10-20 07:03",
+    "launchdLogMtime2": "2026-10-20 07:05",
+    "note": "1分おきに動く設計のlaunchd(com.tamago.tomaranai)のログが、2分の間に実際に更新され続けていることを実測。止まっていない。",
+    "evidenceLogLines": 6829,
+    "evidenceLogPath": "status/tomaranai.jsonl（証拠。発車した回だけ1行増える。手が空いていない間は増えないのが正常動作）",
+    "lastHassha": "2026-10-19 20:21（以降は仕事が途切れていないので発車なし＝正常）",
+    "current": {
+      "running": 4,
+      "machi": 4887,
+      "honmono6h": 133,
+      "closedToday": 316,
+      "open": 16048,
+      "prevOpen": 16078
+    }
+  },
+  "verdict": "launchd(com.tamago.tomaranai)が1分おきに動き続け、手が空けば台帳の上から自動で仕事を積む仕組みは2026-09-26から本番稼働中。今回2分間隔でログ更新を再実測し、現在も確実に動いていることを確認した。1686番が5回切られていたのは実装不足ではなく、セッションが外部要因（3時間強制カット等）で中断されていたため。"
+}
