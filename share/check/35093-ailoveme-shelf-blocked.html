@@ -57,17 +57,23 @@
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+<div class="num"><b>1/9棚</b><span>cute世界の棚一覧、アイラブミーは先頭（1番目）</span></div>
+<div class="num"><b>1件</b><span>棚に入れた動画（ナミミコ「自分に甘えじんぐマスターナミ！」）</span></div>
+<div class="num"><b>0件</b><span>棚id・カードidの重複（重複チェック済み）</span></div>
+<div class="num"><b>0/1</b><span>本番/world/cuteに「アイラブミー」の文字列が出現した回数（2026-10-19 15:12実測・まだ出ない）</span></div>
 </div>
-
-
+<div class="note">2026-10-19 15:09、Lovableの「公開」を無人で押す便（<code>scripts/patrol/lovable-publish.mjs</code>）を実行したが、公開専用Chrome（CDP 9223）が起動していなかった。起動し直そうとしたところ、本番運用ルール（1186号「Chromeを起動・再起動する処理は憲法で禁止」）の関所にその場でブロックされた。これは本人（店主）か、既にログイン済みの公開用Chromeを別途起動しているセッションでなければ突破できない。コード側に追加修正は不要。</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>mainの変更内容（非公開リポ）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/0e3ff8f79" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/0e3ff8f79</a></li>
-  <li><b>本番トップ（HTTP200・アイラブミーはまだ未出現）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番cute世界ページ（HTTP200・アイラブミーはまだ未出現）</b><a href="https://joy-relief-station.lovable.app/world/cute" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/cute</a></li>
+  <li><b>この確認ページ自体（前回404だったもの・今はHTTP200）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35093-ailoveme-shelf-blocked.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35093-ailoveme-shelf-blocked.html</a></li>
   <li><b>同一原因の前例#35040の確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35040-benri-ibukuro-oauth-blocked.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35040-benri-ibukuro-oauth-blocked.html</a></li>
 </ul>
+
+<h2>③ 前後の見た目</h2>
+<div class="note">このセッションにはブラウザ操作・スクリーンショットの道具が無いため画像は取得できない。代わりに実測した本文テキストで示す：本番/world/cuteの応答本文（229,902字）に「アイラブミー」も「ナミミコ」も0件、既存の次の棚「赤ちゃん・子どもの棚」は18,027文字目に存在（＝ページ自体は正常に描画されているが、新棚だけが欠けている状態）。main側のソース（src/lib/worlds.ts）では cute.shelves 配列の先頭が確かに ai-love-me であることを確認済み。</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
