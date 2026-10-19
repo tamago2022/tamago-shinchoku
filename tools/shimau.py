@@ -241,7 +241,28 @@ def omoi():
         return False
 
 
+def self_test():
+    """逆テスト（98404号）。実ファイルは消さず、計算系の関数だけを検査する。"""
+    assert free_gb() is not None, "free_gb が測れていない"
+    import tempfile
+    t = tempfile.mkdtemp(prefix="shimau_selftest_")
+    try:
+        with open(os.path.join(t, "x"), "w") as f:
+            f.write("hi")
+        assert newest(t) >= os.lstat(t).st_mtime - 1
+    finally:
+        shutil.rmtree(t, ignore_errors=True)
+    try:
+        import atokatazuke_shirabe  # noqa: F401
+    except Exception as e:
+        raise AssertionError("atokatazuke_shirabe が呼べない: %s" % e)
+    print("self-test OK")
+
+
 def main():
+    if "--self-test" in sys.argv:
+        self_test()
+        return
     force = os.path.exists(GO)
     try:
         recent = time.time() - os.path.getmtime(STAMP) < 20 * 3600
@@ -265,6 +286,8 @@ def main():
     step(res, "HDD の置き場（日数で）", hdd_okiba_souji)
     step(res, "場所ごとの上限（youryou_jougen）", jougen_run)
     step(res, "動画・音声の中間ファイル（chukan_shimau）", lambda: __import__("chukan_shimau").run())
+    step(res, "後片付けの棲卸し（atokatazuke_shirabe・98404号）",
+         lambda: "書いた %s" % __import__("atokatazuke_shirabe").run().get("tmp", {}).get("count"))
     if recent:
         res["state"] = "片付けだけ（測るのは20時間に1回）"
     elif omoi():

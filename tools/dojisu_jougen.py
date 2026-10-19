@@ -164,7 +164,18 @@ def read_calibration():
 def build():
     m = measure()
     c = ceilings(m)
-    known = {k: v for k, v in c.items() if v is not None}
+    # ★98405番（2026-10-19）「スワップ」を首（binding）の計算から外した。
+    #   macOSはスワップファイルを遅延割り当てするため swapFreeGB は「いま確保済みの余り」
+    #   でしかなく、健康なMacでも1〜2GBに張り付く（1165番で減便側=shed()は既に直した
+    #   既知の事実・上のコメント参照）。ここ（ceilings の raw 計算）だけ直さずに残っていたため、
+    #   首が恒久的に「スワップ」になり、同時上限が1に溶接されていた。
+    #   実測（2026-10-19 22:34）：メモリ天井33本・ロード天井4本あるのに
+    #   「スワップ1本」に上書きされ、status/1158_kanmon.py（claude起動の物理関所）の
+    #   同時上限が1本に固定されていた（走行8本のうちFableレーンだけが別枠で動けていた）。
+    #   スワップの本当の圧力（枯れて危ない時）は shed() が空きメモリ／ロードの裏付けと
+    #   一緒に正しく見ているので、ここで二重に（しかも裏付け無しで）絞る必要が無い。
+    #   表示用の天井(c)には残す（透明性のため）。binding/raw の計算にだけ入れない。
+    known = {k: v for k, v in c.items() if v is not None and k != "スワップ"}
     raw = min(known.values()) if known else HARD_MIN
     binding = [k for k, v in known.items() if v == raw]
 
