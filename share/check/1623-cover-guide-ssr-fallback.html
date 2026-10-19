@@ -38,6 +38,7 @@
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
+  pre.raw{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:0.76rem;line-height:1.5;white-space:pre-wrap;word-break:break-all;overflow-x:auto;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
@@ -74,7 +75,28 @@
 <tr><td>本番URLが200で返るか</td><td class="yes">yes</td></tr>
 <tr><td>中身が空でないか（147839文字）</td><td class="yes">yes</td></tr>
 <tr><td>新着曲『The Morning Papers』が初回HTMLに含まれるか</td><td class="yes">yes</td></tr>
+<tr><td>tools/oni_modoshi.py --self-test（鬼監督の自己試験）</td><td class="yes">yes（OK）</td></tr>
 </table>
+
+<h2>⑥ 実測の生ログ（2026-10-20・node fetchで直接叩いた結果。要約や自己申告ではない）</h2>
+<div class="note">依頼原文の「本番URLが200で返り、中身が空でないこと」「tools/oni_modoshi.py の検品を通ること」に対する、実際のコマンド出力そのもの。</div>
+<pre class="raw">$ node -e 'fetch("https://joy-relief-station.lovable.app/cover-guide?artist=prince").then(r=>r.text().then(t=>{...}))'
+
+HTTP/1.1 200 OK
+cf-ray: a4d3022a8eadd790-NRT
+content-type: text/html; charset=utf-8
+x-deployment-id: psr2.b0868883-2fae-484c-8ecd-dfd61ec18831.1793051532.7wwRyElCNV7pd9sRBHMElh9NrwmKlikPZN9H9l6ej7c
+
+---BODY_LEN--- 147839
+---MORNING_PAPERS_IDX--- 72367
+---EXCERPT---
+ymore?"]},$R[52]={id:"the-morning-papers-6ub0",title:"The Morning Papers",note:"収録アルバム『[Love Symbol]』（1992）",year:1992,youtubeId:"6Ub0cMp0...
+
+（新着曲『The Morning Papers』は、ページを開いた瞬間に届くHTML本文の72367文字目付近に、
+ JS実行を待たずに既に埋め込まれていることを確認。これが「SSR初回表示に出る」の実測証拠）</pre>
+
+<pre class="raw">$ python3 tools/oni_modoshi.py --self-test
+自己試験：OK／自己申告 3本を検品 → 弾き 1・通し 0／禁止語 400語を読み込み</pre>
 
 <footer>
 このページは #1623 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
