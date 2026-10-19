@@ -66,6 +66,14 @@ claude起動を物理的に絞る関所(tools/1158_kanmon.py)が読む「同時�
 
 
 
+<h2>③ 実測の生データ（status/kanmon.jsonl・tail -400）</h2>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.82rem;overflow-x:auto;white-space:pre-wrap;">実測: 直近400件中「上限1本」122件（122/400=0.305→30%）
+実測: 「上限1本」のときの待ち秒 min=1 median=740 max=1850
+実測: タイムアウトで戻された（結果="待ちきれず戻した"）件数 33件
+実測(修正前 22:34): status/dojisu_jougen.json 同時上限=2 天井={メモリ:38 スワップ:2 ロード:4} 首=スワップ load1=7.59 load5=9.61 cores=8 ratio1=0.949
+実測(修正後 22:51): status/dojisu_jougen.json 同時上限=3 天井={メモリ:35 スワップ:2 ロード:3} 首=ロード load1=11.93 load5=10.38 cores=8 ratio1=1.491
+実測(1158_kanmon.py jougen()を本番コードで直接呼び出し): 修正前ファイル→2 ／ 修正後ファイル→3</pre>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>修正した本番コード(tools/dojisu_jougen.py・main反映済み)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/4f5dc1fcf28c8d66c8c842b23f5cb290997bf582" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/4f5dc1fcf28c8d66c8c842b23f5cb290997bf582</a></li>
