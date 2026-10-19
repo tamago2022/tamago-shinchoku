@@ -152,14 +152,23 @@ def mem_avail_mb():
 
 
 def swap_trend():
-    """スワップが増えているか（1秒空けて2回読む）"""
+    """スワップが増えているか（1秒空けて2回読む）。戻り値(1つ目)はGB単位。
+
+    98405番（2026-10-20）実測で見つけたバグ：sysctl vm.swapusage の "used = X M" は
+    MB単位なのに、ここだけ /1024 を忘れて数値そのまま返していた（machine_health.py の
+    vitals() は同じ値を正しく /1024 している）。呼び出し元(swap_gb)はこの値を
+    そのまま "swapGB" として status/machine.json・status/load_history.jsonl に
+    記録していたため、実際は数GBなのに1000倍大きい値（例: 7.68GBが7866.5）が
+    ずっと公開され続けていた。同時実行数の判定(safe_max)はswap_upの増減だけを見るので
+    この桁違いの影響は受けていなかったが、表示・記録の信頼性のため直した。
+    """
     def used():
         m = re.search(r"used = ([0-9.]+)M", run(["sysctl", "-n", "vm.swapusage"]))
-        return float(m.group(1)) if m else None
+        return float(m.group(1)) / 1024.0 if m else None
     a = used(); time.sleep(1); b = used()
     if a is None or b is None:
         return None, None
-    return b, b > a
+    return round(b, 2), b > a
 
 
 def io_mbs():
