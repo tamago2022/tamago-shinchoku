@@ -67,7 +67,15 @@ KILL pid=90088/95909/90092 headless-chrome /private/tmp/122702_promo/pw/chromium
 → render_A8.log: retry 231 0 Page.screenshot: Target crashed（誤killの実害。render.py側のリトライで復旧）
 実測(修正前後のpick_targets()を同じプロセス一覧で比較):
 修正前: 検出3件(90088,95909,90092)・90030は検出漏れ
-修正後: 検出4件（90030含む全件）→ さらにrender.py保護ロジックで0件（誤killを防止）</pre>
+修正後: 検出4件（90030含む全件）→ さらにrender.py保護ロジックで0件（誤killを防止）
+実測(status/load_history.jsonl・swap単位バグの本番反映を追跡。本ページ作成後に追加発生):
+修正前(2026-10-19 23:37:46) swapGB=7866.5（1000倍のまま）
+修正後(2026-10-20 01:05:05) swapGB=6.71（正しいGB単位。本番の5分便が自動で切り替わったのを確認）
+実測(python3 tools/dojisu_jougen.py --print・時間経過での推移を追跡):
+00:5x台 同時上限=1（5分ロード比1.81・詰まっている）
+01:0x台 同時上限=2（5分ロード比1.49に自然に下がり減便が解除。スワップ使用89%は『減便せず』の理由として正しく無視された）
+→ 同時本数は工場全体の稼働状況に連動しており、今回の修正だけで固定的に3本以上へ増やせるわけではないが、
+  スワップ単独では絶対に落とさない・放置プロセスは確実に片づく、という2つの安全弁は実測で機能を確認した。</pre>
 </div>
 
 <h2>② 数字</h2>
@@ -77,6 +85,7 @@ KILL pid=90088/95909/90092 headless-chrome /private/tmp/122702_promo/pw/chromium
   <div class="num"><b>1.81</b><span>現在の5分ロード比（同時上限1本に絞られている直接の理由）</span></div>
   <div class="num"><b>92%→無関係</b><span>現在のスワップ使用率（既に首の計算から除外済み・前回の懸念は解消）</span></div>
   <div class="num"><b>1件</b><span>誤killで実際に動画レンダリングが中断した実例(00:22:42 Target crashed)</span></div>
+  <div class="num"><b>1本→2本</b><span>同時上限の推移(00:5x→01:0x・ロードが1.81→1.49へ自然に下がり減便解除)</span></div>
 </div>
 
 
