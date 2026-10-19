@@ -239,6 +239,8 @@ const LIST_EXPR = `JSON.stringify((() => {
       target: el.getAttribute('target') || null,
       disabled: !!(el.disabled || el.getAttribute('aria-disabled') === 'true' || ariaHidden || pointerBlocked),
       ariaCurrent: el.getAttribute('aria-current') || null,
+      role: el.getAttribute('role') || null,
+      ariaSelected: el.getAttribute('aria-selected') || null,
       visible: hasBox && !hiddenByClosedDetails,
     };
   })
@@ -403,7 +405,16 @@ async function main() {
     // URL・DOMのどれも変化しない＝正しい無変化だが「押しても無反応」と誤検知していた）。
     // aria-current="page"はナビゲーション項目が「現在地」を示すWAI-ARIA標準の表現なので、
     // タグ種別を問わずこれを自己参照の判定材料として使う（サイト側にも意味的に正しい属性）。
-    const isCurrentPageMarked = (e) => e.ariaCurrent === "page";
+    //
+    // 案件#35108実測（joy-relief-station food-radar「レシピを探す」タブ）：WAI-ARIA Tabs
+    // パターン（role="tab" + aria-selected）で実装された切替UIは、既定で選択済みのタブを
+    // もう一度押しても、ARIA仕様上は何も変化しないのが正しい挙動（role="tab"は選択状態を
+    // aria-currentではなくaria-selectedで表現するため、上のaria-current判定だけでは
+    // 救えない）。これを「押しても無反応」と誤検知していた（実測：鳥羽周作さん仕入れ後の
+    // 本番で1件FAIL）。aria-current="page"と同じ理由で、role="tab" かつ
+    // aria-selected="true"（＝既に選択中のタブ）も自己参照とみなし除外する。
+    const isCurrentPageMarked = (e) =>
+      e.ariaCurrent === "page" || (e.role === "tab" && e.ariaSelected === "true");
     const buttonLike = elements.filter((e) => !(e.tag === "A" && e.href) && !isCurrentPageMarked(e));
     const selfLinks = elements.filter(
       (e) => (e.tag === "A" && e.href && isSelfLink(e.href)) || isCurrentPageMarked(e),
