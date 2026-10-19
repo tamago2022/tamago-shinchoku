@@ -16,6 +16,7 @@
   ⑥ つながっている特集：ほかのマガジンへの入口カード（class="cw-other"＝シティポップ特集の型／旧 class="rel"）がある
   ⑦ 見出し：章の見出し（h2.cw-chead__title）は「アーティスト名 - 曲名」
   ⑧ 音：埋め込みに mute=1／muted を入れない
+  ⑨ OGP：og:image と og:title がある
 
 使い方：
   python3 tools/magazine_monogatari_kanmon.py share/check/xxx.html [...]
@@ -64,6 +65,9 @@ def check(html):
         errs.append("埋め込みに mute=1／muted が入っている（音はふつうに出す）")
     if 'class="rel"' not in html and 'class="cw-other"' not in html:
         errs.append("つながっている特集のカード（class=rel）が無い")
+    # ⑨ OGP：シェアした時の絵と題名（2026-10-19・98408番）
+    if not re.search(r'property="og:image"', html) or not re.search(r'property="og:title"', html):
+        errs.append("OGP（og:image／og:title）が無い")
     return errs
 
 
@@ -89,7 +93,7 @@ def run(paths):
 
 
 def self_test():
-    ok_html = ('<meta name="tamago-magazine" content="story"><div class="cw-hero__bg"><img src="https://i.ytimg.com/vi/x/hq.jpg"></div>'
+    ok_html = ('<meta name="tamago-magazine" content="story"><meta property="og:title" content="t"><meta property="og:image" content="i"><div class="cw-hero__bg"><img src="https://i.ytimg.com/vi/x/hq.jpg"></div>'
                '<img src="assets/owner/x-avatar.jpg"><section class="rel"></section><section class="cw-open">つかみ</section>'
                '<section id="ch01">a<p class="bridge">次へ</p></section>'
                '<section id="ch02">b 最後に、これをどうぞ</section>')
@@ -97,7 +101,7 @@ def self_test():
                '<section id="ch01">a</section><section id="ch02">b</section>')
     a = check(ok_html)
     b = check(ng_html)
-    good = (a == [] and len(b) == 6)
+    good = (a == [] and len(b) == 7)
     print("SELFTEST", "PASS" if good else "FAIL", a, b)
     return 0 if good else 1
 
