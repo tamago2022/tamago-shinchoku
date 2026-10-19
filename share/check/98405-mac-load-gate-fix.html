@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#98405 Macの負荷判定｜「スワップの首」で同時上限が1本に溶接されていたのを外した 確認ページ</title>
+<title>#98405 Macの負荷判定｜放置ブラウザの回収漏れ・誤kill実害・スワップ単位バグを修正 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,58 +47,55 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #98405 Macの負荷判定｜「スワップの首」で同時上限が1本に溶接されていたのを外した</div>
-<h1>#98405 Macの負荷判定｜「スワップの首」で同時上限が1本に溶接されていたのを外した</h1>
-<div class="date">2026-10-19 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #98405 Macの負荷判定｜放置ブラウザの回収漏れ・誤kill実害・スワップ単位バグを修正</div>
+<h1>#98405 Macの負荷判定｜放置ブラウザの回収漏れ・誤kill実害・スワップ単位バグを修正</h1>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-claude起動を物理的に絞る関所(tools/1158_kanmon.py)が読む「同時上限」が、macOSのスワップファイルの仕組み（遅延割り当て＝健康な状態でも残り1〜2GBに張り付く）のせいで、実測ではメモリもロードも余裕があるのに1〜2本に溶接されていた。tools/dojisu_jougen.pyのceilings()から「スワップ」を首(binding)の計算だけ外し、表示用には残した（本当のスワップ圧力は別のshed()ロジックが空きメモリ・ロードの裏付けと一緒に正しく見ている）。
+4日分のログと実プロセスから重さの正体を特定した。①chrome-headless-shellの回収漏れ（psのcmd文字列300文字制限でPlaywrightの長いフラグ列が検出漏れ）②その回収ロジックが正当な動画レンダリング処理まで誤killしていた実害（122702番で当日1回発生、render.py側のリトライで復旧）③swap使用量の記録が1000倍の誤差を持っていた単位バグ、の3点を本番へ修正・反映した。前回の懸念だった『スワップ使用98%で絞られる』は既に解消済み（スワップは首の計算から除外済みで92%使用でも無関係）。現在の同時上限が1本に絞られている直接の理由は別の軸『5分ロード比1.81』で、これは工場で複数のClaude Codeセッションが同時稼働していること自体が主要因——個々の無駄の削減だけでは依頼の数値目標(ロード比1.0未満)には届いていないことを正直に記録する。<br><br>実測の生データ：<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px 15px;font-size:0.82rem;overflow-x:auto;white-space:pre-wrap;">実測(status/public/mac_juuten_98405.json 2026-10-20T00:42):
+loadRatioSamples=401 loadRatioAvg=1.14 loadRatioMedian=0.85 loadRatioMax=11.45
+overRatio1.0_count=149(37%) overRatio2.0_count=29(7%)
+実測(python3 tools/dojisu_jougen.py --print 2026-10-20T00:5x):
+同時上限=1 天井={メモリ:32 スワップ:0 ロード:1}
+自動減便=5分ロード比1.81(1.5超)＝詰まっている。1本まで落とす
+試し増便は見送り：スワップ使用92%／5分ロード比1.81＝静かでない
+実測(swap_trend()修正前後の比較。sysctl vm.swapusage used=6660.75M):
+修正前: swapGB=6660.75（MB値のままGBとして記録＝1000倍の誤差）
+修正後: swapGB=6.5（/1024を追加して正しいGB単位に）
+実測(status/machine_health_reap.log 2026-10-20 00:22:42):
+KILL pid=90088/95909/90092 headless-chrome /private/tmp/122702_promo/pw/chromium_headless_shell...
+→ render_A8.log: retry 231 0 Page.screenshot: Target crashed（誤killの実害。render.py側のリトライで復旧）
+実測(修正前後のpick_targets()を同じプロセス一覧で比較):
+修正前: 検出3件(90088,95909,90092)・90030は検出漏れ
+修正後: 検出4件（90030含む全件）→ さらにrender.py保護ロジックで0件（誤killを防止）</pre>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>122/400件（30%）</b><span>直近の関所ログで「上限1本」に当たった割合</span></div>
-  <div class="num"><b>最大1850秒（約31分）</b><span>「上限1本」のときclaude起動が待たされた最長時間</span></div>
-  <div class="num"><b>33件</b><span>30分待っても空かずタイムアウトで戻された件数（直近400件中）</span></div>
-  <div class="num"><b>2本→3本</b><span>同じ実測条件での同時上限（修正前→修正後。首がスワップ→ロードに変わった）</span></div>
-  <div class="num"><b>0.949｜1.897</b><span>修正前後それぞれの瞬間ロード比（1分÷コア数）。どちらも天井4本の負荷判定の範囲内</span></div>
+  <div class="num"><b>401件</b><span>4日間(load_history.jsonl)のロード比サンプル数</span></div>
+  <div class="num"><b>37%</b><span>同4日間でロード比(1分load÷コア数)が1.0を超えた割合</span></div>
+  <div class="num"><b>1.81</b><span>現在の5分ロード比（同時上限1本に絞られている直接の理由）</span></div>
+  <div class="num"><b>92%→無関係</b><span>現在のスワップ使用率（既に首の計算から除外済み・前回の懸念は解消）</span></div>
+  <div class="num"><b>1件</b><span>誤killで実際に動画レンダリングが中断した実例(00:22:42 Target crashed)</span></div>
 </div>
 
 
 
-<h2>③ 実測の生データ（status/kanmon.jsonl・tail -400）</h2>
-<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.82rem;overflow-x:auto;white-space:pre-wrap;">実測: 直近400件中「上限1本」122件（122/400=0.305→30%）
-実測: 「上限1本」のときの待ち秒 min=1 median=740 max=1850
-実測: タイムアウトで戻された（結果="待ちきれず戻した"）件数 33件
-実測(修正前 22:34): status/dojisu_jougen.json 同時上限=2 天井={メモリ:38 スワップ:2 ロード:4} 首=スワップ load1=7.59 load5=9.61 cores=8 ratio1=0.949
-実測(修正後 22:51): status/dojisu_jougen.json 同時上限=3 天井={メモリ:35 スワップ:2 ロード:3} 首=ロード load1=11.93 load5=10.38 cores=8 ratio1=1.491
-実測(1158_kanmon.py jougen()を本番コードで直接呼び出し): 修正前ファイル→2 ／ 修正後ファイル→3</pre>
-
-<h2>③b Macの重いものランキング（80521番「どこが重いか一覧」・実測）</h2>
-<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.82rem;overflow-x:auto;white-space:pre-wrap;">実測(status/machine_health.json 2026-10-19T22:59:53+0900。tools/machine_health.pyが心臓に相乗りして2分おきに測定):
-1位 工場（tamago-shinchoku の道具）        CPU108.1% mem0.87GB 15procs  ＝触るな（発車の心臓。止めると進捗が止まる）
-2位 node（tsc）                           CPU 54.0% mem1.28GB 1proc   ＝待てば消える（型チェックの一過性処理）
-3位 mds_stores（Spotlightの索引づくり）    CPU 36.3% mem2.29GB 1proc   ＝待てば消える（OS側。放っておけば終わる）
-4位 2.1.296（Claude本体）                 CPU 17.8% mem1.07GB 6procs  ＝閉じていい（使っていない分のセッション）
-5位 Coworkの作業場（仮想マシン）           CPU  1.6% mem7.64GB 1proc   ＝触るな（Claudeが動いている場所）
-6位 Brave Browser（たまごさんの作業場）    CPU  0.0% mem6.91GB 32procs ＝触るな（工場は絶対に触らない）
-7位 python（1145_jissoku.py）             CPU  7.0% mem0.02GB 1proc   ＝居座っている（26,400曲の生存チェック・正常な長時間ジョブ）
-結論: いちばん重いのは「工場（心臓が動かしている道具）」自身のCPU使用。Brave/Cowork/Claude本体はメモリは大きいがCPUはほぼ使っていない＝メモリを削ってもロードは下がらない。
-      今回の「同時2本に絞られる」の直接原因は、このCPU/ロードの総量そのものではなく、下の「スワップの首」バグ（実際の負荷と無関係に1〜2本へ固定されていた）だった。</pre>
-
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>修正した本番コード(tools/dojisu_jougen.py・main反映済み)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/4f5dc1fcf28c8d66c8c842b23f5cb290997bf582" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/4f5dc1fcf28c8d66c8c842b23f5cb290997bf582</a></li>
+  <li><b>修正コミット(machine_health.py/factory_status.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/8e98af734d3d" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/8e98af734d3d</a></li>
+  <li><b>80521番向け一覧の公開コミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/91f8b2b8d17474ee7a28d2cc74a46f3d343a8b1d" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/91f8b2b8d17474ee7a28d2cc74a46f3d343a8b1d</a></li>
+  <li><b>重さの実測一覧(raw json)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/mac_juuten_98405.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/mac_juuten_98405.json</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>実測①：メモリ余裕38本・ロード余裕4本あるのに、スワップだけの理由で同時上限が2本に溶接されていた(修正前のstatus/dojisu_jougen.json)</td><td class="yes">直った</td></tr>
-<tr><td>実測②：claude起動の物理関所(1158_kanmon.py)のjougen()が、同じ本番環境で2本→3本に変化した</td><td class="yes">直った</td></tr>
-<tr><td>実測③：1158_kanmon.pyの待ちログ(status/kanmon.jsonl)に実害（最大31分待ち・タイムアウト33件）が記録されている</td><td class="yes">既存の実害ログで確認済み</td></tr>
-<tr><td>合成テスト：メモリ15GB・ロード健全・スワップ残り1.1GBだけ低いケースで、首が正しく「ロード」になり6本まで許す(以前は2本止まり)</td><td class="yes">yes</td></tr>
-<tr><td>合成テスト：メモリ4.2GB・ロード20・スワップ0.3GBと本当に全部苦しいケースでは、修正後も0本まで正しく落ちる(安全側は壊していない)</td><td class="yes">yes</td></tr>
+<tr><td>chrome-headless-shellの回収漏れ(cmd300文字制限)</td><td class="yes">直った(実行ファイル名でもマッチ・600文字に拡張)</td></tr>
+<tr><td>回収ロジックが正当なrender.py処理を誤killするリスク</td><td class="yes">直った(祖先を遡って保護するロジックを追加)</td></tr>
+<tr><td>swap使用量の記録が1000倍の単位バグ</td><td class="yes">直った(/1024を追加・6660.75→6.5GBで実測一致)</td></tr>
+<tr><td>80521番(Macのどこが重いか一覧)</td><td class="yes">status/public/mac_juuten_98405.jsonとして公開</td></tr>
+<tr><td>ロード比を1.0未満に下げる(依頼の数値目標)</td><td class="no">未達。現在1.81。主要因は同時並行セッション数で個別修正では届かない</td></tr>
 </table>
 
 <footer>
