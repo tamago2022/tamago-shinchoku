@@ -12,6 +12,9 @@
      本番の全マガジン・特集で読み込みに失敗する画像（404 等）を tools/magazine/img_kenpin.py で探す
   ⑥ 本文の中に出典リンク（a.cw-src）が残っている号＝不合格（出典は記事の最後に章ごと・tools/magazine/shutten.py）。
      特集（React）は出典の表 shuttenGroups.generated.ts がソースの <Src> と合っているか（tools/magazine/shutten_tsx.py --check）
+2026-10-19 追加（たまごさん【10-19確定】新しいマガジンの原則）：
+  ⑧ 曲は6〜8曲（上限8）。章（section id="chNN"）のうち主役の動画（cw-video--main）を持つものを曲として数え、8超を不合格。
+     既存の号が落ちるので、まずは警告（kyoku_over8・Dispatch に号の一覧を1行）。gokaku には効かせない（KYOKU_GATE_STRICT=True で効く）。
 
 曲の決め方（アーティストの取り違え禁止＝sekisho-artist-song の基準）：
   ・マガジンの動画ID が coverGuideLite の曲の動画ID と完全一致（1曲だけ）→ その曲
@@ -49,6 +52,14 @@ SKIP = {'backnumber.html'}
 PATHS = [os.path.expanduser(p) for p in ('~/.npm-global/bin', '~/.local/bin')] + ['/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin']
 ENV = dict(os.environ, PATH=':'.join(PATHS + [os.environ.get('PATH', '')]))
 MIN_RELATED = 4
+MAX_SONGS = 8              # 【10-19確定】曲は6〜8曲（上限8）
+KYOKU_GATE_STRICT = False  # まずは警告。既存の号を組み直し終えたら True にする
+CHAP_RE = re.compile(r'<section\b[^>]*\bid="ch\d+"[^>]*>.*?(?=<section\b[^>]*\bid="ch\d+"|<section class="cw-close|</main>)', re.S)
+
+
+def kyokusuu(h):
+    """マガジンの曲数＝章のうち主役の動画（cw-video--main）を持つものの数（もう1本・きっかけの動画は数えない）。"""
+    return sum(1 for c in CHAP_RE.findall(h) if 'cw-video--main' in c)
 
 
 def log(m):
@@ -369,9 +380,13 @@ def run(only=None, tsumu=True, put=True):
                 sh_ng.append({'page': '特集', 'links': why})
         except Exception as e:
             log('特集の目次を見られない %r' % (e,))
-        cnt['img_404'] = len(img_ng); cnt['shutten_ng'] = len(sh_ng)
+        # ⑧ 曲数（上限8）
+        kyoku = {n: kyokusuu(open(os.path.join(md, n), encoding='utf-8').read()) for n in names}
+        over8 = [{'page': n, 'songs': k} for n, k in sorted(kyoku.items()) if k > MAX_SONGS]
+        cnt['img_404'] = len(img_ng); cnt['shutten_ng'] = len(sh_ng); cnt['kyoku_over8'] = len(over8)
         res = {'at': time.strftime('%F %T'), 'sec': int(time.time() - t0), 'count': cnt, 'changed': changed,
-               'img_ng': img_ng, 'shutten_ng': sh_ng, 'gokaku': not img_ng and not sh_ng,
+               'img_ng': img_ng, 'shutten_ng': sh_ng, 'kyokusuu': kyoku, 'kyoku_over8': over8,
+               'gokaku': not img_ng and not sh_ng and not (KYOKU_GATE_STRICT and over8),
                'mags': {n: rows for n, rows in mags.items()}}
         if put and changed:
             res['pushed'] = push(w, changed)
@@ -483,6 +498,10 @@ def report(res):
               ('不合格：壊れた画像%d・本文の出典リンク%d／' % (c.get('img_404', 0), c.get('shutten_ng', 0)) if (c.get('img_404') or c.get('shutten_ng')) else '') + '曲%d／ページが無かった%d（ほか名前の合う候補あり%d）／関連4未満%d／コピー・メモ不足%d／リンク取り違え%d／本番で開かない%d／その場で直した%d（直す便：%s）' % (
                   c['songs'], c['no_page'], c.get('cand', 0), c['related_lt4'], c['copy_memo_ng'], c['link_ng'], c['prod_ng'], c['fixed'], '、'.join(res.get('jobs') or []) or 'なし'),
               [SITE + '/magazine/backnumber.html'])
+    if res.get('kyoku_over8'):
+        cu.outbox('【マガジンの関所・曲数】8曲を超える号%d（%s）' % (len(res['kyoku_over8']), '警告' if not KYOKU_GATE_STRICT else '不合格'),
+                  '曲は6〜8曲（10-19確定）。超えている号：' + '、'.join('%s=%d曲' % (x['page'], x['songs']) for x in res['kyoku_over8']),
+                  [SITE + '/magazine/backnumber.html'])
 
 
 def self_test():
@@ -508,6 +527,12 @@ def self_test():
     import img_kenpin, shutten
     import toc_smooth
     assert img_kenpin.self_test() == 0 and shutten.self_test() == 0 and toc_smooth.self_test() == 0
+    # ⑧ 曲数（主役の動画のある章だけ数える。もう1本は数えない）
+    ch = lambda i, more=False: ('<section class="cw-chapter" id="ch%02d"><figure class="cw-video cw-video--main"></figure>' % i
+                                + ('<figure class="cw-video cw-video--more"></figure>' if more else '') + '</section>')
+    assert kyokusuu('<main>' + ''.join(ch(i, i % 2 == 0) for i in range(1, 8)) + '<section class="cw-close"></section></main>') == 7
+    assert kyokusuu('<main>' + ''.join(ch(i) for i in range(1, 10)) + '</main>') == 9 > MAX_SONGS
+    assert kyokusuu('<main><section class="cw-chapter" id="ch01"><p>動画なし</p></section></main>') == 0
     print('SELF-TEST OK')
     return 0
 
