@@ -69,7 +69,18 @@
   <li><b>本番ページ（cover-guide）</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
 </ul>
 
-
+<h2>⑤ 実測の生データ（再現できるように）</h2>
+<div class="note">
+取得方法：<code>node -e "fetch('https://joy-relief-station.lovable.app/cover-guide').then(...)"</code>（2026-10-20 04:30頃JST、複数回実行して毎回同じ結果）。
+取得したHTML本文中に <code>salon-mic</code> は1件含まれ、該当箇所は以下（生データそのまま）。
+</div>
+<pre style="background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">&lt;p class="salon-say" data-slot="assistant-message"&gt;どんな感じ？&lt;/p&gt;&lt;form class="salon-ask"&gt;&lt;input type="text" placeholder="" aria-label="案内人に話しかける" value=""/&gt;&lt;button type="button" class="salon-mic" data-action="talk" data-live="false" aria-pressed="false" aria-label="声で話す"&gt;...</pre>
+<div class="note">
+出所：<code>src/components/ConciergeChat.tsx:727</code> の <code>const salonCards = cards.slice(0, 4);</code>（ユーザーの気分発言を受けて候補を4枚提示するロジック）が、同ファイルの data-slot="assistant-message" 等のUIとセットで本番に出ている。4枚のカード自体は会話後に動的表示されるため静的HTMLには現れないが、入口（salon-mic・salon-ask）が本番に存在し壊れていないことを確認した。
+</div>
+<div class="note">
+関連する別要望「その四つに質問できるようにして」は別案件として既に <b>done</b>（<a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1521-akahantei-yonken-faq.html" target="_blank" rel="noopener">1521番の確認ページ</a>）。本件(1495番)は実行すべき追加修正を含まない感想と判断した。
+</div>
 
 <footer>
 このページは #1495 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
