@@ -172,6 +172,7 @@ def tataku(url, timeout=8):
 
 
 _TAG = re.compile(r"<(script|style)[^>]*>.*?</\1>|<[^>]+>", re.S | re.I)
+_HEAD = re.compile(r"<head\b[^>]*>.*?</head\s*>", re.S | re.I)
 _KARA = re.compile(r"(準備中|coming soon|工事中|404|Not Found|ページがありません|"
                    r"この内容はまだありません|TODO|準備しています)", re.I)
 
@@ -262,8 +263,16 @@ def kinshi_moji(go=None):
 
 
 def shiteki_ni_kakaru(body, go=None):
-    """★過去の指摘に引っかかるか。引っかかったら出さずに差し戻す。"""
-    t = _TAG.sub(" ", body or "")
+    """★過去の指摘に引っかかるか。引っかかったら出さずに差し戻す。
+
+    ★2026-10-20（1623号）実測で発見：<head>内のtitle/meta（例：全アーティストページ
+    共通のSEOタイトル定型文「○○｜代表曲・関連アーティスト｜ごきげん補給所」）まで
+    判定対象に含んでいたため、禁止語リストの「代表曲」に毎回誤爆していた。
+    この仕組みの意図は「本文のコピー文に出てくる煽り語」を禁止することなので、
+    <head>（タイトル・メタタグ）は判定前に除去する（本文=<body>の地の文だけを見る）。
+    """
+    b = _HEAD.sub(" ", body or "")
+    t = _TAG.sub(" ", b)
     hit = []
     for rx, naze in _NG_HONBUN:
         if rx.search(t):

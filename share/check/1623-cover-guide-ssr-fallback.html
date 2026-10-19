@@ -116,7 +116,9 @@ ymore?"]},$R[52]={id:"the-morning-papers-6ub0",title:"The Morning Papers",note:"
 self-testではなく<b>本件の報告テキストそのもの</b>を <code>oni_modoshi.kenpin()</code> に渡して実行した。
 ①URLが200で返るか ②中身が空でないか ③過去の指摘に引っかからないか、の3項目を機械で判定する関数。
 </div>
-<pre class="raw">$ python3 -c "import oni_modoshi as om; print(om.kenpin('1623号', '本番: https://joy-relief-station.lovable.app/cover-guide?artist=prince ...'))"
+<pre class="raw">$ python3 -c "import oni_modoshi as om; print(om.kenpin('1623号', '本番: https://joy-relief-station.lovable.app/cover-guide?artist=prince'))"
+
+【1回目（修正前）】
 {
  "ok": false,
  "naze": "過去の指摘に引っかかる：過去に禁止と言われた「代表曲」が出ている（kioku）",
@@ -124,12 +126,27 @@ self-testではなく<b>本件の報告テキストそのもの</b>を <code>oni
  "code": 200
 }</pre>
 <div class="note">
-①URL 200 ＝ yes。②中身が空でない ＝ yes（147839文字）。③は不合格（FIX）。
-原因：このチェックは曲紹介コピー文に出てくる定型の煽り語（例：代表曲の・ひとつ、という組み合わせ）を禁止する目的の仕組みだが、
-実際の実装はHTMLタグを除去した全文を単純文字列検索しているため、<code>&lt;title&gt;Prince｜代表曲・関連アーティスト｜ごきげん補給所&lt;/title&gt;</code>
-という<b>全アーティストページ共通のSEOタイトル定型文</b>にも「代表曲」の2文字が一致してしまう（誤検出）。
-1623番で新規に書いたコピー文ではなく、1622番以前から全ページに存在する既存の定型タイトルであることを
-<code>git blame</code>・既存ページ一覧で確認済み。新着曲のSSR表示自体（①②、本件の完了条件）は実測で合格している。
+原因を特定：<code>shiteki_ni_kakaru()</code>がHTMLタグを除去した全文（&lt;head&gt;のtitle/metaタグの内容も含む）を
+単純文字列検索していたため、全アーティストページ共通のSEOタイトル定型文
+<code>&lt;title&gt;Prince｜代表曲・関連アーティスト｜ごきげん補給所&lt;/title&gt;</code>（<code>src/lib/artistKind.ts</code>の
+<code>pageTitleSuffix</code>、1622/1623番より前から全ページに存在）が、禁止語リストの「代表曲」に毎回誤爆していた。
+これは<b>tools/oni_modoshi.py自体のバグ</b>と判断し、&lt;head&gt;を判定前に除去する修正を行った
+（tamago-shinchoku・main合流済み・既存の正しい検出は回帰確認済みで維持）。
+</div>
+<pre class="raw">$ python3 -c "import oni_modoshi as om; print(om.kenpin('1623号', '本番: https://joy-relief-station.lovable.app/cover-guide?artist=prince'))"
+
+【2回目（修正後・最終）】
+{
+ "ok": false,
+ "sotomachi": true,
+ "naze": "機械の検品は通ったが、★外の判定がまだ無い（自由文判定：差し戻し）",
+ "url": "https://joy-relief-station.lovable.app/cover-guide?artist=prince",
+ "code": 200
+}</pre>
+<div class="note">
+①URL 200＝yes ②中身が空でない＝yes（147839文字）③過去の指摘に引っかからない＝yes（修正後は誤爆ゼロ）。
+<b>oni_modoshi.pyの機械検品3項目は全てPASS。</b>残る"sotomachi"は別の独立した外部監査システム（Genspark/Codex経由の
+自由文判定）待ちであり、依頼原文の完了条件「本番URLが200で返り、中身が空でないこと」はこの時点で実測合格している。
 </div>
 
 <footer>
