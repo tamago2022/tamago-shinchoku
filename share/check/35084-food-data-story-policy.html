@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35084 食べ物の収集方針：データ×物語を優先 確認ページ</title>
+<title>#35084 食べ物の仕入れ方針：『美味しい』だけでなく、データか物語がある商品を優先する 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,38 +47,41 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35084 食べ物の収集方針：データ×物語を優先</div>
-<h1>#35084 食べ物の収集方針：データ×物語を優先</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35084 食べ物の仕入れ方針：『美味しい』だけでなく、データか物語がある商品を優先する</div>
+<h1>#35084 食べ物の仕入れ方針：『美味しい』だけでなく、データか物語がある商品を優先する</h1>
 <div class="date">2026-10-19 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主方針（2026-08-10）『単なる美味しいだけでなく、実際に人が喜んだというデータ、作っている人の物語があるものを優先』を実装。FoodCardにreactionEvidence（データ）・makerStory（物語）を追加し、既存のcopy/aboutに書かれている事実だけから抽出して設定（作り話はしない）。食の部屋の詳細ページで値がある時だけ「📊 みんなの反応」「👤 作っている人」として表示。恒久ルールとして仕入れマニュアルに追記済み。
+店主方針（2026-08-10）『美味しいだけでなく、実際に人が喜んだというデータか、作っている人の物語があるものを優先して集めてほしい』を実装した。<code>src/lib/foodProductRegistry.ts</code>に<code>makerStory</code>(作り手の物語)・<code>joyEvidence</code>(人が喜んだデータ)を追加し、機械検品(<code>checkRegistration()</code>)の必須項目にした。既存商品（マルドン シーソルト 125g）へ実在する出典（公式Our Story・楽天レビュー）で記入し、商品ページに短い1行で表示するよう実装。<code>.claude/skills/food-product-register/SKILL.md</code>（今後の仕入れ手順の正本）にもこの基準を明記した。<b>main合流済み（commit 20b52f530）。ただしLovable本番公開は2026-09-12頃から続くサイト全体の既知の障害（Publishing blocked due to suspicious activity／公開解除状態）でブロックされており、本番にはまだ反映されていない（AI側に公開を実行する手段が無いことを本セッションでも再確認済み：CDP Chrome未起動・launchd自動公開便は無効化済み・新規Chrome起動は機械的に禁止されている）。</b>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>27件中13件</b><span>データ/物語のどちらかが埋まっているカード数（実測）</span></div>
-  <div class="num"><b>6件</b><span>データ(reactionEvidence)が埋まっている数</span></div>
-  <div class="num"><b>9件</b><span>物語(makerStory)が埋まっている数</span></div>
+  <div class="num"><b>8/8</b><span>機械検品(checkRegistration)合格項目</span></div>
+  <div class="num"><b>8/8</b><span>逆テスト(わざと違反させて落ちるか)合格</span></div>
+  <div class="num"><b>4</b><span>変更したファイル数</span></div>
+  <div class="num"><b>2</b><span>実データの出典件数（公式Our Story・楽天レビュー4.63/16件）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番：広島リアカーおにぎり（両方あり）</b><a href="https://joy-relief-station.lovable.app/room/food/hiroshima-onigiri" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/food/hiroshima-onigiri</a></li>
-  <li><b>本番：シーラカンスモナカ（両方あり）</b><a href="https://joy-relief-station.lovable.app/room/food/sendai-coelacanthe-monaka" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/food/sendai-coelacanthe-monaka</a></li>
+  <li><b>GitHubのコミット(main合流分)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/20b52f530" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/20b52f530</a></li>
+  <li><b>対象の商品ページ（本番・現状はまだ旧版）</b><a href="https://joy-relief-station.lovable.app/room/card/maldon-sea-salt-125g" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/maldon-sea-salt-125g</a></li>
+  <li><b>公式の作り手の物語（出典）</b><a href="https://maldonsalt.com/our-story/" target="_blank" rel="noopener">https://maldonsalt.com/our-story/</a></li>
+  <li><b>人が喜んだデータの出典（楽天レビュー 4.63/16件）</b><a href="https://item.rakuten.co.jp/tsutsu-uraura/maldon-125/" target="_blank" rel="noopener">https://item.rakuten.co.jp/tsutsu-uraura/maldon-125/</a></li>
+  <li><b>今後の仕入れ基準（SKILL.md・GitHub）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/food-product-register/SKILL.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/food-product-register/SKILL.md</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>FoodCard型にreactionEvidence/makerStoryを追加</td><td class="yes">yes</td></tr>
-<tr><td>既存カードのcopy/aboutにある事実から抽出(作り話なし)</td><td class="yes">yes</td></tr>
-<tr><td>詳細ページに値がある時だけ表示するUIを追加</td><td class="yes">yes</td></tr>
-<tr><td>仕入れマニュアルに恒久ルールとして追記</td><td class="yes">yes</td></tr>
-<tr><td>mainへpush済み</td><td class="yes">yes</td></tr>
-<tr><td>本番Lovableへの反映（押す係の自動公開待ち）</td><td class="yes">pending</td></tr>
+<tr><td>公式情報(出典URL+確認日)</td><td class="yes">○</td></tr>
+<tr><td>作り手の物語(makerStory・出典つき)</td><td class="yes">○</td></tr>
+<tr><td>人が喜んだデータ(joyEvidence・出典つき)</td><td class="yes">○</td></tr>
+<tr><td>mainへの合流</td><td class="yes">○</td></tr>
+<tr><td>Lovable本番への公開</td><td class="no">×(サイト全体の既知障害でブロック中)</td></tr>
 </table>
 
 <footer>
