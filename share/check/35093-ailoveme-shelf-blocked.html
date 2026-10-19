@@ -52,7 +52,7 @@
 <div class="date">2026-10-19 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の依頼（2026-08-10、1ヶ月以上未着手の判定日赤）：cute世界の棚一覧の一番上に新規棚「アイラブミー」を作り、ナミミコ「自分に甘えじんぐマスターナミ！」を入れる。調査の結果、当時一度実装されていたのにmainへマージされず取り残されていたと判明。今回originmain基点で再実装し、commit <code>0e3ff8f79</code>としてmainへfast-forward合流済み。ただしLovableの本番公開は、2026-10-14以降発生している工場全体の既知障害（OAuth refresh_token失効＋公開専用Chrome未起動）でブロック中。この障害は#35040以降すでに5件目の同一原因で、新しい障害ではない。コード側の追加修正は不要、承認URLを一度開く（ブラウザ操作が可能なセッションの仕事）か、店主がLovable画面で直接「公開」を押せば一括反映される見込み。
+店主の依頼（2026-08-10、1ヶ月以上未着手の判定日赤）：cute世界の棚一覧の一番上に新規棚「アイラブミー」を作り、ナミミコ「自分に甘えじんぐマスターナミ！」を入れる。調査の結果、当時一度実装されていたのにmainへ合流されず取り残されていたと判明。今回あらためて実装し、joy-relief-stationのmainへ合流済み。ただしLovableの本番公開は、2026-10-14以降発生している工場全体の既知障害（Lovable側の認証切れと公開専用ブラウザ未起動）でブロック中。この障害は#35040以降すでに5件目の同一原因で、新しい障害ではない。コード側の追加修正は不要、認証のやり直し（ブラウザ操作が可能なセッションの仕事）か、店主がLovable画面で直接「公開」を押せば一括反映される見込み。
 </div>
 
 <h2>② 数字</h2>
@@ -64,18 +64,18 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainのコミット(0e3ff8f79・非公開リポ)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/0e3ff8f79" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/0e3ff8f79</a></li>
-  <li><b>本番トップ(HTTP200・アイラブミーは未出現)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>mainの変更内容（非公開リポ）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/0e3ff8f79" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/0e3ff8f79</a></li>
+  <li><b>本番トップ（HTTP200・アイラブミーはまだ未出現）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
   <li><b>同一原因の前例#35040の確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35040-benri-ibukuro-oauth-blocked.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35040-benri-ibukuro-oauth-blocked.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>cute世界shelves配列の先頭にai-love-me棚を追加</td><td class="yes">OK</td></tr>
-<tr><td>棚id/カードidの重複チェック（0件）</td><td class="yes">OK</td></tr>
-<tr><td>originmainへfast-forward合流</td><td class="yes">OK</td></tr>
-<tr><td>Lovable本番への公開反映</td><td class="no">未達（OAuth障害でブロック）</td></tr>
+<tr><td>cute世界の棚一覧の先頭にアイラブミー棚を追加</td><td class="yes">OK</td></tr>
+<tr><td>棚・カードの重複チェック</td><td class="yes">OK（重複0件）</td></tr>
+<tr><td>joy-relief-stationのmainへ合流</td><td class="yes">OK</td></tr>
+<tr><td>Lovable本番への公開反映</td><td class="no">未達（認証障害でブロック）</td></tr>
 </table>
 
 <footer>
