@@ -148,6 +148,14 @@ def claude_env():
     return _claude_auth.claude_env()
 
 
+def _lane_env(item):
+    """全開レーン（fableLane）の便は、関所1158でも全開レーンの席で数える（Opus/Sonnetへ載せ替えた便も・2026-10-19夜）。"""
+    env = claude_env()
+    if item.get("fableLane") and item.get("fixedModel") in ("claude-fable-5-1", "claude-opus-5-5", "claude-sonnet-5"):
+        env["TAMAGO_ZENKAI_LANE"] = "1"
+    return env
+
+
 def log(msg):
     try:
         with io.open(LOG, "a", encoding="utf-8") as f:
@@ -1369,8 +1377,9 @@ def harvest(q):
         # 2026-10-19 たまごさん「5時間枠が尽きて止まっても、リセット後に自動で発車を再開」
         #   → 週次だけでなく5時間枠（"hit your limit"/"session limit"/"5-hour limit" + resets）も同じ扱い。
         _lim_txt = ((raw or "") + " " + (result or "")).lower()
-        _is_weekly = "weekly limit" in _lim_txt
-        _is_5h = (not _is_weekly) and ("resets" in _lim_txt) and (
+        _is_weekly = "weekly limit" in _lim_txt and "fable" not in _lim_txt
+        # Fableだけの週枠切れは全体の止め旗にしない（ほかのモデルは動ける・2026-10-19夜）
+        _is_5h = (not _is_weekly) and ("fable" not in _lim_txt) and ("resets" in _lim_txt) and (
             "hit your limit" in _lim_txt or "session limit" in _lim_txt or "5-hour limit" in _lim_txt
             or "usage limit" in _lim_txt or "limit reached" in _lim_txt)
         if _is_weekly or _is_5h:
@@ -2140,6 +2149,9 @@ def urgent_lane_safe_max(alive, safe_max, measured_safe_max, items, now=None):
 
 
 FABLE_LANE_MAX = 3
+# 2026-10-19夜 たまごさん「Fableの週の枠は尽きた。Fable指定で待っている便は止めずにOpusへ、それ以外はSonnetで」
+#   → 全開レーン（fableLane）は、Fableから載せ替えた Opus 5.5／Sonnet の便も同じレーン・同じ負荷判定で出す。
+LANE_MODELS = (FABLE, OPUS55, SONNET)
 
 
 def fable_lane_borrow_pick(items, now=None):
@@ -2152,7 +2164,7 @@ def fable_lane_borrow_pick(items, now=None):
       お金が出る仕事（costsMoney かつ未承認）とテスト項目は貸さない。長く待つ順の先頭を返す。無ければ None。"""
     cands = [it for it in urgent_wait_list(items, now)
              if it.get("urgent")
-             and not (it.get("fableLane") and it.get("fixedModel") == FABLE)
+             and not (it.get("fableLane") and it.get("fixedModel") in LANE_MODELS)
              and not it.get("test")
              and not (it.get("costsMoney") and not it.get("costApproved"))]
     return cands[0] if cands else None
@@ -2168,7 +2180,7 @@ def _fable_lane(q, items):
     if not ok:
         return False
     # 席を貸した仕事（fableLaneBorrow）もレーンの走行本数に数える＝7本目は作らない
-    lane = [it for it in items if (it.get("fableLane") and it.get("fixedModel") == FABLE) or it.get("fableLaneBorrow")]
+    lane = [it for it in items if (it.get("fableLane") and it.get("fixedModel") in LANE_MODELS) or it.get("fableLaneBorrow")]
     if not lane:
         return False
 
@@ -2899,7 +2911,7 @@ def launch_one(item, q, alive, safe_max):
         new_id = resume_id
         logf = os.path.join(REPO, "status", "auto-launch-%s.log" % new_id[:8])
         # 2026-10-15：Fableで走っていた仕事はFableのまま起こす（モデルを変えるとキャッシュが作り直しで高くつく）
-        _resume_model = pick_model(item) if item.get("fixedModel") == FABLE else SONNET
+        _resume_model = pick_model(item) if item.get("fixedModel") in LANE_MODELS else SONNET
         cmd = [CLAUDE, "-p", "--resume", resume_id, "--model", _resume_model,
                "--permission-mode", "auto", "--output-format", "json",
                "【再開】たまごさんが緊急の割り込みのために一度止めた仕事です。"
@@ -2929,7 +2941,7 @@ def launch_one(item, q, alive, safe_max):
         with open(logf, "ab") as f:
             f.write(("\n=== %s 自動発車: %s\n" % (time.strftime("%F %T"), item.get("title"))).encode())
             p = subprocess.Popen(cmd, cwd=wt, stdout=f, stderr=subprocess.STDOUT,
-                                 stdin=subprocess.DEVNULL, start_new_session=True, env=claude_env())
+                                 stdin=subprocess.DEVNULL, start_new_session=True, env=_lane_env(item))
         pid = p.pid
     except Exception as e:
         log("着火に失敗 %s: %s" % (item.get("title"), e))
