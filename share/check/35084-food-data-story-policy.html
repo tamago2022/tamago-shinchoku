@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35084 食べ物の収集方針：データ×物語を優先 確認ページ</title>
+<title>#35084 食べ物の収集方針：『美味しい』だけでなく、データ×物語を優先する（2系統の実装を統合） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,38 +47,46 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35084 食べ物の収集方針：データ×物語を優先</div>
-<h1>#35084 食べ物の収集方針：データ×物語を優先</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35084 食べ物の収集方針：『美味しい』だけでなく、データ×物語を優先する（2系統の実装を統合）</div>
+<h1>#35084 食べ物の収集方針：『美味しい』だけでなく、データ×物語を優先する（2系統の実装を統合）</h1>
 <div class="date">2026-10-19 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主方針（2026-08-10）『単なる美味しいだけでなく、実際に人が喜んだというデータ、作っている人の物語があるものを優先』を実装。FoodCardにreactionEvidence（データ）・makerStory（物語）を追加し、既存のcopy/aboutに書かれている事実だけから抽出して設定（作り話はしない）。食の部屋の詳細ページで値がある時だけ「📊 みんなの反応」「👤 作っている人」として表示。恒久ルールとして仕入れマニュアルに追記済み。
+店主方針（2026-08-10）『単なる美味しいだけでなく、実際に人が喜んだというデータ、作っている人の物語があるものを優先』を、<b>2つの並行セッションがそれぞれ別の場所に実装</b>。①食の部屋(動画カード)：<code>FoodCard</code>に<code>reactionEvidence</code>(データ)・<code>makerStory</code>(物語)を追加し、既存のcopy/aboutにある事実だけから抽出(作り話なし)、値がある時だけ「📊みんなの反応」「👤作っている人」を表示。27件中13件に適用済み。②買ってよかった棚(商品台帳)：<code>foodProductRegistry.ts</code>に<code>makerStory</code>・<code>joyEvidence</code>を追加し機械検品(<code>checkRegistration()</code>)の必須項目化、既存商品(マルドン塩)へ実在する出典(公式Our Story・楽天レビュー)で記入。<b>両方ともmainへpush済み。ただしLovable本番公開は2026-09-12頃から続くサイト全体の既知の障害（Publishing blocked due to suspicious activity／公開解除状態）でブロック中で、本番にはまだ反映されていない（CDP Chrome未起動・launchd自動公開便は無効化済み・新規Chrome起動は機械的に禁止）。これはこのチケット固有の問題ではなくサイト全体の構造的な障害。</b>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>27件中13件</b><span>データ/物語のどちらかが埋まっているカード数（実測）</span></div>
-  <div class="num"><b>6件</b><span>データ(reactionEvidence)が埋まっている数</span></div>
-  <div class="num"><b>9件</b><span>物語(makerStory)が埋まっている数</span></div>
+  <div class="num"><b>27件中13件</b><span>①食の部屋：データ/物語いずれかが埋まっているカード</span></div>
+  <div class="num"><b>8/8</b><span>②買ってよかった棚：機械検品(checkRegistration)合格項目</span></div>
+  <div class="num"><b>8/8</b><span>②買ってよかった棚：逆テスト合格</span></div>
+  <div class="num"><b>2</b><span>②の実データ出典件数（公式Our Story・楽天レビュー4.63/16件）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番：広島リアカーおにぎり（両方あり）</b><a href="https://joy-relief-station.lovable.app/room/food/hiroshima-onigiri" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/food/hiroshima-onigiri</a></li>
-  <li><b>本番：シーラカンスモナカ（両方あり）</b><a href="https://joy-relief-station.lovable.app/room/food/sendai-coelacanthe-monaka" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/food/sendai-coelacanthe-monaka</a></li>
+  <li><b>本番：①広島リアカーおにぎり（データ・物語両方あり）</b><a href="https://joy-relief-station.lovable.app/room/food/hiroshima-onigiri" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/food/hiroshima-onigiri</a></li>
+  <li><b>本番：①シーラカンスモナカ（データ・物語両方あり）</b><a href="https://joy-relief-station.lovable.app/room/food/sendai-coelacanthe-monaka" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/food/sendai-coelacanthe-monaka</a></li>
+  <li><b>本番：②マルドン塩（商品台帳・本番は現状まだ旧版）</b><a href="https://joy-relief-station.lovable.app/room/card/maldon-sea-salt-125g" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/maldon-sea-salt-125g</a></li>
+  <li><b>②出典：公式Our Story（作り手の物語）</b><a href="https://maldonsalt.com/our-story/" target="_blank" rel="noopener">https://maldonsalt.com/our-story/</a></li>
+  <li><b>②出典：楽天レビュー4.63/16件（人が喜んだデータ）</b><a href="https://item.rakuten.co.jp/tsutsu-uraura/maldon-125/" target="_blank" rel="noopener">https://item.rakuten.co.jp/tsutsu-uraura/maldon-125/</a></li>
+  <li><b>GitHubのコミット：①FoodCard実装</b><a href="https://github.com/tamago2022/joy-relief-station/commit/6ba2ca638" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/6ba2ca638</a></li>
+  <li><b>GitHubのコミット：②foodProductRegistry実装</b><a href="https://github.com/tamago2022/joy-relief-station/commit/20b52f530" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/20b52f530</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>FoodCard型にreactionEvidence/makerStoryを追加</td><td class="yes">yes</td></tr>
-<tr><td>既存カードのcopy/aboutにある事実から抽出(作り話なし)</td><td class="yes">yes</td></tr>
-<tr><td>詳細ページに値がある時だけ表示するUIを追加</td><td class="yes">yes</td></tr>
-<tr><td>仕入れマニュアルに恒久ルールとして追記</td><td class="yes">yes</td></tr>
-<tr><td>mainへpush済み</td><td class="yes">yes</td></tr>
-<tr><td>本番Lovableへの反映（押す係の自動公開待ち）</td><td class="yes">pending</td></tr>
+<tr><td>①FoodCard型にreactionEvidence/makerStory追加</td><td class="yes">○</td></tr>
+<tr><td>①既存copy/aboutの事実から抽出(作り話なし)</td><td class="yes">○</td></tr>
+<tr><td>①詳細ページに値がある時だけ表示するUI</td><td class="yes">○</td></tr>
+<tr><td>②foodProductRegistry.tsにmakerStory/joyEvidence追加</td><td class="yes">○</td></tr>
+<tr><td>②機械検品の必須項目化+逆テスト</td><td class="yes">○</td></tr>
+<tr><td>①②とも仕入れマニュアルに恒久ルール追記</td><td class="yes">○</td></tr>
+<tr><td>①②ともmainへ合流</td><td class="yes">○</td></tr>
+<tr><td>①②ともLovable本番への公開</td><td class="no">×(サイト全体の既知障害でブロック中)</td></tr>
 </table>
 
 <footer>
