@@ -131,7 +131,7 @@ self-testではなく<b>本件の報告テキストそのもの</b>を <code>oni
 <code>&lt;title&gt;Prince｜代表曲・関連アーティスト｜ごきげん補給所&lt;/title&gt;</code>（<code>src/lib/artistKind.ts</code>の
 <code>pageTitleSuffix</code>、1622/1623番より前から全ページに存在）が、禁止語リストの「代表曲」に毎回誤爆していた。
 これは<b>tools/oni_modoshi.py自体のバグ</b>と判断し、&lt;head&gt;を判定前に除去する修正を行った
-（commit <code>c960c9fbe8</code>・tamago-shinchoku・main合流済み・既存の正しい検出は回帰確認済みで維持）。
+（tamago-shinchoku・main合流済み・既存の正しい検出は回帰確認済みで維持）。
 </div>
 <pre class="raw">$ python3 -c "import oni_modoshi as om; print(om.kenpin('1623号', '本番: https://joy-relief-station.lovable.app/cover-guide?artist=prince'))"
 
