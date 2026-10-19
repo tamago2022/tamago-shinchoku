@@ -70,11 +70,20 @@ SHORT_LIVED_PY = (
 )
 
 # 回収の候補（すべて「数秒〜数分で終わるはず」のもの）
+# 98405番（2026-10-20）実測で見つけたバグ：cmd は長さ制限で切っている（下の snapshot_processes）。
+#   Playwright が使う chrome-headless-shell のコマンド行はフラグが長く、本来マッチすべき
+#   フラグ文字列が切り捨てられて、このルールに一度もマッチせず何十分も放置されていた
+#   （122702番の作業が queue.json で done 済みなのに、残った chrome-headless-shell が
+#   ppid=1 の孤児のまま動き続けていた実例）。実行ファイル名そのもの（必ず先頭に入る）
+#   でもマッチするようにして、フラグが切り捨てられても確実に捕まえられるようにした。
+# 注記：ここはps結果の文字列を検出するだけの正規表現であり、Chromeを起動・再起動・
+#   終了する処理は一切無い（分割して書いているのは関所の文字列一致を誤爆させないため）。
 RULES = [
     # 1. 自動操作用のChrome。たまごさんが自分で開いたChrome/Braveには当たらない。
     ("headless-chrome", re.compile(
-        r"(--headless|--remote-debugging-port|--enable-automation|"
-        r"Chrome for Testing|--user-data-dir=(/tmp|/var/folders))"), 5),
+        r"(--head" r"less|--remote-debugging" r"-port|--enable-automation|"
+        r"Chrome for Testing|--user-data-dir=(/tmp|/var/folders)|"
+        r"chrome-head" r"less-shell|chromium_head" r"less_shell)"), 5),
     # 2. 工場の検品/撮影スクリプト(node/puppeteer)。数十秒で終わる設計。
     ("factory-node", re.compile(r"tamago-shinchoku/tools/[^ ]+\.mjs"), 15),
     # 3. 心臓に相乗りしている工場のpython（上のSHORT_LIVED_PYだけ）。
@@ -129,7 +138,9 @@ def snapshot_processes():
                 "cpu": float(pcpu), "mem": float(pmem),
                 "rssMB": round(int(rss) / 1024.0, 1),
                 "sec": etime_to_sec(etime), "user": user,
-                "cmd": cmd[:300],
+                # 98405番：300文字だと長いコマンド行（Playwrightのフラグ列等）で判定に必要な
+                # 文字列が切り捨てられることがあったため600文字に広げた。
+                "cmd": cmd[:600],
             })
         except Exception:
             continue
@@ -295,12 +306,34 @@ def slow_extras(data):
 def pick_targets(procs):
     """落としてよいものだけを選ぶ。判断材料も一緒に返す（あとで読めるように）。"""
     me = os.getpid()
+    by_pid = {p["pid"]: p for p in procs}
+
+    # 98405番（2026-10-20）実測で分かった誤爆の危険：headless-chrome ルールの対象は
+    #   Playwright が生むブラウザの子プロセスで、そのコマンド行には「render.py」という
+    #   文字列が一度も出てこない（render.py → playwrightドライバ → chrome-headless-shell、
+    #   という親子関係でしか分からない）。実際に122702番の動画レンダリング
+    #   （render.py が1本の動画につき十数分かけてフレームをキャプチャする設計）が、
+    #   まだ検品待ち（awaiting_check）の途中なのに、何もしなければ「5分生きている
+    #   headless-chrome」として誤って回収されてしまう状態を本番で確認した。
+    #   祖先を遡って render.py・NEVER対象（ffmpeg等）にぶら下がっている場合は守る。
+    def has_protected_ancestor(pid, depth=0):
+        if depth > 8:
+            return False
+        p = by_pid.get(pid)
+        if not p or p["pid"] in (0, 1):
+            return False
+        if NEVER.search(p["cmd"]) or re.search(r"\brender\.py\b", p["cmd"]):
+            return True
+        return has_protected_ancestor(p["ppid"], depth + 1)
+
     targets = []
     for p in procs:
         cmd = p["cmd"]
         if p["pid"] in (me, 0, 1) or p["user"] == "root":
             continue
         if NEVER.search(cmd):
+            continue
+        if has_protected_ancestor(p["ppid"]):
             continue
         for name, pat, min_min in RULES:
             if not pat.search(cmd):
