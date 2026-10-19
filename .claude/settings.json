@@ -162,6 +162,17 @@
             "timeout": 40
           }
         ]
+      },
+      {
+        "$kanmon": "atokatazuke",
+        "$comment": "98404号（2026-10-19）使ったらしまうの関所。/private/tmpに作ったものを消していなければexit 2で終了を拒否する（tab_kanmonと同じ、existsSyncだけでOSには触らない）。逆テスト：node tools/stop_kanmon/atokatazuke_kanmon.mjs --self-test",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/atokatazuke_kanmon.mjs",
+            "timeout": 30
+          }
+        ]
       }
     ],
     "SubagentStop": [
@@ -193,6 +204,17 @@
             "type": "command",
             "command": "python3 /Users/mac/Desktop/tamago-shinchoku/tools/1200_tatamu.py --stop-hook",
             "timeout": 40
+          }
+        ]
+      },
+      {
+        "$kanmon": "atokatazuke",
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/atokatazuke_kanmon.mjs",
+            "timeout": 30
           }
         ]
       }
