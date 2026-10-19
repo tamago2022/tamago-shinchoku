@@ -24,14 +24,12 @@
   ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shots{display:flex;flex-direction:column;gap:14px;margin:0 0 20px;}
+  .shot{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
   .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
   .shot.before b{color:var(--aka);}
   .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  .shot pre{margin:0;white-space:pre-wrap;word-break:break-word;background:#f7f4ec;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:0.8rem;line-height:1.5;}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
@@ -49,31 +47,62 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1621 ひとこと目安箱：フレンドテストの並び順バグ修正</div>
 <h1>#1621 ひとこと目安箱：フレンドテストの並び順バグ修正</h1>
-<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認（10-20 作り直し：前回は店主が開けないリンクが貼られていたため、押せるリンクと中身の提示方法を直した）</div>
 
 <div class="fix">
-全ページ下部の『ひとこと目安箱』の中で、フレンドテストの✓ボタン群がヘッダー寄り（感想/間違い切替ボタンの直後）に出ていたのを、本来あるべき位置（自由記述・メール入力の後、送信ボタンの直前）へ移動しました。ロジック（✓の動作）は変更していません。あわせて、Spotifyプレイリストを仕入れの手がかりにする既存の方針に念押しを1行追記しました。
+① 全ページ下部の『ひとこと目安箱』の中で、フレンドテストの✓ボタン群が感想/間違いの切替ボタン直後（ヘッダー寄り＝上）に出ていたのを、本来の位置（自由記述・メール入力のあと、送信ボタンの直前＝下）へ移動しました。ボタンの動き（✓を付ける・外す）は変更していません。あわせて、仕入れで迷った時はSpotifyの自分のプレイリストを手がかりに広げる、という既存の方針に念押しを1行追記しました。
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（何件中何件）</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+<div class="num"><b>2 / 2</b><span>直した項目（表示順の移動＋方針追記）</span></div>
+<div class="num"><b>1 / 1</b><span>フレンドテストのブロックを正しい位置へ移動</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク（店主が開けるものだけ）</h2>
 <ul class="links">
-  <li><b>コード変更（GitHub）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/72d95203fbae718b58ca251cf9df8c37406029b6" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/72d95203fbae718b58ca251cf9df8c37406029b6</a></li>
-  <li><b>本番トップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番トップ（この修正を含む最新コードが動いている場所）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
+<div class="note">※前回のページに貼っていた「コード変更（GitHub）」のリンクは、非公開リポジトリのコミットを指しており、店主が押すと404になるため削除しました。中身は下の④にそのまま文字で載せています。</div>
+
+<h2>④ 直した場所（画面のスクリーンショットの代わり）</h2>
+<div class="note">このフィードバックドア自体は、店主の別の指示（2026-10-04の簡素化）で現在<code>SITE_FEEDBACK_DOOR_ENABLED=false</code>により全ページ非表示中です。画面には出ないため、見た目のビフォーアフター画像は撮れません。代わりに、コード（<code>src/components/FeedbackDoor.tsx</code>）の中でフレンドテストのブロックがどこからどこへ移動したかを、そのまま文字で載せます。</div>
+<div class="shots">
+  <div class="shot before">
+    <b>直す前：感想/間違いの切替ボタンの直後（ヘッダー寄り）に出ていた</b>
+<pre>切替ボタン（感想／間違い）
+↓
+【フレンドテストの✓ボタン群】← ここにあった（上すぎる）
+↓
+自由記述の入力欄
+↓
+メール入力欄
+↓
+送信ボタン</pre>
+  </div>
+  <div class="shot after">
+    <b>直した後：送信ボタンの直前（本来の位置）へ移動した</b>
+<pre>切替ボタン（感想／間違い）
+↓
+自由記述の入力欄
+↓
+メール入力欄
+↓
+【フレンドテストの✓ボタン群】← ここへ移動した（送信の直前）
+↓
+送信ボタン</pre>
+  </div>
+</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>FeedbackDoor.tsx の並び順修正</td><td class="yes">直した</td></tr>
-<tr><td>Spotify仕入れ方針の念押し追記</td><td class="yes">直した</td></tr>
-<tr><td>本番画面での見た目確認</td><td class="yes">現在は非表示設定のため対象外</td></tr>
+<tr><td>FeedbackDoor.tsx の並び順修正（コード上の位置）</td><td class="yes">直した</td></tr>
+<tr><td>Spotify仕入れ方針の念押し追記（.claude/manuals/01-ingest-linking.md）</td><td class="yes">直した</td></tr>
+<tr><td>mainへの合流</td><td class="yes">合流済み</td></tr>
+<tr><td>本番画面での見た目確認（実際のボタンの位置）</td><td class="no">機能自体が非表示設定のため対象外（上の④に場所を文字で記載）</td></tr>
+<tr><td>本番トップURLが200で中身が空でないこと</td><td class="yes">実測で200・本文38,400バイトを確認</td></tr>
 <tr><td>Lovable公開（本番反映）</td><td class="no">工場全体のOAuth障害で保留中</td></tr>
 </table>
 
