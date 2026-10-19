@@ -52,34 +52,36 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-09-19 20:23の発言は、音声コンシェルジュ（サロン会話）がユーザーの気分発言を受けて候補カードを4枚(cards.slice(0,4))提示する機能への感想でした。同時刻の別発言「その四つに質問したら答えられるような調子にして」は、既に別案件として作業中です。本件（4つ出してよかった、という感想そのもの）には追加の修正指示が含まれないため、感想対象の機能が本番で今も生きているかを実測しました。
+★訂正：前回は「音声コンシェルジュが候補を4枚出す機能への感想」と解釈したが、これは誤りだった。同時刻(2026-09-19 20:23)の別発言「で、こので四つ出してきて、その四つに質問したらちょっと答えられるような調子な。」が、既に別案件(1521番)として「判定日赤になっている案件の中から代表4件を選び、クリックすると答えが読めるFAQ形式でまとめる」という解釈で実装・公開・完了（done）済みであることを突き止めた。1495番「4つパッと出してきてよかった」は、この「代表4件を選んで見せる」という行為そのものへの感想であり、対応する実装は1521番として既に存在する。1495番自体に追加で必要な実装は無いと判断した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番cover-guideページのHTTPステータス</span></div>
-  <div class="num"><b>67741文字</b><span>本番ページの本文サイズ</span></div>
-  <div class="num"><b>あり</b><span>音声コンシェルジュの「声で話す」ボタン(salon-mic)の存在</span></div>
+  <div class="num"><b>200</b><span>1521番確認ページの本番(GitHub Pages)HTTPステータス</span></div>
+  <div class="num"><b>4件</b><span>1521番確認ページに実在するQ1〜Q4（代表4案件のFAQ）の件数</span></div>
+  <div class="num"><b>done</b><span>1521番のqueue.json上のstatus</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番ページ（cover-guide）</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>1521番の確認ページ（「4つ出してFAQに」の実装本体）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1521-akahantei-yonken-faq.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1521-akahantei-yonken-faq.html</a></li>
 </ul>
 
 <h2>⑤ 実測の生データ（再現できるように）</h2>
 <div class="note">
-取得方法：<code>node -e "fetch('https://joy-relief-station.lovable.app/cover-guide').then(...)"</code>（2026-10-20 04:30頃JST、複数回実行して毎回同じ結果）。
-取得したHTML本文中に <code>salon-mic</code> は1件含まれ、該当箇所は以下（生データそのまま）。
+取得方法：<code>node -e "fetch('https://tamago2022.github.io/tamago-shinchoku/share/check/1521-akahantei-yonken-faq.html').then(...)"</code>（2026-10-20 05:00頃JST）。HTTP 200・本文に以下の見出しが実在する（生データそのまま、タグを除去して抜粋）。
 </div>
-<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">&lt;p class="salon-say" data-slot="assistant-message"&gt;どんな感じ？&lt;/p&gt;&lt;form class="salon-ask"&gt;&lt;input type="text" placeholder="" aria-label="案内人に話しかける" value=""/&gt;&lt;button type="button" class="salon-mic" data-action="talk" data-live="false" aria-pressed="false" aria-label="声で話す"&gt;...</pre>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">Q1. #1「シェアしても画像が出ない」はなぜ赤？
+Q2. #6「外部から入れた曲の曲名とアーティストを自動で埋める」はなぜ赤？
+Q3. #42「アーティストページの無い曲にページを作る」はなぜ赤？
+Q4. #157「『飼い主大好き』が2つあるので1つに統合する」はなぜ赤？</pre>
 <div class="note">
-出所：<code>src/components/ConciergeChat.tsx:727</code> の <code>const salonCards = cards.slice(0, 4);</code>（ユーザーの気分発言を受けて候補を4枚提示するロジック）が、同ファイルの data-slot="assistant-message" 等のUIとセットで本番に出ている。4枚のカード自体は会話後に動的表示されるため静的HTMLには現れないが、入口（salon-mic・salon-ask）が本番に存在し壊れていないことを確認した。
+queue.json上の1521番原文（status/queue.json・n:1521）：「【判定日で赤になった案件】で、こので四つ出してきて、その四つに質問したらちょっと答えられるような調子な。」。status は <b>done</b>。1495番の原文「4つパッと出してきてよかった。」と同一タイムスタンプ(2026-09-19 20:23)・同一セッション由来であり、「4つ選んで見せる」行為への賛辞（1495番）と、その行為をFAQ形式に発展させてほしいという追加要望（1521番）という、1組の会話だったと判断する。
 </div>
 <div class="note">
-関連する別要望「その四つに質問できるようにして」は別案件として既に <b>done</b>（<a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1521-akahantei-yonken-faq.html" target="_blank" rel="noopener">1521番の確認ページ</a>）。本件(1495番)は実行すべき追加修正を含まない感想と判断した。
+旧版（salon-mic＝音声コンシェルジュの話）は誤読だったため撤回した。salon-mic自体は本番(cover-guideページ)に実在するが、1495番の文脈とは無関係と判断し、この確認ページからは除いた。
 </div>
 
 <footer>
