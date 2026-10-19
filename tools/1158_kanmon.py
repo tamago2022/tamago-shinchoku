@@ -94,7 +94,8 @@ def fable_lane(argv):
     """2026-10-15 Fableレーン：Fable指定の起動は別のスロット（最大3本）で数える。
     普段の上限（負荷で1本まで落ちる）に詰まって30分待ち→畳む係に居残り扱いで殺される、を止める。
     鍵は長期トークン（claude_auth・CLAUDE_CODE_OAUTH_TOKEN）なので取り合いは起きない。"""
-    if "claude-fable-5-1" not in argv:
+    # 2026-10-19夜：Fable週枠切れでOpus/Sonnetへ載せ替えた全開レーンの便も同じ席（auto_launcher._lane_env が印を付ける）
+    if "claude-fable-5-1" not in argv and os.environ.get("TAMAGO_ZENKAI_LANE") != "1":
         return False
     try:
         sys.path.insert(0, HERE)
