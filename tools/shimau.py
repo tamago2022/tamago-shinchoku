@@ -154,6 +154,24 @@ def browser_cache():
     return "%dか所（Cookie・ログイン情報は残した）" % n
 
 
+def touchcheck_souji():
+    """98404号：触る検品(verify_click.mjs)が作るstatus直下のtouchcheck-*.json/.log/
+    *.png は、auto_launcher.pyが回収直後にその場で消す仕組みを別途入れた（即時）。
+    ここは保険：それをすり抜けて1日以上残ったものを拾って消す（取りこぼしゼロ化）。"""
+    now = time.time()
+    n, b = 0, 0
+    for p in glob.glob(os.path.join(REPO, "status", "touchcheck-*")):
+        try:
+            st = os.lstat(p)
+            if now - st.st_mtime > DAY:
+                b += st.st_size
+                os.remove(p)
+                n += 1
+        except Exception:
+            pass
+    return "%d個 %.3fGB" % (n, b / 1e9)
+
+
 def hdd_okiba_souji():
     if not hdd_okiba.ok():
         return "HDDが無い"
@@ -256,6 +274,22 @@ def self_test():
         import atokatazuke_shirabe  # noqa: F401
     except Exception as e:
         raise AssertionError("atokatazuke_shirabe が呼べない: %s" % e)
+    # 98404号：触る検品の残骸(touchcheck-*)が、本当に消えるかの逆テスト
+    try:
+        import auto_launcher as al
+        base = os.path.join(REPO, "status", "touchcheck-SELFTESTXX")
+        made = [base + ext for ext in (".json", ".log", ".before.png", ".after.png", ".noresponse-0.png")]
+        for p in made:
+            open(p, "w").close()
+        al._cleanup_touch_check_files(made[0], made[1])
+        remain = [p for p in made if os.path.exists(p)]
+        for p in remain:
+            os.remove(p)  # 後始末（失敗時に自分のテストファイルを残さない）
+        assert not remain, "touchcheckの残骸が消えなかった: %s" % remain
+    except AssertionError:
+        raise
+    except Exception as e:
+        raise AssertionError("_cleanup_touch_check_files の逆テストに失敗: %s" % e)
     print("self-test OK")
 
 
@@ -282,6 +316,7 @@ def main():
     save(res)
     step(res, "$TMPDIR の古いもの", tmpdir)
     step(res, "Claude の古いセッションの outputs", claude_sessions)
+    step(res, "触る検品の残骸(touchcheck-*・98404号の保険)", touchcheck_souji)
     # 2026-10-17 ブラウザ（Brave・Chrome）のフォルダは一切触らない＝ブラウザのキャッシュ掃除は廃止（tools/browser_mamoru.py）
     step(res, "HDD の置き場（日数で）", hdd_okiba_souji)
     step(res, "場所ごとの上限（youryou_jougen）", jougen_run)

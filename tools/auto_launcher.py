@@ -24,6 +24,7 @@
   - Fableは使わない（no_fable.flag があるかに関わらず、ここでは常にSonnet）
     ※例外（2026-10-15）：status/fable_week.json の期間中、fixedModel="claude-fable-5-1" を明示した仕事だけFable
 """
+import glob
 import io
 import json
 import os
@@ -769,6 +770,28 @@ def collect_touch_check(it):
     if tech_error and not no_resp and not console_errs and tested == 0:
         return None, "触る検品が技術的に失敗しました：%s" % str(tech_error)[:150], report
     return ok, reason, report
+
+
+def _cleanup_touch_check_files(outjson, logf):
+    """98404号「使ったらしまう」：触る検品(verify_click.mjs)が作ったtouchcheck-*.json/.log/
+    .before.png/.after.png/.noresponse-N.pngを、結果を記録した直後にその場で消す。
+    実績は_record_touch_checkのstatsへ既に永続化済みなので、生ファイルを残す理由が無い。
+    （実測で2123件・215MBが回収後も消されず溜まっていた・998404号で発見）"""
+    try:
+        if outjson:
+            base = outjson[:-5] if outjson.endswith(".json") else outjson
+            for p in glob.glob(base + "*"):
+                try:
+                    os.remove(p)
+                except Exception:
+                    pass
+        if logf:
+            try:
+                os.remove(logf)
+            except Exception:
+                pass
+    except Exception as e:
+        log("触る検品の残骸の片付けに失敗（次回shimau.pyの保険で回収）: %s" % e)
 
 
 def _record_touch_check(ok, reason, url, item_n=None, report=None):
@@ -1660,6 +1683,7 @@ def harvest(q):
         t_ok, t_reason, t_report = touch_outcome
         t_url = it.get("touchUrl") or ""
         _record_touch_check(t_ok, t_reason, t_url, it.get("n"), t_report)
+        _cleanup_touch_check_files(it.get("touchOutJson"), it.get("touchLog"))
         for k in ("touchPid", "touchOutJson", "touchLog", "touchStartedAt"):
             it.pop(k, None)
         if t_ok is False:
