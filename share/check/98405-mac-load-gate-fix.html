@@ -74,6 +74,18 @@ claude起動を物理的に絞る関所(tools/1158_kanmon.py)が読む「同時�
 実測(修正後 22:51): status/dojisu_jougen.json 同時上限=3 天井={メモリ:35 スワップ:2 ロード:3} 首=ロード load1=11.93 load5=10.38 cores=8 ratio1=1.491
 実測(1158_kanmon.py jougen()を本番コードで直接呼び出し): 修正前ファイル→2 ／ 修正後ファイル→3</pre>
 
+<h2>③b Macの重いものランキング（80521番「どこが重いか一覧」・実測）</h2>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.82rem;overflow-x:auto;white-space:pre-wrap;">実測(status/machine_health.json 2026-10-19T22:59:53+0900。tools/machine_health.pyが心臓に相乗りして2分おきに測定):
+1位 工場（tamago-shinchoku の道具）        CPU108.1% mem0.87GB 15procs  ＝触るな（発車の心臓。止めると進捗が止まる）
+2位 node（tsc）                           CPU 54.0% mem1.28GB 1proc   ＝待てば消える（型チェックの一過性処理）
+3位 mds_stores（Spotlightの索引づくり）    CPU 36.3% mem2.29GB 1proc   ＝待てば消える（OS側。放っておけば終わる）
+4位 2.1.296（Claude本体）                 CPU 17.8% mem1.07GB 6procs  ＝閉じていい（使っていない分のセッション）
+5位 Coworkの作業場（仮想マシン）           CPU  1.6% mem7.64GB 1proc   ＝触るな（Claudeが動いている場所）
+6位 Brave Browser（たまごさんの作業場）    CPU  0.0% mem6.91GB 32procs ＝触るな（工場は絶対に触らない）
+7位 python（1145_jissoku.py）             CPU  7.0% mem0.02GB 1proc   ＝居座っている（26,400曲の生存チェック・正常な長時間ジョブ）
+結論: いちばん重いのは「工場（心臓が動かしている道具）」自身のCPU使用。Brave/Cowork/Claude本体はメモリは大きいがCPUはほぼ使っていない＝メモリを削ってもロードは下がらない。
+      今回の「同時2本に絞られる」の直接原因は、このCPU/ロードの総量そのものではなく、下の「スワップの首」バグ（実際の負荷と無関係に1〜2本へ固定されていた）だった。</pre>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>修正した本番コード(tools/dojisu_jougen.py・main反映済み)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/4f5dc1fcf28c8d66c8c842b23f5cb290997bf582" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/4f5dc1fcf28c8d66c8c842b23f5cb290997bf582</a></li>
