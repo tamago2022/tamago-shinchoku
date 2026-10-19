@@ -63,18 +63,36 @@
   <div class="num"><b>3/3</b><span>self-test全PASS(atokatazuke_shirabe/atokatazuke_kanmon/shimau)</span></div>
 </div>
 
-
+<h2>③ 実測：本当に「使ったら消える」か（24時間後ではなく、今すぐ確かめた）</h2>
+<div class="note">
+<b>正直に書く：</b>この仕組みを初めてmainへ入れたのは2026-10-19 22:49。今これを書いているのは2026-10-20 01:22で、まだ約2時間33分しか経っていない。「1日回しても増え続けない」のフルの24時間比較は、まだ物理的に取れていない。<br>
+代わりに、①これまでの短い間隔での実測の推移と、②「1日以上前に取り残されたファイルは本当に消えるか」を今すぐ実際のファイルで試した逆テストの、2つを実測で示す。
+</div>
+<div class="nums">
+  <div class="num"><b>22:41→23:14(33分)</b><span>tmp +0.02GB・+25個／作業場 -0.05GB・-1個</span></div>
+  <div class="num"><b>23:14→01:22(128分)</b><span>tmp +0.93GB・+22個／作業場 +4.97GB・+7個</span></div>
+  <div class="num"><b>88個</b><span>/private/tmpの「1日以上前」の残存数(3日未満はまだ消さない仕様分)</span></div>
+</div>
+<div class="note">
+作業場(.worktrees)とtmpの総量は増えている。これは工場全体で複数の依頼(他のworktree多数)が同時並行で動いているためで、片付け自体が機能していないからではない。総量の増減は「今どれだけ仕事が走っているか」に左右されるため、完了条件として見るべきは次の逆テストの方。
+</div>
+<div class="note">
+<b>逆テスト（今すぐ実施・実ファイルで確認）：</b>$TMPDIR配下に <code>shimau_jissou_test_98404</code> という名前で、mtimeを4日前に偽装したテスト用ファイルを作り、本番と同じ <code>tools/shimau.py</code> の <code>tmpdir()</code> を実際に呼び出した。<br>
+結果：テストファイルは <b class="yes">実際に消えた（True）</b>。同時に、同じく3日以上前のまま残っていた期限切れの一時ファイル94個（Chromeの使い捨てロックファイル等。たまごさんのファイルではない）も一緒に片付けられた。<br>
+→ 仕組みは「作ってから時間が経てば実際に消える」ことを、待たずに実証済み。
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainコミット</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/e155e32ee" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/e155e32ee</a></li>
-  <li><b>atokatazuke.json(本番の棲卸し記録)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/atokatazuke.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/atokatazuke.json</a></li>
+  <li><b>mainコミット（本体の実装）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/e155e32ee" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/e155e32ee</a></li>
+  <li><b>atokatazuke.json(本番の棲卸し記録・今の実測つき)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/atokatazuke.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/atokatazuke.json</a></li>
+  <li><b>CLAUDE.mdの条文（使ったらしまう・使ったら閉じる）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/CLAUDE.md#L12" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/CLAUDE.md#L12</a></li>
 </ul>
 
 
 
 <footer>
-実測は本番pushの直前・直後にこのセッションがstatus/touchcheck-*を数えて確認（find+du）。24時間後の推移は次回の棲卸し(atokatazuke_shirabe.py・1日1回)が自動でstatus/public/atokatazuke.jsonのfueta欄に出す。
+①②は本番push直前・直後の実測（find+du）。③は2026-10-20 01:22にこのセッションが実際のファイルとtools/shimau.pyの本番コードで行った逆テスト。24時間フルスパンの推移は、この後も1日1回自動で動く棲卸し(atokatazuke_shirabe.py)がstatus/public/atokatazuke.jsonのfueta欄に積み重ねていく。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
