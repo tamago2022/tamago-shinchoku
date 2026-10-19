@@ -86,11 +86,16 @@ SCRIPT = ('<script>(function(){var c=document.querySelector("link[rel=canonical]
           'var fl=function(id){var y=a.querySelector("use");if(y){y.setAttribute("href","#i-ok");setTimeout(function(){y.setAttribute("href",id)},1800)}},'
           'cp=function(s,ok,ng){var f=function(){var x=document.createElement("textarea");x.value=s;x.style.cssText="position:fixed;top:0;left:0;opacity:0";document.body.appendChild(x);x.focus();x.select();var r=0;try{r=document.execCommand("copy")}catch(e){}x.remove();r?ok():ng&&ng()};'
           'navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(s).then(ok,f):f()};'
-          # LINE（2026-10-17 店主指示）：スマホ＝line.me/R/share（アプリの送り先選択）、PC＝共有シート→無ければコピー＋line://。ログイン画面には飛ばさない
-          'if(k==="line"){ev.preventDefault();if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){location.href="https://line.me/R/share?text="+E(pt);return}'
-          'var fb=function(){cp(pt,function(){fl("#i-line")});var l=document.createElement("a");l.href="line://msg/text/"+E(pt);l.style.display="none";document.body.appendChild(l);try{l.click()}catch(e){}l.remove()};'
-          'navigator.share?navigator.share({title:t,text:w.p+q,url:u}).catch(function(e){if(!e||e.name!=="AbortError")fb()}):fb();return}'
-          'if(k==="wa")h="https://wa.me/?text="+E(pt);else if(k==="x")h="https://x.com/intent/tweet?text="+E(st)+"&url="+E(u);'
+          # LINE・WhatsApp（2026-10-19 たまごさん「PCのBraveで『LINEを開きますか？』が出る。もうダメ」）：line:// などアプリ起動のリンクは使わない。
+          #   スマホ・タブレット＝OSの共有シート（いつもの送り先）→使えない時だけ公式の https（line.me/R/share・wa.me）
+          #   PC＝公式のWebの共有ページを新しいタブ（LINE＝social-plugins.line.me/lineit/share［LINE Developers「Using custom icons」］、WhatsApp＝web.whatsapp.com/send）
+          'if(k==="line"||k==="wa"){ev.preventDefault();var mob=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1),'
+          'web=k==="line"?"https://social-plugins.line.me/lineit/share?url="+E(u)+"&text="+E(w.p+"\\n"+q):"https://web.whatsapp.com/send?text="+E(pt),'
+          'app=k==="line"?"https://line.me/R/share?text="+E(pt):"https://wa.me/?text="+E(pt);'
+          'if(!mob){window.open(web,"_blank","noopener");return}'
+          'var go=function(){var l=document.createElement("a");l.href=app;l.rel="noopener";document.body.appendChild(l);l.click();l.remove()};'
+          'navigator.share?navigator.share({title:t,text:w.p+q,url:u}).catch(function(e){if(!e||e.name!=="AbortError")go()}):go();return}'
+          'if(k==="x")h="https://x.com/intent/tweet?text="+E(st)+"&url="+E(u);'
           'else if(k==="fb")h="https://www.facebook.com/sharer/sharer.php?u="+E(u);else if(k==="th")h="https://www.threads.com/intent/post?text="+E(st)+"&url="+E(u);'
           'if(h){ev.preventDefault();window.open(h,"_blank","noopener");return}'
           'if(k==="sh"){navigator.share({title:t,text:t,url:u}).catch(function(){});return}'
