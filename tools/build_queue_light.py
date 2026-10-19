@@ -37,6 +37,13 @@ QUEUE_NEXT = os.path.join(REPO, "status", "queue_next.json")
 # 「次に発車」が読むフィールドだけ（index.html の pri/rankCmp/renderNext が使うものが全部）。
 NEXT_FIELDS = ("n", "hyoudai", "title", "label", "status", "priority", "order", "urgent")
 
+# 98407番（2026-10-19〜20）：発車待ちが4,000件を超えて育ち、「待機中は全件入れる」ままだと
+# queue_next.json 自体が1MBを超え、tools/pages_publish.sh の関所（status/public/の1MB超は
+# 公開から外す）に無言で弾かれて本番で404になっていた（実測：4880件で1,112,148バイト）。
+# index.html はこのファイルを読んでも先頭5件しか表に出さない（renderNext(pool.slice(0,5),...)）
+# ので、全件を運ぶ必要はない。優先度の高い側から上限件数までに切って軽くする。
+MAX_NEXT_ITEMS = 500
+
 # 軽量版から取り除くフィールド（ブラックリスト）。
 STRIP_FIELDS = ("what", "result")
 
@@ -99,15 +106,52 @@ def build(queue_path=QUEUE, out_path=QUEUE_LIGHT, keep=DONE_KEEP):
     return light
 
 
+def _safe_num(v, default=9999):
+    try:
+        if v is None:
+            return default
+        return float(v)
+    except Exception:
+        return default
+
+
+def _is_front_candidate(it):
+    """index.html の dan()==0 相当（差し戻し・急ぎ）を軽く判定する。
+    yomeru()の複雑な整形は複製しない（ズレの危険が大きい割に、ここで要るのは
+    『候補から漏らさない』ことだけ）。raw文字列に「差し戻し」を含むか、
+    urgentフラグが立っているかだけを見る——dan()の本体と同じ入力・同じ条件。"""
+    raw = str(it.get("title") or it.get("label") or "")
+    if "差し戻し" in raw:
+        return True
+    u = it.get("urgent")
+    return u is True or u == "True" or u == "true"
+
+
 def _write_queue_next(q, items, out_path=QUEUE_NEXT):
     """トップの「次に発車」が読むぶんだけの極小ファイルを書く。
 
     待機中（status == "waiting"）の項目だけを、7フィールドに削って出す。
     トップはこれを1回読んで一発で描く（古い並びを先に出して上書きする作りをやめるため）。
+
+    98407番：待機が MAX_NEXT_ITEMS を超える時は、優先度の高い側（差し戻し・急ぎ→
+    priority数字が小さい→orderが小さい→n昇順）から上限件数までに切る。表示に使うのは
+    どのみち先頭5件だけ（index.html の pool.slice(0,5)）なので、大きな余裕を持たせてある。
+    件数自体（totalWaiting）は切る前の本当の数を別フィールドで渡し、
+    「残っている仕事 N件」の表示が縮んだ配列のサイズに引きずられないようにする。
     """
     waiting = [it for it in items if it.get("status") == "waiting"]
+    total_waiting = len(waiting)
+
+    front = [it for it in waiting if _is_front_candidate(it)]
+    rest = [it for it in waiting if not _is_front_candidate(it)]
+    rest.sort(key=lambda it: (_safe_num(it.get("priority"), 9), _safe_num(it.get("order")), _safe_num(it.get("n"))))
+    ordered = front + rest
+
+    truncated = len(ordered) > MAX_NEXT_ITEMS
+    kept = ordered[:MAX_NEXT_ITEMS] if truncated else ordered
+
     slim = []
-    for it in waiting:
+    for it in kept:
         row = {}
         for k in NEXT_FIELDS:
             v = it.get(k)
@@ -118,7 +162,11 @@ def _write_queue_next(q, items, out_path=QUEUE_NEXT):
 
     out = {
         "updatedAt": q.get("updatedAt"),
-        "note": "トップの「次に発車」専用。待機中のみ・7項目のみ（tools/build_queue_light.py が生成）",
+        "note": "トップの「次に発車」専用。待機中のみ・7項目のみ（tools/build_queue_light.py が生成）。"
+                "98407番：1MB超で公開から外れる事故を防ぐため、待機が多い時は優先度の高い側から"
+                "上限%d件までに切る（表示は先頭5件だけなので十分な余裕）。" % MAX_NEXT_ITEMS,
+        "totalWaiting": total_waiting,
+        "truncated": truncated,
         "items": slim,
     }
     # これは画面が読むだけのファイルなので、改行と空白を入れずに詰めて書く（そのぶん軽い）。
