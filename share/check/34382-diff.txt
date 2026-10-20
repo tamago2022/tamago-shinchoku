@@ -1,0 +1,206 @@
+案件#34382「ブラウザ自動操作で誤魔化す応急処置ではなく、本物のソフトウェアとして作ってほしい」
+実装commit da66af65d（joy-relief-station・main合流済み）の中身をそのまま置いたもの。
+たまごさんが開けないGitHub非公開リポジトリへのcommitリンクの代わりに、ここに差分の実テキストを置く。
+
+commit da66af65d31f53e1e6c3096b90971c9a44143631
+Author: tamago-patrol-local[bot] <tamago-patrol-local@users.noreply.github.com>
+Date:   Tue Oct 20 18:53:55 2026 +0900
+
+    元ネタ逆引きツールをブラウザ自動操作の応急処置から本物のAPI経路へ格上げ（34382番）
+
+    2026-08-01の指摘「ブラウザ自動操作で誤魔化す応急処置ではなく、本物のソフトウェア
+    として作ってほしい」に対応。scripts/reverse-lookup/は画面ありのChromeをCDPで
+    自動操作してGoogleレンズの自動操作検知をすり抜ける実装になっていた
+    （lib/lens.mjs・lib/cdp.mjs・docs/operations/reverse-lookup.mdに残る
+    2026-08-01の実測メモが根拠）。2026-09-29の1186号（Chrome起動禁止の憲法）以降、
+    この経路は環境の関所で物理的に拒否されるようになっている。
+
+    - lib/vision-api.mjs（新規）: Google Cloud Vision API（WEB_DETECTION）へ
+      画像を直接POSTする、ブラウザを一切使わない経路を追加
+    - run.mjs: GOOGLE_VISION_API_KEY/GOOGLE_API_KEYがあればVision API経由を
+      自動優先、無ければ旧ブラウザ経路へフォールバック（1186号で動かない旨を明示）
+    - test.mjs（新規）+ package.json: ブラウザ・ネットワーク不要な分類ロジックを
+      機械的にPASS/FAIL判定する自動テスト（npm run test:reverse-lookup、8/8 PASS）
+    - docs/operations/reverse-lookup.md: 背景と鍵取得（店主操作）の必要性を追記
+
+    Vision API鍵は.env.localに存在しないため実通信は未検証（鍵取得はたまごさん
+    本人の操作が必要・確認義務③④）。判断メモはPENDING_DECISIONS.mdに記録。
+
+    Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+ .claude/PENDING_DECISIONS.md              |   5 ++
+ docs/operations/reverse-lookup.md         |  31 ++++++++-
+ package.json                              |   1 +
+ scripts/reverse-lookup/lib/vision-api.mjs | 109 ++++++++++++++++++++++++++++++
+ scripts/reverse-lookup/run.mjs            |  77 ++++++++++++++++-----
+ scripts/reverse-lookup/test.mjs           |  95 ++++++++++++++++++++++++++
+ 6 files changed, 300 insertions(+), 18 deletions(-)
+
+---------------------------------------------------------------------
+新規ファイル：scripts/reverse-lookup/lib/vision-api.mjs（全文）
+---------------------------------------------------------------------
+
+/**
+ * Google Cloud Vision API（Web Detection）で逆画像検索する「本物」経路。
+ *
+ * 背景（34382番）：
+ *  2026-08-01にたまごさんから「ブラウザ自動操作で誤魔化す応急処置ではなく、
+ *  本物のソフトウェアとして作ってほしい」と指摘された。当時は Google レンズへ
+ *  画面ありのChromeをCDPで自動操作して投げる方式（lens.mjs）しか経路が無く、
+ *  Googleの「通常と異なるトラフィック」判定を画面ありウィンドウで物理的に
+ *  すり抜ける、という場当たり的な実装だった。
+ *
+ *  さらに2026-09-29の1186号（Chrome起動禁止の憲法）以降、Chrome本体を
+ *  直接起動する処理そのものが関所で拒否されるようになったため、lens.mjs経路は
+ *  現在この環境では実行できない（起動しようとした時点で `tools/stop_kanmon/
+ *  1186_chrome_kidou_kinshi.mjs` が exit させる）。
+ *
+ *  この本物経路は、ブラウザを一切使わず、Google公式のREST API
+ *  （`https://vision.googleapis.com/v1/images:annotate`、feature=WEB_DETECTION）
+ *  へ画像をBase64で直接POSTする。公式ドキュメント：
+ *  https://cloud.google.com/vision/docs/detecting-web
+ *
+ *  必要なもの：`.env.local` または `.env` に `GOOGLE_VISION_API_KEY`
+ *  （無ければ `GOOGLE_API_KEY` で代用）。このAPIキーの取得（Google Cloud
+ *  プロジェクト作成・Vision API有効化・場合によっては決済情報登録）は
+ *  たまごさん本人の操作が必要（AI側では実行できない・確認義務③④に該当）。
+ *  月1,000ユニットまでは無料、以降は従量課金（Web Detectionの価格は
+ *  Google Cloudの価格表を参照のこと。実行前に本数×単価の見積もりを示す
+ *  運用ルールに従う）。
+ */
+
+import { readFileSync } from "node:fs";
+
+const ENDPOINT = "https://vision.googleapis.com/v1/images:annotate";
+
+/** .env.local → .env → process.env の順でキーを探す（値はログに出さない）。 */
+export function readVisionApiKey(root) {
+  if (process.env.GOOGLE_VISION_API_KEY) return process.env.GOOGLE_VISION_API_KEY;
+  if (process.env.GOOGLE_API_KEY) return process.env.GOOGLE_API_KEY;
+  for (const file of [".env.local", ".env"]) {
+    try {
+      const txt = readFileSync(`${root}/${file}`, "utf8");
+      for (const name of ["GOOGLE_VISION_API_KEY", "GOOGLE_API_KEY"]) {
+        const m = txt.match(new RegExp(`^\\s*${name}\\s*=\\s*(.*)\\s*$`, "m"));
+        if (m && m[1]) return m[1].replace(/^["']|["']$/g, "");
+      }
+    } catch {
+      /* 無ければ次を見る */
+    }
+  }
+  return null;
+}
+
+/**
+ * 画像1枚をVision API（WEB_DETECTION）へ投げ、既存の候補形式
+ * `{url, label}[]` に揃えて返す。ブラウザは一切使わない。
+ * @returns {Promise<{resultUrl:string|null, aiSummary:string, links:{url:string,label:string}[]}>}
+ */
+export async function searchByImageVisionApi(apiKey, imagePath) {
+  const bytes = readFileSync(imagePath);
+  const base64 = bytes.toString("base64");
+
+  const body = {
+    requests: [
+      {
+        image: { content: base64 },
+        features: [{ type: "WEB_DETECTION" }],
+      },
+    ],
+  };
+
+  const res = await fetch(`${ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    const msg = data?.error?.message || `HTTP ${res.status}`;
+    throw new Error(`Vision API エラー: ${msg}`);
+  }
+
+  const wd = data?.responses?.[0]?.webDetection;
+  if (!wd) {
+    return { resultUrl: null, aiSummary: "", links: [] };
+  }
+
+  const links = [];
+  const seen = new Set();
+
+  // 完全一致・部分一致で画像が載っているページ（元ネタ候補の本体）
+  for (const page of wd.pagesWithMatchingImages ?? []) {
+    if (!page.url || seen.has(page.url)) continue;
+    seen.add(page.url);
+    links.push({ url: page.url, label: page.pageTitle || "" });
+  }
+
+  // webEntities はURLではなく「これは何か」の説明（Rick Astleyなど）。
+  // AI要約の代わりとして文字列にまとめておく。
+  const entities = (wd.webEntities ?? [])
+    .filter((e) => e.description)
+    .slice(0, 8)
+    .map((e) => e.description);
+
+  return {
+    resultUrl: null, // ブラウザ結果ページという概念が無いため常にnull
+    aiSummary: entities.join(" / "),
+    links,
+  };
+}
+
+---------------------------------------------------------------------
+変更：run.mjs（鍵があればVision API優先、無ければ旧ブラウザ経路へ・該当箇所）
+---------------------------------------------------------------------
+
+   const visionKey = readVisionApiKey(ROOT);
+  const usingVisionApi = !!visionKey;
+  if (!args.json) {
+    console.log(
+      usingVisionApi
+        ? "── 本物経路：Google Cloud Vision API（ブラウザ不使用） ──"
+        : "⚠ GOOGLE_VISION_API_KEY が未設定のため、本物経路（Vision API）が使えません。",
+    );
+    if (!usingVisionApi) {
+      console.log(
+        "  旧来のブラウザ自動操作経路へフォールバックしますが、2026-09-29の1186号\n" +
+          "  （Chrome起動禁止の憲法）以降、この環境ではChrome本体の起動が拒否され\n" +
+          "  実行できません。詳細: docs/operations/reverse-lookup.md",
+      );
+    }
+  }
+
+  const runs = [];
+  if (usingVisionApi) {
+    for (const t of targets) {
+      if (!args.json) console.log(`── Vision検索: ${t.variant} ──`);
+      try {
+        const res = await searchByImageVisionApi(visionKey, t.path);
+        runs.push({ variant: t.variant, links: res.links, aiSummary: res.aiSummary, resultUrl: res.resultUrl });
+        if (!args.json) console.log(`  リンク ${res.links.length} 件を取得`);
+      } catch (e) {
+        if (!args.json) console.log(`  失敗: ${e.message}`);
+        runs.push({ variant: t.variant, links: [], error: e.message });
+      }
+    }
+  } else {
+    const { port } = await launchChrome({ port: CDP_PORT });
+    for (const t of targets) {
+      if (!args.json) console.log(`── レンズ検索（ブラウザ経路）: ${t.variant} ──`);
+      try {
+        const res = await searchByImage(port, t.path);
+        runs.push({ variant: t.variant, links: res.links, aiSummary: res.aiSummary, resultUrl: res.resultUrl });
+        if (!args.json) console.log(`  リンク ${res.links.length} 件を取得`);
+      } catch (e) {
+        if (!args.json) console.log(`  失敗: ${e.message}`);
+        runs.push({ variant: t.variant, links: [], error: e.message });
+      }
+    }
+  }
+
+---------------------------------------------------------------------
+新規ファイル：scripts/reverse-lookup/test.mjs（テスト本体、実行結果は 34382-test-log.txt）
+新規行：package.json に "test:reverse-lookup": "node scripts/reverse-lookup/test.mjs" を追加
+変更：docs/operations/reverse-lookup.md に「本物経路」の説明を追記（鍵取得が店主本人の操作である旨）
+---------------------------------------------------------------------

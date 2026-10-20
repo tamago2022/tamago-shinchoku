@@ -1,0 +1,26 @@
+
+> test:reverse-lookup
+> node scripts/reverse-lookup/test.mjs
+
+── readVisionApiKey：存在しない鍵名ではnullを返す ──
+  ✅ 架空のルートではnullを返す（例外を投げない）
+── candidates.mjs：分類ロジック ──
+  ✅ YouTube watchを正しく分類する
+  ✅ YouTube動画IDを正しく取り出す
+  ✅ youtu.be短縮URLからも動画IDを取り出す
+  ✅ 未知のサイトはwebとして分類する（元ネタ候補から外さない）
+── candidates.mjs：Vision API形式のレスポンスをrankCandidatesへ通す ──
+  ✅ 候補が2件（YouTube1件＋低信頼サイト1件）に整理される
+  ✅ 複数の切り出しで一致したYouTube動画が1位に来る
+  ✅ 9gagのような転載サイトは低信頼として減点されている
+
+══ 結果: 8 PASS / 0 FAIL ══
+
+※ ここでPASSしているのは「ブラウザ・ネットワークを使わない分類ロジック」のみ。
+  実際の逆画像検索（Vision API or ブラウザ経路）は手元で
+  `node scripts/reverse-lookup/run.mjs <画像>` を実行して確認する。
+
+── 2026-10-20 実測（本番確認用）──
+実行コマンド: npm run test:reverse-lookup
+実行場所: joy-relief-station リポジトリ（案件#34382・main合流済みコミット da66af65d）
+結果: 8 PASS / 0 FAIL（上記ログそのまま）
