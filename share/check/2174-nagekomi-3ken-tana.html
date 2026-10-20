@@ -52,7 +52,7 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主のスマホ投げ込み箱(犬の棚×2・猫の棚×1、合計3件)を、既存の管理画面関数(adminAddStockFromUrl / adminAddPick)を呼ぶ一度きりAPIで本番Supabaseへ投入。本番APIを実行し3件ともok:true(duplicate=true=既存stock再利用)で成功。さらにSupabase REST APIで直接確認し、admin_shelf_picksテーブルに3件とも実在(status:candidate)することを実測。役目を終えた一度きりAPIルートファイル(main commit a81ff9199)は、main上で削除コミット(commit 3f116b5b2)として反映済み(クリーンアップのみ、棚データには影響なし)。
+店主のスマホ投げ込み箱(犬の棚×2・猫の棚×1、合計3件)を、既存の管理画面関数(adminAddStockFromUrl / adminAddPick)を呼ぶ一度きりAPIで本番Supabaseへ投入。本番APIを実行し3件ともok:true(duplicate=true=既存stock再利用)で成功。さらにSupabase REST APIで直接確認し、admin_shelf_picksテーブルに3件とも実在(status:candidate)することを実測。役目を終えた一度きりAPIルートファイルは、mainへ削除反映済み(クリーンアップのみ、棚データには影響なし)。
 </div>
 
 <h2>② 数字</h2>
@@ -80,7 +80,7 @@
 </table>
 
 <footer>
-Lovableの「公開」ボタンはOAuth鍵失効(get_project 401 Not authenticated)・CDP(9223)未接続・Chrome新規起動禁止(1186号関所)の3重で、このセッションから物理的に押せていません。ただし3件の投入自体は本番Supabaseへ既に反映済み(過去の公開サイクルで本APIコードが実行され成功、2026-10-20実測)。クリーンアップ分(APIルート削除、main commit 3f116b5b2)のみLovable未公開です。
+Lovableの「公開」ボタンはOAuth鍵失効(get_project 401 Not authenticated)・CDP(9223)未接続・Chrome新規起動禁止(1186号関所)の3重で、このセッションから物理的に押せていません。ただし3件の投入自体は本番Supabaseへ既に反映済み(過去の公開サイクルで本APIコードが実行され成功、2026-10-20実測)。クリーンアップ分(APIルート削除)のみLovable未公開です。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
