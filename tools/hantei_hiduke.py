@@ -625,8 +625,42 @@ def hashiru(dry=False):
     return {"mita": mita, "aka": aka, "tojita": tojita, "zen": len(rows)}
 
 
+def suggest_next(n=5):
+    """1991番「意図を汲み取って、これできてないからここ進めよう、を半自動化したい」
+    への対応。★赤判定→kuriageru()で自動P1再発車、までは2026-09-26から既に実装済みだが、
+    『再発車した山のうち、次にどれから進めるべきか』は見える化されていなかった
+    （実測：2026-10-20時点で「判定日赤｜」waitingが3281件積まれている）。
+    新しい優先順位ロジックは発明せず、既存のauto_launcher.pyが使う
+    『queuedAtが古いもの＝最も長く放置されているものを先に』という考え方だけを
+    そのまま流用し、赤判定された案件のうちまだwaitingのものを並べて提示する。
+    実行順そのものはauto_launcher.effective_priority（p=1優先）が既に担っており、
+    本関数は「次に見るべきもの」を人・AIの両方が一目で分かるようにするための
+    読み取り専用の可視化。queue.jsonへの書き込みは一切行わない。"""
+    try:
+        with io.open(os.path.join(ST, "queue.json"), encoding="utf-8") as f:
+            q = json.load(f)
+    except Exception:
+        return []
+    items = q.get("items") or []
+    red_waiting = [it for it in items
+                   if it.get("status") == "waiting"
+                   and (it.get("title") or "").startswith("判定日赤｜")]
+    red_waiting.sort(key=lambda it: it.get("queuedAt") or "")
+    out = []
+    for it in red_waiting[:n]:
+        out.append({"n": it.get("n"), "title": (it.get("title") or "")[:80],
+                    "queuedAt": it.get("queuedAt"), "priority": it.get("priority")})
+    return out
+
+
 def main():
     a = sys.argv[1:]
+    if "--suggest-next" in a:
+        rows = suggest_next(10)
+        print("【次に進めるべき候補】判定日赤｜waitingのうち、最も長く放置されている順 %d件" % len(rows))
+        for r in rows:
+            print("  #%s [%s] %s" % (r["n"], r.get("queuedAt") or "日時不明", r["title"]))
+        return 0
     if "--self-test" in a:
         ng = []
         ima = {}
@@ -783,6 +817,33 @@ def main():
                 os.remove(tmp_kenpin)
             except Exception:
                 pass
+        # 1991番の再発防止：suggest_next()が「判定日赤｜」waitingだけを
+        # queuedAt古い順で返し、未着手の無関係タスクを混ぜないか
+        import tempfile as _tempfile_1991
+        tmp_q1991 = _tempfile_1991.mkstemp(suffix=".json")[1]
+        try:
+            write_text(tmp_q1991, json.dumps({"items": [
+                {"n": 1, "title": "判定日赤｜古い方", "status": "waiting", "queuedAt": "2026-01-01T00:00:00+09:00"},
+                {"n": 2, "title": "判定日赤｜新しい方", "status": "waiting", "queuedAt": "2026-06-01T00:00:00+09:00"},
+                {"n": 3, "title": "無関係な通常タスク", "status": "waiting", "queuedAt": "2025-01-01T00:00:00+09:00"},
+                {"n": 4, "title": "判定日赤｜もう完了済み", "status": "done", "queuedAt": "2025-01-01T00:00:00+09:00"},
+            ]}, ensure_ascii=False))
+            _orig_st1991 = globals()["ST"]
+            try:
+                globals()["ST"] = os.path.dirname(tmp_q1991)
+                os.rename(tmp_q1991, os.path.join(globals()["ST"], "queue.json"))
+                sug = suggest_next(5)
+                ns = [r["n"] for r in sug]
+                if ns != [1, 2]:
+                    ng.append("suggest_next()が古い順の赤waitingだけを返せていない（1991番の再発防止・実際: %s）" % ns)
+            finally:
+                try:
+                    os.remove(os.path.join(globals()["ST"], "queue.json"))
+                except Exception:
+                    pass
+                globals()["ST"] = _orig_st1991
+        except Exception as e:
+            ng.append("suggest_next()の自己試験自体が例外で落ちた（1991番）：%s" % e)
         s = hashiru(dry=True)
         print("自己試験：%s／台帳 %d件・判定日が来ている %d件（うち赤 %d）"
               % ("OK" if not ng else "NG", s["zen"], s["mita"], s["aka"]))
