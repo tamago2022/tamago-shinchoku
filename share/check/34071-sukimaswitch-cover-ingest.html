@@ -52,13 +52,13 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-20周年トリビュート盤『みんなのスキマスイッチ』に収録されたSUPER BEAVER「キレイだ」カバー・JUJU「藍」カバーを、スキマスイッチの原曲2曲とあわせてcoverGuide.tsへ追加しました(mainへpush済み・commit 0e46e62e8)。originalRefで原曲へ接続済み。副産物として、仕入れの重複チェックに使う正規表現のバグ（漢字曲名が誤って空文字列化し偽陽性の重複判定を起こす）も発見・修正しました。Lovable公開は工場全体のOAuth認証障害（401 Not authenticated、2026-10-14以降継続）でブロック中です。
+20周年トリビュート盤『みんなのスキマスイッチ』に収録されたSUPER BEAVER「キレイだ」カバー・JUJU「藍」カバーを、スキマスイッチの原曲2曲とあわせて本体データへ追加し、本体の最新コードへ合流済みです。原曲とカバーは相互に接続済み。副産物として、仕入れの重複チェックに使う正規表現のバグ（漢字の曲名が誤って空文字列になり、偽の重複判定を起こしていた）も見つけて直しました。Lovableの公開は、工場全体で続いている認証切れ（2026-10-14以降）でブロック中です。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>401</b><span>公開押し係の直近ログの実測エラー(HTTP)</span></div>
   <div class="num"><b>4</b><span>生存・埋め込み可を実測確認した動画数</span></div>
+  <div class="num"><b>401</b><span>公開を試みた直近ログの認証エラー件数</span></div>
 </div>
 
 
@@ -71,10 +71,10 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへのpush</td><td class="yes">反映済み(0e46e62e8)</td></tr>
-<tr><td>本番にカバー曲が出る</td><td class="no">未反映(OAuth障害でLovable公開待ち)</td></tr>
-<tr><td>4動画の生存・埋め込み可否</td><td class="yes">oEmbed+playableInEmbed実測でPASS</td></tr>
-<tr><td>重複ゲートのバグ修正</td><td class="yes">self-test全件PASS</td></tr>
+<tr><td>本体の最新コードへ合流</td><td class="yes">反映済み</td></tr>
+<tr><td>本番にカバー曲が出る</td><td class="no">未反映(認証切れでLovable公開待ち)</td></tr>
+<tr><td>4動画の生存・埋め込み可否</td><td class="yes">実測でPASS</td></tr>
+<tr><td>重複チェックのバグ修正</td><td class="yes">自己テスト全件PASS</td></tr>
 </table>
 
 <footer>
