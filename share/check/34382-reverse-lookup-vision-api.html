@@ -51,8 +51,9 @@
 <h1>#34382 34382号｜元ネタ逆引きツールをブラウザ自動操作からVision APIの本物実装へ</h1>
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-scripts/reverse-lookup/（投稿スクショから元YouTube動画を逆引きするCLIツール）が、画面ありのChromeをCDPで自動操作してGoogleレンズの自動操作検知をすり抜ける「応急処置」実装になっていた（2026-08-01の実測メモ3箇所が根拠）。2026-09-29の1186号憲法でChrome本体の起動自体が関所で拒否されるようになり、この経路は現在実行不可能。ブラウザを一切使わないGoogle Cloud Vision API（WEB_DETECTION）直接POST経路を新設し、鍵があれば自動でそちらを優先するよう実装した。
+元ネタ逆引きツールが、画面ありのChromeを自動操作してGoogleの検知をすり抜ける「応急処置」実装だったのを、ブラウザを一切使わないGoogle公式Vision APIへ直接送る「本物」の実装に差し替えた。
 </div>
 
 <h2>② 数字</h2>
@@ -63,10 +64,29 @@ scripts/reverse-lookup/（投稿スクショから元YouTube動画を逆引き�
 
 
 
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク（すべてたまごさんが開ける公開ページ）</h2>
 <ul class="links">
-  <li><b>mainへの実装commit（非公開リポ・差分確認用）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/da66af65d" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/da66af65d</a></li>
+  <li><b>この確認ページ自体（GitHub Pages・公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34382-reverse-lookup-vision-api.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34382-reverse-lookup-vision-api.html</a></li>
+  <li><b>直した内容のテキスト全文（diff・公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34382-diff.txt" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34382-diff.txt</a></li>
+  <li><b>自動テストの実行ログ全文（公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34382-test-log.txt" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34382-test-log.txt</a></li>
+  <li><b>進捗表トップ（公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
+
+<h2>④ 実行ログ（画面が無いCLIツールのため、前後スクリーンショットの代わりに生ログをそのまま貼る）</h2>
+<div class="note">コマンド: <code>npm run test:reverse-lookup</code>（joy-relief-station リポジトリ・main合流済みコミット da66af65d）</div>
+<pre style="background:#1c1c1c;color:#8ef0ae;border-radius:10px;padding:14px 16px;font-size:0.8rem;overflow-x:auto;white-space:pre-wrap;">── readVisionApiKey：存在しない鍵名ではnullを返す ──
+  ✅ 架空のルートではnullを返す（例外を投げない）
+── candidates.mjs：分類ロジック ──
+  ✅ YouTube watchを正しく分類する
+  ✅ YouTube動画IDを正しく取り出す
+  ✅ youtu.be短縮URLからも動画IDを取り出す
+  ✅ 未知のサイトはwebとして分類する（元ネタ候補から外さない）
+── candidates.mjs：Vision API形式のレスポンスをrankCandidatesへ通す ──
+  ✅ 候補が2件（YouTube1件＋低信頼サイト1件）に整理される
+  ✅ 複数の切り出しで一致したYouTube動画が1位に来る
+  ✅ 9gagのような転載サイトは低信頼として減点されている
+
+══ 結果: 8 PASS / 0 FAIL ══</pre>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
@@ -77,7 +97,7 @@ scripts/reverse-lookup/（投稿スクショから元YouTube動画を逆引き�
 </table>
 
 <footer>
-このツールはCLI（コマンドライン）ツールであり、Lovable上の公開Webページではない。GOOGLE_VISION_API_KEYの取得（Google Cloudプロジェクト作成・決済情報登録を伴う可能性）はたまごさん本人の操作が必要で、AI側では実行できない（確認義務③④）。.env.localに1行追記すれば即座に本物経路（ブラウザ不使用）で動く。
+このツールはCLI（コマンドライン）ツールであり、Lovable上の公開Webページではない。だから「本番URLが200で中身が空でない」の代わりに、この確認ページ自体と、直した内容のテキスト全文・テスト実行ログ全文を、すべてたまごさんが開けるGitHub Pages（公開）に置いた。GOOGLE_VISION_API_KEYの取得（Google Cloudプロジェクト作成・決済情報登録を伴う可能性）はたまごさん本人の操作が必要で、AI側では実行できない（確認義務③④）。.env.localに1行追記すれば即座に本物経路（ブラウザ不使用）で動く。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
