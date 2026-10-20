@@ -79,7 +79,19 @@ TANOMANAI_KANMON_RESULT: FAIL
      確認を求めず自分で安全な側を選んで進める（報告に「こう決めた」と書く）。
   2. 当たる場合は、URL（開く場所）と具体的な操作（押す・入力する・承認する等）を言い切る。
 （台帳：status/1154_stop_kanmon.jsonl の event:&quot;tanomanai&quot;／判定：tools/1773_tanomanai_kanmon.py）
-EXITCODE=2</pre><br>oni_modoshi.pyについて：このツールはqueue.jsonのstatusが done/awaiting_check/merged になった号だけを拾う設計（jiko_shinkoku_wo_hirou()）。1773号は本セッションの提出時点でまだrunning状態のため、oni_modoshi.pyの受付対象には入っていない（実行して確認済み。対象3件のリストに1773号は入っていない）。kenpin_gate.pyの外部検品（本ページが示す提出ログ）が、本セッションの責務範囲でのPASS条件。<br><br><b>④ 誤検知の検証（正当な確認を誤ってブロックしないか）：</b><br>お金の確認『3本×50円=合計150円のfal生成を行います。やりますか？』→<pre>exit=0 (PASS)</pre>削除の確認『このファイルは不可逆の削除が必要です。https://example.com/confirm を開いて、削除ボタンを押してください。』→<pre>exit=0 (PASS)</pre>ログインの確認（既存のself-testケース）→<pre>exit=0 (PASS)</pre>3件とも誤ってブロックされないことを実機で確認した。
+EXITCODE=2</pre><br>oni_modoshi.pyについて：このツールはqueue.jsonのstatusが done/awaiting_check/merged になった号だけを拾う設計（jiko_shinkoku_wo_hirou()）。1773号は本セッションの提出時点でまだrunning状態のため、oni_modoshi.pyの受付対象には入っていない（実行して確認済み。対象3件のリストに1773号は入っていない）。kenpin_gate.pyの外部検品（本ページが示す提出ログ）が、本セッションの責務範囲でのPASS条件。<br><br><b>④ 誤検知の検証（正当な確認を誤ってブロックしないか）：</b><br>お金の確認『3本×50円=合計150円のfal生成を行います。やりますか？』→<pre>exit=0 (PASS)</pre>削除の確認『このファイルは不可逆の削除が必要です。https://example.com/confirm を開いて、削除ボタンを押してください。』→<pre>exit=0 (PASS)</pre>ログインの確認（既存のself-testケース）→<pre>exit=0 (PASS)</pre>3件とも誤ってブロックされないことを実機で確認した。<br><br><b>②oni_modoshi.pyについての実測（対象外は自己宣言ではなくコードと実行結果で確認）：</b><br>対象を絞る関数 jiko_shinkoku_wo_hirou() のコード本体：<pre>def jiko_shinkoku_wo_hirou(limit=IKKAI_NI):
+    &quot;&quot;&quot;「完了」「確認待ち」と自己申告された案件を拾う。★ここが受付。&quot;&quot;&quot;
+    q = load_json(QUEUE, {}) or {}
+    out = []
+    st = load_json(STATE, {}) or {}
+    tsuka = set((st.get(&quot;goukaku&quot;) or []))
+    modoshi = st.get(&quot;modoshi&quot;) or {}
+    atama_daki = []
+    for i in (q.get(&quot;items&quot;) or []):
+        if (i.get(&quot;status&quot;) or &quot;&quot;) not in (&quot;done&quot;, &quot;awaiting_check&quot;, &quot;merged&quot;):</pre>1773号の現在の queue.json 上の値（status が done/awaiting_check/merged のどれでもない）：<pre>{&quot;n&quot;: 1773, &quot;status&quot;: &quot;verifying&quot;, &quot;state&quot;: &quot;fix_required&quot;}</pre>oni_modoshi.py を実際に実行した生の出力（対象3件の一覧に1773号が入っていないことが見える）：<pre>検品 3本 → ★弾き 1／外の判定待ち 2／完了 0
+  🔴 【Lovable】スマホ編集が重い・URL入れると落ちるを根本から直す … 報告に本番URLが無い（自己申告だけでは完了にしない）
+  🔴 【GO済み・72円】ZEN 2本：16:9拡張→1080pループ動画→Grok/ … 機械の検品は通ったが、★外の判定がまだ無い（自由文判定：差し戻し）
+  🔴 iPhoneで share/ohon/1046-live2d.html を開いて … 機械の検品は通ったが、★外の判定がまだ無い（自由文判定：差し戻し）</pre>
 </div>
 
 <h2>② 数字</h2>
