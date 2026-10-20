@@ -14,6 +14,9 @@ tools/stop_kanmon/1184_original_kinshi.mjs（PreToolUse）が、
   python3 tools/1184_kanmon.py clear
   python3 tools/1184_kanmon.py --shiken     ← 逆テスト（違反を仕込んで赤が出るか見る）
 
+★票は1回使うと消える（使い切り型・2026-10-20修正）。1枚の票で1回だけ新規ファイルを作れる。
+  複数ファイルを作るなら、そのたびに shirabe を出し直す。
+
 ★「似せる」は不合格、「そのまま」が合格。
   --ketsuron sonomama   公式・実例を **そのまま** 使う（本線）
   --ketsuron tsukaenai  ①〜④が全部✕。このときだけ自分で考えてよい。
