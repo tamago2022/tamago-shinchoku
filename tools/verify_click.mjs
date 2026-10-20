@@ -82,6 +82,37 @@ const mo = new MutationObserver((muts) => {
 })();
 window.__hydroObserver = mo;
 `;
+
+// 案件#1865（←881差し戻し）：鬼監督の指摘「LCP／INP／CLS／TTFBが1つも載っていない」への
+// 対応。npm install（lighthouse等）がこの環境のネットワーク制限で使えないため、
+// このファイルが既に持っているheadless Chrome・CDP接続をそのまま流用し、
+// ブラウザ標準のPerformanceObserver APIだけで計測する（新しいライブラリ無し）。
+// VC_PERF_PROBE=1の時だけ有効（既定の動作＝クリック検品は変えない）。
+const PERF_PROBE_SCRIPT = `
+window.__perf = { lcp: 0, cls: 0, longtaskOver50: 0, longtaskCount: 0 };
+try {
+  new PerformanceObserver((list) => {
+    const entries = list.getEntries();
+    const last = entries[entries.length - 1];
+    if (last) window.__perf.lcp = last.renderTime || last.loadTime || 0;
+  }).observe({ type: "largest-contentful-paint", buffered: true });
+} catch (e) { window.__perf.lcpError = String(e); }
+try {
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      if (!entry.hadRecentInput) window.__perf.cls += entry.value;
+    }
+  }).observe({ type: "layout-shift", buffered: true });
+} catch (e) { window.__perf.clsError = String(e); }
+try {
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      window.__perf.longtaskOver50 += Math.max(0, entry.duration - 50);
+      window.__perf.longtaskCount += 1;
+    }
+  }).observe({ type: "longtask", buffered: true });
+} catch (e) { window.__perf.longtaskError = String(e); }
+`;
 const SETTLE_MS = 4000;
 // 案件#793実測：この進捗表(index.html)は初回描画後、status/*.json群（queue.json等）を
 // 複数の非同期fetchで順次読み込んで再描画するため、SETTLE_MSが短いと「まだ一部しか
@@ -263,6 +294,9 @@ async function main() {
   const port = 9700 + Math.floor(Math.random() * 200);
   const profile = mkdtempSync(resolve(tmpdir(), "verify-click-"));
   const consoleErrors = [];
+  // 案件#1865：VC_PERF_PROBE=1の時だけ使う、ネットワーク転送量の集計用（既定動作には影響しない）
+  const perfReqSizes = new Map();
+  const perfReqTypes = new Map();
   const chrome = spawn(
     CHROME,
     [
@@ -292,6 +326,8 @@ async function main() {
     consoleErrors: [],
     truncated: false,
     error: null,
+    // 案件#1865：VC_PERF_PROBE=1の時だけ埋まる（既定はnullのまま・既存の動作に影響なし）
+    perf: null,
   };
 
   try {
@@ -309,6 +345,15 @@ async function main() {
       if (method === "Page.windowOpen") {
         lastWindowOpenAt = Date.now();
       }
+      // 案件#1865：VC_PERF_PROBE=1の時だけ、転送量・request数をイベントから集計する
+      if (process.env.VC_PERF_PROBE) {
+        if (method === "Network.responseReceived") {
+          perfReqTypes.set(params.requestId, params.response?.mimeType || "");
+        }
+        if (method === "Network.loadingFinished") {
+          perfReqSizes.set(params.requestId, params.encodedDataLength || 0);
+        }
+      }
     });
     await ready;
     await send("Page.enable");
@@ -319,6 +364,12 @@ async function main() {
     // 既定では何もしない（通常の検品動作は変えない）。
     if (process.env.VC_HYDRO_PROBE) {
       await send("Page.addScriptToEvaluateOnNewDocument", { source: HYDRO_PROBE_SCRIPT });
+    }
+    // 案件#1865：VC_PERF_PROBE=1の時だけ、LCP/CLS/longtaskを測るPerformanceObserverを仕込み、
+    // Networkドメインを有効にして転送量を集計できるようにする（既定では何もしない）。
+    if (process.env.VC_PERF_PROBE) {
+      await send("Page.addScriptToEvaluateOnNewDocument", { source: PERF_PROBE_SCRIPT });
+      await send("Network.enable");
     }
     await send("Emulation.setDeviceMetricsOverride", {
       width: 375,
@@ -340,6 +391,50 @@ async function main() {
       } catch {
         result.hydroLog = [];
       }
+    }
+
+    // 案件#1865（←881差し戻し）：鬼監督の指摘「LCP／INP／CLS／TTFB／転送量／request数が
+    // 1つも実測されていない」への対応。VC_PERF_PROBE=1の時だけ、ここで計測を終わらせて
+    // 出力する（クリック検品は行わない＝別目的の軽い計測モード）。
+    if (process.env.VC_PERF_PROBE) {
+      const navRes = await send("Runtime.evaluate", {
+        expression: "JSON.stringify(performance.getEntriesByType('navigation')[0] || {})",
+        returnByValue: true,
+      });
+      let nav = {};
+      try { nav = JSON.parse(navRes.result?.value || "{}"); } catch { nav = {}; }
+      const perfRes = await send("Runtime.evaluate", {
+        expression: "JSON.stringify(window.__perf || {})",
+        returnByValue: true,
+      });
+      let perf = {};
+      try { perf = JSON.parse(perfRes.result?.value || "{}"); } catch { perf = {}; }
+      let total = 0;
+      let jsTotal = 0;
+      for (const [reqId, size] of perfReqSizes.entries()) {
+        total += size;
+        const mime = perfReqTypes.get(reqId) || "";
+        if (mime.includes("javascript")) jsTotal += size;
+      }
+      result.perf = {
+        ttfbMs: typeof nav.responseStart === "number" ? Math.round(nav.responseStart) : null,
+        lcpMs: typeof perf.lcp === "number" ? Math.round(perf.lcp) : null,
+        clsScore: typeof perf.cls === "number" ? Math.round(perf.cls * 1000) / 1000 : null,
+        tbtMs: typeof perf.longtaskOver50 === "number" ? Math.round(perf.longtaskOver50) : null,
+        longtaskCount: typeof perf.longtaskCount === "number" ? perf.longtaskCount : null,
+        requestCount: perfReqSizes.size,
+        transferredBytes: total,
+        jsTransferredBytes: jsTotal,
+        note: "INPは実ユーザー操作が要る指標のため、クリックを伴わないこの計測モードでは直接の値を得ていない。メインスレッド詰まりの代用指標としてTBT(longtask 50ms超過分の合計)を記録した。",
+      };
+      close();
+      if (OUT_JSON) writeFileSync(OUT_JSON, JSON.stringify(result, null, 1));
+      console.log("実測:", JSON.stringify(result.perf));
+      const measured = ["ttfbMs", "lcpMs", "clsScore", "tbtMs"].filter((k) => result.perf[k] !== null).length;
+      console.log(
+        `PERF_VERDICT: MEASURED - ${measured}/4項目(TTFB/LCP/CLS/TBT)を実測、request数=${result.perf.requestCount}件、転送量=${result.perf.transferredBytes}バイト(JS分=${result.perf.jsTransferredBytes}バイト)`,
+      );
+      return;
     }
 
     if (process.env.VC_DUMP_TEXT) {
