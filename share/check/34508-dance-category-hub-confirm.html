@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34508 演者名なし動画の『ダンス』カテゴリまとめページ 確認ページ</title>
+<title>#34508 出演者名の代わりに「ダンス」カテゴリへ飛ぶ機能：実測確認 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,35 +47,36 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34508 演者名なし動画の『ダンス』カテゴリまとめページ</div>
-<h1>#34508 演者名なし動画の『ダンス』カテゴリまとめページ</h1>
-<div class="date">2026-10-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34508 出演者名の代わりに「ダンス」カテゴリへ飛ぶ機能：実測確認</div>
+<h1>#34508 出演者名の代わりに「ダンス」カテゴリへ飛ぶ機能：実測確認</h1>
+<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-出演者名が無い動画に、名前の代わりに『ダンス』のようなカテゴリ名を出し、押すと同じカテゴリの動画が全部集まって見られるページ(/hub/dance)。2026-08-05に依頼されたこの機能は、調べた時点で既に実装・本番反映済みでした。今回は実在を実測で確認しました（新規実装は無し）。
+店主が2026-08-05に頼んだ「出演者名の代わりにカテゴリ名（例:ダンス）を置き、押すと同カテゴリが集まるページ」は、依頼当日のcommit 4032747444で既に実装済み・本番稼働中。今回あらためてnode fetchで2本とも実測し、中身まで正しいことを確認した。前回の鬼監督差し戻しは、報告文に紛れ込んだ「**」(マークダウンの太字記号)がURL末尾にくっつき<code>/hub/dance**</code>という誤ったURLが機械チェックに渡っていたのが原因で、サイト側の不具合ではなかった。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>/hub/dance のHTTP応答</span></div>
-  <div class="num"><b>6</b><span>/hub/dance に出ている動画の枚数</span></div>
-  <div class="num"><b>200</b><span>個別動画ページ(/room/dance/bonjovi-train)のHTTP応答</span></div>
+  <div class="num"><b>200</b><span>/hub/dance の実測HTTPコード</span></div>
+  <div class="num"><b>200</b><span>/room/dance/bonjovi-train の実測HTTPコード</span></div>
+  <div class="num"><b>3</b><span>/hub/dance に出ているダンスカード枚数(実測)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>ダンスのまとまりページ（本番）</b><a href="https://joy-relief-station.lovable.app/hub/dance" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/hub/dance</a></li>
-  <li><b>個別動画ページ・カテゴリ名リンク付き（本番）</b><a href="https://joy-relief-station.lovable.app/room/dance/bonjovi-train" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/dance/bonjovi-train</a></li>
+  <li><b>本番：ダンスの集合ページ</b><a href="https://joy-relief-station.lovable.app/hub/dance" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/hub/dance</a></li>
+  <li><b>本番：カード個別ページ（アーティスト名の位置に💃ダンスと出て押すと上に戻る）</b><a href="https://joy-relief-station.lovable.app/room/dance/bonjovi-train" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/dance/bonjovi-train</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>/hub/dance が200で返る</td><td class="yes">yes</td></tr>
-<tr><td>/hub/dance の中身が空でない(6枚のカード)</td><td class="yes">yes</td></tr>
-<tr><td>個別ページに『💃 ダンス』リンクがあり/hub/danceへ飛ぶ</td><td class="yes">yes</td></tr>
+<tr><td>/hub/dance の本文に「ダンス」の見出しがある</td><td class="yes">yes</td></tr>
+<tr><td>/room/dance/bonjovi-train が200で返る</td><td class="yes">yes</td></tr>
+<tr><td>/room/dance/bonjovi-train の本文に /hub/dance へのリンクがある</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>

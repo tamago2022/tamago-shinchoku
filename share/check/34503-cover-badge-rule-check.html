@@ -52,7 +52,7 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が2026-08-05に言った「仕入れ時はあくまで通常の『カバー曲』として淡々と追加してください(認定バッジの仕組み自体は棚編集セッション側で別途作っています)」というルールが、既にコードとマニュアルの両方で徹底されていることを実測で確認した。badge_kinds(グッドカバーバッジ等)の書き込み口は管理画面の手動操作(BadgeQuickPicker/ShelfBadgeBulkPanel、要パスワード認証)だけで、仕入れスクリプト側に自動付与の経路は無い(grep 0件)。マニュアル.claude/manuals/01-ingest-linking.md 76行目にも同じ内容が恒久ルールとして明記済み。
+店主が2026-08-05に言った「仕入れ時はあくまで通常の『カバー曲』として淡々と追加してください(認定バッジの仕組み自体は棚編集セッション側で別途作っています)」というルールが、既にコードとマニュアルの両方で徹底されていることを実測で確認した。badge_kinds(グッドカバーバッジ等)の書き込み口は管理画面の手動操作(BadgeQuickPicker/ShelfBadgeBulkPanel、要パスワード認証)だけで、仕入れスクリプト側に自動付与の経路は無い(grep 0件、tamago-memory独立検証でも再確認)。マニュアル.claude/manuals/01-ingest-linking.md 76行目にも同じ内容が恒久ルールとして明記済み。
 </div>
 
 <h2>② 数字</h2>
@@ -60,7 +60,7 @@
   <div class="num"><b>200</b><span>本番URL1(cover-guide一覧)のHTTPコード</span></div>
   <div class="num"><b>200</b><span>本番URL2(fujii-kaze/shape-of-you個別ページ)のHTTPコード</span></div>
   <div class="num"><b>0件</b><span>仕入れスクリプトからのbadge自動付与コード(grep実測)</span></div>
-  <div class="num"><b>0件</b><span>触る検品のコンソールエラー数(2本とも)</span></div>
+  <div class="num"><b>0件</b><span>個別ページ(URL2)の触る検品コンソールエラー数</span></div>
 </div>
 
 
@@ -76,8 +76,8 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番URL1 HTTP200・非空</td><td class="yes">yes</td></tr>
 <tr><td>本番URL2 HTTP200・非空</td><td class="yes">yes</td></tr>
-<tr><td>触る検品(verify_click.mjs)URL1 PASS</td><td class="yes">yes</td></tr>
-<tr><td>触る検品(verify_click.mjs)URL2 PASS</td><td class="yes">yes</td></tr>
+<tr><td>触る検品(verify_click.mjs)URL2(個別ページ) PASS</td><td class="yes">yes</td></tr>
+<tr><td>触る検品URL1(一覧ページ)はタイミング依存で不安定・既知事象#34532/#1491(coverGuide.tsチャンク遅延)が原因・34503番とは無関係</td><td class="yes">no</td></tr>
 <tr><td>badge自動付与コードが仕入れスクリプトに無いことをgrepで確認</td><td class="yes">yes</td></tr>
 <tr><td>マニュアル(01-ingest-linking.md)に恒久ルールとして明記済み</td><td class="yes">yes</td></tr>
 </table>
