@@ -64,9 +64,23 @@
 
 
 
+<h2>③追加対策：1769号自体が「断片テキストがタスク化された事故」だった</h2>
+<div class="fix">
+1769号のqueue項目を遡ると、原文(original_text)自体が全子セッションの先頭に自動で貼られる
+tools/session_preamble.mdの枷15の説明文の断片「それが「何回も言わせない」の実体。」そのもので、
+実装対象が最初から存在しなかった(スマホからの操作で丸ごと取り込まれた入力事故)。
+3週間以上、running→URL無し→やり直し→stuck→復旧で順番待ちへ戻すを繰り返していた
+(redoCount=3・stuckRedoTotal=2・鬼監督98406番も「URL無し・証拠なし」で差し戻し)。
+イケハヤ記事・GOOD VIBES Roundtableで既にある対策(参照ファイルの本文に一字一句一致する
+断片はactionable=Falseにする)と同じ型を、session_preamble.mdにも適用した。
+実測：<code>shukudai.actionable({"source":"queue","title":"それが「何回も言わせない」の実体。"})</code>
+が修正前True→修正後Falseに変わることを確認済み。これで同じ断片が今後再発車することはない。
+</div>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>修正したコード(kenpin_gate.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py</a></li>
+  <li><b>追加対策のコード(shukudai.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/shukudai.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/shukudai.py</a></li>
   <li><b>進捗表(工場の現在地)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
