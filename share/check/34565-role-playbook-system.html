@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34565 担当別プレイブックの仕組み（.claude/playbooks/） 確認ページ</title>
+<title>#34565 担当別プレイブックの仕組み（確認ページ作り直し） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,43 +47,51 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34565 担当別プレイブックの仕組み（.claude/playbooks/）</div>
-<h1>#34565 担当別プレイブックの仕組み（.claude/playbooks/）</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34565 担当別プレイブックの仕組み（確認ページ作り直し）</div>
+<h1>#34565 担当別プレイブックの仕組み（確認ページ作り直し）</h1>
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主依頼2026-08-06「このリポジトリに担当別プレイブックの仕組みを作って」は、実は依頼翌日(2026-08-07)に実装済みでoriginのmainに反映済みだった。コマンド1本(npm run role -- 担当名)で、音声入力のゆれ・別名・カタカナひらがなを吸収し、各担当の『読むもの・今の現在地・触る場所・触ってはいけない場所・検品コマンド・完成条件』を1枚で出す。今回URL証拠が無く差し戻されていたため、独立の機械チェック(npm run role:check)の実測結果と合わせて証拠ページを新設した。
+前回の確認ページは本人が開けない非公開リポジトリ（joy-relief-station）へのGitHubリンクを貼っていたため差し戻された。今回はそのリンクを全部外し、実行したコマンドと結果をそのままこのページに貼り直した。「担当別プレイブック」の仕組み（<code>.claude/playbooks/</code>・<code>npm run role -- 担当名</code>）自体は2026-08-07（依頼翌日）に実装済みで今回新しく作ったのではなく、今回は生きて動いていることを実測し直した。<pre style="background:var(--t-bg);color:var(--t-ok);padding:14px;border-radius:8px;overflow-x:auto;font-size:0.78rem;line-height:1.5;white-space:pre-wrap;">$ npm run role -- 仕入れ
+# 仕入れ担当 ブリーフ（2026-10-21 生成・照合: 完全一致）
+
+$ npm run role -- 棚編集  （別名ゆれ『棚編集』→ 正式名への解決を確認）
+# 棚編集UI担当 ブリーフ（2026-10-21 生成・照合: 完全一致）
+
+$ npm run role -- 気分診断  （別名ゆれ『気分診断』→ 正式名への解決を確認）
+# クイック補給・気分診断担当 ブリーフ（2026-10-21 生成・照合: 完全一致）
+
+$ npm run role:check
+合計: 壊れ 0 / 要確認 3 / お知らせ 15</pre>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>15</b><span>登録済み担当数</span></div>
-  <div class="num"><b>0</b><span>role:check壊れ件数(機械検査)</span></div>
-  <div class="num"><b>2026-08-07</b><span>最初の実装コミット日(依頼翌日)</span></div>
+  <div class="num"><b>11</b><span>現在地メモ(プレイブック.md)の本数</span></div>
+  <div class="num"><b>0</b><span>role:check 壊れ件数</span></div>
+  <div class="num"><b>3</b><span>role:check 要確認件数（軽微な台帳不整合）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>リポジトリ内のroles.json正本(店主ログイン時に閲覧可・非公開リポ)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/playbooks/roles.json" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/playbooks/roles.json</a></li>
-  <li><b>手順の正本SKILL.md</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/tamago-role-playbook/SKILL.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/skills/tamago-role-playbook/SKILL.md</a></li>
+  <li><b>進捗表トップ（この確認ページの一覧もここから）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>npm run role -- 仕入れ</td><td class="yes">仕入れ担当のブリーフを出力</td></tr>
-<tr><td>npm run role -- 棚編集(別名ゆれ)</td><td class="yes">棚編集UI担当に正しく解決</td></tr>
-<tr><td>npm run role -- 気分診断(別名ゆれ)</td><td class="yes">クイック補給・気分診断担当に正しく解決</td></tr>
-<tr><td>npm run role:check(機械の自己検査)</td><td class="yes">担当15件/プレイブック11本/壊れ0</td></tr>
-<tr><td>node --check role-brief/role-check/role-handoff.mjs</td><td class="yes">構文エラー無し</td></tr>
-<tr><td>origin/mainに実在するか(git cat-file -e)</td><td class="yes">roles.json/SKILL.md/role-brief.mjs全て実在</td></tr>
-<tr><td>既存srcコードへの影響</td><td class="yes">新規ドキュメント・スクリプトのみ追加、既存コード変更なし</td></tr>
+<tr><td>npm run role -- 棚編集（別名ゆれ）</td><td class="yes">棚編集UI担当に正しく解決</td></tr>
+<tr><td>npm run role -- 気分診断（別名ゆれ）</td><td class="yes">クイック補給・気分診断担当に正しく解決</td></tr>
+<tr><td>npm run role:check（機械の自己検査）</td><td class="yes">担当15件・プレイブック11本・壊れ0件</td></tr>
+<tr><td>非公開リポへのリンクが本文に残っていないか</td><td class="yes">0件（このページには貼っていない）</td></tr>
 </table>
 
 <footer>
-このページは #34565 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは tools/make_check_page.py で生成。中身は旧 share/check/34565-role-playbook-system.html （非公開リンクが残っていたため廃止）の後継。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
