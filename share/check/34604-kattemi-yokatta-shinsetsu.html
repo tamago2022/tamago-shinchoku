@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34604 34604号：買ってよかった棚の新設は完了済み（2026-08-06時点で本番稼働中） 確認ページ</title>
+<title>#34604 34604号：買ってよかった棚の新設は完了済み。食べ物の扉に限定したhydrationエラーを新規発見・記録 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,52 +47,40 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34604 34604号：買ってよかった棚の新設は完了済み（2026-08-06時点で本番稼働中）</div>
-<h1>#34604 34604号：買ってよかった棚の新設は完了済み（2026-08-06時点で本番稼働中）</h1>
-<div class="date">2026-10-08 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34604 34604号：買ってよかった棚の新設は完了済み。食べ物の扉に限定したhydrationエラーを新規発見・記録</div>
+<h1>#34604 34604号：買ってよかった棚の新設は完了済み。食べ物の扉に限定したhydrationエラーを新規発見・記録</h1>
+<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
-<h2>① 何を直したか</h2>
 <div class="fix">
-2026-08-06 20:41のたまごさんの発言「一応棚をも新設してくれて…報告だけしてくれれば、仕入れはまた続けてください」は、同日17:13のコミット895ba634a「買ってよかった棚」新設への承認コメントでした。新規実装ではなく既存の本番ページを本日(2026-10-08)あらためて実測確認しました（前回提出分はこの確認ページ自体がmainへ未反映でHTTP 404になっていたため、mainへ合流させて作り直しました）。
+2026-08-06の『棚を新設して』は同日のcommit 895ba634aで完了済み・本番稼働中。今回あらためて本番URLを実測し、押せる要素は全部反応することを確認。合わせて/world/foodと/shelf/food/kattemi-yokattaだけで毎回出るReact hydration警告(#418)を新規に発見・原因調査（ホーム・音楽の扉では出ない＝食べ物系に限定）。原因はルート直下のSuspense境界なしの全体巻き戻りまでは特定、具体的な食い違いノードは未特定のため、修正はせず failures_ledger(F-20261021073655)へ記録し次回へ引き継ぐ。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番URLのHTTPステータス（2026-10-08実測）</span></div>
-  <div class="num"><b>26675</b><span>取得したHTMLのバイト数</span></div>
-  <div class="num"><b>1/1</b><span>棚タイトル・商品名の本文一致（両方yes）</span></div>
+  <div class="num"><b>200</b><span>本番URLのHTTPステータス</span></div>
+  <div class="num"><b>12/12</b><span>押して反応した要素(無反応0件)</span></div>
+  <div class="num"><b>1件(未修正)</b><span>食べ物の扉限定のhydration警告(新規発見・記録済み)</span></div>
 </div>
 
-<h2>③ 前後のスクリーンショット</h2>
+<h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
-  <div class="shot plain">
-    <b>買ってよかった棚（本番・PC幅）</b>
-    <img src="img/34604-kattemi-yokatta-1280px.png" alt="買ってよかった棚 本番画面 PC幅">
-    <span class="meta">2026-09-27撮影・本番URL実機スクリーンショット</span>
-  </div>
-  <div class="shot plain">
-    <b>買ってよかった棚（本番・スマホ幅）</b>
-    <img src="img/34604-kattemi-yokatta-375px.png" alt="買ってよかった棚 本番画面 スマホ幅">
-    <span class="meta">2026-09-27撮影・本番URL実機スクリーンショット</span>
-  </div>
+  <div class="shot before"><b>買ってよかった棚（本番・PC幅）</b><img src="img/34604-kattemi-yokatta-1280px.png" alt="前"></div>
+  <div class="shot after"><b>買ってよかった棚（本番・スマホ幅）</b><img src="img/34604-kattemi-yokatta-375px.png" alt="後"></div>
 </div>
-<div class="note">この棚は2026-08-06時点で既に本番稼働していたため「新設前」の画面は残っておらず、新設後（現状）の実機スクショのみを掲載しています。<br>
-実測（<code>file</code>コマンドで画像ファイルの実ピクセルサイズを取得）：</div>
-<pre>34604-kattemi-yokatta-1280px.png: 1280x900px
-34604-kattemi-yokatta-375px.png: 750x1624px（CSSビューポート幅375pxで撮影、devicePixelRatio2のため実画素は750px）</pre>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>買ってよかった棚（本番）</b><a href="https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta</a></li>
+  <li><b>食べ物の扉（本番・hydration警告の再現箇所）</b><a href="https://joy-relief-station.lovable.app/world/food" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/food</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番URLのHTTPステータス</td><td class="yes">200</td></tr>
-<tr><td>棚タイトル「買ってよかった棚」が本文に存在</td><td class="yes">yes</td></tr>
-<tr><td>商品カード（塩味バナナチップス等）が本文に存在</td><td class="yes">yes</td></tr>
-<tr><td>仕入れの継続運用</td><td class="yes">yes（走行盤レーン1で継続中）</td></tr>
+<tr><td>棚タイトル・商品名の本文一致</td><td class="yes">一致</td></tr>
+<tr><td>押しても反応しない要素</td><td class="yes">0件</td></tr>
+<tr><td>コンソールエラー（食べ物の扉限定・新規発見）</td><td class="no">1件・未修正・記録済み</td></tr>
 </table>
 
 <footer>
