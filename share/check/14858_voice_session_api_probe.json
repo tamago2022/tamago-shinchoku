@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-20T09:17:22.625Z",
+  "request": {
+    "url": "https://joy-relief-station.lovable.app/api/voice/session",
+    "method": "POST",
+    "body": {
+      "action": "create",
+      "deviceId": "evidence-probe-xxxxxxxxxx"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "ok": false,
+      "error": "budget_exceeded",
+      "spentUsd": 2.64,
+      "budgetLimitUsd": 1
+    }
+  },
+  "note": "budget_exceededは1日の予算上限に達した時の想定内の応答。この時はブラウザのマイク(Web Speech API)での会話に自動で切り替わる設計(ConciergeChat.tsx startLocalEars)。"
+}
