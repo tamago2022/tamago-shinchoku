@@ -49,10 +49,10 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34393 34393号：アーティスト名相当欄にジャンル名「生活の知恵」を使えるルール</div>
 <h1>#34393 34393号：アーティスト名相当欄にジャンル名「生活の知恵」を使えるルール</h1>
-<div class="date">2026-10-04 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主指示(2026-07-31〜08-01)「作り手が個人として特定できない動画は、アーティスト名相当の欄にジャンル自体を表す名前（例：生活の知恵）を入れてOK」は、<code>src/lib/extraCards.ts</code>の<code>ExtraCard.byline</code>として既に実装・本番稼働していることを実測確認した。今回さらに、この運用ルールが今後の仕入れ担当にも迷わず再利用されるよう<code>.claude/manuals/01-ingest-linking.md</code>（仕入れの絶対ルール節）へ明文化して追記し、mainへ反映した。
+店主指示(2026-07-31〜08-01)「作り手を個人として特定できない動画は、アーティスト名相当の欄にそのジャンル自体を表す名前（例：生活の知恵）を入れてOK」は、既に<code>src/lib/extraCards.ts</code>の<code>ExtraCard.byline</code>として実装・本番稼働している（実例：「白髪が多い人の原因」カード）。今回はこのルールを今後の仕入れ担当が迷わず再利用できるよう、仕入れマニュアルの『仕入れの絶対ルール』節へ明文化して追記し、mainへ反映した。
 </div>
 
 <h2>② 数字</h2>
@@ -66,16 +66,14 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番カード（白髪が多い人の原因）</b><a href="https://joy-relief-station.lovable.app/room/card/shiraga-gen-in" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/shiraga-gen-in</a></li>
-  <li><b>追記したマニュアル（GitHub）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/manuals/01-ingest-linking.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/manuals/01-ingest-linking.md</a></li>
-  <li><b>mainへの反映コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/e09c24de6" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/e09c24de6</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番URLが200で返るか</td><td class="yes">200で返った（node fetchで実測）</td></tr>
-<tr><td>本文に「生活の知恵」が含まれるか</td><td class="yes">含まれていた（node fetchで実測、空ページではない）</td></tr>
-<tr><td>今後の仕入れ担当が再利用できる形で明文化されているか</td><td class="yes">01-ingest-linking.mdの仕入れの絶対ルール節に実例付きで追記済み（コミットe09c24de6、origin/main反映済み）</td></tr>
+<tr><td>本番URLが200で返るか</td><td class="yes">yes</td></tr>
+<tr><td>本文に「生活の知恵」が含まれているか（空ページでないこと）</td><td class="yes">yes</td></tr>
+<tr><td>今後の仕入れ担当が再利用できる形で明文化されているか</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
