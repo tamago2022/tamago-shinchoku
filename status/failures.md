@@ -2757,3 +2757,12 @@
 - **症状**：status/.last_launch_at が14分更新されておらず、10分ルールに抵触しました。
 - **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
 - **日付**：2026-10-19 05:28
+
+---
+
+## 1766号：session_preamble.md（枷1〜23）を全項目監査。消す枷は0件・超過1件を発見
+
+- **やったこと**：`tools/session_preamble.md` の枷1〜23全てについて、本文が名指しするツール・ファイル（`tools/1464_dakai_kanmon.py`／`tools/fukumen_kyaku.py`／`tools/buffer_yoyaku.py`／`tools/ai_erabareru_kenpin.py`／`tools/1184_kanmon.py`／`tools/koutai_kanmon.py`／`tools/henkan_kanmon.py`／`tools/stop_kanmon/*.mjs`／`status/hikitsugi_ima.md`／`status/1190_shinin.md`／`scripts/patrol/lovable-publish.mjs`(joy-relief-station origin/main)／`src/lib/meiCoverLedger.ts`(同main)等）が実在するか1件ずつ確認した。
+- **結果**：23項目すべて実在・現役。「もう効かない」と判定できる枷は0件だった。削除は行っていない（消す対象がなかった）。
+- **副次発見（別件として記録。1766号の対象外）**：枷14が定める「`MEMORY.md` は17.1KBを超えさせない」に対し、`.claude/agent-memory/tamago-orchestrator/MEMORY.md` が実測26,105バイト（約26.1KB）で規定超過。別枠で整理が必要。
+- **日付**：2026-10-20
