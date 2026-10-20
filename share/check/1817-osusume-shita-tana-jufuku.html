@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#1817 1817号：上のおすすめ枠と下の棚の重複除外 確認ページ</title>
+<title>#1817 上のおすすめ枠と下の棚の重複除外 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,40 +47,41 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1817 1817号：上のおすすめ枠と下の棚の重複除外</div>
-<h1>#1817 1817号：上のおすすめ枠と下の棚の重複除外</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1817 上のおすすめ枠と下の棚の重複除外</div>
+<h1>#1817 上のおすすめ枠と下の棚の重複除外</h1>
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が3回指摘した「上のおすすめ枠（つづけて、これはいかが／この動画が好きなら）と下の棚（同じ棚の仲間たち）で同じ動画が出る」問題。修正は実装済み・本体コードへ合流済みだが、工場全体のLovable認証切れ（2026-10-14以降）で本番への公開が止まっており、本番画面はまだ直った状態を見せられない。
+上のおすすめ枠(つづけて、これはいかが／この動画が好きなら)が選んだ動画のidを、下の棚(同じ棚の仲間たち)の除外リストへ渡すよう実装した。4ファイル変更、origin/mainへ合流済み。Lovableへの公開はアカウント全体のOAuth認証切れ(2026-10-14〜継続中、本案件とは無関係の別障害)で止まっており、本番画面はまだ直った姿を見せられない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1116件</b><span>本体コードと本番の未反映の差</span></div>
-  <div class="num"><b>2026-10-14</b><span>Lovable認証が最後に通った日</span></div>
-  <div class="num"><b>invalid_grant</b><span>今の認証エラー(再同意待ち)</span></div>
+  <div class="num"><b>4ファイル</b><span>変更したソースファイル数(ShelfSiblingsSection/TextRecommendations/publicShelves.functions/watch)</span></div>
+  <div class="num"><b>0件</b><span>本番JSバンドル(index-DMKWP4nn.js, 835645バイト)にexcludeYoutubeIdsの文字列=実測で未反映を確認</span></div>
+  <div class="num"><b>2026-10-14</b><span>Lovable認証(OAuth)が最後に通った日。以降invalid_grantで自動の公開が止まっている</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実装の記録(非公開・店主ログイン用)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/5c2f4d094e49888db680c0588a809af9e3c63864" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/5c2f4d094e49888db680c0588a809af9e3c63864</a></li>
-  <li><b>本番トップ(HTTP 200だが未反映)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番トップ(HTTP200・まだ修正は未反映)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番の現行JSバンドル(直接・excludeYoutubeIdsを含まないことを自分で検索できる)</b><a href="https://joy-relief-station.lovable.app/assets/index-DMKWP4nn.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/index-DMKWP4nn.js</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>下の棚が「除外リスト」を受け取れるようになっているか</td><td class="yes">本体コードに現存</td></tr>
-<tr><td>下の棚の抽出処理が除外リストで実際に弾いているか</td><td class="yes">本体コードに現存・後から足した別改良とも統合済み</td></tr>
-<tr><td>上のおすすめ枠2つが選んだ動画を下の棚へ合流して渡しているか</td><td class="yes">本体コードに現存</td></tr>
-<tr><td>本番(Lovable)への公開反映</td><td class="no">OAuth invalid_grant・CDP(9223)未起動のため未反映</td></tr>
+<tr><td>下の棚(ShelfSiblingsSection)がexcludeIdsを受け取れる</td><td class="yes">yes</td></tr>
+<tr><td>サーバー関数(publicShelves.functions.ts)がexcludeYoutubeIdsで実際に除外する</td><td class="yes">yes</td></tr>
+<tr><td>上のおすすめ枠2つ(TextRecommendations/WatchLikeYouMight)が選んだidをwatch.tsx経由で下の棚へ渡す</td><td class="yes">yes</td></tr>
+<tr><td>origin/mainにこの実装が含まれる(git merge-base --is-ancestorで確認)</td><td class="yes">yes</td></tr>
+<tr><td>本番(Lovable)への公開反映</td><td class="yes">no</td></tr>
 </table>
 
 <footer>
-このページは #1817 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #1817 のセッションが tools/make_check_page.py で作り直した確認資料(1回目の検品で、たまごさんが開けない非公開リポジトリへのリンクを貼っていたため全面差し替え)。コード実装はorigin/mainに合流済み。Lovable公開はアカウント全体のOAuth認証切れ(2026-10-14〜)が原因で、本案件の実装不備ではない。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
