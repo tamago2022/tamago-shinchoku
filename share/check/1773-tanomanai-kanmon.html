@@ -52,14 +52,15 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-文章だけで12回以上書かれていた枷（確認を求めずお金/削除/外部公開/パスワード・ログイン以外は自分で決めて進める）を、exit codeで強制する関所 <code>tools/1773_tanomanai_kanmon.py</code> に変換した。さらに今回、報告の提出口 <code>tools/kenpin_gate.py --submit</code> の中に接続し、4カテゴリに当たらない確認・お願い文を自動でFAILにする所まで実装した（作っただけで繋がっていない状態だったのを配線した）。
+文章だけで12回以上書かれていた枷（確認を求めずお金/削除/外部公開/パスワード・ログイン以外は自分で決めて進める）を、exit codeで強制する関所 <code>tools/1773_tanomanai_kanmon.py</code> に変換した。①報告の提出口 <code>tools/kenpin_gate.py --submit</code> へ接続②さらに外部検品FIXの指摘（『手で呼ばないと効かないのでは常時ではない』）を受け、<code>tools/stop_kanmon/1773_tanomanai_stop_kanmon.mjs</code>（Stop hook）を新設し、セッションの最終応答を自動で判定する形にして <code>hooks_fragment.json</code> 経由で tamago-shinchoku・joy-relief-station・~/.claude の3箇所全部に配布済み（全セッションに常時かかる）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>12/23</b><span>henkan_kanmon.py --check・機械の関所に変換済みの枷数（実装前は11/23）</span></div>
-  <div class="num"><b>PASS</b><span>1773_tanomanai_kanmon.py --self-test の結果</span></div>
-  <div class="num"><b>FAIL(exit2)</b><span>kenpin_gate.py --submitで違反文を実際に流した時の結果（下の実行ログ参照）</span></div>
+  <div class="num"><b>12/23</b><span>henkan_kanmon.py --check・機械の関所に変換済みの枷数</span></div>
+  <div class="num"><b>PASS</b><span>1773_tanomanai_kanmon.py --self-test ＋ 1773_tanomanai_stop_kanmon.mjs --self-test（『たまごさんにやってもらうことにしました』を含む実例テスト込み）</span></div>
+  <div class="num"><b>exit=2</b><span>Stop hookへ違反な最終応答(どうしますか？)を模擬stdin入力で渡した時の実測終了コード</span></div>
+  <div class="num"><b>HTTP 200</b><span>確認ページ自身をpython3 urllib(HEAD)で実測</span></div>
 </div>
 
 
@@ -67,7 +68,8 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>1773_tanomanai_kanmon.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1773_tanomanai_kanmon.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1773_tanomanai_kanmon.py</a></li>
-  <li><b>kenpin_gate.pyの接続部分</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py</a></li>
+  <li><b>1773_tanomanai_stop_kanmon.mjs（Stop hook）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/stop_kanmon/1773_tanomanai_stop_kanmon.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/stop_kanmon/1773_tanomanai_stop_kanmon.mjs</a></li>
+  <li><b>hooks_fragment.json（配布の正本）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/stop_kanmon/hooks_fragment.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/stop_kanmon/hooks_fragment.json</a></li>
 </ul>
 
 
