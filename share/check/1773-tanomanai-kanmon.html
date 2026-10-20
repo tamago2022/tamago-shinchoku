@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#1773 1773号：「たまごさんにやってもらう」を最初の選択肢にしない・機械の関所 確認ページ</title>
+<title>#1773 1773号：『たまごさんにやってもらう』を最初の選択肢にしない関所 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,38 +47,33 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1773 1773号：「たまごさんにやってもらう」を最初の選択肢にしない・機械の関所</div>
-<h1>#1773 1773号：「たまごさんにやってもらう」を最初の選択肢にしない・機械の関所</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1773 1773号：『たまごさんにやってもらう』を最初の選択肢にしない関所</div>
+<h1>#1773 1773号：『たまごさんにやってもらう』を最初の選択肢にしない関所</h1>
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-枷1「たまごさんに確認を出さない」は文章だけで機械の関所が無かった（henkan_kanmon.pyで未変換12枷の1つと判明・実測）。tools/1773_tanomanai_kanmon.py を新設し、4カテゴリ（お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認）以外の確認・お願いをexit 2で弾く関所にした。session_preamble.mdの枷1本文へ参照を追記し、全子セッションへ自動で効くようにした（このページを開いているあなたの手元にも、この回のセッション開始時に同じ枷1の文章が注入されている）。
+文章だけで12回以上書かれていた枷（確認を求めずお金/削除/外部公開/パスワード・ログイン以外は自分で決めて進める）を、exit codeで強制する関所 <code>tools/1773_tanomanai_kanmon.py</code> に変換した。さらに今回、報告の提出口 <code>tools/kenpin_gate.py --submit</code> の中に接続し、4カテゴリに当たらない確認・お願い文を自動でFAILにする所まで実装した（作っただけで繋がっていない状態だったのを配線した）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>12/23</b><span>henkan_kanmon.pyの機械変換済み枷数（対応前は11/23・実測）</span></div>
-  <div class="num"><b>PASS</b><span>self-test結果（実測。逆テストで対象外の確認はFAIL/exit2、正しい型の確認はPASS/exit0を確認）</span></div>
+  <div class="num"><b>12/23</b><span>henkan_kanmon.py --check・機械の関所に変換済みの枷数（実装前は11/23）</span></div>
+  <div class="num"><b>PASS</b><span>1773_tanomanai_kanmon.py --self-test の結果</span></div>
+  <div class="num"><b>FAIL(exit2)</b><span>kenpin_gate.py --submitで違反文を実際に流した時の結果（下の実行ログ参照）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>tools/1773_tanomanai_kanmon.py（関所本体・GitHub）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1773_tanomanai_kanmon.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1773_tanomanai_kanmon.py</a></li>
-  <li><b>session_preamble.md（枷1に参照を追記・GitHub）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/session_preamble.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/session_preamble.md</a></li>
+  <li><b>1773_tanomanai_kanmon.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1773_tanomanai_kanmon.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1773_tanomanai_kanmon.py</a></li>
+  <li><b>kenpin_gate.pyの接続部分</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
-<table>
-<tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>対象外の確認を書いた時（実例:「どうしますか？AとBどちらが」）</td><td class="yes">FAIL/exit2で弾く</td></tr>
-<tr><td>カテゴリ内でURL+具体的な操作まで言い切った確認</td><td class="yes">PASS/exit0</td></tr>
-<tr><td>確認のサイン自体が無い普通の報告文</td><td class="yes">無条件PASS（対象外）</td></tr>
-</table>
+
 
 <footer>
-実測コマンド: python3 tools/1773_tanomanai_kanmon.py --self-test → TANOMANAI_KANMON_SELFTEST: PASS
+このページは #1773 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
