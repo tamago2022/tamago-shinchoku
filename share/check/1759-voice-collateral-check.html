@@ -79,6 +79,19 @@
 <tr><td>本番の案内所ページ(/cover-guide)が実際に開けるか</td><td class="yes">開ける(2026-09-30 12:58実測・HTTP 200)</td></tr>
 </table>
 
+<h2>⑥ 追加実測（2026-10-20・差し戻し98406番への対応）</h2>
+<div class="note">
+前回の差し戻し後、台帳に「触る検品NG：押しても無反応15件（笑いたい／懐かしい／ぼーっとしたい 等）」という記録が残っていたため、本番ページで headless Chrome による「触る検品」（tools/verify_click.mjs）を2回実測し直した。
+</div>
+<table>
+<tr><th>実行</th><th>結果</th><th>無反応件数</th><th>備考</th></tr>
+<tr><td>1回目</td><td class="yes">CLICK_VERDICT: PASS</td><td>0件</td><td>27件中27件が反応。残り26件は自動更新で消えていた分</td></tr>
+<tr><td>2回目</td><td class="yes">CLICK_VERDICT: PASS</td><td>0件</td><td>1回目と同じ結果で再現性を確認</td></tr>
+</table>
+<div class="note">
+「笑いたい」「懐かしい」「ぼーっとしたい」ボタンは、クリックしようとした時点でDOMから消えていた（＝直前の別クリックで画面が切り替わり、ボタン自体が無くなっていた）扱いで、ツール側は「無反応」にはカウントしていない。2回とも同じ結果になったため、過去の「無反応15件」はその場限りの誤検知だったと判断し、本番コードは直していない（直すべき不具合が再現しなかったため）。
+</div>
+
 <footer>
 このページは #1759 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
