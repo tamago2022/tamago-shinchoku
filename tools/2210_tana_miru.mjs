@@ -31,9 +31,11 @@ function connect(u) {
   const ws = new WebSocket(u);
   let id = 0;
   const pend = new Map();
+  const listeners = [];
   ws.addEventListener("message", (ev) => {
     const m = JSON.parse(ev.data);
     if (m.id && pend.has(m.id)) { const cb = pend.get(m.id); pend.delete(m.id); cb(m); }
+    else if (m.method) { for (const l of listeners) l(m); }
   });
   const ready = new Promise((a, b) => { ws.addEventListener("open", a); ws.addEventListener("error", b); });
   const send = (method, params = {}) => new Promise((a, b) => {
@@ -41,7 +43,7 @@ function connect(u) {
     pend.set(i, (m) => (m.error ? b(new Error(JSON.stringify(m.error))) : a(m.result)));
     ws.send(JSON.stringify({ id: i, method, params }));
   });
-  return { ready, send, close: () => ws.close() };
+  return { ready, send, close: () => ws.close(), on: (f) => listeners.push(f) };
 }
 
 const port = 9700 + Math.floor(Math.random() * 200);
