@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34546 34546番：Spotifyプレイリスト仕入れ7曲、main合流済み・公開はLovable側の障害で保留 確認ページ</title>
+<title>#34546 34546番：Spotifyプレイリスト仕入れ7曲、main合流済み・公開はLovable基盤障害で保留中 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,27 +47,28 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34546 34546番：Spotifyプレイリスト仕入れ7曲、main合流済み・公開はLovable側の障害で保留</div>
-<h1>#34546 34546番：Spotifyプレイリスト仕入れ7曲、main合流済み・公開はLovable側の障害で保留</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34546 34546番：Spotifyプレイリスト仕入れ7曲、main合流済み・公開はLovable基盤障害で保留中</div>
+<h1>#34546 34546番：Spotifyプレイリスト仕入れ7曲、main合流済み・公開はLovable基盤障害で保留中</h1>
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主のSpotifyプレイリスト（女性_Strong_Woman_Songs.csv／Liked_Songs.csv）と在庫を突き合わせ、未収録だった人気曲7本をYouTube Data APIで実在確認（公式チャンネル・embeddable）した上でcoverGuide.tsへ追加し、GitHub mainへ合流済み。Lovableへの公開（本番反映）は、継続中のOAuth障害＋Chromeの自動起動を禁止する機械の関所（1186号）の二重の壁でAI側から完結できず保留中。
+店主のSpotifyプレイリスト(女性_Strong_Woman_Songs.csv／Liked_Songs.csv)と在庫を突き合わせ、未収録だった人気曲7本(Sabrina Carpenter「Espresso」「Nonsense」、Zara Larsson「Lush Life」、Ava Max「Sweet but Psycho」、JENNIE「like JENNIE」、Alessia Cara「Scars To Your Beautiful」、Ariana Grande「God is a woman」)をcoverGuide.tsへ追加し、GitHub mainへ合流済み。本番公開は2026-10-14以降発生しているLovable側のOAuth認証エラー(invalid_grant)でブロックされており、これは本案件固有の不具合ではなく工場全体で9件以上同じ原因が確認されている既知の障害。公開専用ブラウザの起動経路・承認URLを開く経路を実際に試したが、いずれもログイン済みブラウザセッションが無いと通らず、このセッションにその手段が無いことを実測で確認した(1464番打開関門PASS済み)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>7件</b><span>追加した曲数</span></div>
   <div class="num"><b>0件</b><span>重複id・重複videoId</span></div>
-  <div class="num"><b>200</b><span>本番トップのHTTPステータス（公開済みの既存ページ）</span></div>
+  <div class="num"><b>200</b><span>本番トップのHTTPステータス</span></div>
+  <div class="num"><b>未反映</b><span>新曲ページの公開状態</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番トップ（公開ページ・誰でも開けます）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>新曲の本番ページ（まだ公開待ちのため今は出ません。公開後に出る想定の場所）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=sabrina-carpenter&amp;song=espresso" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=sabrina-carpenter&amp;song=espresso</a></li>
+  <li><b>本番トップ（公開済み・いつでも開けます）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>進捗表トップ（この案件の状況を見られる場所）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -78,8 +79,8 @@
 <tr><td>Ava Max「Sweet but Psycho」</td><td class="yes">main合流済み</td></tr>
 <tr><td>JENNIE「like JENNIE」</td><td class="yes">main合流済み</td></tr>
 <tr><td>Alessia Cara「Scars To Your Beautiful」</td><td class="yes">main合流済み</td></tr>
-<tr><td>Ariana Grande「God is a woman」（既存アーティストへ追加）</td><td class="yes">main合流済み</td></tr>
-<tr><td>本番反映（新曲が本番ページに出る）</td><td class="no">未反映。OAuth障害と1186号の関所（Chrome自動起動の機械的禁止）で保留中</td></tr>
+<tr><td>Ariana Grande「God is a woman」(既存アーティストへ追加)</td><td class="yes">main合流済み</td></tr>
+<tr><td>本番反映(新曲が本番ページに出る)</td><td class="no">未反映。Lovable基盤のOAuth障害(2026-10-14以降)で公開がブロックされたまま</td></tr>
 </table>
 
 <footer>
