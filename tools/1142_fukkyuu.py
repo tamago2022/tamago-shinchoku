@@ -191,6 +191,81 @@ def naosu_ghost_waiting():
     return rec("ghost_waiting", True, "順番待ちの幽霊項目 %d件を取り消した" % len(yuurei), detail)
 
 
+# ── ①'' 失敗台帳で「対象なし・完了」と確定済みなのに、queue側が追従していない号を閉じる ──
+# 1856番（2026-10-20）：F-20261001024019-quick（2026-10-01）で「たまごさんの一般コメントで
+# 実装すべき機能・画面は存在しない（対象なし）」と既に判断済みだったのに、queue.json側の
+# status を変える操作が漏れていたため、1856番は running/waiting のまま5回以上 cut され
+# 続けてゾンビ化し、鬼監督にも「URL無し・証拠なし」で何度も差し戻された。
+# 根本原因：「判断を記録する」（failures.jsonl）と「実行状態を変える」（queue.json）が
+# 別々の手作業の2工程になっていて、前者をやっても後者が自動で追従しなかった。
+# ここから先：failures.jsonl に `queueDecision: "cancel"` を明示したレコードがあれば、
+# その `queueRef` の号を自動で cancelled へ落とす。★文字列マッチには頼らない。
+# （「対象なし」等のキーワード一致は誤判定が怖い＝実在する作業指示を誤キャンセルし得る。
+#   明示フィールドだけを見ることで、書く側が意図して確定させた号だけを対象にする）
+def naosu_taishou_nashi_kakutei():
+    fp = os.path.join(STATUS, "failures.jsonl")
+    rows = []
+    try:
+        with io.open(fp, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except Exception:
+                    continue
+    except Exception as e:
+        return rec("taishou_nashi", False, "失敗台帳が読めません", str(e)[:80])
+    targets = {}
+    for r in rows:
+        if r.get("queueDecision") != "cancel":
+            continue
+        ref = r.get("queueRef")
+        try:
+            ref = int(ref)
+        except Exception:
+            continue
+        targets[ref] = r.get("id")
+    if not targets:
+        return rec("taishou_nashi", True, "対象なし確定済みの号は0件", "")
+    p = os.path.join(STATUS, "queue.json")
+    try:
+        q = json.load(io.open(p, encoding="utf-8"))
+    except Exception as e:
+        return rec("taishou_nashi", False, "キューが読めません", str(e)[:80])
+    items = q.get("items") or []
+    hit = [i for i in items if i.get("n") in targets
+           and str(i.get("status")) not in ("done", "cancelled", "merged")]
+    if not hit:
+        return rec("taishou_nashi", True, "対象なし確定済みの号は全てcancelled済み", "")
+    if DRY:
+        return rec("taishou_nashi", False,
+                   "対象なし確定済みだがqueueが未反映 %d件（下見だけ）" % len(hit),
+                   "／".join(str(i.get("n")) for i in hit[:10]))
+    try:
+        bak = os.path.join(STATUS, "_1142_gomi")
+        os.makedirs(bak, exist_ok=True)
+        import shutil
+        shutil.copy2(p, os.path.join(
+            bak, "queue.json.bak-" + now().strftime("%Y%m%d-%H%M%S")))
+        _gomi_assyuku()
+    except Exception:
+        pass
+    for i in hit:
+        i["_preCancelStatus"] = i.get("status")
+        i["status"] = "cancelled"
+        i["cancelledAt"] = now().isoformat()
+        i["restoreWhy"] = ("1142_fukkyuu：失敗台帳%sで『対象なし・完了』と確定済み"
+                            "のため取り消し（1856番の再発防止）" % targets.get(i.get("n")))
+    tmp = p + ".tmp1142c"
+    json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, p)
+    detail = "／".join(str(i.get("n")) for i in hit[:10])
+    return rec("taishou_nashi", True,
+               "対象なし確定済み %d件を取り消した" % len(hit), detail)
+
+
 # ── ② 誰も掴んでいない古い錠前を外す ────────────────────────────
 def naosu_lock(furui_min=60):
     n = 0
@@ -311,7 +386,8 @@ def naosu_login():
 def main():
     print("1142 復旧係 %s（%s）" % (now().strftime("%H:%M:%S"),
                                    "下見" if DRY else "本番"))
-    rows = [naosu_stuck(), naosu_ghost_waiting(), naosu_lock(), naosu_gomi(), naosu_failures(), naosu_login()]
+    rows = [naosu_stuck(), naosu_ghost_waiting(), naosu_taishou_nashi_kakutei(),
+            naosu_lock(), naosu_gomi(), naosu_failures(), naosu_login()]
     naoshita = sum(1 for r in rows if r["naoshita"])
     nokori = [r["what"] for r in rows if not r["naoshita"]]
     print("→ 直した %d／%d。残った赤：%s" % (naoshita, len(rows),
