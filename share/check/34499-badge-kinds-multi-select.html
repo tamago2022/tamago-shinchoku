@@ -51,30 +51,37 @@
 <h1>#34499 バッジの種類を複数から店主が手動で選ぶ仕組み</h1>
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-カードに付けるバッジを『コンシェルジュ推し』『グッドカバー』の2種類から選べる。自動付与のコードは無く、どちらも店主の手動選択（管理画面のバッジアイコン→3択メニュー、または棚の一括パネル）でのみ付く。
+カードに付けるバッジを『コンシェルジュ推し』『グッドカバー』の2種類から選べる仕組みは、実装としては既に main に合流済みだった（2026-08-05〜実装）。今回は本番(GitHub Pages)で確認ページが404になっていた問題を直し、中身の主張を実測で裏付けられる内容に書き換えた。自動付与のコードは無く、どちらも店主の手動選択（カード右上の🏷️ボタン→「なし／コンシェルジュ推し／グッドカバー」の3択メニュー）でのみ付く。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2種類</b><span>選べるバッジの数（concierge / good-cover）</span></div>
-  <div class="num"><b>0件</b><span>自動付与のトリガーコード（src/lib/badgeKinds.ts 実測）</span></div>
+  <div class="num"><b>0件</b><span>自動付与のトリガーコード（src/lib/badgeKinds.ts 実測・grep）</span></div>
+  <div class="num"><b>2件</b><span>本番に実在するバッジ画像ファイル（HTTP 200・2026-10-21 23時台 実測）</span></div>
 </div>
 
+<div class="note">
+2026-10-21時点の実測で分かったこと：バッジ画像ファイルは本番に確かに存在する。ただし「どの曲にバッジが付いているか」はデータベースの内容（店主が選んだ結果）なので、静的なHTML取得だけでは実例ページを確認できなかった（画面はクライアント側で後からデータを読みに行く作りのため）。そのため下のリンクは「画像ファイルそのもの」と「仕組みの土台（本番ページの生存）」に絞っている。実際の曲に付いているかどうかは管理画面での実見が必要（店主の手動操作そのものなので、AI側からは再現できない）。
+</div>
 
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番：グッドカバーの実例（棚）</b><a href="https://joy-relief-station.lovable.app/shelf/music/covers" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/covers</a></li>
-  <li><b>本番：コンシェルジュ推しの実例（design-check）</b><a href="https://joy-relief-station.lovable.app/design-check" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/design-check</a></li>
+  <li><b>本番：グッドカバーのバッジ画像（開くと画像だけ表示される）</b><a href="https://joy-relief-station.lovable.app/badges/good-cover.png" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/good-cover.png</a></li>
+  <li><b>本番：コンシェルジュ推しのバッジ画像（開くと画像だけ表示される）</b><a href="https://joy-relief-station.lovable.app/badges/concierge-pick.png" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/concierge-pick.png</a></li>
+  <li><b>本番トップページ（生存確認）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>④ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番/shelf/music/coversに『グッドカバー』バッジが実表示</td><td class="yes">yes</td></tr>
-<tr><td>本番/design-checkに『コンシェルジュ推し』バッジが実表示</td><td class="yes">yes</td></tr>
-<tr><td>badgeKinds.tsに自動付与ロジックが無いこと</td><td class="yes">yes</td></tr>
+<tr><td>本番にgood-cover.png画像が実在（HTTP 200・image/png）</td><td class="yes">yes</td></tr>
+<tr><td>本番にconcierge-pick.png画像が実在（HTTP 200・image/png）</td><td class="yes">yes</td></tr>
+<tr><td>badgeKinds.tsに自動付与ロジック（仕入れ・棚編集の自動処理からの書き込み）が無いこと（grep実測）</td><td class="yes">yes</td></tr>
+<tr><td>BadgeQuickPicker.tsx（店主が「なし／コンシェルジュ推し／グッドカバー」を1曲ずつ手動で選ぶUI）がコードとしてmain合流済み</td><td class="yes">yes</td></tr>
+<tr><td>実際にバッジが表示されている公開ページの実例を静的HTML取得で確認</td><td class="no">未確認（クライアント側描画のため不可）</td></tr>
 </table>
 
 <footer>
