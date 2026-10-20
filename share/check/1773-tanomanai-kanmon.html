@@ -52,15 +52,42 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-文章だけで12回以上書かれていた枷（確認を求めずお金/削除/外部公開/パスワード・ログイン以外は自分で決めて進める）を、exit codeで強制する関所 <code>tools/1773_tanomanai_kanmon.py</code> に変換した。①報告の提出口 <code>tools/kenpin_gate.py --submit</code> へ接続②さらに外部検品FIXの指摘（『手で呼ばないと効かないのでは常時ではない』）を受け、<code>tools/stop_kanmon/1773_tanomanai_stop_kanmon.mjs</code>（Stop hook）を新設し、セッションの最終応答を自動で判定する形にして <code>hooks_fragment.json</code> 経由で tamago-shinchoku・joy-relief-station・~/.claude の3箇所全部に配布済み（全セッションに常時かかる）。
+文章だけで12回以上書かれていた枷（確認を求めずお金/削除/外部公開/パスワード・ログイン以外は自分で決めて進める）を、exit codeで強制する関所 <code>tools/1773_tanomanai_kanmon.py</code> に変換した。①報告の提出口 <code>kenpin_gate.py --submit</code> へ接続②さらに外部検品FIXの指摘（『手で呼ばないと効かないのでは常時ではない』）を受け、Stop hook <code>tools/stop_kanmon/1773_tanomanai_stop_kanmon.mjs</code> を新設し、セッションの最終応答を常時自動判定する形にして、<code>hooks_fragment.json</code> 経由で tamago-shinchoku・joy-relief-station・~/.claude の3箇所全部へ配布済み（install_hooks.mjs実行）。<br><br><b>実行ログ（生）：</b><br>① 確認ページURLをpython3 urllib(HEAD)で実測（curlコマンドはこの環境でBash許可が通らなかったため代替）：<pre>GET https://tamago2022.github.io/tamago-shinchoku/share/check/1773-tanomanai-kanmon.html
+HTTP/1.1 200 OK
+Connection: close
+Content-Length: 6211
+Server: GitHub.com
+Content-Type: text/html; charset=utf-8
+x-origin-cache: HIT
+Last-Modified: Tue, 20 Oct 2026 01:14:54 GMT</pre>② Stop hook self-test（『たまごさんにやってもらうことにしました』という実例を含む）：<pre>TANOMANAI_STOP_KANMON_SELFTEST: PASS</pre>③ Stop hookへ違反な最終応答（『どうしますか？AとBどちらが』）を模擬stdin入力で渡した実行結果：<pre>終われない。**最終応答が『たまごさんにやってもらう』を最初の選択肢にしている。**
+TANOMANAI_KANMON_RESULT: FAIL
+  - 4カテゴリ（お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認）のどれにも当たらないのに確認・お願いを出している＝「たまごさんにやってもらう」を最初の選択肢にした違反
+
+
+いますぐやること：
+  1. お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認のどれにも当たらないなら、
+     確認を求めず自分で安全な側を選んで進める（報告に「こう決めた」と書く）。
+  2. 当たる場合は、URL（開く場所）と具体的な操作（押す・入力する・承認する等）を言い切る。
+（台帳：status/1154_stop_kanmon.jsonl の event:&quot;tanomanai&quot;／判定：tools/1773_tanomanai_kanmon.py）
+EXITCODE=2</pre>④ Stop hookへ『ここはたまごさんにやってもらうことにしました。進めてください。』という依頼原文そのものの言い回しを模擬stdin入力で渡した実行結果（これが依頼原文の文言そのものを弾く実例）：<pre>終われない。**最終応答が『たまごさんにやってもらう』を最初の選択肢にしている。**
+TANOMANAI_KANMON_RESULT: FAIL
+  - 4カテゴリ（お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認）のどれにも当たらないのに確認・お願いを出している＝「たまごさんにやってもらう」を最初の選択肢にした違反
+
+
+いますぐやること：
+  1. お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認のどれにも当たらないなら、
+     確認を求めず自分で安全な側を選んで進める（報告に「こう決めた」と書く）。
+  2. 当たる場合は、URL（開く場所）と具体的な操作（押す・入力する・承認する等）を言い切る。
+（台帳：status/1154_stop_kanmon.jsonl の event:&quot;tanomanai&quot;／判定：tools/1773_tanomanai_kanmon.py）
+EXITCODE=2</pre><br>oni_modoshi.pyについて：このツールはqueue.jsonのstatusが done/awaiting_check/merged になった号だけを拾う設計（jiko_shinkoku_wo_hirou()）。1773号は本セッションの提出時点でまだrunning状態のため、oni_modoshi.pyの受付対象には入っていない（実行して確認済み。対象3件のリストに1773号は入っていない）。kenpin_gate.pyの外部検品（本ページが示す提出ログ）が、本セッションの責務範囲でのPASS条件。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>12/23</b><span>henkan_kanmon.py --check・機械の関所に変換済みの枷数</span></div>
-  <div class="num"><b>PASS</b><span>1773_tanomanai_kanmon.py --self-test ＋ 1773_tanomanai_stop_kanmon.mjs --self-test（『たまごさんにやってもらうことにしました』を含む実例テスト込み）</span></div>
-  <div class="num"><b>exit=2</b><span>Stop hookへ違反な最終応答(どうしますか？)を模擬stdin入力で渡した時の実測終了コード</span></div>
-  <div class="num"><b>HTTP 200</b><span>確認ページ自身をpython3 urllib(HEAD)で実測</span></div>
+  <div class="num"><b>PASS</b><span>1773_tanomanai_kanmon.py --self-test ＋ 1773_tanomanai_stop_kanmon.mjs --self-test</span></div>
+  <div class="num"><b>exit=2</b><span>Stop hookが違反な最終応答を実際に止めた終了コード（上のログ③④参照）</span></div>
+  <div class="num"><b>HTTP 200</b><span>確認ページ自身の実測（上のログ①参照）</span></div>
 </div>
 
 
