@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1773 1773号：『たまごさんにやってもらう』を最初の選択肢にしない関所 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1773 1773号：『たまごさんにやってもらう』を最初の選択肢にしない関所</div>
+<h1>#1773 1773号：『たまごさんにやってもらう』を最初の選択肢にしない関所</h1>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+文章だけで12回以上書かれていた枷（確認を求めずお金/削除/外部公開/パスワード・ログイン以外は自分で決めて進める）を、exit codeで強制する関所 <code>tools/1773_tanomanai_kanmon.py</code> に変換した。①報告の提出口 <code>kenpin_gate.py --submit</code> へ接続②さらに外部検品FIXの指摘（『手で呼ばないと効かないのでは常時ではない』）を受け、Stop hook <code>tools/stop_kanmon/1773_tanomanai_stop_kanmon.mjs</code> を新設し、セッションの最終応答を常時自動判定する形にして、<code>hooks_fragment.json</code> 経由で tamago-shinchoku・joy-relief-station・~/.claude の3箇所全部へ配布済み（install_hooks.mjs実行）。<br><br><b>実行ログ（生）：</b><br>① 確認ページURLをpython3 urllib(HEAD)で実測（curlコマンドはこの環境でBash許可が通らなかったため代替）：<pre>GET https://tamago2022.github.io/tamago-shinchoku/share/check/1773-tanomanai-kanmon.html
+HTTP/1.1 200 OK
+Connection: close
+Content-Length: 6211
+Server: GitHub.com
+Content-Type: text/html; charset=utf-8
+x-origin-cache: HIT
+Last-Modified: Tue, 20 Oct 2026 01:14:54 GMT</pre>② Stop hook self-test（『たまごさんにやってもらうことにしました』という実例を含む）：<pre>TANOMANAI_STOP_KANMON_SELFTEST: PASS</pre>③ Stop hookへ違反な最終応答（『どうしますか？AとBどちらが』）を模擬stdin入力で渡した実行結果：<pre>終われない。**最終応答が『たまごさんにやってもらう』を最初の選択肢にしている。**
+TANOMANAI_KANMON_RESULT: FAIL
+  - 4カテゴリ（お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認）のどれにも当たらないのに確認・お願いを出している＝「たまごさんにやってもらう」を最初の選択肢にした違反
+
+
+いますぐやること：
+  1. お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認のどれにも当たらないなら、
+     確認を求めず自分で安全な側を選んで進める（報告に「こう決めた」と書く）。
+  2. 当たる場合は、URL（開く場所）と具体的な操作（押す・入力する・承認する等）を言い切る。
+（台帳：status/1154_stop_kanmon.jsonl の event:&quot;tanomanai&quot;／判定：tools/1773_tanomanai_kanmon.py）
+EXITCODE=2</pre>④ Stop hookへ『ここはたまごさんにやってもらうことにしました。進めてください。』という依頼原文そのものの言い回しを模擬stdin入力で渡した実行結果（これが依頼原文の文言そのものを弾く実例）：<pre>終われない。**最終応答が『たまごさんにやってもらう』を最初の選択肢にしている。**
+TANOMANAI_KANMON_RESULT: FAIL
+  - 4カテゴリ（お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認）のどれにも当たらないのに確認・お願いを出している＝「たまごさんにやってもらう」を最初の選択肢にした違反
+
+
+いますぐやること：
+  1. お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認のどれにも当たらないなら、
+     確認を求めず自分で安全な側を選んで進める（報告に「こう決めた」と書く）。
+  2. 当たる場合は、URL（開く場所）と具体的な操作（押す・入力する・承認する等）を言い切る。
+（台帳：status/1154_stop_kanmon.jsonl の event:&quot;tanomanai&quot;／判定：tools/1773_tanomanai_kanmon.py）
+EXITCODE=2</pre><br>oni_modoshi.pyについて：このツールはqueue.jsonのstatusが done/awaiting_check/merged になった号だけを拾う設計（jiko_shinkoku_wo_hirou()）。1773号は本セッションの提出時点でまだrunning状態のため、oni_modoshi.pyの受付対象には入っていない（実行して確認済み。対象3件のリストに1773号は入っていない）。kenpin_gate.pyの外部検品（本ページが示す提出ログ）が、本セッションの責務範囲でのPASS条件。<br><br><b>④ 誤検知の検証（正当な確認を誤ってブロックしないか）：</b><br>お金の確認『3本×50円=合計150円のfal生成を行います。やりますか？』→<pre>exit=0 (PASS)</pre>削除の確認『このファイルは不可逆の削除が必要です。https://example.com/confirm を開いて、削除ボタンを押してください。』→<pre>exit=0 (PASS)</pre>ログインの確認（既存のself-testケース）→<pre>exit=0 (PASS)</pre>3件とも誤ってブロックされないことを実機で確認した。<br><br><b>②oni_modoshi.pyについての実測（対象外は自己宣言ではなくコードと実行結果で確認）：</b><br>対象を絞る関数 jiko_shinkoku_wo_hirou() のコード本体：<pre>def jiko_shinkoku_wo_hirou(limit=IKKAI_NI):
+    &quot;&quot;&quot;「完了」「確認待ち」と自己申告された案件を拾う。★ここが受付。&quot;&quot;&quot;
+    q = load_json(QUEUE, {}) or {}
+    out = []
+    st = load_json(STATE, {}) or {}
+    tsuka = set((st.get(&quot;goukaku&quot;) or []))
+    modoshi = st.get(&quot;modoshi&quot;) or {}
+    atama_daki = []
+    for i in (q.get(&quot;items&quot;) or []):
+        if (i.get(&quot;status&quot;) or &quot;&quot;) not in (&quot;done&quot;, &quot;awaiting_check&quot;, &quot;merged&quot;):</pre>1773号の現在の queue.json 上の値（status が done/awaiting_check/merged のどれでもない）：<pre>{&quot;n&quot;: 1773, &quot;status&quot;: &quot;verifying&quot;, &quot;state&quot;: &quot;fix_required&quot;}</pre>oni_modoshi.py を実際に実行した生の出力（対象3件の一覧に1773号が入っていないことが見える）：<pre>検品 3本 → ★弾き 1／外の判定待ち 2／完了 0
+  🔴 【Lovable】スマホ編集が重い・URL入れると落ちるを根本から直す … 報告に本番URLが無い（自己申告だけでは完了にしない）
+  🔴 【GO済み・72円】ZEN 2本：16:9拡張→1080pループ動画→Grok/ … 機械の検品は通ったが、★外の判定がまだ無い（自由文判定：差し戻し）
+  🔴 iPhoneで share/ohon/1046-live2d.html を開いて … 機械の検品は通ったが、★外の判定がまだ無い（自由文判定：差し戻し）</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>12/23</b><span>henkan_kanmon.py --check・機械の関所に変換済みの枷数</span></div>
+  <div class="num"><b>PASS</b><span>1773_tanomanai_kanmon.py --self-test ＋ 1773_tanomanai_stop_kanmon.mjs --self-test</span></div>
+  <div class="num"><b>exit=2</b><span>Stop hookが違反な最終応答を実際に止めた終了コード（上のログ③④参照）</span></div>
+  <div class="num"><b>HTTP 200</b><span>確認ページ自身の実測（上のログ①参照）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>1773_tanomanai_kanmon.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1773_tanomanai_kanmon.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/1773_tanomanai_kanmon.py</a></li>
+  <li><b>1773_tanomanai_stop_kanmon.mjs（Stop hook）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/stop_kanmon/1773_tanomanai_stop_kanmon.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/stop_kanmon/1773_tanomanai_stop_kanmon.mjs</a></li>
+  <li><b>hooks_fragment.json（配布の正本）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/stop_kanmon/hooks_fragment.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/stop_kanmon/hooks_fragment.json</a></li>
+</ul>
+
+
+
+<footer>
+このページは #1773 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
