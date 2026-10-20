@@ -71,11 +71,12 @@ def main():
                  f'<span class="{"aka" if x["han"].startswith("赤") else "ok"}">{E(x["han"])}</span>']
                 for x in m["mon"]]
 
-    h1 = [[E(x["n"]), E(x["title"]), f'{x["keika_h"]}時間', E(x["state"]), E(x["iro"])] for x in y["hajimeta_mama"][:30]]
-    h2 = [[E(x["n"]), E(x["title"]), f'{x["keika_h"]}時間',
+    inyou = lambda s: f'<span data-sekisho="inyou">{s}</span>'
+    h1 = [[E(x["n"]), inyou(E(x["title"])), f'{x["keika_h"]}時間', E(x["state"]), E(x["iro"])] for x in y["hajimeta_mama"][:30]]
+    h2 = [[E(x["n"]), inyou(E(x["title"])), f'{x["keika_h"]}時間',
            "<br>".join(f'<a href="{E(u)}">{E(u[:60])}</a>' for u in x["urls"])] for x in y["tashikametenai"][:30]]
-    h3 = [[E(x["aite"]), E(x["nani"] or x["thread"]), f'{x["keika_h"]}時間', E(x["iro"])] for x in y["kaettekonai"][:30]]
-    h4 = [[E(x["n"]), E(x["title"]), f'{x["keika_h"]}時間', E(x["shiteki"])] for x in y["naoshitenai"][:30]]
+    h3 = [[E(x["aite"]), inyou(E(x["nani"] or x["thread"])), f'{x["keika_h"]}時間', E(x["iro"])] for x in y["kaettekonai"][:30]]
+    h4 = [[E(x["n"]), inyou(E(x["title"])), f'{x["keika_h"]}時間', inyou(E(x["shiteki"]))] for x in y["naoshitenai"][:30]]
 
     fk_ok = sum(1 for r in fk if r.get("event") == "done")
     fk_re = sum(1 for r in fk if r.get("event") == "retry")
