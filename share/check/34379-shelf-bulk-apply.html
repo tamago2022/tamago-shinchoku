@@ -52,13 +52,13 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の依頼：『1個ずつ即時反映する設計が重さの原因なら、チェックを複数つけてから最後に一括適用/更新ボタンで確定する方式に変えてもいい』。調査の結果、棚への追加/外す操作(pendingPicks)は2026-08-01から既にチェック→反映ボタンの一括方式、固定(★pin)操作(pendingPins)も2026-10-19(案件#35096)で同じ方式へ揃えられ、両方ともmainに合流済みと実測確認した。本番(Lovable)への反映のみ、工場全体のLovable OAuth認証切れ(invalid_grant・2026-10-14から継続)でブロック中。
+店主の依頼：『1個ずつ即時反映する設計が重さの原因なら、チェックを複数つけてから最後に一括適用/更新ボタンで確定する方式に変えてもいい』。調査の結果、棚への追加/外す操作は2026-08-01から既にチェックを複数つけてから「反映」ボタンで一括確定する方式になっており、固定（★）操作も2026-10-19に同じ方式へ揃えられ、どちらも本線のコードに取り込まれていることを実測確認した。本番(Lovable)への反映だけが、工場全体で起きているLovable連携の認証切れ（2026-10-14から継続）でブロック中。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>ANCESTOR_OK</b><span>git merge-base --is-ancestor 26bf4a94b origin/main の実測結果</span></div>
-  <div class="num"><b>invalid_grant</b><span>本日19:03時点のOAuth状態(lovable_keeper_state.json 実測)</span></div>
+  <div class="num"><b>含まれている</b><span>一括反映の修正コードが本線に取り込まれているかの実測結果</span></div>
+  <div class="num"><b>認証切れ中</b><span>本日19:03時点のLovable連携の状態(実測)</span></div>
 </div>
 
 
@@ -71,9 +71,9 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>main合流(pendingPicks=棚追加/外す・2026-08-01から)</td><td class="yes">済み</td></tr>
-<tr><td>main合流(pendingPins=固定星・案件35096・2026-10-19)</td><td class="yes">済み</td></tr>
-<tr><td>本番(Lovable)バンドルへの反映</td><td class="yes">未反映(工場全体のOAuth障害でブロック中)</td></tr>
+<tr><td>棚への追加/外す操作が一括確定方式になっているか(2026-08-01から)</td><td class="yes">済み</td></tr>
+<tr><td>固定(★)操作も一括確定方式になっているか(2026-10-19から)</td><td class="yes">済み</td></tr>
+<tr><td>本番(Lovable)の画面に反映されているか</td><td class="no">未反映(工場全体の認証切れでブロック中)</td></tr>
 </table>
 
 <footer>
