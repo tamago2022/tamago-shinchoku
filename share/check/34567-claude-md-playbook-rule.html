@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34567 CLAUDE.mdへの担当別プレイブック読込ルール追記（34567番・判定日赤） 確認ページ</title>
+<title>#34567 CLAUDE.mdのプレイブック読み込みルール追記（既に反映済みを実測確認） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,37 +47,38 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34567 CLAUDE.mdへの担当別プレイブック読込ルール追記（34567番・判定日赤）</div>
-<h1>#34567 CLAUDE.mdへの担当別プレイブック読込ルール追記（34567番・判定日赤）</h1>
-<div class="date">2026-10-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34567 CLAUDE.mdのプレイブック読み込みルール追記（既に反映済みを実測確認）</div>
+<h1>#34567 CLAUDE.mdのプレイブック読み込みルール追記（既に反映済みを実測確認）</h1>
+<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-依頼文言「新しくセッションを開始する際、自分が担当する役割が明確な場合は、この CLAUDE.md（共通ルール）に加えて .claude/playbooks/{該当する担当名}.md を読んでから作業を始める」は、joy-relief-stationリポジトリの CLAUDE.md 152行目に<b>既に実装済み</b>でした（2026-08-06のコミット fbf011f64『役割ごとの現在地を引き継ぐ「担当別プレイブック」を新設』で追加され、以後mainに存在し続けている）。1ヶ月前の判定時点で既にmainに存在していたため、今回は新規追記は行わず、存在と本番(main)反映を実測確認しました。
+依頼：新しくセッションを開始する際、担当する役割が明確な場合は CLAUDE.md に加えて <code>.claude/playbooks/{該当する担当名}.md</code> を読んでから作業を始める、というルールを joy-relief-station の <code>CLAUDE.md</code> に追記する。実測結果：このルール文言は依頼が来た当日（2026-08-06）のコミット <code>fbf011f64</code>（役割ごとの現在地を引き継ぐ「担当別プレイブック」を新設）で既に CLAUDE.md 165行目付近に追記されており、origin/main の最新コミットの祖先であることを git merge-base --is-ancestor で確認した。今回は新規追記ではなく、既に本番(main)へ反映済みであることの実測確認として本ページを発行する。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>152行目</b><span>CLAUDE.md内の該当行番号</span></div>
-  <div class="num"><b>fbf011f64</b><span>追加時のコミットSHA(2026-08-06)</span></div>
+  <div class="num"><b>fbf011f64</b><span>追記コミットの先頭8桁</span></div>
+  <div class="num"><b>2026-08-06</b><span>追記コミット日（依頼当日）</span></div>
+  <div class="num"><b>165</b><span>CLAUDE.md内の該当行（origin/main時点）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>CLAUDE.md 152行目（GitHub・非公開リポジトリのためログイン必要）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/CLAUDE.md#L152" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/CLAUDE.md#L152</a></li>
+<li><b>（リンクなし）</b></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>CLAUDE.mdに該当ルール文言が存在する</td><td class="yes">○</td></tr>
-<tr><td>mainブランチへ反映済み（git show origin/mainで実測）</td><td class="yes">○</td></tr>
-<tr><td>今回の新規追記・push作業</td><td class="yes">不要（既存のため無し）</td></tr>
+<tr><td>CLAUDE.mdに該当ルール文言が存在するか（git show origin/main:CLAUDE.md）</td><td class="yes">存在する（165行目付近）</td></tr>
+<tr><td>追記コミットがorigin/mainの祖先か（git merge-base --is-ancestor）</td><td class="yes">YES</td></tr>
+<tr><td>追記日と依頼日の関係</td><td class="yes">追記コミット日2026-08-06＝依頼が来た当日</td></tr>
 </table>
 
 <footer>
-このページは #34567 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+実測した引用文（origin/main:CLAUDE.md より一字一句）：「新しくセッションを開始する際、自分が担当する役割が明確な場合は、この`CLAUDE.md`（共通ルール）に加えて`.claude/playbooks/{該当する担当名}.md`を読んでから作業を始める。担当外のプレイブックは読まなくてよい。」
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
