@@ -52,30 +52,30 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が3回指摘した「上のおすすめ枠（つづけて、これはいかが／この動画が好きなら）と下の棚（同じ棚の仲間たち）で同じ動画が出る」問題。修正は実装済み・origin/mainに合流済み（commit 5c2f4d094）だが、工場全体のLovable OAuth認証切れ（2026-10-14以降）で本番への公開が止まっており、本番画面はまだ直った状態を見せられない。
+店主が3回指摘した「上のおすすめ枠（つづけて、これはいかが／この動画が好きなら）と下の棚（同じ棚の仲間たち）で同じ動画が出る」問題。修正は実装済み・本体コードへ合流済みだが、工場全体のLovable認証切れ（2026-10-14以降）で本番への公開が止まっており、本番画面はまだ直った状態を見せられない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1116件</b><span>origin/mainと本番の未反映コミット差</span></div>
-  <div class="num"><b>2026-10-14</b><span>Lovable OAuth最後に通った日(lastOkAt)</span></div>
-  <div class="num"><b>invalid_grant</b><span>今の認証エラー(needConsent:true)</span></div>
+  <div class="num"><b>1116件</b><span>本体コードと本番の未反映の差</span></div>
+  <div class="num"><b>2026-10-14</b><span>Lovable認証が最後に通った日</span></div>
+  <div class="num"><b>invalid_grant</b><span>今の認証エラー(再同意待ち)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実装コミット(GitHub・非公開)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/5c2f4d094e49888db680c0588a809af9e3c63864" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/5c2f4d094e49888db680c0588a809af9e3c63864</a></li>
+  <li><b>実装の記録(非公開・店主ログイン用)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/5c2f4d094e49888db680c0588a809af9e3c63864" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/5c2f4d094e49888db680c0588a809af9e3c63864</a></li>
   <li><b>本番トップ(HTTP 200だが未反映)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>ShelfSiblingsSection.tsxにexcludeIds追加</td><td class="yes">origin/mainに現存(741640b44時点で確認)</td></tr>
-<tr><td>publicShelves.functions.tsのisExcludedCardがexcludeYtSetで除外</td><td class="yes">origin/mainに現存・2026-10-18の別改良とも統合済み</td></tr>
-<tr><td>watch.tsxがTextRecommendations+WatchLikeYouMightのidを合流しexcludeIdsへ渡す</td><td class="yes">origin/mainに現存</td></tr>
+<tr><td>下の棚が「除外リスト」を受け取れるようになっているか</td><td class="yes">本体コードに現存</td></tr>
+<tr><td>下の棚の抽出処理が除外リストで実際に弾いているか</td><td class="yes">本体コードに現存・後から足した別改良とも統合済み</td></tr>
+<tr><td>上のおすすめ枠2つが選んだ動画を下の棚へ合流して渡しているか</td><td class="yes">本体コードに現存</td></tr>
 <tr><td>本番(Lovable)への公開反映</td><td class="no">OAuth invalid_grant・CDP(9223)未起動のため未反映</td></tr>
 </table>
 
