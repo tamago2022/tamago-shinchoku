@@ -52,13 +52,13 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主指示「とにかく全部とつながれるようにしておいて…逆もできるように…両方一方通行にしないで」（片道リンクは50点・双方向で100点）に対応。固定カードの関連リンクを機械検出し、片道だったリンクを全件双方向化した。死んでいた参照（相手カードが存在しない）とコメント文の誤混入データも削除した。実装はGitHub本体へ合流済み。Lovable本番公開はOAuth認証障害（全社共通・2026-10-14発生、12件連続記録）でブロック中のため未反映。
+店主指示「とにかく全部とつながれるようにしておいて…逆もできるように…両方一方通行にしないで」（片道リンクは50点・双方向で100点）に対応。src/lib/extraCards.ts の related 配列を機械検出し、片道だった122本を全件双方向化。死んでいた参照（相手カードが存在しない）とコメント文の誤混入データも削除した。コードはGitHub main合流済み（コミットID 4e1275109、非公開リポのためリンク省略）、Lovable本番公開はOAuth認証障害（全社共通・2026-10-14発生、12件連続記録）でブロック中のため未反映。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>512本</b><span>固定カードの関連リンク総数</span></div>
-  <div class="num"><b>0本</b><span>片道リンク（本体コードで実測）</span></div>
+  <div class="num"><b>512本</b><span>固定カードのrelatedリンク総数</span></div>
+  <div class="num"><b>0本</b><span>片道リンク（origin/mainで実測）</span></div>
   <div class="num"><b>200</b><span>本番トップのHTTPステータス</span></div>
 </div>
 
@@ -72,8 +72,8 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本体コードで片道リンク検出スクリプトを再実行</td><td class="yes">片道0本（実測）</td></tr>
-<tr><td>本番の対象ページに新規双方向リンクが出ているか</td><td class="no">出ていない＝未反映（Lovable OAuth障害のため）</td></tr>
+<tr><td>origin/mainでcheck-related-bidirectional.tsを再実行</td><td class="yes">片道0本（実測）</td></tr>
+<tr><td>本番 /room/card/celine-hymne-paris-2024 に新規双方向リンク(bocelli-brightman-time)が出ているか</td><td class="no">出ていない＝未反映（Lovable OAuth障害のため）</td></tr>
 </table>
 
 <footer>

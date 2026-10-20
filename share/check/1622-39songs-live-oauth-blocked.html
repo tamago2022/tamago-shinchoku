@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1622 1622/1623番：過去39曲は全曲反映済み・継続症状の真因はLovable公開障害 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1622 1622/1623番：過去39曲は全曲反映済み・継続症状の真因はLovable公開障害</div>
+<h1>#1622 1622/1623番：過去39曲は全曲反映済み・継続症状の真因はLovable公開障害</h1>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+店主発言『3〜4個毎日入れてるはずなのにちらっと見ると入ってない』を実測で検証。①2026-09-02のSpotify由来39曲（DB書き込み障害でDBに入らなかった分）は既存のコード側フォールバックで全曲が本番SSR初回HTMLに反映済み。②しかし継続的な新規仕入れ（2026-10-19 03:48以降）は、Lovable公開のOAuth認証障害（6日間継続・CDPも未開通）で本番に出ていない。これはAI側では突破できない構造的な壁で、承認URLをブラウザで1回開く必要がある。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>39曲</b><span>過去分(Spotify由来)の反映確認済み件数・全曲HTTP200・該当タイトル文字列あり</span></div>
+  <div class="num"><b>0件</b><span>過去分のうち未反映だった件数</span></div>
+  <div class="num"><b>6日間</b><span>Lovable公開障害(invalid_grant)の継続期間(2026-10-14〜)</span></div>
+  <div class="num"><b>03:48</b><span>10/19この時刻のコミットまでは反映済み・05:21以降は未反映という境界</span></div>
+</div>
+
+
+
+<h2>実測ログ（生データ）</h2>
+<div class="note">
+2026-10-20 07:2x JST・Node fetchで本番(https://joy-relief-station.lovable.app)を39曲全件、個別URLで直接取得。全件HTTP200・該当タイトルの文字列が本文に含まれることを確認。
+<pre style="white-space:pre-wrap;font-size:0.78rem;background:var(--t-panel);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto;">
+200	89182	FOUND	prince	The Morning Papers
+200	68878	FOUND	jazzanova	Mwela, Mwela (Here I Am)
+200	68933	FOUND	joe-hisaishi	The Wind Forest
+200	65111	FOUND	jacob-collier	Moon River
+200	81657	FOUND	ms-ooja	異邦人
+200	90068	FOUND	prince	Sometimes It Snows in April
+200	65920	FOUND	maxwell	The Urban Theme
+200	71588	FOUND	led-zeppelin	Bron-Y-Aur Stomp
+200	66308	FOUND	maxwell	Suitelady (The Proposal Jam)
+200	80633	FOUND	rc-succession	明日なき世界
+200	80594	FOUND	rc-succession	宝くじは買わない
+200	72396	FOUND	tokimeki-records	接吻
+200	72481	FOUND	tokimeki-records	Summer Beach
+200	71781	FOUND	andrea-bocelli	Con Te Partirò
+200	68255	FOUND	sting	Brand New Day
+200	66782	FOUND	pentatonix	Daft Punk
+200	67597	FOUND	pentatonix	This Christmas
+200	68875	FOUND	towa-tei	MAGIC
+200	79997	FOUND	queen	I Want To Break Free
+200	75317	FOUND	queen	One Vision
+200	75795	FOUND	queen	Tie Your Mother Down
+200	70592	FOUND	akiko	黄昏のビギン
+200	79694	FOUND	rc-succession	SUMMER TOUR
+200	72850	FOUND	tokimeki-records	BLIZZARD (Nostalgic ver.)
+200	65293	FOUND	andrea-bocelli	Love Me Tender
+200	68792	FOUND	sting	Epilogue (Nothing 'Bout Me)
+200	68640	FOUND	sting	She's Too Good For Me
+200	75713	FOUND	queen	Keep Yourself Alive
+200	74927	FOUND	nujabes	Thank you
+200	90041	FOUND	ms-ooja	フライディ・チャイナタウン
+200	89162	FOUND	ms-ooja	このまま君だけを奪い去りたい
+200	62384	FOUND	music-travel-love	I Don't Want to Miss a Thing
+200	73203	FOUND	pomplamoose	Kiss Me
+200	73303	FOUND	pomplamoose	I Feel Good
+200	74040	FOUND	scary-pockets	Shape of You
+200	71349	FOUND	jacob-collier	Fix You
+200	69001	FOUND	glee-cast	Hand in My Pocket / I Feel the Earth Move (Glee Cast Version)
+200	70332	FOUND	akiko	Across the Universe
+200	67914	FOUND	michael-bolton	Yesterday
+
+=== TOTAL 39 / FOUND 39 / MISSING 0 ===
+</pre>
+列の意味：HTTPステータス／本文バイト数／曲名の発見有無／アーティストID／曲名。
+
+継続中の新規仕入れが未反映である実測（境界の特定）：
+<pre style="white-space:pre-wrap;font-size:0.78rem;background:var(--t-panel);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto;">
+10-18 18:13 commit ebdc0d74f「月の特集 vol.1」→ samejima-yumiko / kojo-no-tsuki（荒城の月）：反映済み（body内に文字列あり）
+10-19 02:02 commit b9cdfa11b「Rainychのページ」→ rainych / plastic-love（プラスティック・ラブ）：反映済み
+10-19 03:48 commit 00ecaab5b「秋の曲25曲」→ fujifabric / 赤黄色の金木犀：反映済み
+10-19 05:21 commit b9347fe73「中森明菜 天城越え」→ akina / amagigoe-akina：未反映
+10-20 06:20 commit 320d4a356「あなたに逢いたくて」→ da-ice / anata-ni-aitakute-ohno：未反映
+</pre>
+真因：Lovable OAuth障害（invalid_grant）が2026-10-14 06:24:19以降、kagi_seimei.md実測で継続中。
+lovable-publish.mjs実行結果：「CDP 未開通: http://127.0.0.1:9223 に応答なし。Chromeの自動起動・Lovable公開は行いません。」
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番例1(Prince)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=prince&amp;song=the-morning-papers-6ub0" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=prince&amp;song=the-morning-papers-6ub0</a></li>
+  <li><b>本番例2(Jazzanova)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=jazzanova&amp;song=mwela-mwela-here-i-am-b1hu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=jazzanova&amp;song=mwela-mwela-here-i-am-b1hu</a></li>
+  <li><b>本番例3(Joe Hisaishi)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=joe-hisaishi&amp;song=the-wind-forest--unn" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=joe-hisaishi&amp;song=the-wind-forest--unn</a></li>
+  <li><b>本番例4(Jacob Collier)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=jacob-collier&amp;song=moon-river-vplc" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=jacob-collier&amp;song=moon-river-vplc</a></li>
+</ul>
+
+
+
+<footer>
+このページは #1622 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
