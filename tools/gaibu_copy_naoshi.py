@@ -373,7 +373,14 @@ def write_probe(url, key, row_id, current, diag):
     """
     try:
         _rep, st = patch_copy(url, key, row_id, current)
-        diag.append("書き戻しの下見：HTTP %s（書ける）" % st)
+        # ★1915番で実測：RLSが弾くと例外は飛ばず HTTP 200 + 本文 [] (0件) で返ってくる。
+        #   st（HTTPコード）だけを見て「書ける」と判定すると、実際には1行も書けていないのに
+        #   成功と誤認する（2026-09-21〜のhistory全件が全部この誤認だったと確認済み）。
+        #   返ってきた行数を見て判定する。
+        if not _rep:
+            return False, ("書き戻しがHTTP %s だが0件（RLSが弾いて実際には書けていない。"
+                            "鍵がPUBLISHABLE/ANONだとこうなる）" % st)
+        diag.append("書き戻しの下見：HTTP %s・%d件（書ける）" % (st, len(_rep)))
         return True, None
     except urllib.error.HTTPError as e:
         body = ""
@@ -680,6 +687,15 @@ def run(since_days=14):
             out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],
                                  "was": t["copy"], "why": t["why"],
                                  "reason": "書き戻せない（%s）" % type(e).__name__,
+                                 "draft": text})
+            continue
+        # ★1915番で実測：RLSが弾くと例外は飛ばず HTTP 200 + 本文 [] (0件) で返る。
+        #   st（HTTPコード）だけでは「書けた」と誤認する。返ってきた行数を見る。
+        if not _rep:
+            out["skips"].append({"id": t["id"], "date": t["date"], "title": t["title"],
+                                 "was": t["copy"], "why": t["why"],
+                                 "reason": ("書き戻しがHTTP %s だが0件（RLSが弾いて実際には"
+                                            "書けていない。鍵を強くする必要あり）" % st),
                                  "draft": text})
             continue
         ch = {"id": t["id"], "date": t["date"], "title": judge_title,
