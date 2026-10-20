@@ -96,8 +96,7 @@ node scripts/ai/quality-gate.mjs check
   "notify_required": false
 }
 
-git merge-base --is-ancestor 474b85c0d430592d01aa8a8cc6146b5c9be47dc4 origin/main
-→ YES（実装コミットはorigin/mainの祖先＝main反映済み）</pre>
+main反映の確認 → YES（実装はmainに取り込み済み）</pre>
 </div>
 <div class="note">
 仕組みの中身：GitHub Actionsの品質ゲート（.github/workflows/quality-gate.yml）へ、push時にLovable本番URLをfetchし「status 200かつ本文1000文字以上かつ&lt;title&gt;が存在する」ことを機械で確かめる工程（scripts/ai/prod-health-check.mjs）を追加。これが「できてないもの（空白・壊れたページ）を社長に見せない」仕組みの実体で、Lovableが公開した結果をClaude Code側のCIが毎回チェックする構成＝Lovableが作業員・Claude Codeの品質ゲートが現場監督、という役割分担。
