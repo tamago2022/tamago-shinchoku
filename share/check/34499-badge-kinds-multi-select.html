@@ -60,17 +60,19 @@
 <div class="nums">
   <div class="num"><b>2種類</b><span>選べるバッジの数（concierge / good-cover）</span></div>
   <div class="num"><b>0件</b><span>自動付与のトリガーコード（src/lib/badgeKinds.ts 実測・grep）</span></div>
-  <div class="num"><b>2件</b><span>本番に実在するバッジ画像ファイル（HTTP 200・2026-10-21 23時台 実測）</span></div>
+  <div class="num"><b>2件</b><span>本番に実在するバッジ画像ファイル（HTTP 200・2026-10-21実測）</span></div>
+  <div class="num"><b>2本</b><span>本番JSに「バッジを選ぶ」UIの文字列が実在するチャンク（2026-10-21実測）</span></div>
 </div>
 
 <div class="note">
-2026-10-21時点の実測で分かったこと：バッジ画像ファイルは本番に確かに存在する。ただし「どの曲にバッジが付いているか」はデータベースの内容（店主が選んだ結果）なので、静的なHTML取得だけでは実例ページを確認できなかった（画面はクライアント側で後からデータを読みに行く作りのため）。そのため下のリンクは「画像ファイルそのもの」と「仕組みの土台（本番ページの生存）」に絞っている。実際の曲に付いているかどうかは管理画面での実見が必要（店主の手動操作そのものなので、AI側からは再現できない）。
+2026-10-21時点の実測で分かったこと：①バッジ画像ファイルは本番に確かに存在する。②さらに本番のJS本体（/assets/CardBadges-B5HJHmgJ.js と /assets/CardActionCluster-qIzEs2Hs.js）をそのまま取得して中の文字列を数えたところ、「グッドカバー」「コンシェルジュ推し」「バッジを選ぶ」「なし」の4つがすべて実在した＝UIのコードそのものが本番に配信されている。ただし「どの曲に今バッジが付いているか」はデータベースの内容（店主が選んだ結果）なので、静的なHTML取得だけでは実例ページを確認できなかった（画面はクライアント側で後からデータを読みに行く作りのため、実際に付いているかは管理画面での実見が必要）。
 </div>
 
 <h2>③ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番：グッドカバーのバッジ画像（開くと画像だけ表示される）</b><a href="https://joy-relief-station.lovable.app/badges/good-cover.png" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/good-cover.png</a></li>
   <li><b>本番：コンシェルジュ推しのバッジ画像（開くと画像だけ表示される）</b><a href="https://joy-relief-station.lovable.app/badges/concierge-pick.png" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/badges/concierge-pick.png</a></li>
+  <li><b>本番：バッジ選択UIのコード本体（「バッジを選ぶ」の文字列を含むJS）</b><a href="https://joy-relief-station.lovable.app/assets/CardActionCluster-qIzEs2Hs.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/CardActionCluster-qIzEs2Hs.js</a></li>
   <li><b>本番トップページ（生存確認）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
@@ -79,6 +81,8 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番にgood-cover.png画像が実在（HTTP 200・image/png）</td><td class="yes">yes</td></tr>
 <tr><td>本番にconcierge-pick.png画像が実在（HTTP 200・image/png）</td><td class="yes">yes</td></tr>
+<tr><td>本番JS（CardBadges-B5HJHmgJ.js）に「グッドカバー」「コンシェルジュ推し」の文字列が実在</td><td class="yes">yes</td></tr>
+<tr><td>本番JS（CardActionCluster-qIzEs2Hs.js）に「バッジを選ぶ」「なし」の文字列が実在</td><td class="yes">yes</td></tr>
 <tr><td>badgeKinds.tsに自動付与ロジック（仕入れ・棚編集の自動処理からの書き込み）が無いこと（grep実測）</td><td class="yes">yes</td></tr>
 <tr><td>BadgeQuickPicker.tsx（店主が「なし／コンシェルジュ推し／グッドカバー」を1曲ずつ手動で選ぶUI）がコードとしてmain合流済み</td><td class="yes">yes</td></tr>
 <tr><td>実際にバッジが表示されている公開ページの実例を静的HTML取得で確認</td><td class="no">未確認（クライアント側描画のため不可）</td></tr>
