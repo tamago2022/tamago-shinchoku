@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1981 判定日赤になった案件の丸・三角・バツ評価表 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1981 判定日赤になった案件の丸・三角・バツ評価表</div>
+<h1>#1981 判定日赤になった案件の丸・三角・バツ評価表</h1>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+判定日（status/kioku/hantei.jsonl）で★赤になり、P1へ繰り上げて再発車された案件を、元の依頼文（「判定日赤｜」プレフィックスを剥がした文）でユニーク化し、いま queue.json 上でどうなっているかを丸（○完了）・三角（△確認待ち）・バツ（×未処理）で評価した。<br>実測：判定日赤として再発車されたqueue登録 <b>4050件</b> → 元の依頼でユニーク化すると <b>3527件</b>。うち○43件・△38件・×3424件・対象外(キャンセル)22件。<br>★分かったこと：97%（3424/3527）が<b>未処理のまま</b>。しかもバツのうち直近2026-10-20 11:45台に、1つの長い指示文が1行ずつ分割されて個別案件として大量に積まれている形跡がある（「列は以下にしてください。」「AI事実確認もまだ禁止です。」等、文の断片が連続したタイムスタンプで並ぶ）。これは判定日赤の件数そのものを見かけ上膨らませている可能性があり、本件の集計範囲（丸三角バツの評価）を超える別の構造問題として報告する。<br>実測の生データ：<pre>rawQueueItemCount(判定日赤｜が付いたqueue登録件数) = 4050
+uniqueOriginalCount(元の依頼でユニーク化した数) = 3527
+summary = {"×": 3424, "○": 43, "△": 38, "対象外": 22}
+未処理率 = 3424 / 3527 = 0.9708...(=約97%)</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3527件</b><span>判定日赤・元の依頼（ユニーク数）</span></div>
+  <div class="num"><b>43件(○)</b><span>完了（queue status=done）</span></div>
+  <div class="num"><b>38件(△)</b><span>確認待ち（awaiting_check）</span></div>
+  <div class="num"><b>3424件(×)</b><span>未処理のまま（running/waiting/hold）</span></div>
+  <div class="num"><b>22件</b><span>対象外（キャンセル）</span></div>
+  <div class="num"><b>97%</b><span>未処理率（3424／3527）＝実測</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>全3527件の一覧（丸三角バツ・元の依頼文つき）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/1981_hantei_ichiran.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/1981_hantei_ichiran.html</a></li>
+  <li><b>同じ内容の生データ(JSON)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/1981_hantei_hyouka.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/1981_hantei_hyouka.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>○ 重くなるなら実装前に止めて報告すること</td><td class="yes">完了（queue status=done）</td></tr>
+<tr><td>○ 追加の依頼です(前回の「面白いアニメ/アイラブミー棚」の作業に続けて対応してください)。</td><td class="yes">完了（queue status=done）</td></tr>
+<tr><td>○ &quot;両方やる、両方やるしちょっと体感したいんでそのすごさというか、何ができるかっていうのをちょっとテストでやって</td><td class="yes">完了（queue status=done）</td></tr>
+<tr><td>○ プロンプトを一行入れて最初に出たものをそのまま出す行為と、数百案を比較し、歌詞を直し、構成を組み替え、一つの世</td><td class="yes">完了（queue status=done）</td></tr>
+<tr><td>○ 一方、おばあちゃんが自分のために作ってくれた料理には、味とは別の価値がある。</td><td class="yes">完了（queue status=done）</td></tr>
+<tr><td>○ これは今後の判断軸に入れておきます。</td><td class="yes">完了（queue status=done）</td></tr>
+<tr><td>△ シェフ全員とは言わないけど全員シェフは入れてでこれを押せばメニューオートにいろんな有名なシェフじゃあ塩塩の鳥羽</td><td class="yes">確認待ち（awaiting_check）</td></tr>
+<tr><td>△ まず、大きな仕入れ作業に入る前に現状把握をお願いします: 現在リポジトリ内にフジロック出演アーティストとしてど</td><td class="yes">確認待ち（awaiting_check）</td></tr>
+<tr><td>△ GLIM SPANKYは現状曲数が少なすぎ(1曲程度)でアーティストページも無い状態、これは方針未達なので直し</td><td class="yes">確認待ち（awaiting_check）</td></tr>
+<tr><td>△ 素晴らしいであと自分がグッドカバーなり天使の1星に関しては、カバーもたくさん仕入れて欲しいなぁ。</td><td class="yes">確認待ち（awaiting_check）</td></tr>
+<tr><td>△ 全体として: 自動の仕入れ担当が拾わなかった曲でも、たまごが好きなメロディーの良いカバー曲は積極的に追加してほ</td><td class="yes">確認待ち（awaiting_check）</td></tr>
+<tr><td>△ これはまず試作(1回試しに作ってみる)段階でOKとのことです。</td><td class="yes">確認待ち（awaiting_check）</td></tr>
+<tr><td>× suggestedHumanAction は以下の候補だけにしてください。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× 列は以下にしてください。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× AI事実確認もまだ禁止です。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× UI改修も禁止です。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× coverGuide.ts、worlds.ts、recommendations.generated.ts、自動</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× ここまでで停止してください。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× まず src/lib/coverGuide.ts と scripts/audit-inventory-samp</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× まずはリポジトリを読み取り、src/lib/coverGuide.ts と scripts/audit-inv</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× 確認は要らないのでもう最後までやっちゃって</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× 最後に、作成したファイルの場所を必ず報告してください。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× Vault内で見つけたキャロル・キング関連ノートがあれば、ここにファイルパス付きで列挙してください。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× 出力ファイルの先頭に、必ず保存場所を明記してください。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× 既存のキャロル・キング関連ノートが見つかる場合は、親ノート候補としてメモしてください。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× そのフォルダ内に、以下のファイルを作成してください。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+<tr><td>× 既存本文の大幅な書き換えは禁止。</td><td class="no">未処理のまま（queue status=waiting）</td></tr>
+</table>
+
+<footer>
+判定基準：queue.json内で「判定日赤｜」プレフィックスを持つ項目を、プレフィックスを剥がした元の依頼文でユニーク化し、各グループの最新状態のみを採用。status=done→○、awaiting_check→△、running/waiting/hold→×、cancelled→対象外、とした（自己申告の「完了」ではなくqueue.jsonの実際の状態を見ている）。1981番・自動発車・2026-10-20実測。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
