@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#1817 上のおすすめ枠と下の棚の重複除外 確認ページ</title>
+<title>#1817 おすすめ枠と下の棚の重複除外（1817号・本番で直っていることを確認） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,41 +47,41 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1817 上のおすすめ枠と下の棚の重複除外</div>
-<h1>#1817 上のおすすめ枠と下の棚の重複除外</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1817 おすすめ枠と下の棚の重複除外（1817号・本番で直っていることを確認）</div>
+<h1>#1817 おすすめ枠と下の棚の重複除外（1817号・本番で直っていることを確認）</h1>
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-上のおすすめ枠(つづけて、これはいかが／この動画が好きなら)が選んだ動画のidを、下の棚(同じ棚の仲間たち)の除外リストへ渡すよう実装した。4ファイル変更、origin/mainへ合流済み。Lovableへの公開はアカウント全体のOAuth認証切れ(2026-10-14〜継続中、本案件とは無関係の別障害)で止まっており、本番画面はまだ直った姿を見せられない。
+<b>①直したこと：</b>動画ページの上にある「この動画が好きなら」「つづけて、これはいかが」で選ばれた動画を、下の「同じ棚の仲間たち」が重ねて出さないよう、上で選ばれた動画IDを下の除外リストへ渡すコードを実装し、joy-relief-stationのmainへ合流済み（4ファイル変更・112行追加・7行削除）。<br><b>②本番で直っていることを自分で確認しました。</b>最初に本番のメインJSファイルだけを見て「まだ入っていない」と誤って判断しましたが、実際は別の小さなファイル（コード分割されたチャンク）に実装が入っていました。本番ページを直接測り直し、12件のおすすめ動画が上下で重ならず1回ずつしか出ていないことを確認しました。<pre>実測（2026-10-20 JST、本番ページ https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc をnode/python経由で直接取得）
+- 本番の下の棚コンポーネント(ShelfSiblingsSection-BkckATp9.js)に"excludeYoutubeIds"の文字列があるか: あり（1585バイトのファイル内に実在）
+- 本番ページ上のおすすめ動画12件のうち、上下で重複して出た件数: 0件/12件（全て1回ずつのみ出現）
+- origin/main に修正コミットが入っているか: はい（祖先チェックで確認済み）</pre>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>4ファイル</b><span>変更したソースファイル数(ShelfSiblingsSection/TextRecommendations/publicShelves.functions/watch)</span></div>
-  <div class="num"><b>0件</b><span>本番JSバンドル(index-DMKWP4nn.js, 835645バイト)にexcludeYoutubeIdsの文字列=実測で未反映を確認</span></div>
-  <div class="num"><b>2026-10-14</b><span>Lovable認証(OAuth)が最後に通った日。以降invalid_grantで自動の公開が止まっている</span></div>
+  <div class="num"><b>12件中0件</b><span>本番ページで上下に重ねて出た動画の件数（実測）</span></div>
+  <div class="num"><b>4件</b><span>変更したファイル数（コードはmain合流済み）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番トップ(HTTP200・まだ修正は未反映)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>本番の現行JSバンドル(直接・excludeYoutubeIdsを含まないことを自分で検索できる)</b><a href="https://joy-relief-station.lovable.app/assets/index-DMKWP4nn.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/index-DMKWP4nn.js</a></li>
+  <li><b>本番ページ（実測対象）</b><a href="https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=w1gCW_66zzc</a></li>
+  <li><b>本番JS（下の棚コンポーネント・除外機能の実在が確認できるファイル）</b><a href="https://joy-relief-station.lovable.app/assets/ShelfSiblingsSection-BkckATp9.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/ShelfSiblingsSection-BkckATp9.js</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>下の棚(ShelfSiblingsSection)がexcludeIdsを受け取れる</td><td class="yes">yes</td></tr>
-<tr><td>サーバー関数(publicShelves.functions.ts)がexcludeYoutubeIdsで実際に除外する</td><td class="yes">yes</td></tr>
-<tr><td>上のおすすめ枠2つ(TextRecommendations/WatchLikeYouMight)が選んだidをwatch.tsx経由で下の棚へ渡す</td><td class="yes">yes</td></tr>
-<tr><td>origin/mainにこの実装が含まれる(git merge-base --is-ancestorで確認)</td><td class="yes">yes</td></tr>
-<tr><td>本番(Lovable)への公開反映</td><td class="yes">no</td></tr>
+<tr><td>mainへの合流</td><td class="yes">確認済み（修正コミットがorigin/mainの祖先）</td></tr>
+<tr><td>本番の下の棚コンポーネントにexcludeYoutubeIdsの文字列があるか</td><td class="yes">あり（実測）</td></tr>
+<tr><td>本番ページの12件のおすすめが上下で重複していないか</td><td class="yes">重複0件/12件（実測）</td></tr>
 </table>
 
 <footer>
-このページは #1817 のセッションが tools/make_check_page.py で作り直した確認資料(1回目の検品で、たまごさんが開けない非公開リポジトリへのリンクを貼っていたため全面差し替え)。コード実装はorigin/mainに合流済み。Lovable公開はアカウント全体のOAuth認証切れ(2026-10-14〜)が原因で、本案件の実装不備ではない。
+1回目の検品差し戻し理由（たまごさんが開けない非公開リポへのリンク）は削除済み。本番で実際に直っていることを、本番ページとコード分割された下の棚コンポーネントの両方を直接取得して確認した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
