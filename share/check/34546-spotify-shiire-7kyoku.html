@@ -52,15 +52,16 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主のSpotifyプレイリスト(女性_Strong_Woman_Songs.csv／Liked_Songs.csv)と在庫を突き合わせ、未収録だった人気曲7本(Sabrina Carpenter「Espresso」「Nonsense」、Zara Larsson「Lush Life」、Ava Max「Sweet but Psycho」、JENNIE「like JENNIE」、Alessia Cara「Scars To Your Beautiful」、Ariana Grande「God is a woman」)をcoverGuide.tsへ追加し、GitHub mainへ合流済み。本番公開は2026-10-14以降発生しているLovable側のOAuth認証エラー(invalid_grant)でブロックされており、これは本案件固有の不具合ではなく工場全体で9件以上同じ原因が確認されている既知の障害。公開専用ブラウザの起動経路・承認URLを開く経路を実際に試したが、いずれもログイン済みブラウザセッションが無いと通らず、このセッションにその手段が無いことを実測で確認した(1464番打開関門PASS済み)。
+店主のSpotifyプレイリスト(女性_Strong_Woman_Songs.csv／Liked_Songs.csv)と在庫を突き合わせ、未収録だった人気曲7本(Sabrina Carpenter「Espresso」「Nonsense」、Zara Larsson「Lush Life」、Ava Max「Sweet but Psycho」、JENNIE「like JENNIE」、Alessia Cara「Scars To Your Beautiful」、Ariana Grande「God is a woman」)をcoverGuide.tsへ追加し、GitHub mainへ合流済み(コミットがorigin/mainの祖先であることをgit merge-baseで再実測確認)。本番公開は2026-10-14以降発生しているLovable側のOAuth認証エラー(invalid_grant)でブロックされており、これは本案件固有の不具合ではなく工場全体で20件以上同じ原因が確認されている既知の障害(直近も再度公開を試みたが「本日2回連続失敗のため停止中」で停止)。公開専用ブラウザの起動経路・承認URLを開く経路を実際に試したが、いずれもログイン済みブラウザセッションが無いと通らず、このセッションにその手段が無いことを実測で確認した(1464番打開関門PASS済み)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>7件</b><span>追加した曲数</span></div>
   <div class="num"><b>0件</b><span>重複id・重複videoId</span></div>
+  <div class="num"><b>YES</b><span>origin/mainの祖先か(git merge-base実測)</span></div>
   <div class="num"><b>200</b><span>本番トップのHTTPステータス</span></div>
-  <div class="num"><b>未反映</b><span>新曲ページの公開状態</span></div>
+  <div class="num"><b>0/5</b><span>新曲JSチャンク内に見つかったID数(未反映の実測)</span></div>
 </div>
 
 
