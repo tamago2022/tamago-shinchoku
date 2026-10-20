@@ -519,6 +519,33 @@ def _daburu_gate_or_stop(body):
     return 1 if rc else 0
 
 
+def _tanomanai_gate_or_stop(body):
+    """1773番：『たまごさんにやってもらう』を最初の選択肢にしない門。通れば0、落ちたら1。
+
+    ★判定は tools/1773_tanomanai_kanmon.py にしかない（同じ理由で二重管理しない）。
+      たまごさん（2026-09-07）「頑張って工夫して、調べて、工夫して、試行錯誤してください。
+      すぐ投げないで」への対応。本文に『確認して・お願いします・どうしますか』等の
+      "たまごさんへ振る"サインがあるのに、お金／不可逆の削除／外部公開／
+      パスワード・ログイン・権限承認のどれにも当たらない確認・お願いを、
+      AIを呼ばずに文字列判定で止める（pre/post両方・提出全件が対象）。
+    """
+    try:
+        import importlib
+        m = importlib.import_module("1773_tanomanai_kanmon")
+    except Exception:
+        try:
+            import importlib.util
+            path = os.path.join(HERE, "1773_tanomanai_kanmon.py")
+            spec = importlib.util.spec_from_file_location("tanomanai_kanmon_1773", path)
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
+        except Exception as e:  # noqa: BLE001
+            print("（1773番の門が読めません：%s。この関所は無視します）" % e)
+            return 0
+    rc = m.run(body)
+    return 1 if rc else 0
+
+
 def _houkoku_gate_or_stop(body):
     """1481番：『簡潔にして完結は価値高いよ』の門。通れば0、落ちたら1。
 
@@ -559,6 +586,12 @@ def cmd_submit(n, kind, body_path, body_text, url, cost, note):
 
     # 1472番：確認できないもの（ローカルパスのダブルクリック指示）を止める
     rc = _daburu_gate_or_stop(body)
+    if rc:
+        return rc
+
+    # 1773番：『たまごさんにやってもらう』を最初の選択肢にした確認・お願いを止める
+    #   （pre/post両方。計画書でも「どうしますか」の丸投げは同じ違反）
+    rc = _tanomanai_gate_or_stop(body)
     if rc:
         return rc
 

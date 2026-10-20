@@ -109,6 +109,46 @@ def sadamu(text: str) -> dict:
     return {"ok": not riyuu, "furu": True, "riyuu": riyuu, "categories": cats}
 
 
+def run(text: str) -> int:
+    """kenpin_gate.pyのcmd_submitから呼ばれる窓口。0=通過 / 1=止める。
+
+    1472_daburu_kanmon.py・1481_houkoku_kanmon.pyと同じ呼び出し規約
+    （run(text) -> int、0でPASS・非0でFAIL）に合わせてある。
+    """
+    r = sadamu(text)
+    rec = dict(r)
+    rec["at"] = _now()
+    try:
+        os.makedirs(ST, exist_ok=True)
+        with io.open(DAICHO, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+    if not r["furu"]:
+        print("TANOMANAI_KANMON: PASS — たまごさんへ振るサイン無し・対象外")
+        return 0
+    if r["ok"]:
+        print(
+            "TANOMANAI_KANMON: PASS — カテゴリ=%s・型も満たす"
+            % ",".join(r["categories"])
+        )
+        return 0
+
+    print("🛑 1773番の門が止めました。これはたまごさんに上げられません。\n")
+    for why in r["riyuu"]:
+        print("  ● %s" % why)
+    print(
+        "\n  直し方：お金／不可逆の削除／外部公開／パスワード・ログイン・権限承認の"
+        "どれにも当たらないなら、確認を求めず自分で安全な側を選んで進めてください。\n"
+        "  当たる場合は、URL（開く場所）と具体的な操作（押す・入力する・承認する等）を"
+        "言い切ってから出してください。\n"
+        "  （たまごさんの言葉：『頑張って工夫して、調べて、工夫して、試行錯誤してください。"
+        "すぐ投げないで』2026-09-07）\n"
+    )
+    return 1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--text")

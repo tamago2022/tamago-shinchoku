@@ -320,6 +320,30 @@ def _inject_cut_note(it, elapsed_min):
         pass  # 記録の失敗で発車自体を止めない
 
 
+def _sanitize_result_log(text):
+    """1772番：harvest()が死んだセッションの生result文字列をqueue.jsonへ書く前に、
+    実行ログ・コマンド出力・エラーメッセージの抜粋だけを除去する（地の文・URLは残す）。
+    1481_houkoku_kanmon.pyは『提出前に止めて書き直させる』関所だが、ここは
+    セッションがもう死んでいて書き直させる相手がいない収穫口なので、
+    tools/1772_rogu_sakujo.py の strip型サニタイザで黙って消して通す。
+    道具が読めない事故でharvestそのものを止めない（失敗時は元の文字列をそのまま返す）。
+    """
+    try:
+        import importlib
+        try:
+            m = importlib.import_module("1772_rogu_sakujo")
+        except Exception:
+            import importlib.util
+            path = os.path.join(HERE, "1772_rogu_sakujo.py")
+            spec = importlib.util.spec_from_file_location("rogu_sakujo_1772", path)
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
+        cleaned, _removed = m.strip_log_excerpts(text or "")
+        return cleaned
+    except Exception:
+        return text
+
+
 def short_report(it):
     """679番 たまごさん「これを直しましたのURLだけでいい位だよ」「報告とURLはセット」。
     子セッションの生の完了報告（経緯・説明・謝罪込みで長いことがある）から、
@@ -1524,7 +1548,9 @@ def harvest(q):
             log("⚠️ 5回続けて途中で切られた %d番「%s」→ 確認待ち" % (it.get("n"), it.get("title")))
             continue
         it["finishedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
-        it["result"] = (result or "（結果が読み取れませんでした）")[:1200]
+        # 1772番：urlは生resultから既に抜いてある。生の実行ログ・コマンド出力・
+        #   エラーメッセージの抜粋だけを除去してから保存する（URL・結論はそのまま残す）。
+        it["result"] = _sanitize_result_log(result or "（結果が読み取れませんでした）")[:1200]
         it["urls"] = urls
         # 424番：どの仕事がいくら使ったか見える化（結果の良し悪しに関わらず、使った分は記録する）
         try:
