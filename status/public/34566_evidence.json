@@ -1,0 +1,41 @@
+{
+  "n": 34566,
+  "what": "2026-08-06のセッション（Spotify仕入れ再開・カバー曲の自動関連付け設計）の要点が、joy-relief-station側の各担当プレイブック/マニュアルへ実際に反映されているかを、2026-10-21にgrepで再実測した記録。前回の確認ページは本体リポ(joy-relief-station、非公開)のGitHub blobリンクを貼ってしまい、たまごさんが押すと404になるため差し戻された。証拠は全部このJSON（公開リポtamago-shinchoku配下）に直接転記した。",
+  "checked_at": "2026-10-21",
+  "repo_checked": "joy-relief-station（非公開・ローカルパス /Users/mac/Desktop/joy-relief-station）",
+  "method": "grep -n で各ファイルの該当行を直接確認（リンクを貼るのではなく本文を転記）",
+  "results": [
+    {
+      "file": ".claude/playbooks/仕入れ担当.md",
+      "lines": "40-54",
+      "heading": "2026-08-09 追記：店主のカバー曲プレイリストは8本・合計約3,774曲だった（進行中）",
+      "quote": "- **`unzip -Z1` は日本語ファイル名を文字化けさせる（`?????.csv`）ので使ってはいけない。**（中略）**日本語ファイル名はPythonの`zipfile`で読む**\n- 本当の8本と、在庫の曲名との突き合わせ結果（`scripts/patrol/reports/spotify-cover-playlist-gap.md`）：\n  | プレイリスト | 曲数 | 曲名が在庫に無い |\n  | カヴァー | 2,899曲 | 943曲 |\n  | カバー_トリビュート_500曲 | 553曲 | 225曲 |\n  | ナイスカバー_原曲超え | 162曲 | 52曲 |\n  | カバー探す | 82曲 | 25曲 |\n  | 山下達郎カバー名曲集 | 35曲 | 20曲 |\n  | 玉置浩二が歌うカバー | 32曲 | 23曲 |\n  | 歌うまカバー名盤 | 11曲 | 2曲 |\n  | **合計** | **約3,774曲** | **約1,290曲** |",
+      "confirmed": true
+    },
+    {
+      "file": ".claude/playbooks/つなげる担当.md",
+      "lines": "51-62",
+      "heading": "原曲⇄カバーの繋げ方（コード確認済み・2026-08-09）",
+      "quote": "`src/lib/coverGuide.ts`の`AiCoverLink`（`aiCovers?: AiCoverLink[]`）が実装。\n- `kind: \"cover\"`＝実在アーティストによる名カバー（`\"ai\"`はAI架空カバーで別物）。\n- `role: \"original\"`＝カバー側から原曲側へのリンク。`role`未指定／`\"covered-by\"`＝原曲側からカバー側へのリンク。\n- `href`は内部リンク`/cover-guide?artist=...`（外部YouTube直リンクではない）。\n- **双方向が必須**（片道リンクは50点・双方向で100点）。\n- 実例：`src/lib/coverGuide.ts:1318-1319`（中森明菜⇄井上陽水「飾りじゃないのよ 涙は」）。\n\n## 仕入れ担当からの引き継ぎ（2026-08-09）\n仕入れ担当セッションが、店主のSpotifyカバー系プレイリスト8本（合計約3,774曲）と在庫の曲名を突き合わせ、曲名だけで見て約947曲が在庫に無いことを確認した。",
+      "confirmed": true
+    },
+    {
+      "file": ".claude/manuals/01-ingest-linking.md",
+      "lines": "26-35",
+      "heading": "Spotify仕入れ・つなげる担当 正式指令（店主指示 2026-08-06・恒久ルール）",
+      "quote": "**Spotify仕入れ担当と「つなげる担当」の両方が、着手前に必ずこの節を読む。**\n### 中核原則（10項目）\n1. 世界の人気曲・有名曲は、店主の好みと異なっても入口として広く扱う。\n2. 「検索できる在庫」と「店主推薦の棚」を分離する。\n3. 棚の曲をおすすめ表示で優先する。\n4. 棚にない曲・アーティストでも、ファンが喜ぶ入口と小旅行を用意する。",
+      "confirmed": true
+    },
+    {
+      "file": ".claude/playbooks/棚編集UI担当.md",
+      "lines": "33-36",
+      "heading": "関連動画サムネイルの表示フォーマット統一＝「モンキー・マジック基準」",
+      "quote": "店主指摘「原曲の動画が小さくて目立たない」への対応。基準・実例・残件の詳細は`.claude/manuals/02-shelf-editor-ui.md`「関連動画（原曲・名カバー）のサムネイル基準＝「モンキー・マジック基準」」節へ集約。\n今回直したのは`room.card.$slug.tsx`の`RelationsSections`（固定カードの「原曲（元ネタ）」「名カバー・味変」欄）。`NextUpCard`ベースに書き換え、サムネは既存データ（coverGuide.ts / extraCards.ts）から自動解決する`resolveRelationMedia()`を新設。",
+      "confirmed": true
+    }
+  ],
+  "summary": {
+    "files_checked": 4,
+    "files_confirmed": 4
+  }
+}
