@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34565 担当別プレイブックの仕組み（34565号） 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34565 担当別プレイブックの仕組み（34565号）</div>
+<h1>#34565 担当別プレイブックの仕組み（34565号）</h1>
+<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+担当名を言うだけで、その担当の「読むもの・今の現在地・触る場所・触ってはいけない場所・他セッションとの衝突・完成条件」が1枚で出る仕組みを確認しました。入口は <code>npm run role -- &lt;担当名&gt;</code>。正本は joy-relief-station リポジトリの <code>.claude/playbooks/roles.json</code>。2026-08-07に初めてmainへ入って以来、現在も動作しています（新規に作った機能ではなく、既存稼働の実測確認）。別名・ひらがな表記（例:「気分診断」）でも正しい担当が引けること、存在しない担当名を渡しても固まらず担当一覧を出すことも実測済みです。<br><br>実際の実行結果（<code>npm run role -- 見回り担当</code>）：<pre style='white-space:pre-wrap;font-size:12px;max-height:400px;overflow:auto;background:var(--t-bg);color:var(--t-fg);padding:10px;border-radius:6px;'>
+&gt; role
+&gt; node scripts/roles/role-brief.mjs 見回り担当
+
+# 見回り担当 ブリーフ（2026-10-21 生成・照合: 完全一致）
+
+## この担当は何をする人か
+死んだ動画・詰まり・重複・サムネ不一致・古いフォーマットを継続的に見つけて直す常設。
+
+## 1. 読むもの（この順に読む）
+### 共通コア（全担当）
+  AGENTS.md
+  CLAUDE.md
+  docs/operations/loop-engineering.md
+  ai-brain/live/current-context.md
+  ai-brain/live/active-tasks.md
+  ai-brain/current-state.md
+  .claude/ACTIVE_WORK.md
+  .claude/KNOWN_ISSUES.md
+
+### この担当のもの
+  .claude/playbooks/見回り担当.md  ← 今の現在地。ここから読む
+  .claude/manuals/03-video-performance.md
+  docs/operations/patrol-rules.md
+  docs/operations/stuck-patrol.md
+
+## 2. 今の現在地
+（最終更新: 2026-08-08）
+
+### この担当は何をする人か
+死んだ動画・詰まり・重複・サムネ不一致・古いフォーマットを、店主が画面で踏む前に見つけて直す常設。
+
+**「見つける」だけでは仕事になっていない。直すか、直せないなら判断待ちとして記録に残すところまでが担当範囲。**
+
+### 次にやること
+1. **復活候補7件を店主へ出す。** 動画の復活は店主承認制で、`manual-video-restores.json` に書くまで棚へ戻さない決まり。7件が宙に浮いたままなので、まず一覧を出して判断を仰ぐ。
+2. **未マージブランチ52件を仕分ける。** 全部が生きた成果とは限らない（実験・放棄・重複がある）。「main反映済みで消してよい」「救出が要る」「捨ててよい」の3つに分けるところまでが見回りの仕事。**52件を一度に触らない。数件ずつ。**
+3. **PR起因の詰まりが見えていない問題。** `gh` CLI が無いのが原因。GitHub APIを直接叩くか、PR分は「見えていない」と明示し続けるかを決める。**未着手。**
+4. 動画見回りが `quick` モードでしか回っていない。`full` を最後にいつ回したかは**未確認**（レポートに履歴が残らないため）。
+
+## 3. 触ってよい場所 / 触ってはいけない場所
+  触る　　: scripts/patrol/**
+  触る　　: 検出された個別カードの修正
+  触らない: 棚の構成そのもの
+  触らない: 店主承認なしの動画復活
+
+## 4. 他セッションとの衝突（.claude/ACTIVE_WORK.md 占有中）
+⚠ つなげる担当 2026-08-09（Instagramカード／CM双方向） / `claude/tsunageru-ig-cm-0809` / `claude/instagram-card-0809`（「patrol」で一致）
+⚠ たまごDJ担当（一粒） / `claude/tamago-dj-sunset`（PR #235 `feat/tamago-dj-sunset-candy` を引き取り、main反映済み）（「見回り担当」で一致）
+⚠ 棚編集UI担当 / `claude/admin-shelf-ux`（「見回り」で一致）
+⚠ 見回り係（速さ・挙動不審の修理） / `claude/perf-patrol`（「見回り」で一致）
+⚠ つなげる担当（関連導線エンジン・Issue #211） / `claude/link-engine`（「patrol」で一致）
+⚠ つなげる担当・バックログ検出係（店主直接依頼） / `claude/cover-link-backlog`（main反映済み）（「patrol」で一致）
+⚠ 15秒クイック補給担当（店主のAntigravityレポート・次のアクション案1） / `claude/quick-checkup`（「patrol」で一致）
+⚠ 買ってよかった担当（物販カード） / `claude/kattemi-yokatta`（「見回り」で一致）
+⚠ 真っ白の証拠取り（速さ・挙動不審の修理担当） / `claude/role-playbook-skill`（「patrol」で一致）
+⚠ プチ物語（つなげる担当・常設） / `claude/role-playbook-skill`（「見回り」で一致）
+
+## 5. 自分宛のメールボックス（.claude/mailbox/見回り担当.md）
+  新着の伝言なし。
+
+## 6. 既知の未解決（.claude/KNOWN_ISSUES.md）— 新しいバグとして報告し直さない
+  ・【最重要・全ページ影響・店主の判断待ち】Lovableが「Publishing was blocked due to suspicious activity」でプロジェクト全体の公開を拒否し続けている（発見2026-09-12・案件#708他、2026-09-13時点で17件の独立確認）
+  ・【重要・検証手法の欠陥】cover-guide.tsxはCSR（クライアントサイドレンダリング）で、curlでの本番HTML実測は見出し・グリッドの実在を証明できない（発見2026-09-09・案件#661調査中）
+  ・【重大・全ページ影響】Lovableのビルドが2026-09-04以降ずっと失敗し続けている＝mainの全push・全修正が本番未反映（発見2026-09-07・案件#601調査中に発覚）
+  ・シェアしても画像が出ない（進捗表キュー#1）：room/cardの一部で下敷きYouTube動画そのものが削除済み（2026-09-05）
+  ・GitHub Actions 682回削減の副作用でDB反映が止まった、という報告の検証結果（2026-08-20）
+  ・🚨【根本原因を特定・2026-08-20】機能が繰り返し「消える」正体＝未マージのまま放置されるブランチと、それを拾うはずの回収便自体の設計バグ
+  ・✅【2026-09-02 恒久対策】バッジの見た目バラバラ（29回）＋付け外し・削除の即時反映（27回）
+  ・🚨バッジ選択メニューが枠に埋もれる・「項目が無い」ように見える（2026-08-16店主報告、2026-08-20 再確認）
+  ・「白飛び」棚を見ている最中に画面が真っ白になり、戻ってこない
+  ・【事例】承認は得たのに実行されず、店主が「もう10回以上言ってる」と言うまで誰も気づかなかった
+  ・棚編集が「工事中」、在庫ダッシュボードも開けない（本番DBの列欠け）
+  ・在庫ダッシュボードが「中身の読み込みだけ失敗しました」で開かない
+  ・管理画面ログインが端末に保持されない（在庫ダッシュボード・棚編集）
+  ・棚を作ったのに公開画面に出ない（サムネイルが無いカードは棚ごと消える）
+  ・mainへ入れてもLovableの公開画面へ反映されない（公開が止まっている）
+  ・名前が似ているだけの無関係コンテンツが、自動仕入れで部屋に混ざる
+  ・曲じゃないページに「曲」前提の文言が出る
+  ・アーティストページ（cover-guide）の曲カード右上に、中身が空のバッジ枠が出る（未調査・2026-08-13）
+  ・Jacob Collier「In The Bleak Midwinter」のyoutubeIdが別曲にリンクしている（発見・2026-09-07）
+
+## 7. この担当が過去に落ちた穴
+  ・動画の復活は店主承認制。manual-video-restores.json に書くまで自動で棚へ戻さない。
+  ・見回りは棚(worlds.ts)しか見ない。単独カード種別は追加時に個別合流が必要。
+  ・見回り自体が2日間サイレント停止した事故がある。停止監視を外さない。
+  ・誤紐付けの洗い出しにはscripts/patrol/diagnose-artist-mismatch.mjsが既にある（定期便patrol.mjsには未組込＝手動実行）。作り直さない。
+  ・2026-08-13対応済み：otsuka-foodsの地名「大塚」飲食店vlog等5件混入とotsuka-chemical-bon-curryとの部屋二重を修理（branch claude/otsuka-foods-cleanup）。旧trapに書かれた「573件」は実データ（実際は11件規模）と不整合だったため削除。件数を書く時は実測値をその場で数え直すこと。
+  ・【案件431番・2026-09-06】外部から入れた分（admin_artists経由）は、ページ（アーティスト行）はできても曲（admin_artist_songs）が0件のまま、というあるある事故がある（実例：IVNIT／Nawoo、2026-09-05入荷）。check-data-holes.mjsはcoverGuide.ts（コード側の名簿）しか見ておらずDB側の空を検出しない別物なので、check-onboarding-gaps.mjsを新設した（既存の見回りを置き換えるのではなく追加）。SUPABASE_PUBLISHABLE_KEY（公開鍵）は読み取り専用で、admin_artist_songsへのINSERTはRLSに42501（row-level security policy）で弾かれ、admin_artists.aboutへのUPDATEも実際には0件のまま静かに失敗する（200が返っても書き込めたとは限らない。実測で読み直して確認すること）。実際の仮埋めにはSUPABASE_SERVICE_ROLE_KEYが要るため、tamago-onboarding-sweep.yml（push/daily schedule/workflow_dispatch）がGitHub Actions側でservice_roleを使って書く。ローカルセッションはservice_roleが無いので検出専用になる（[[project_db_write_route_github_actions_once]]と同型）。
+  ・曲名の自動推定（guessSongTitle）は「アーティスト名(現地語表記)」のように名前の後ろに括弧書きが付くタイトルで誤爆する（実測：IVNIT(이브닛) - Heartbeat → 修正前は「IVNIT(이브닛)」を曲名と誤認）。比較前に末尾の括弧を落としてから照合すること。
+
+## 8. 担当外でも必ず守る憲法
+  ・最初の5〜10分でいい感情を芽生えさせる — どこから来た人でも、今の状況に寄り添った挨拶から入る。いきなり運営のおすすめを押し付けない。まずその人がもともと好きなものから入ってよい。回遊は自然に任せる。担当外でも適用。
+  ・北極星：生活の一部（常備薬）になる — 「毎日1回行かないと気持ち悪いくらい、生活の一部になってほしい。人が毎日薬を飲むように、この場所も“常備薬”みたいな存在に」。機能の採否・優先順位はこれで決める。担当外でも適用。
+  ・軽さは機能より優先する — 機能が付いても少し重くなったら不合格。全ページ共通バンドルを太らせない。担当外でも適用。
+  ・おすすめ・関連導線は文脈が近いことを最優先 — ジャンルを跨いで大きく飛ばさない。world推定に失敗したら既定へ機械的に落とさない。担当外でも適用。
+  ・ブラウザで動画を開く時は5手順ワンセット — 開かない方法（oEmbed／YouTube Data API）を優先。開くなら即ミュート→画面で確認→読取→閉じる→閉じたか確認。担当外でも適用。
+  ・既存資産を消さない — 既存ページ・在庫・導線・ID・URLを無断で削除しない。生成ファイルではなく生成元を直す。
+  ・完了は4段階 — 1実装・自動検品 2PR作成 3mainへMerged 4Lovable反映＋店主の実画面合格。PR作成だけを完了と呼ばない。
+
+## 9. 検品（自己申告ではなく、これを実際に走らせる）
+  $ node scripts/patrol/patrol.mjs
+  $ node scripts/patrol/diagnose-stuck.mjs
+  $ node scripts/patrol/check-onboarding-gaps.mjs --hours 48
+  $ bash scripts/verify-project.sh   ← 変更がコードに及ぶ場合
+
+## 10. 完成条件
+  検出→修理→報告まで通り、見回り自体が止まっていないことも監視できている。
+  完了は4段階。1実装・自動検品 2PR作成 3mainへMerged 4Lovable反映＋店主の実画面合格。
+  この担当の通常ブランチ: claude/patrol-guard
+
+## 11. 報告の型（これ以外を並べない）
+  【変更点】
+  【検品結果】
+  【GitHub反映】
+  【Lovable反映】
+  【店主が確認する場所】（必ず実URL。/world/&lt;id&gt; /shelf/&lt;world&gt;/&lt;shelf&gt; /room/card/&lt;slug&gt; の形式）
+  【未達または唯一のブロッカー】
+
+## 終わる前に必ず
+  1. .claude/playbooks/見回り担当.md の「次にやること」を書き換える
+  2. .claude/ACTIVE_WORK.md の自分の行を更新または削除する
+  3. 新しい恒久ルール・事故があれば .claude/playbooks/roles.json の traps に1行足す
+  4. 作業中に担当外の気づきがあれば .claude/mailbox/&lt;相手の担当名&gt;.md へ一言添える（.claude/mailbox/README.md）
+</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>11</b><span>プレイブック登録済み担当数</span></div>
+  <div class="num"><b>2026-08-07</b><span>mainへ初めて入った日</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+<li><b>（リンクなし）</b></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>入口コマンド npm run role -- &lt;担当名&gt; が動く</td><td class="yes">yes</td></tr>
+<tr><td>別名・ひらがな表記（例:気分診断）でも正しい担当を引ける</td><td class="yes">yes</td></tr>
+<tr><td>存在しない担当名でも固まらず一覧を出す</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+このページは #34565 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
