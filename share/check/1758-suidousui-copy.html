@@ -52,7 +52,7 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-手抜きコピー「代表曲のひとつ。」22件を空欄化し、同じ文言が増えたらビルドを失敗させる恒久関所(detect-generic-copy.mjs --fail-hard)をprebuildへ追加。commit 57b442d76はorigin/mainに合流済み（git merge-base --is-ancestorで実測確認）。本番(Lovable)への公開だけが2026-10-14から続くLovable OAuth認証障害(invalid_grant)でブロック中。
+店主が禁じた手抜きフレーズ（note.ts内で完全一致していた指定の水道水コピー）22件を空欄化し、同じ型の文言が増えたらビルドを失敗させる恒久関所(detect-generic-copy.mjs --fail-hard)をprebuildへ追加。commit 57b442d76はorigin/mainに合流済み（git merge-base --is-ancestorで実測確認）。本番(Lovable)への公開だけが2026-10-14から続くLovable OAuth認証障害(invalid_grant)でブロック中。
 </div>
 
 <h2>② 数字</h2>
@@ -73,7 +73,7 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>origin/mainにcommit 57b442d76が含まれる</td><td class="yes">git merge-base --is-ancestorで確認</td></tr>
 <tr><td>本番ページがHTTP 200で生存</td><td class="yes">node fetchで実測</td></tr>
-<tr><td>本番に新コピー(空欄)が反映済み</td><td class="no">同fetchで旧文言「代表曲のひとつ。」を検出</td></tr>
+<tr><td>本番に新コピー(空欄)が反映済み</td><td class="no">同fetchで禁止フレーズの旧文言が残存を検出</td></tr>
 <tr><td>Lovable認証(OAuth)が生きている</td><td class="no">needConsent:true・invalid_grant継続中(最後に成功2026-10-14)</td></tr>
 </table>
 
