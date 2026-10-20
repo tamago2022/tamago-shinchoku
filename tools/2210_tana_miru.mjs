@@ -31,9 +31,11 @@ function connect(u) {
   const ws = new WebSocket(u);
   let id = 0;
   const pend = new Map();
+  const listeners = [];
   ws.addEventListener("message", (ev) => {
     const m = JSON.parse(ev.data);
     if (m.id && pend.has(m.id)) { const cb = pend.get(m.id); pend.delete(m.id); cb(m); }
+    else if (m.method) { for (const l of listeners) l(m); }
   });
   const ready = new Promise((a, b) => { ws.addEventListener("open", a); ws.addEventListener("error", b); });
   const send = (method, params = {}) => new Promise((a, b) => {
@@ -41,7 +43,7 @@ function connect(u) {
     pend.set(i, (m) => (m.error ? b(new Error(JSON.stringify(m.error))) : a(m.result)));
     ws.send(JSON.stringify({ id: i, method, params }));
   });
-  return { ready, send, close: () => ws.close() };
+  return { ready, send, close: () => ws.close(), on: (f) => listeners.push(f) };
 }
 
 const port = 9700 + Math.floor(Math.random() * 200);
@@ -51,10 +53,29 @@ const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${port}
 const out = { url: URL_ARG, must: MUST, mustNot: MUSTNOT };
 try {
   const t = await findPage(port);
-  const { ready, send, close } = connect(t.webSocketDebuggerUrl);
+  const { ready, send, close, on } = connect(t.webSocketDebuggerUrl);
   await ready;
   await send("Page.enable");
   await send("Runtime.enable");
+  // ★2026-10-20追記（2173番診断用・後方互換）：ONI_NET=1 の時だけ、Supabase向け
+  //   fetchの件数と console.error/warn を記録する。既存の呼び出し方には一切影響しない。
+  const net = [];
+  const consoleLogs = [];
+  if (process.env.ONI_NET) {
+    await send("Network.enable");
+    on((m) => {
+      if (m.method === "Network.responseReceived") {
+        const u = m.params.response.url;
+        if (process.env.ONI_NET_ALL || u.includes("supabase.co/rest")) {
+          net.push({ url: u, status: m.params.response.status, requestId: m.params.requestId });
+        }
+      }
+      if (m.method === "Runtime.consoleAPICalled") {
+        const txt = (m.params.args || []).map((a) => a.value ?? a.description ?? "").join(" ");
+        if (m.params.type === "error" || m.params.type === "warning") consoleLogs.push(`[${m.params.type}] ${txt}`.slice(0, 300));
+      }
+    });
+  }
   await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: 2, mobile: true });
   await send("Page.navigate", { url: URL_ARG });
   let text = "";
@@ -86,6 +107,23 @@ try {
     const s = await send("Page.captureScreenshot", { format: "png" });
     writeFileSync(PNG, Buffer.from(s.data, "base64"));
     out.png = PNG;
+  }
+  if (process.env.ONI_NET) {
+    out.net = net;
+    out.consoleLogs = consoleLogs;
+    if (process.env.ONI_NET_BODY) {
+      out.bodies = [];
+      for (const n of net) {
+        if (!n.url.includes("_serverFn/")) continue;
+        try {
+          const r = await send("Network.getResponseBody", { requestId: n.requestId });
+          const body = r.body ? (r.base64Encoded ? Buffer.from(r.body, "base64").toString("utf-8") : r.body) : "";
+          if (process.env.ONI_NET_BODY === "*" || body.includes(process.env.ONI_NET_BODY)) {
+            out.bodies.push({ url: n.url, len: body.length, body: body.slice(0, 4000) });
+          }
+        } catch { /* ignore */ }
+      }
+    }
   }
   close();
 } catch (e) {
