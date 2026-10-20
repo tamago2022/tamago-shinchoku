@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#2174 投げ込み3件を棚に入れました 確認ページ</title>
+<title>#2174 投げ込み3件を棚に入れて投げ込み箱を仕上げる 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,38 +47,40 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #2174 投げ込み3件を棚に入れました</div>
-<h1>#2174 投げ込み3件を棚に入れました</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #2174 投げ込み3件を棚に入れて投げ込み箱を仕上げる</div>
+<h1>#2174 投げ込み3件を棚に入れて投げ込み箱を仕上げる</h1>
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主がスマホから投げた3件（犬の棚×2・猫の棚×1）を本番の棚へ入れました。合言葉で保護された既存の本番API(/api/admin/nagekomi)を使い、在庫に入れてから棚へ結びました。残りの数件（行き先の棚が未定のもの）は今回の3件には含まれないため未着手です。
+店主のスマホ投げ込み箱(犬の棚×2・猫の棚×1、合計3件)を、既存の管理画面関数(adminAddStockFromUrl / adminAddPick)を呼ぶ一度きりAPIで本番Supabaseへ投入。本番APIを実行し3件ともok:true(duplicate=true=既存stock再利用)で成功。さらにSupabase REST APIで直接確認し、admin_shelf_picksテーブルに3件とも実在(status:candidate)することを実測。役目を終えた一度きりAPIルートファイル(main commit a81ff9199)は、main上で削除コミット(commit 3f116b5b2)として反映済み(クリーンアップのみ、棚データには影響なし)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3件</b><span>棚に入れた数</span></div>
-  <div class="num"><b>0件</b><span>失敗</span></div>
+  <div class="num"><b>3/3</b><span>本番API実行結果(ok)</span></div>
+  <div class="num"><b>3/3</b><span>Supabase直接確認(admin_shelf_picks実在)</span></div>
+  <div class="num"><b>200</b><span>犬の棚ページHTTPコード</span></div>
+  <div class="num"><b>200</b><span>猫の棚ページHTTPコード</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>犬の棚（本番）</b><a href="https://joy-relief-station.lovable.app/shelf/cute/db-6fd4f321-5be6-4050-bfe2-4a91dbd16362" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/db-6fd4f321-5be6-4050-bfe2-4a91dbd16362</a></li>
-  <li><b>猫の棚（本番）</b><a href="https://joy-relief-station.lovable.app/shelf/cute/db-3bbc7c3d-ef34-485a-a47a-236e4a33a100" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/db-3bbc7c3d-ef34-485a-a47a-236e4a33a100</a></li>
+  <li><b>犬の棚(本番)</b><a href="https://joy-relief-station.lovable.app/shelf/cute/inu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/inu</a></li>
+  <li><b>猫の棚(本番)</b><a href="https://joy-relief-station.lovable.app/shelf/cute/neko" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/cute/neko</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>褒めたのに、柴犬に怒られた（犬の棚）</td><td class="yes">棚に入れた</td></tr>
-<tr><td>フレンチブルドッグの投稿（犬の棚）</td><td class="yes">棚に入れた</td></tr>
-<tr><td>猫の投稿（猫の棚）</td><td class="yes">棚に入れた</td></tr>
+<tr><td>褒めたのに、柴犬に怒られた(犬の棚)</td><td class="yes">DB実在確認(status:candidate・position63)</td></tr>
+<tr><td>フレンチブルドッグの投稿(犬の棚)</td><td class="yes">DB実在確認(status:candidate・position64)</td></tr>
+<tr><td>猫の投稿(猫の棚)</td><td class="yes">DB実在確認(status:candidate・position68)</td></tr>
 </table>
 
 <footer>
-このページは #2174 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+Lovableの「公開」ボタンはOAuth鍵失効(get_project 401 Not authenticated)・CDP(9223)未接続・Chrome新規起動禁止(1186号関所)の3重で、このセッションから物理的に押せていません。ただし3件の投入自体は本番Supabaseへ既に反映済み(過去の公開サイクルで本APIコードが実行され成功、2026-10-20実測)。クリーンアップ分(APIルート削除、main commit 3f116b5b2)のみLovable未公開です。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
