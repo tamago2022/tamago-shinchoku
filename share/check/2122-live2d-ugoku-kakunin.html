@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#2122 2122番 Live2D(卵アバター)が動くか確認 確認ページ</title>
+<title>#2122 卵アバター(Live2D代替)：口パクは本番稼働中、マイクボタン無反応も修正しmain合流・公開のみブロック中 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,49 +47,40 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #2122 2122番 Live2D(卵アバター)が動くか確認</div>
-<h1>#2122 2122番 Live2D(卵アバター)が動くか確認</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #2122 卵アバター(Live2D代替)：口パクは本番稼働中、マイクボタン無反応も修正しmain合流・公開のみブロック中</div>
+<h1>#2122 卵アバター(Live2D代替)：口パクは本番稼働中、マイクボタン無反応も修正しmain合流・公開のみブロック中</h1>
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-案件2122番「Live2Dが動くのを確認してから出す」の対象を特定した。<br>調査の結果、人型VRM/Live2Dは既に廃止され、現在は<code>/cover-guide</code>（案内所）の卵アバターが声の音量でSVGの口を動かす方式に置き換わって<b>本番で稼働中</b>。<br>今回は、同じ口パク配線(lipsync)を使う検証専用ページ<code>/lab/egg-avatar</code>を、音を一切出さないChromium(--mute-audio、スピーカーに音は出ない)で自動操作し、サンプル声を再生して口の開き%を250msごとに実測した。<b>口は実際に動いた（0%→100%→閉、口形もE/A/closedと変化）。</b><br><br>実測の生データ（24回、250msごと）：<pre>t=0ms    width=0%   口形=closed
-t=250ms  width=100% 口形=E
-t=500ms  width=100% 口形=E
-t=750ms  width=0%   口形=closed
-t=1000ms width=32%  口形=E
-t=1250ms width=100% 口形=E
-t=1500ms width=96%  口形=A
-t=1750ms width=0%   口形=closed
-t=2000ms width=0%   口形=closed
-t=2250ms width=0%   口形=closed
-t=2500ms width=90%  口形=A
-t=2750ms〜t=5750ms  width=0% 口形=closed（声が止んだ後）</pre>
+① 既存の口パク(lipsync)機能は本番(/cover-guide, /lab/egg-avatar)で実測確認済み（下の実測ログ参照、前回session分を保持）。② 今回新たに、自動クリック検品が「マイクを使う」ボタンを無反応と判定していた原因（<code>getUserMedia</code>の許可確定を待つまでDOM変化が無い）を特定し、クリック直後に状態を変える<code>micPending</code>（マイクの許可を確認中…）と、8秒応答が無い時のタイムアウト処理を<code>src/features/eggAvatar/EggAvatarLab.tsx</code>に追加した。tamago-verifierの独立検品でPASS、origin/mainへ直接push済み（commit 8319c3305, 8136e100a）。③ <b>公開(Lovable)はまだ未達</b>。公開を押すには専用Chrome(CDP 9223)の起動が必要だが、1186号の憲法ゲート（Chrome起動・再起動を例外なく禁止）に拒否され、既存の生きたChromeも無かったため、AI側に公開を実行する物理的手段が無い（詳細は.claude/PENDING_DECISIONS.md案件#2122・#2185等に記録済み、Lovable OAuth鍵失効とも同根）。本番URLは実測で旧コードのままと確認した（下記スクリーンショット・数字参照）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>24回</b><span>250ms間隔で実測した回数</span></div>
-  <div class="num"><b>6回</b><span>口が動いた(開き&gt;0%)回数</span></div>
-  <div class="num"><b>100%</b><span>実測した最大の開き</span></div>
-  <div class="num"><b>200</b><span>本番ページのHTTPステータス(両方とも)</span></div>
+  <div class="num"><b>6/24</b><span>口パクが動いた回数(250ms間隔の実測・既存機能)</span></div>
+  <div class="num"><b>9件中0件</b><span>ローカル環境でマイクボタンが無反応だった件数(修正後・verify_click.mjs実測)</span></div>
+  <div class="num"><b>200</b><span>本番ページのHTTPステータス(/lab/egg-avatar)</span></div>
+  <div class="num"><b>未公開</b><span>本番へのLovable反映状態(main合流済み・公開のみ未達)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
-  <div class="shot before"><b>口を閉じている瞬間（待機中）</b><img src="img/2122-egg-lab-closed.png" alt="前"></div>
-  <div class="shot after"><b>サンプル声を再生した直後（口パク動作中・実測は上の表のとおり途中で開閉する）</b><img src="img/2122-egg-lab-opening.png" alt="後"></div>
+  <div class="shot before"><b>本番（現状・マイクボタンは修正前のコードのまま）</b><img src="img/2122-prod-before.png" alt="前"></div>
+  <div class="shot after"><b>ローカル環境（修正後のコードで表示確認。クリック検品で無反応0件を実測）</b><img src="img/2122-local-after.png" alt="後"></div>
+  <div class="shot plain"><b>口を閉じている瞬間(待機中・既存のlipsync実測分)</b><img src="img/2122-egg-lab-closed.png" alt="口を閉じている瞬間(待機中・既存のlipsync実測分)"></div>
+  <div class="shot plain"><b>サンプル声を再生した直後(口パク動作中・既存のlipsync実測分)</b><img src="img/2122-egg-lab-opening.png" alt="サンプル声を再生した直後(口パク動作中・既存のlipsync実測分)"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番：案内所（卵アバターが実際に出ている場所）</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
-  <li><b>検証ページ：/lab/egg-avatar（口パクの実測に使用・非公開ラボ）</b><a href="https://joy-relief-station.lovable.app/lab/egg-avatar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/lab/egg-avatar</a></li>
+  <li><b>本番：卵アバターラボ(現状・旧コードのまま。マイクボタンは修正前の表示)</b><a href="https://joy-relief-station.lovable.app/lab/egg-avatar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/lab/egg-avatar</a></li>
+  <li><b>本番：案内所（口パクが実際に出ている場所）</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
 </ul>
 
 
 
 <footer>
-実測：Playwright(Chromium --mute-audio、音は一切出ていない・スピーカーに音は出ていない)で24サンプル採取。人型VRM/Live2D自体は既に廃止済みのため、今回の「Live2D」は現行の卵アバター口パク機能（/cover-guideと/lab/egg-avatarで共通配線）を指すものとして検証した。
+実測：①lipsyncはPlaywright(Chromium --mute-audio)で24サンプル採取(前回セッション分、保持)。②マイクボタン修正はtools/verify_click.mjs(headless Chrome・一時プロファイル・使用後SIGKILL)でローカル開発サーバ(vite dev)に対して実測、対象ボタンは無反応リストから消えたことを確認。③公開ブロックの原因はtools/stop_kanmon/1186_chrome_kidou_kinshi.mjsの拒否ログで実測確認済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
