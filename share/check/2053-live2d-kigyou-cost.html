@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>#2053 Live2D・AIアバター、企業は何を使っていくらで動かしているか</title>
+<style>
+:root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);--ki:var(--t-warn);--mi:var(--t-mute);}
+*{box-sizing:border-box;}
+body{margin:0;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 44px);
+  background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  font-size:16px;line-height:1.75;max-width:820px;margin-left:auto;margin-right:auto;overflow-x:hidden;}
+a{color:var(--ao);}
+h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:.05em;margin:0 0 6px;line-height:1.55;}
+h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.04rem;letter-spacing:.05em;
+  margin:40px 0 13px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
+.date{color:var(--sub);font-size:.8rem;margin-bottom:16px;word-break:break-word;}
+.ketsu{background:var(--t-panel);border-left:4px solid var(--midori);border-radius:0 12px 12px 0;padding:16px 18px;margin:0 0 14px;}
+.ketsu .l1{font-family:"Hiragino Mincho ProN",serif;font-size:1.1rem;line-height:1.6;margin:0 0 8px;}
+.ketsu .l2{font-size:.92rem;color:var(--sub);margin:0;}
+.warn{background:var(--t-panel);border-left:4px solid var(--aka);border-radius:0 12px 12px 0;padding:13px 16px;font-size:.9rem;margin:0 0 14px;}
+.note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:13px 16px;font-size:.89rem;margin:0 0 13px;}
+.note p{margin:0 0 8px;} .note p:last-child{margin:0;}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:var(--t-panel);max-width:100%;}
+table{border-collapse:separate;border-spacing:0;font-size:.83rem;min-width:600px;}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:center;vertical-align:top;line-height:1.5;}
+th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:.7rem;}
+th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:var(--t-panel);border-right:1px solid var(--line);
+  font-size:.79rem;padding-left:10px;min-width:120px;font-weight:600;white-space:normal;}
+th.t{background:var(--t-panel);z-index:3;}
+tr:last-child td{border-bottom:none;}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.c-ok{color:var(--midori);font-weight:700;} .c-ng{color:var(--aka);font-weight:700;} .c-un{color:var(--mi);}
+ul.plain{list-style:none;margin:0 0 14px;padding:0;}
+ul.plain li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 9px;font-size:.89rem;line-height:1.65;}
+ul.plain li b.h{display:block;margin-bottom:4px;font-size:.96rem;}
+code{background:var(--t-panel);padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
+.small{font-size:.8rem;color:var(--sub);line-height:1.6;}
+footer{color:var(--sub);font-size:.78rem;margin-top:48px;line-height:1.6;border-top:1px solid var(--line);padding-top:15px;}
+@media (max-width:420px){
+  body{font-size:15px;padding-left:11px;padding-right:11px;}
+  h1{font-size:1.12rem;} .ketsu .l1{font-size:1.0rem;}
+  table{font-size:.79rem;} th.t,td.t{min-width:104px;font-size:.75rem;}
+}
+</style>
+</head>
+<body>
+
+<p class="date"><a href="../../index.html">← 進捗表に戻る</a>　／　関連：<a href="./1046-dodai.html">#1046 たまごアバターの土台検討</a></p>
+
+<h1>Live2D・AIアバター、企業は何を使っていくらで動かしているか</h1>
+<p class="date">2026-10-20 作成（#2053号）／ 全部の数字に「どこで確かめたか」を付けてあります。確認できなかったものは「非公開」「未確認」と書いてあります。要約・検索結果のスニペットは出典にしていません（公式ページ・Wikipedia本文・公式価格ページを直接取得して確認）。</p>
+
+<div class="ketsu">
+  <p class="l1"><b>結論：技術は「Live2D」一択ではない。企業の個別費用は基本「非公開」。公開されている数字は、海外AI動画アバターSaaSの月額と、個人VTuberの立ち上げ実例だけ。</b></p>
+  <p class="l2">ゲーム・VTuber企業はLive2D Cubism（無料〜）を使っている実例が公式データベースで7件確認できた。接客・デジタルヒューマン用途では海外SaaS（HeyGen・Synthesia・Soul Machines等）に月額$0〜$2,700（¥0〜¥42.8万・本日レート換算）の公開プランがある。たまごさんの規模（年商1,000万円未満の個人事業）なら、Live2D Cubism SDK・Editorのライセンス料は0円（すでに#1046で裏取り済み）。残る費用は「卵の絵をパーツに切る」制作費だけで、個人実例からの相場は数万円〜100万円程度。</p>
+</div>
+
+<h2>1. Live2D公式データベースで確認できた実在企業（7件・2026-10-20直接取得）</h2>
+<div class="note">
+  <p>Live2D公式の作品データベース（<a href="https://www.live2d.com/en/showcase/" target="_blank" rel="noopener">live2d.com/en/showcase</a>）を直接取得し、一覧に出ている企業名・使用プロダクトをそのまま転記。<b>金額は公式データベースにも載っていない（Live2D社の方針として非開示）。</b></p>
+</div>
+<div class="wrap">
+<table>
+<thead><tr><th class="t">作品／案件</th><th>企業</th><th>用途</th><th>使用プロダクト</th></tr></thead>
+<tbody>
+<tr><td class="t">RPG Developer Bakin</td><td>SmileBoom Co.,Ltd.</td><td>ゲーム制作ツール</td><td>Cubism Editor/SDK</td></tr>
+<tr><td class="t">Stella Sora</td><td>Yostar</td><td>ゲーム</td><td>Cubism Editor/SDK</td></tr>
+<tr><td class="t">hololive Dreams</td><td>QualiArts, Inc.</td><td>ゲーム（ホロライブ公式）</td><td>Cubism Editor/SDK</td></tr>
+<tr><td class="t">Showcase of Dayang<br>at MWC Barcelona 2026</td><td>Sarawak Information<br>Systems Sdn. Bhd.</td><td><b>デジタルヒューマン</b><br>（マレーシア・サラワク州<br>公的機関のアバター展示）</td><td>Cubism Editor/SDK</td></tr>
+<tr><td class="t">『DRAGON BALL』<br>40周年記念映像</td><td>TOEI ANIMATION<br>CO., LTD.</td><td>記念映像制作</td><td>Cubism Editor/SDK</td></tr>
+<tr><td class="t">スルタンのゲーム</td><td>Hong Kong Gamease<br>Technology Co., Ltd.</td><td>ゲーム</td><td>Cubism Editor/SDK</td></tr>
+<tr><td class="t">Puella Magi Madoka<br>Magica: Magia Exedra</td><td>Aniplex Inc.</td><td>ゲーム</td><td>Cubism Editor/SDK</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small">★「Dayang」は唯一、ゲーム以外＝接客・案内寄りのデジタルヒューマン実例。マレーシアの州政府系法人がMWCバルセロナ2026（通信業界の国際展示会）で展示したアバター。費用・技術詳細の開示なし（Live2D公式ページの説明文にも金額の記載はない）。</p>
+
+<h2>2. 日本の上場VTuber企業2社（規模感の参考値）</h2>
+<div class="wrap">
+<table>
+<thead><tr><th class="t">　</th><th>カバー株式会社<br>（ホロライブ運営）</th><th>ANYCOLOR株式会社<br>（にじさんじ運営）</th></tr></thead>
+<tbody>
+<tr><td class="t">技術</td><td>Live2Dを積極活用との記述<br>（ソフト名の明記は無し）</td><td>Live2Dを積極活用との記述<br>＋自社アプリで表情トラッキング</td></tr>
+<tr><td class="t">売上高</td><td class="n">493億3,000万円<br><span class="small">（2026年3月期）</span></td><td class="n">428億76百万円<br><span class="small">（2025年4月期）</span></td></tr>
+<tr><td class="t">営業利益</td><td class="n">70億5,600万円</td><td class="n">162億79百万円</td></tr>
+<tr><td class="t">従業員数</td><td class="n">850名</td><td class="n">532名</td></tr>
+<tr><td class="t">個別タレントの<br>モデル制作費・運用費</td><td class="n c-un">非公開</td><td class="n c-un">非公開</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small">出典：<a href="https://ja.wikipedia.org/wiki/カバー株式会社" target="_blank" rel="noopener">Wikipedia「カバー株式会社」</a>／<a href="https://ja.wikipedia.org/wiki/ANYCOLOR" target="_blank" rel="noopener">Wikipedia「ANYCOLOR」</a>（いずれも決算短信・有価証券報告書を引用した記述を転記）。個別タレントの制作費・年間運用費は両社とも決算資料で区分開示されておらず非公開。</p>
+
+<h2>3. 個人レベルの立ち上げコスト実例（具体額が取れた唯一の層）</h2>
+<div class="wrap">
+<table>
+<thead><tr><th class="t">名前</th><th>内訳</th><th>合計</th></tr></thead>
+<tbody>
+<tr><td class="t">天使エル</td><td style="text-align:left">アバター制作100万円／PC 20万円／音響機器20万円／<br>イラスト依頼料30万円／広告費20万円／ロゴ等依頼料40万円</td><td class="n c-ng">約230万円</td></tr>
+<tr><td class="t">宇井葉宙</td><td style="text-align:left">モデル代30万円／PC2台40万円／<br>マウス・キーボード約8.6万円／マイク周辺機器約6.3万円／デスク約1.2万円</td><td class="n">100万円以上</td></tr>
+<tr><td class="t">輪廻</td><td style="text-align:left">モデリングソフト代のみ（既存機材を活用）</td><td class="n c-ok">2,000円</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small">出典：<a href="https://ja.wikipedia.org/wiki/バーチャルYouTuber" target="_blank" rel="noopener">Wikipedia「バーチャルYouTuber」</a>（J-CAST記事を引用した本人申告ベースの実例。企業の正式見積りではない点に注意）。<br>
+<b>この3例から読める個人レベルのレンジ：モデル制作費だけなら2,000円〜100万円、周辺機材込みの総額なら数万円〜230万円。</b></p>
+
+<h2>4. 海外AIアバター／デジタルヒューマンSaaSの公式料金（本日のレートで円換算）</h2>
+<div class="note">
+  <p>為替レート：<b>1USD＝158.44円</b>（<a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">exchangerate-api.com</a>・2026-10-20 00:02 UTC取得・このページ作成時にAPIを直接叩いて取得した実測値）。円金額は税別・この日のレートでの参考値。</p>
+</div>
+<div class="wrap">
+<table>
+<thead><tr><th class="t">サービス</th><th>無料</th><th>入門プラン</th><th>上位プラン</th></tr></thead>
+<tbody>
+<tr><td class="t">HeyGen</td><td class="n c-ok">$0</td><td class="n">Creator $29/月<br>＝約¥4,595/月</td><td class="n">Business $149/月＝約¥23,607/月<br>＋座席追加$20/月(約¥3,169)</td></tr>
+<tr><td class="t">Synthesia</td><td class="n c-ok">$0</td><td class="n">Starter $29/月<br>＝約¥4,595/月</td><td class="n">Pro $89/月＝約¥14,101/月</td></tr>
+<tr><td class="t">Soul Machines</td><td class="n c-ok">$0</td><td class="n">Basic $12.99/月<br>＝約¥2,058/月</td><td class="n">Pro $2,700/月＝約¥427,788/月</td></tr>
+<tr><td class="t">D-ID</td><td class="n c-un">未確認</td><td class="n c-un">金額非表示<br>（分数課金制のみ公開）</td><td class="n c-un">—</td></tr>
+<tr><td class="t">Live2D Cubism</td><td class="n c-ok">0円<br><span class="small">（小規模事業者は<br>SDK/Editorとも無料）</span></td><td class="n c-ok">0円<br><span class="small">月額課金プランが<br>そもそも無い</span></td><td class="n c-un">PRO版の具体価格は<br>公式ページ本文で未確認</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small">出典：<a href="https://www.heygen.com/pricing" target="_blank" rel="noopener">heygen.com/pricing</a>／<a href="https://www.synthesia.io/pricing" target="_blank" rel="noopener">synthesia.io/pricing</a>／<a href="https://www.soulmachines.com/pricing" target="_blank" rel="noopener">soulmachines.com/pricing</a>／<a href="https://www.d-id.com/pricing/" target="_blank" rel="noopener">d-id.com/pricing</a>（いずれも公式価格ページを直接取得・2026-10-20付近に調査担当が取得）。Live2Dの小規模事業者無料の根拠は<a href="https://www.live2d.com/sdk/license/" target="_blank" rel="noopener">live2d.com/sdk/license</a>（既存#1046号で裏取り済み・年商1,000万円未満が条件）。</p>
+
+<h2>5. たまごさんの規模で実際に運用するといくらか（算出）</h2>
+<div class="note">
+  <p><b>前提：</b>ごきげん補給所は個人事業（年商1,000万円未満）＝Live2Dの小規模事業者無料ライセンスの対象。接客アバターを「話しかけたときだけ読み込む」形にする前提（#1046で設計済み）。</p>
+</div>
+<div class="wrap">
+<table>
+<thead><tr><th class="t">経路</th><th>初期費用</th><th>月額</th><th>3年(36ヶ月)合計</th></tr></thead>
+<tbody>
+<tr><td class="t">★Live2D自作<br>（卵の絵をパーツ分解）</td><td class="n c-ok">約3万円〜100万円<br><span class="small">（個人実例の相場レンジ。<br>イラストレーター/モデラーへの外注）</span></td><td class="n c-ok">0円<br><span class="small">（ライセンス無料・自サーバー配信）</span></td><td class="n c-ok">初期費用のまま<br>（運用費が積み上がらない）</td></tr>
+<tr><td class="t">HeyGen Creator</td><td class="n c-ok">0円</td><td class="n">約¥4,595</td><td class="n c-ng">約¥165,420</td></tr>
+<tr><td class="t">Synthesia Starter</td><td class="n c-ok">0円</td><td class="n">約¥4,595</td><td class="n c-ng">約¥165,420</td></tr>
+<tr><td class="t">Soul Machines Basic</td><td class="n c-ok">0円</td><td class="n">約¥2,058</td><td class="n">約¥74,088</td></tr>
+<tr><td class="t">Soul Machines Plus</td><td class="n c-ok">0円</td><td class="n">約¥15,686</td><td class="n c-ng">約¥564,696</td></tr>
+</tbody>
+</table>
+</div>
+<div class="warn">
+  <b>結論（この規模の場合）：</b>Live2D自作は<b>初期費用だけで止まり、月額が増えない。</b>海外SaaS型は初期0円で始められて楽だが、<b>使い続けるほど一括のLive2D外注費を超えていく</b>（Soul Machines Basicでも3年で約7.4万円、HeyGen/Synthesiaなら3年で約16.5万円）。<br>
+  <b>今の規模・今の使い方（話しかけた人にだけ読み込む・動画生成ではなく静的な表情アニメーション）なら、Live2D一括外注の方が総額で安く、かつ軽さの憲法（押した人にだけ769KB、#1046実測）にも合う。</b>海外SaaS型は「動画を自動生成する」用途（例：商品紹介動画を量産する）が必要になった時だけ検討する経路として残す。
+</div>
+
+<h2>6. 確認できたこと／できなかったこと</h2>
+<div class="wrap">
+<table>
+<thead><tr><th class="t">　</th><th>中身</th></tr></thead>
+<tbody>
+<tr><td class="t c-ok">確認できた</td><td style="text-align:left">Live2D公式データベースで実在企業7件・使用プロダクト（Cubism Editor/SDK）／カバー・ANYCOLORの売上規模（公開資料）／個人VTuber3例の実コスト内訳／HeyGen・Synthesia・Soul Machinesの公式月額料金／本日の実際の為替レート（158.44円/USD）／Live2Dの小規模事業者ライセンス無料の条件（既存#1046号）</td></tr>
+<tr><td class="t c-ng">確認できなかった</td><td style="text-align:left">カバー・ANYCOLORの個別タレントのモデル制作費・年間運用費（決算資料に非開示）／国内銀行・自治体のデジタルヒューマン導入事例の個別費用（検索エンジンがbot認証で遮断され広域検索不可、みずほ銀行ページは403）／NVIDIA ACE公式ページ（404）／D-IDの具体的な月額金額／Live2D Cubism PRO版の具体価格（公式ページ本文に記載なし）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>7. 叩いたURL（全部）</h2>
+<ul class="plain">
+<li><b class="h">Live2D公式データベース</b><a href="https://www.live2d.com/en/showcase/" target="_blank" rel="noopener">live2d.com/en/showcase</a><br><span class="small">2026-10-20 直接取得・企業名7件を本文から転記</span></li>
+<li><b class="h">カバー株式会社</b><a href="https://ja.wikipedia.org/wiki/カバー株式会社" target="_blank" rel="noopener">ja.wikipedia.org/wiki/カバー株式会社</a></li>
+<li><b class="h">ANYCOLOR株式会社</b><a href="https://ja.wikipedia.org/wiki/ANYCOLOR" target="_blank" rel="noopener">ja.wikipedia.org/wiki/ANYCOLOR</a></li>
+<li><b class="h">バーチャルYouTuber（個人コスト実例・市場規模）</b><a href="https://ja.wikipedia.org/wiki/バーチャルYouTuber" target="_blank" rel="noopener">ja.wikipedia.org/wiki/バーチャルYouTuber</a></li>
+<li><b class="h">HeyGen 料金</b><a href="https://www.heygen.com/pricing" target="_blank" rel="noopener">heygen.com/pricing</a></li>
+<li><b class="h">Synthesia 料金</b><a href="https://www.synthesia.io/pricing" target="_blank" rel="noopener">synthesia.io/pricing</a></li>
+<li><b class="h">Soul Machines 料金</b><a href="https://www.soulmachines.com/pricing" target="_blank" rel="noopener">soulmachines.com/pricing</a></li>
+<li><b class="h">D-ID 料金</b><a href="https://www.d-id.com/pricing/" target="_blank" rel="noopener">d-id.com/pricing</a></li>
+<li><b class="h">Live2D SDKライセンス（小規模事業者無料の根拠）</b><a href="https://www.live2d.com/sdk/license/" target="_blank" rel="noopener">live2d.com/sdk/license</a></li>
+<li><b class="h">為替レート（USD/JPY実測）</b><a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">exchangerate-api.com</a>（2026-10-20 00:02 UTC取得）</li>
+</ul>
+
+<footer>
+  この便はLive2D本体の実装は触っていません。企業の導入事例と運用コストを調べて並べただけです。<br>
+  <a href="../../index.html">進捗表に戻る</a>
+</footer>
+
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
