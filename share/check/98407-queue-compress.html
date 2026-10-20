@@ -49,29 +49,40 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #98407 発車待ちの重複・自動分割の圧縮(98407番)</div>
 <h1>#98407 発車待ちの重複・自動分割の圧縮(98407番)</h1>
-<div class="date">2026-10-19 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-発車待ち(status=waiting)4,678件の中身を調査。title/hyoudaiはほぼ全件distinctで、判定日赤3223件も(見出し,言われた日時)でほぼ全件distinct=たまごさんの別々の発言であり、意図せず束ねると発言が消える危険があると判明。機械的に重複と確認できた2種類だけを統合：①statusと本文(what)が一字一句同じもの②「(N/M) 同じ見出し」の自動分割子票。tools/queue_compress_98407.pyを作成し、既存のtools/queue_store.py(差分マージ・件数減少拒否)とtools/gaibu_henji_matome.pyのhold+mergedInto統合パターンをそのまま使用。items配列からは1件も削除せず、統合した票はstatus=hold+mergedIntoに変えるだけ(戻せる)。--self-testで origin=user全件の現存・統合票のhold化・配列件数不変を機械照合しPASS。
+発車待ち4,678件を調査。たまごさん発の個別発言は(見出し,言われた日時)でほぼ全件distinctのため意味で束ねず(誤って束ねると発言が消える危険があるため)、機械的に重複と確認できた2種類だけを統合(①statusと本文(what)が一字一句同じ依頼②自動分割の子票)。実装中に本当の原因を発見：queue_next.json(次に発車専用の軽量ファイル)が待機件数の増加で1,112,148バイトまで育ち、公開の関所(1MB超は公開から外す)に無言で弾かれ本番で404していた(前回の確認ページがこれで機械検品に落ちた理由)。待機が多い時は優先度上位500件に切って軽量化(実測123,573バイト)し、切った分の総数はtotalWaitingフィールドで補って「残っている仕事N件」表示の正確さを保つよう修正。さらにGitHub Pages Actionsの配信キューが別件で詰まっていたのも発見・解除し、本番URLで実測確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>4898</b><span>統合前の発車待ち件数(1回目実行時点)</span></div>
-  <div class="num"><b>4741</b><span>統合後の発車待ち件数(同実行直後)</span></div>
-  <div class="num"><b>158</b><span>統合した票の数(2種類合計)</span></div>
-  <div class="num"><b>0</b><span>origin=userの消失件数(5264件中)</span></div>
+  <div class="num"><b>160件</b><span>安全に統合した票の数(0件削除・原文は統合先へ全文残存)</span></div>
+  <div class="num"><b>0件</b><span>origin=userの消失件数(自己テストで機械照合)</span></div>
+  <div class="num"><b>1,112,148→123,573バイト</b><span>queue_next.jsonの実測サイズ(1MB超→公開ゲート通過)</span></div>
+  <div class="num"><b>404→200</b><span>本番URLの実測HTTPコード</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>統合スクリプト(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/queue_compress_98407.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/queue_compress_98407.py</a></li>
-  <li><b>次に発車(再生成済み・公開JSON)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/queue_next.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/queue_next.json</a></li>
+  <li><b>本番・進捗表トップ(totalWaiting反映済み)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>本番・queue_next.json(123,573バイト・200)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/queue_next.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/queue_next.json</a></li>
+  <li><b>GitHub・圧縮スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/queue_compress_98407.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/queue_compress_98407.py</a></li>
+  <li><b>GitHub・軽量化の修正</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/build_queue_light.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/build_queue_light.py</a></li>
+  <li><b>GitHub・配信詰まりの解除</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/.github/workflows/pages.yml" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/.github/workflows/pages.yml</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>自己テスト(origin=user全件現存)</td><td class="yes">PASS</td></tr>
+<tr><td>自己テスト(統合票がhold+mergedIntoに変化)</td><td class="yes">PASS</td></tr>
+<tr><td>本番queue_next.jsonのHTTP実測</td><td class="yes">200</td></tr>
+<tr><td>本番queue_next.jsonのtotalWaitingフィールド実測</td><td class="yes">4931件</td></tr>
+<tr><td>本番index.htmlのtotalWaiting反映実測</td><td class="yes">反映済み</td></tr>
+</table>
 
 <footer>
 このページは #98407 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
