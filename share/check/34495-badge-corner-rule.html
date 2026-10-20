@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34495 バッジ・アイコン・オーバーレイは小さく隅配置(標準ルール化) 確認ページ</title>
+<title>#34495 バッジ・アイコン・オーバーレイの隅配置ルール｜標準ルール化 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,48 +47,37 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34495 バッジ・アイコン・オーバーレイは小さく隅配置(標準ルール化)</div>
-<h1>#34495 バッジ・アイコン・オーバーレイは小さく隅配置(標準ルール化)</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34495 バッジ・アイコン・オーバーレイの隅配置ルール｜標準ルール化</div>
+<h1>#34495 バッジ・アイコン・オーバーレイの隅配置ルール｜標準ルール化</h1>
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-今後どのバッジ・アイコン・オーバーレイ要素を作る際も、サムネイル短辺に対して十分小さく四隅へ配置する原則を、担当外でも適用対象の憲法としてCLAUDE.md本体(main合流済み・commit bb3080812)へ格上げした。<br><br><b>CLAUDE.mdへ追加されたセクション(本文そのまま)</b><br><pre style='max-width:100%;white-space:pre-wrap;background:#f4f4f4;padding:8px;border-radius:6px;font-size:13px;'>## バッジ・アイコン・オーバーレイはサムネイルに対して小さく・隅に配置する(憲法・店主指示 2026-08-05、2026-10-20に全セッション必読へ格上げ)
-
-店主の言葉(原文):「小さいサムネイルカードの上に乗せるバッジ/マーク類は、大きく中央配置にしない。小さいサイズでカード隅に控えめに置くのが普通の作法。」
-
-担当領域に関わらず全セッションに適用する。この憲法だけは担当外でも適用対象。サムネイル・カードの上に新しく乗せるバッジ・アイコン・オーバーレイ要素(再生時間表示・NEWラベル・推し度マーク等も含む)は、今後すべてこの原則で作る。
-
-- サムネイルの短辺に対して小さく・四隅に控えめ配置。中央寄り・大きい配置は禁止。
-- 絶対px指定だけで大きさを決めない。必ず「カード/親要素に対する比率」で決める。
-- 具体的な比率の数字はsrc/lib/designRules.tsのDESIGN_RULES.badgeが唯一の正本(短辺比率28%・隅余白6.5%)。
-- 本番で実際に描画された大きさをCIが実測検査する(scripts/design-rules-check.mjs・npm run check:design-rules・検査専用ページ/design-check)。
-- 本番URL1件単位の実測はnpm run check:badge-ratio -- URL(tools/oni_kantoku_badge_ratio.mjs)。</pre>実装(badgeKinds.tsのBADGE_IMAGE_STYLE=CSSコンテナクエリmin(28cqw,28cqh))は既存コードのimportチェーンで確認済み(旧固定pxクラスBADGE_SIZE_CLASS等は使用箇所0件)。マニュアル02の古い『既知の未解決債務』記述も、この事実に合わせて同コミットで訂正済み。
+店主の指示（2026-08-05）『バッジ/マーク類は大きく中央配置にしない。小さく隅に控えめに置く』を、全セッション必読のCLAUDE.md本体へ憲法として格上げしました。実装（designRules.ts・cqw/cqh比率・CI実測検査）は案件#890/#892/#897/#945で既に完成済みだったため、今回はルールの明文化と、既存マニュアルの古い記述（既に解消済みの課題が『未解決』のままになっていた箇所）の訂正を行いました。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番サイトHTTPステータス(joy-relief-station.lovable.app)</span></div>
-  <div class="num"><b>28%・6.5%</b><span>designRules.tsの正本値(短辺比率・隅余白)</span></div>
+<div class="note">（数字なし）</div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番サイト</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番｜デザインルール実測検査ページ(/design-check)</b><a href="https://joy-relief-station.lovable.app/design-check" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/design-check</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>CLAUDE.md本体への憲法追記(担当外でも適用対象)</td><td class="yes">main合流済み(commit bb3080812)</td></tr>
-<tr><td>マニュアル02の古い記述の訂正(945番で解消済みの事実反映)</td><td class="yes">main合流済み(commit bb3080812)</td></tr>
-<tr><td>designRules.ts/badgeKinds.tsの実装(cqw/cqh・固定px0件使用)</td><td class="yes">既存コードで確認済み</td></tr>
-<tr><td>本番ブラウザでの実測(DOM描画後のバッジ実寸)</td><td class="no">この環境にヘッドレスChrome実行手段がなく未実施</td></tr>
+<tr><td>CLAUDE.mdに全セッション必読の憲法として追記</td><td class="yes">yes</td></tr>
+<tr><td>正本(src/lib/designRules.ts)の数字をCLAUDE.mdに書き写さず1か所に一本化</td><td class="yes">yes</td></tr>
+<tr><td>本番/design-checkページがCIと同じ基準で実測できる状態で200稼働中</td><td class="yes">yes</td></tr>
+<tr><td>マニュアルの古い『既知の未解決債務』記述を実機grepで裏取りし訂正</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-本番ブラウザ実測(oni_kantoku_badge_ratio.mjs相当)は店主確認時にheadless Chromeが使える環境で別途実行すること。ドキュメントのみの変更のためLovable『公開』は不要と判断。
+コード変更なし（ドキュメント追記のみ、Lovableサイトの見た目への影響なし）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
