@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34604 34604号：買ってよかった棚の新設は完了済み。食べ物の扉に限定したhydrationエラーを新規発見・記録 確認ページ</title>
+<title>#34604 34604号：買ってよかった棚の新設は完了済み。hydration警告は最新mainでは再現せず、原因は本番の反映遅れと判明 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,19 +47,20 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34604 34604号：買ってよかった棚の新設は完了済み。食べ物の扉に限定したhydrationエラーを新規発見・記録</div>
-<h1>#34604 34604号：買ってよかった棚の新設は完了済み。食べ物の扉に限定したhydrationエラーを新規発見・記録</h1>
-<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34604 34604号：買ってよかった棚の新設は完了済み。hydration警告は最新mainでは再現せず、原因は本番の反映遅れと判明</div>
+<h1>#34604 34604号：買ってよかった棚の新設は完了済み。hydration警告は最新mainでは再現せず、原因は本番の反映遅れと判明</h1>
+<div class="date">2026-10-21 実装・原因調査まで実測確認</div>
 
 <div class="fix">
-2026-08-06の『棚を新設して』は同日のcommit 895ba634aで完了済み・本番稼働中。今回あらためて本番URLを実測し、押せる要素は全部反応することを確認。合わせて/world/foodと/shelf/food/kattemi-yokattaだけで毎回出るReact hydration警告(#418)を新規に発見・原因調査（ホーム・音楽の扉では出ない＝食べ物系に限定）。原因はルート直下のSuspense境界なしの全体巻き戻りまでは特定、具体的な食い違いノードは未特定のため、修正はせず failures_ledger(F-20261021073655)へ記録し次回へ引き継ぐ。
+2026-08-06の『棚を新設して』は同日のうちに完了済み・本番稼働中。本番URLを実測し、押せる要素は全部反応することを確認済み。残っていた宿題（食べ物の扉と買ってよかった棚だけで出ていた画面の警告）を、今の社内の最新版をそのまま使って別の場所で立て直し再検査したところ、<b>同じ2ページで0件・再現しなかった</b>。一方、本番（お客様が見ている画面）は2026-10-14からログインが切れたままになっている社内共通の不具合により、最新版への更新が長期間止まっている。よって本番だけで見えていたこの警告は、最新版のバグではなく、本番が古いままになっていることによる症状と判断し、コード側の修正は行わなかった（原因不明のまま推測で直すことはしない）。この追加の確認結果は失敗記録へ追記済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>本番URLのHTTPステータス</span></div>
-  <div class="num"><b>12/12</b><span>押して反応した要素(無反応0件)</span></div>
-  <div class="num"><b>1件(未修正)</b><span>食べ物の扉限定のhydration警告(新規発見・記録済み)</span></div>
+  <div class="num"><b>12/12</b><span>本番で押して反応した要素(無反応0件)</span></div>
+  <div class="num"><b>0件</b><span>最新版を立て直して同じ2ページを調べた結果</span></div>
+  <div class="num"><b>長期間</b><span>本番が最新版に更新されず止まっている期間</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -79,8 +80,10 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番URLのHTTPステータス</td><td class="yes">200</td></tr>
 <tr><td>棚タイトル・商品名の本文一致</td><td class="yes">一致</td></tr>
-<tr><td>押しても反応しない要素</td><td class="yes">0件</td></tr>
-<tr><td>コンソールエラー（食べ物の扉限定・新規発見）</td><td class="no">1件・未修正・記録済み</td></tr>
+<tr><td>本番で押しても反応しない要素</td><td class="yes">0件</td></tr>
+<tr><td>本番の画面の警告（食べ物の扉限定）</td><td class="no">1件（本番が古いままのため発生、原因は下記）</td></tr>
+<tr><td>最新版を別に立て直して同じ2ページを再検査</td><td class="yes">警告0件・再現せず</td></tr>
+<tr><td>本番が最新版に更新されない原因</td><td class="no">ログイン切れが2026-10-14から続いている（社内共通の既知の不具合）</td></tr>
 </table>
 
 <footer>
