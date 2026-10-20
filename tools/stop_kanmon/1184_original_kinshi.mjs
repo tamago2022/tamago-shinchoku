@@ -37,11 +37,16 @@
 //   設定で切ってある／記録が壊れている／形が違う → 黙って通す（exit 0）。
 //   ＝この関所が壊れても仕事は止まらない。
 //
+// ■ 票は使い切り型（2026-10-20・34383号で修正）
+//   票でpassしたら、その票ファイルはその場で消える。1枚で1回だけ。
+//   （旧実装は票とファイルパスを紐付けておらず、有効な票が1枚でも残っていると
+//    無関係な新規ファイルまで無制限に素通りしていた＝逆テストで実際に検出した事故）
+//
 // 票：status/original_kinshi/*.json ／ 台帳：status/1184_kanmon.jsonl
 // 設定：status/1184_kanmon.json（{"enabled":false} で切れる）
 // OSには触らない。AppleScript / osascript / System Events は1行も使わない。
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "node:fs";
 import path from "node:path";
 
 const REPO = path.resolve(new URL("../..", import.meta.url).pathname);
@@ -125,6 +130,11 @@ function findHyo() {
 const hyo = findHyo();
 if (hyo) {
   log({ ev: "pass", tool, sid, file: fp, hyo: hyo.name, ketsuron: hyo.ketsuron });
+  // 34383号／2026-10-20：票は使い切り型。1枚で1回だけ通す（無限に使い回されて
+  // 無関係な新規ファイルまで素通りする事故を防ぐ）。削除に失敗しても関所は人質にしない。
+  try {
+    unlinkSync(path.join(HYO_DIR, hyo.name));
+  } catch {}
   process.exit(0);
 }
 
