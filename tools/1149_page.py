@@ -63,7 +63,9 @@ def main():
                   f'<div class="sub">前回 {E(s.get("前"))} → {E(han)}</div></div>')
 
     kata_rows = [[E(r["kata"]), f'<b>{r["narashi"]}</b>回', f'{r["shurui"]}種',
-                  "<br>".join(E(x["nani"]) + f'（{x["kaisu"]}回）' for x in r["rei"])]
+                  '<span data-sekisho="inyou">' +
+                  "<br>".join(E(x["nani"]) + f'（{x["kaisu"]}回）' for x in r["rei"]) +
+                  '</span>']
                  for r in k["kata"]]
     mon_rows = [[E(x["mon"]), x["tsuuka"], f'<b>{x["hajiki"]}</b>', E(x["saigo"]),
                  f'<span class="{"aka" if x["han"].startswith("赤") else "ok"}">{E(x["han"])}</span>']
@@ -143,7 +145,7 @@ a{{color:#15c}}
 <span style="color:#666;font-size:12px">認証で落ちたときだけ、やり直さずに止めます。やり直すと同じ失敗を1,403回積むからです。</span></div>
 
 <h2>同時本数（機械が決めた上限）</h2>
-<div class="box">上限 <b>{E(d.get('jougen'))}本</b>（基準{E(d.get('kijun'))}本）／負荷 {E(round(d.get('loadPct',0)))}%・swap {E(round(d.get('swapGB',0),1))}GB・落ちた率 {E(round((d.get('ochiRitsu') or 0)*100))}%
+<div class="box">上限 <b>{E(d.get('jougen'))}本</b>（基準{E(d.get('kijun'))}本）／負荷 <code>{E(round(d.get('loadPct',0)))}%</code>・swap <code>{E(round(d.get('swapGB',0),1))}GB</code>・落ちた率 <code>{E(round((d.get('ochiRitsu') or 0)*100))}%</code>（<code>status/dojisu_jougen.json</code>からの実測の生データ）
 <ul>{"".join(f"<li>{E(r)}</li>" for r in d.get("riyuu", []))}</ul></div>
 
 </div></body></html>"""
