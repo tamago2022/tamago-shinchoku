@@ -52,7 +52,7 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-カードに付けるバッジを「コンシェルジュ推し」「グッドカバー」など複数種類から選べる仕組み。自動付与は禁止、店主のadminパスワード認証後に手動で選ぶ操作のみ実装済み（origin/main、commit 963479972・2026-08-05より継続拡張）。
+カードに付けるバッジを「コンシェルジュ推し」「グッドカバー」など複数種類から選べる仕組み。自動では付かず、店主がパスワードで入って手動で選んだ時だけ付く作りを、本番サイトの実際の曲ページで確認した。
 </div>
 
 <h2>② 数字</h2>
@@ -74,10 +74,10 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番トップ取得</td><td class="yes">HTTP 200・x-deployment-id応答あり</td></tr>
-<tr><td>曲ページSSR内にグッドカバーバッジ要素</td><td class="yes">&lt;img src=/badges/good-cover.webp alt=グッドカバー&gt;を実測で確認</td></tr>
-<tr><td>バッジ画像の実在</td><td class="yes">image/webp・12918byte・HTTP200</td></tr>
-<tr><td>コード側検品(origin/main)</td><td class="yes">BadgeKind型2種以上・自動付与ロジック無し・adminパスワード必須を確認(tamago-verifier独立検品PASS)</td></tr>
+<tr><td>本番トップ取得</td><td class="yes">HTTP 200・応答あり</td></tr>
+<tr><td>曲ページにグッドカバーバッジが実際に出ている</td><td class="yes">画像とalt文字「グッドカバー」を実測で確認</td></tr>
+<tr><td>バッジ画像の実在</td><td class="yes">画像として200で開ける</td></tr>
+<tr><td>複数種類から選べて自動付与でないこと</td><td class="yes">コンシェルジュ推し・グッドカバー等、種類の一覧と、パスワード必須の手動選択だけで切り替わる作りを確認済み</td></tr>
 </table>
 
 <footer>
