@@ -83,6 +83,12 @@ PENDING_DIR = os.path.join(KENPIN_DIR, "pending")
 OPS_DIR = os.path.join(KENPIN_DIR, "ops")
 OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
 FAILURES_MD = os.path.join(REPO, "status", "failures.md")
+# ★1769号（2026-10-20）：「3回続けて堂々巡りならたまごさんに1点だけ聞く」はずが、
+#   実測（1622号・1623号）で4回目・5回目・6回目・7回目…とストリークが伸びるたびに
+#   同じ内容の通知を dispatch_outbox.jsonl へ積み続けていた（1622号だけで同日5回重複）。
+#   「何度も言わせない」の対になる「何度も通知し続けて埋もれさせる」も同じ失敗なので、
+#   号番号ごとに「最後に通知したストリーク値」を覚えておき、同じ値のままなら再通知しない。
+STUCK_NOTIFIED_PATH = os.path.join(REPO, "status", "kenpin_stuck_notified.json")
 
 STATES = ("draft", "submitted", "fix_required", "passed", "delivered")
 
@@ -216,6 +222,59 @@ def _outbox(row):
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     except Exception:
         pass
+
+
+def _load_stuck_notified():
+    if not os.path.exists(STUCK_NOTIFIED_PATH):
+        return {}
+    try:
+        with io.open(STUCK_NOTIFIED_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _save_stuck_notified(data):
+    """原子的書き込み（tmp→rename）。他プロセスとの競合で壊れないようにする。"""
+    try:
+        d = os.path.dirname(STUCK_NOTIFIED_PATH)
+        os.makedirs(d, exist_ok=True)
+        tmp = os.path.join(d, ".%s.tmp-%d" % (os.path.basename(STUCK_NOTIFIED_PATH), os.getpid()))
+        with io.open(tmp, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, STUCK_NOTIFIED_PATH)
+    except Exception:
+        pass
+
+
+def _should_notify_stuck(n, streak):
+    """その号を一度でも通知済みなら False（1769号：何度も言わせない仕組みの修正）。
+
+    旧実装は「ストリークが伸びるたびに再通知」だったため、1622号・1623号で実測した
+    とおり 3→4→5→6→7回目と毎回同じ内容の通知を dispatch_outbox.jsonl へ積み続け、
+    結果として『判断1点だけ』が大量の重複に埋もれてたまごさんに気づかれない状態に
+    なっていた（status/failures.md の同日ログで実証済み）。
+    一度通知したら、たまごさんが答える／直るまで二度と自動では積まない
+    （clear_stuck_notified() で手動リセットすれば再通知可能）。"""
+    notified = _load_stuck_notified()
+    return str(n) not in notified
+
+
+def _mark_stuck_notified(n, streak):
+    notified = _load_stuck_notified()
+    notified[str(n)] = {"streak": streak, "ts": _now()}
+    _save_stuck_notified(notified)
+
+
+def clear_stuck_notified(n):
+    """たまごさんが答えた・直った後、同じ号を再び0件から数え直したい時に使う掃除口。"""
+    notified = _load_stuck_notified()
+    if str(n) in notified:
+        del notified[str(n)]
+        _save_stuck_notified(notified)
+        return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -830,21 +889,24 @@ def _apply_result(ticket, verdict, gaps, blindspot, one_line, provider, model, c
             "oniLine": oni_line,
         })
     elif fix_streak[0] >= FIX_STREAK_ESCALATE:
-        _outbox({
-            "ts": result["ts"], "n": "%s-kenpin-stuck" % n, "type": "kenpin_stuck",
-            "title": ticket.get("title") or "",
-            "message": ("【%s号・判断1点だけ】外部検品が%d回続けて差し戻しています。\n"
-                        "いちばん割れている点：%s\n"
-                        "A：指摘どおり直す ／ B：いまの実装のまま通す　どちら？"
-                        % (n, fix_streak[0], (gaps[0] if gaps else one_line))),
-        })
-        try:
-            with io.open(FAILURES_MD, "a", encoding="utf-8") as f:
-                f.write("\n- %s 【%s号】外部検品(%s)が%d回連続FIX。直し方を変える必要あり：%s\n"
-                        % (time.strftime("%Y-%m-%d %H:%M"), n, provider, fix_streak[0],
-                           " ／ ".join(gaps) or one_line))
-        except Exception:
-            pass
+        # ★1769号：同じ号・同じストリーク値での再通知はしない（重複で埋もれるのを防ぐ）。
+        if _should_notify_stuck(n, fix_streak[0]):
+            _outbox({
+                "ts": result["ts"], "n": "%s-kenpin-stuck" % n, "type": "kenpin_stuck",
+                "title": ticket.get("title") or "",
+                "message": ("【%s号・判断1点だけ】外部検品が%d回続けて差し戻しています。\n"
+                            "いちばん割れている点：%s\n"
+                            "A：指摘どおり直す ／ B：いまの実装のまま通す　どちら？"
+                            % (n, fix_streak[0], (gaps[0] if gaps else one_line))),
+            })
+            try:
+                with io.open(FAILURES_MD, "a", encoding="utf-8") as f:
+                    f.write("\n- %s 【%s号】外部検品(%s)が%d回連続FIX。直し方を変える必要あり：%s\n"
+                            % (time.strftime("%Y-%m-%d %H:%M"), n, provider, fix_streak[0],
+                               " ／ ".join(gaps) or one_line))
+            except Exception:
+                pass
+            _mark_stuck_notified(n, fix_streak[0])
     return True, ""
 
 
