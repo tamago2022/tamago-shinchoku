@@ -382,11 +382,22 @@ _NOT_TASK = re.compile(
 # 2026-08-10時点で既に取り込まれてしまった既存行はそれだけでは救済されない。
 # イケハヤ記事と同じ「引用元ファイルの本文に一字一句含まれる行は非タスク」方式で、
 # 既存の兄弟断片もsync()の再評価時に自動でactionable=Falseへ落ちるようにする。
+#
+# 1769番実例（2026-09-28作成・2026-10-20特定）：全子セッションの先頭に自動で貼られる
+# tools/session_preamble.md（枷の一覧）の一節「それが「何回も言わせない」の実体。」
+# （枷15「失敗は1行で残す」の説明文の断片）が、スマホからの操作で丸ごとqueue項目の
+# titleとして取り込まれ、実装対象が最初から存在しないまま3週間以上
+# running→URL無し→やり直し→stuck→復旧で順番待ちへ戻す、を繰り返した
+# （redoCount=3、stuckRedoTotal=2、鬼監督98406番でも「URL無し・証拠なし」で差し戻し）。
+# session_preamble.mdは巨大な文章が毎回全セッションへ配られる構造上、イケハヤ記事と
+# 同じ事故（本文の断片がそのままタスク化される）が今後も形を変えて起きうるため、
+# 参照ファイルとしてここに加え、本文に一字一句一致する断片を型で弾く。
 _QUOTED_REFERENCE_FILES = (
     "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/"
     "tamago_brain/00 inbox/イケハヤ　claude codeの教科書　キティちゃん　秘書.md",
     "/Users/mac/.claude/projects/-Users-mac-Library-Application-Support-GOOD-VIBES-Roundtable-current/"
     "a3b71887-d69f-4595-a7e4-ab0c20b7ad27.jsonl",
+    os.path.join(HERE, "session_preamble.md"),
 )
 _QUOTED_REFERENCE_MIN_LEN = 8
 _quoted_reference_cache = {}
