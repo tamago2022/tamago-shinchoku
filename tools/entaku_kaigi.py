@@ -21,6 +21,22 @@
      Vaultの読み取りは既存の tools/vault_yomu.py（読むだけ・安全境界あり）をそのまま
      import して使う（★オリジナル禁止：読み取りの安全チェックを再発明しない）。
 
+34576号【判定日赤】2026-08-05の店主の軌道修正メッセージそのもの：
+  「『24時間以内の次の一手』の項目は不要、削除してください。代わりに、反対意見・
+   対立する視点を経て『アウフヘーベン(対立する意見を統合したより高い次元の結論)』
+   を導き出す項目を入れてください。タイトル候補、出典URL/動画タイトル、要点、
+   反対意見、アウフヘーベン(統合結論)、関連する既存Obsidianノート、は残す」
+  への対応で、34588で先に作った出力フォーマットを店主の指定どおりへ揃え直した：
+  C) 「## 次の一手」を削除し、代わりに「## 反対意見の核心」→
+     「## アウフヘーベン（反対意見を統合した、より高い次元の結論）」の2段へ変更。
+     楽観派/懐疑派/現場目線の対立する発言を経て、片方を切り捨てずに1つ上の視点から
+     結論を出す、という店主の要求どおりの思考順序をプロンプトへそのまま明文化した。
+  D) 「## タイトル候補（5個）」を先頭に追加。
+  E) 「関連する既存Obsidianノート」は外部AIに作文させず（存在しないパスを
+     幻覚で書く事故を避けるため）、Python側で tools/vault_yomu.py の_find()
+     （ファイル名の部分一致検索・読むだけ・課金0）をそのまま流用して実際に
+     存在するファイルだけを載せる（★オリジナル禁止：新しい検索を書かない）。
+
 やること（この1本で完結）：
   1. 渡されたURL／Obsidianノートの本文を取得する。
      - 通常のWebページ：HTMLタグを除いた地の文・タイトル
@@ -124,13 +140,17 @@ def _build_prompt(source_lines, title, body, theme):
     return (
         "【出典】\n%s\n【タイトル】%s\n【本文抜粋】\n%s\n\n"
         "【円卓にかける問い】%s\n\n"
-        "この形式のMarkdownで出力してください：\n"
+        "この形式のMarkdownで出力してください（34576号：店主の指定どおりの項目構成。"
+        "『次の一手』は作らない）：\n"
         "# 円卓会議議事録\n\n"
+        "## タイトル候補（5個）\n- ...\n\n"
         "## 出典\n%s\n- 取得日時: %s\n\n"
-        "## 論点（3〜5点）\n- ...\n\n"
-        "## 各立場の発言\n### 楽観派\n...\n### 懐疑派\n...\n### 現場目線\n...\n\n"
-        "## まとめ役（鬼監督）の結論\n（対立する意見を踏まえた1つの決定。弱点も明記する）\n\n"
-        "## 次の一手\n（具体的に1つだけ）\n"
+        "## 要点（3〜5点）\n- ...\n\n"
+        "## 各立場の発言\n### 楽観派\n...\n### 懐疑派（反対意見）\n...\n### 現場目線\n...\n\n"
+        "## 反対意見の核心\n（懐疑派が指摘した、最も強い対立点を1〜3行で。弱めずそのまま書く）\n\n"
+        "## アウフヘーベン（反対意見を統合した、より高い次元の結論）\n"
+        "（楽観派・懐疑派のどちらか片方を切り捨てるのではなく、両方の正しさを飲み込んで"
+        "1つ上の視点から出す結論。残る弱点・リスクも明記する。ここで『次の一手』の代わりとする）\n"
     ) % (src_block, title, body, q, src_block, now().strftime("%Y-%m-%d %H:%M JST"))
 
 
@@ -318,6 +338,53 @@ def save(markdown_text, title, slug, source_lines):
 
 # ───────────────────────────────────────── ④ Obsidian Vaultとのやり取り（34813号）
 
+_WORD_RE = re.compile(r"[0-9A-Za-z]{3,}|[぀-ヿ一-鿿]{2,}")
+_STOPWORDS = {"entaku", "円卓会議", "theme", "none"}
+
+
+def related_vault_notes(theme, title, max_hits=5):
+    """34576号：『関連する既存Obsidianノート』項目。
+    外部AIに作文させると存在しないパスを幻覚で書く事故が起きるため、
+    タイトル／テーマから語を抜いて tools/vault_yomu.py の _find()（ファイル名の
+    部分一致検索・読むだけ・課金0）へそのまま渡す（★オリジナル禁止：新しい検索を
+    書かない・既存の安全な読み口をそのまま使う）。
+    戻り値: [(path, matched_keyword), ...]（見つかった順、最大max_hits件、重複パス無し）"""
+    text = "%s %s" % (theme or "", title or "")
+    words = []
+    for w in _WORD_RE.findall(text):
+        lw = w.lower()
+        if lw in _STOPWORDS or w in words:
+            continue
+        words.append(w)
+    seen = {}
+    for w in words:
+        if len(seen) >= max_hits:
+            break
+        try:
+            res = vy._find(w)
+        except Exception:
+            continue
+        if not res.get("ok"):
+            continue
+        for h in res.get("hits", []):
+            p = h.get("path")
+            if p and p not in seen:
+                seen[p] = w
+            if len(seen) >= max_hits:
+                break
+    return list(seen.items())
+
+
+def render_related_notes_section(hits):
+    lines = ["## 関連する既存Obsidianノート\n"]
+    if not hits:
+        lines.append("- 見つかりませんでした（ファイル名一致検索。本文の内容一致までは見ていません）\n")
+    else:
+        for path, kw in hits:
+            lines.append("- %s（キーワード一致: %s）\n" % (path, kw))
+    return "".join(lines)
+
+
 def read_vault_note(rel_path):
     """既存の vault_yomu.py（読むだけ・安全境界あり）を流用して読む。
     戻り値: (title, body, err)"""
@@ -455,6 +522,11 @@ def main():
         if not markdown_text:
             print("ENTAKU_ERROR: 円卓会議の生成に失敗：%s" % err)
             return 1
+
+    # 34576号：「関連する既存Obsidianノート」は外部AIに作文させず、ここでPython側が
+    # 実在するファイルだけを検索して追記する（幻覚パスを防ぐ）。
+    related_hits = related_vault_notes(args.theme, title)
+    markdown_text = markdown_text.rstrip("\n") + "\n\n" + render_related_notes_section(related_hits)
 
     slug = args.slug or _slug_from(args.theme, args.vault_note or args.url)
     md_path, html_path = save(markdown_text, title, slug, source_lines)
