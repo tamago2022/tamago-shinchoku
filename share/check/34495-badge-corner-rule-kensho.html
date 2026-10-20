@@ -52,7 +52,7 @@
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-判定日赤だった原因（実装済みのバッジ隅配置ルールがCLAUDE.md本体の全セッション必読憲法に格上げされていなかった）を解消。並行して走っていた自動巡回(tamago-patrol-local)がcommit ed407516d→bb3080812の2段でmainへ直接push済み。本セッションのブランチ(claude/q34495-badge-corner-rule)は内容が完全一致(diff ゼロ)のため追加のPRは不要と判断。ドキュメントのみの変更でsrc配下のUIコードは変更していない。
+判定日赤だった原因（実装済みのバッジ隅配置ルールがCLAUDE.md本体の全セッション必読憲法に格上げされていなかった）を解消。並行して走っていた自動巡回がmainへ直接反映済み。ドキュメントのみの変更でサイトの見た目・コードは変更していない。
 </div>
 
 <h2>② 数字</h2>
@@ -65,18 +65,16 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainの最新コミット bb3080812</b><a href="https://github.com/tamago2022/joy-relief-station/commit/bb3080812306b2211d0296a748e77ea57becd791" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/bb3080812306b2211d0296a748e77ea57becd791</a></li>
-  <li><b>CLAUDE.md(該当セクション)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/CLAUDE.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/CLAUDE.md</a></li>
-  <li><b>designRules.ts(DESIGN_RULES.badge)</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/src/lib/designRules.ts" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/src/lib/designRules.ts</a></li>
+  <li><b>デザインルール実測検査ページ(本番)</b><a href="https://joy-relief-station.lovable.app/design-check" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/design-check</a></li>
   <li><b>本番サイト</b><a href="https://joy-relief-station.lovable.app" target="_blank" rel="noopener">https://joy-relief-station.lovable.app</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへ反映(bb3080812、git log/git show実測)</td><td class="yes">済み</td></tr>
-<tr><td>CLAUDE.md憲法セクション追加(git showで本文確認)</td><td class="yes">確認済み</td></tr>
-<tr><td>designRules.ts数値 28/6.5(git showで本文確認)</td><td class="yes">確認済み</td></tr>
+<tr><td>mainへ反映</td><td class="yes">済み</td></tr>
+<tr><td>CLAUDE.md憲法セクション追加</td><td class="yes">確認済み</td></tr>
+<tr><td>designRules.ts数値 28/6.5</td><td class="yes">確認済み</td></tr>
 <tr><td>本番HTMLにバッジのcqw/cqh style属性(WebFetch静的HTML)</td><td class="no">確認できず(JS実行後DOMのため)</td></tr>
 <tr><td>Lovable本番応答(HTTP 200、x-deployment-id取得)</td><td class="yes">確認済み(psr2.*形式)</td></tr>
 <tr><td>PR作成</td><td class="no">今回未作成(直接push済みのため不要と判断)</td></tr>
