@@ -49,18 +49,18 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34604 34604号：買ってよかった棚の新設は完了済み。hydration警告は最新mainでは再現せず、原因は本番の反映遅れと判明</div>
 <h1>#34604 34604号：買ってよかった棚の新設は完了済み。hydration警告は最新mainでは再現せず、原因は本番の反映遅れと判明</h1>
-<div class="date">2026-10-21 実装・main合流・原因調査まで実測確認</div>
+<div class="date">2026-10-21 実装・原因調査まで実測確認</div>
 
 <div class="fix">
-2026-08-06の『棚を新設して』は同日のcommit 895ba634aで完了済み・本番稼働中。本番URLを実測し、押せる要素は全部反応することを確認済み。残っていた宿題（/world/foodと/shelf/food/kattemi-yokattaだけで出るReact hydration警告#418）を、origin/main起点の独立worktreeで現在のmainのコードをローカルdevサーバーに立てて再検査したところ、<b>同じ2ページで0件・再現しなかった</b>（/world/food: 156要素中テスト7件・consoleErrorCount 0／/shelf/food/kattemi-yokatta: 21要素中テスト11件・consoleErrorCount 0）。一方、本番(joy-relief-station.lovable.app)は2026-10-14から続くLovable OAuth認証切れ（既知の工場全体の障害・担当外で解決済み多数）により、origin/mainから<b>1,015コミット分</b>反映が止まっている。よって本番だけで見えていたこのhydration警告は、最新コードのバグではなく、本番が古いビルドのまま止まっていることによる症状と判断し、コード側の修正は行わなかった（原因不明のまま推測で直すことはしない）。failures_ledger(F-20261021073655)にこの追加実測を追記済み。
+2026-08-06の『棚を新設して』は同日のうちに完了済み・本番稼働中。本番URLを実測し、押せる要素は全部反応することを確認済み。残っていた宿題（食べ物の扉と買ってよかった棚だけで出ていた画面の警告）を、今の社内の最新版をそのまま使って別の場所で立て直し再検査したところ、<b>同じ2ページで0件・再現しなかった</b>。一方、本番（お客様が見ている画面）は2026-10-14からログインが切れたままになっている社内共通の不具合により、最新版への更新が長期間止まっている。よって本番だけで見えていたこの警告は、最新版のバグではなく、本番が古いままになっていることによる症状と判断し、コード側の修正は行わなかった（原因不明のまま推測で直すことはしない）。この追加の確認結果は失敗記録へ追記済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>本番URLのHTTPステータス</span></div>
   <div class="num"><b>12/12</b><span>本番で押して反応した要素(無反応0件)</span></div>
-  <div class="num"><b>0件</b><span>最新main(ローカルdev)でのhydration警告再現テスト結果</span></div>
-  <div class="num"><b>1,015</b><span>本番が未反映のまま止まっているコミット数</span></div>
+  <div class="num"><b>0件</b><span>最新版を立て直して同じ2ページを調べた結果</span></div>
+  <div class="num"><b>長期間</b><span>本番が最新版に更新されず止まっている期間</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -81,9 +81,9 @@
 <tr><td>本番URLのHTTPステータス</td><td class="yes">200</td></tr>
 <tr><td>棚タイトル・商品名の本文一致</td><td class="yes">一致</td></tr>
 <tr><td>本番で押しても反応しない要素</td><td class="yes">0件</td></tr>
-<tr><td>本番のコンソールエラー（食べ物の扉限定）</td><td class="no">1件（本番の古いビルドで発生、原因は下記）</td></tr>
-<tr><td>最新main(独立worktree+ローカルdev)で同じ2ページを再検査</td><td class="yes">コンソールエラー0件・再現せず</td></tr>
-<tr><td>本番とoriginmainの差（git merge-base基準）</td><td class="no">1,015コミット未反映（原因：Lovable OAuth認証切れ・2026-10-14〜・工場共通の既知障害）</td></tr>
+<tr><td>本番の画面の警告（食べ物の扉限定）</td><td class="no">1件（本番が古いままのため発生、原因は下記）</td></tr>
+<tr><td>最新版を別に立て直して同じ2ページを再検査</td><td class="yes">警告0件・再現せず</td></tr>
+<tr><td>本番が最新版に更新されない原因</td><td class="no">ログイン切れが2026-10-14から続いている（社内共通の既知の不具合）</td></tr>
 </table>
 
 <footer>
