@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#2122 Live2Dが動くことを実測で確認（2122号） 確認ページ</title>
+<title>#2138 検索が句読点なしでもヒットするようになりました（やりっぱなし#18） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,41 +47,35 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #2122 Live2Dが動くことを実測で確認（2122号）</div>
-<h1>#2122 Live2Dが動くことを実測で確認（2122号）</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #2138 検索が句読点なしでもヒットするようになりました（やりっぱなし#18）</div>
+<h1>#2138 検索が句読点なしでもヒットするようになりました（やりっぱなし#18）</h1>
 <div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-share/ohon/1046-live2d.html を実際にヘッドレスChromeで開き「読み込んで動かす」を押して実測した。WebGL2・Live2D Cubism Core 5.1.0が初期化され、canvasにキャラクターが描画された。1.5秒あけて撮った2枚のスクリーンショットで画素が16.0%変化しており（まばたき・呼吸・髪の揺れの自動アニメーションが実際に動いている証拠）、静止画ではないことを確認した。<pre>実測: canvasのwidthは398px、heightは531px（page.evaluateで取得）
-実測: Pillowで2枚のPNG(420x740)を画素比較 → 差分ピクセル数49715枚・割合は16.0%
-実測: コンソールログ CSM[I] Live2D Cubism Core version: 05.01.0000 / CubismFramework.initialize() is complete.
-実測: PixiJS 6.5.10 WebGL 2 初期化ログ出力あり
-実測: node fetchで本番URL2本とも200</pre>
+「ウイスキーがお好きでしょ」と句読点なしで検索しても、在庫の「ウイスキーが、お好きでしょ」が見つかります。2026-08-12に店主が報告してから50日以上本番に出ないまま止まっていた修正（2026-08-13に一度マージ済みだったがmainへのpushが抜けていた）を、本日ごきげん補給所の本番サイトへ反映し、本番URLで実際に検索して確認しました。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>398px / 531px</b><span>canvasの描画サイズ（実測）</span></div>
-  <div class="num"><b>16.0%</b><span>1.5秒後に変化した画素の割合（実測）</span></div>
-  <div class="num"><b>200</b><span>本番ページのHTTPステータス（実測）</span></div>
+  <div class="num"><b>37件</b><span>句読点なし検索でヒットした件数</span></div>
+  <div class="num"><b>1位</b><span>「ウイスキーが、お好きでしょ」が検索結果の先頭に表示</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
-  <div class="shot before"><b>1枚目（読み込んで動かすを押して18秒後）</b><img src="img/2122-before.png" alt="前"></div>
-  <div class="shot after"><b>2枚目（1.5秒後・画素が変化＝動いている）</b><img src="img/2122-after.png" alt="後"></div>
+  <div class="shot plain"><b>本番の検索結果（句読点なしクエリ・ヘッドレスChromeで実測）</b><img src="img/2138-kensaku-after.png" alt="本番の検索結果（句読点なしクエリ・ヘッドレスChromeで実測）"></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番ページ（share/ohon）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/ohon/1046-live2d.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/ohon/1046-live2d.html</a></li>
-  <li><b>もとの確認ページ（share/check・1046号時点）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1046-live2d.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1046-live2d.html</a></li>
+  <li><b>本番で実際に検索してみる</b><a href="https://joy-relief-station.lovable.app/search?q=%E3%82%A6%E3%82%A4%E3%82%B9%E3%82%AD%E3%83%BC%E3%81%8C%E3%81%8A%E5%A5%BD%E3%81%8D%E3%81%A7%E3%81%97%E3%82%87" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search?q=%E3%82%A6%E3%82%A4%E3%82%B9%E3%82%AD%E3%83%BC%E3%81%8C%E3%81%8A%E5%A5%BD%E3%81%8D%E3%81%A7%E3%81%97%E3%82%87</a></li>
+  <li><b>もとの曲ページ（サントリーウイスキーの部屋）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=suntory-whisky&amp;song=gospellers-whisky-ga-osuki-desho" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=suntory-whisky&amp;song=gospellers-whisky-ga-osuki-desho</a></li>
 </ul>
 
 
 
 <footer>
-このページは #2122 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+実測：node tools/verify_click.mjs で本番URLへ実際にアクセスし、検索ボックスの文字と検索結果の本文(innerText)をそのまま取得。37件中・先頭2件が「ウイスキーが、お好きでしょ」でヒットしていることを確認済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
