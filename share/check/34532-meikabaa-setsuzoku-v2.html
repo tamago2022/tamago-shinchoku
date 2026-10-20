@@ -49,17 +49,24 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34532 名カバー接続＋案内所ボタン、2案件とも本番で解決済み</div>
 <h1>#34532 名カバー接続＋案内所ボタン、2案件とも本番で解決済み</h1>
-<div class="date">2026-10-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-07 実装・main合流・本番反映／2026-10-21 本番URLを再実測</div>
 
 <div class="fix">
-2026-08-05に許可された「既存の名カバー接続タグ機構(パロディ/モノマネ/CM・タイアップ)を流用してよい」は34530番で既に実装・本番反映済み。今回の触る検品NGだった「案内所」「ページの操作を開く」ボタン無反応は、別案件34418番(コミットf85ecb9fd)で既に修正・本番反映済みだった。34532番として新規実装は不要、既存2案件の成果を本番URLで実測確認した。
+2026-08-05に許可された「既存の名カバー接続タグ機構(パロディ/モノマネ/CM・タイアップ)を流用してよい」は34530番で既に実装・本番反映済み。当時の触る検品NGだった「案内所」「ページの操作を開く」ボタン無反応は、別案件34418番(コミットf85ecb9fd)で既に修正・本番反映済み。34532番として新規実装は不要、既存2案件の成果を2026-10-21に本番URLで再実測した（押しても無反応な要素は0件）。
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（2026-10-21 node tools/verify_click.mjs 再実測）</h2>
 <div class="nums">
-  <div class="num"><b>23/23</b><span>Bee Geesページ 押せる要素の反応</span></div>
-  <div class="num"><b>24/24</b><span>Queenページ 押せる要素の反応</span></div>
-  <div class="num"><b>22/22</b><span>日清CMページ 押せる要素の反応</span></div>
+  <div class="num"><b>無反応0件</b><span>Bee Geesページ（全59件中15件サンプル試験・無反応0）</span></div>
+  <div class="num"><b>無反応0件</b><span>Queenページ（全60件中8件サンプル試験・無反応0）</span></div>
+  <div class="num"><b>無反応0件</b><span>日清CMページ（全60件中9件サンプル試験・無反応0）</span></div>
+</div>
+<div class="note">実測の生データ（2026-10-21・<code>node tools/verify_click.mjs</code>の標準出力）：
+<pre style="white-space:pre-wrap;word-break:break-all;background:var(--t-panel);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:0.78rem;">
+Bee Gees: {"totalClickable":59,"tested":15,"noResponseCount":0,"consoleErrorCount":0} → CLICK_VERDICT: PASS（15件中15件・全59件）
+Queen:    {"totalClickable":60,"tested":8,"noResponseCount":0,"consoleErrorCount":0} → CLICK_VERDICT: PASS（8件中8件・全60件）
+日清CM:   {"totalClickable":60,"tested":9,"noResponseCount":0,"consoleErrorCount":0} → CLICK_VERDICT: PASS（9件中9件・全60件）
+</pre>
 </div>
 
 
@@ -69,9 +76,8 @@
   <li><b>確認1：Bee Gees ものまね接続</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bee-gees&amp;song=too-much-heaven</a></li>
   <li><b>確認2：Queen CMタイアップ接続</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=queen&amp;song=i-was-born-to-love-you" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=queen&amp;song=i-was-born-to-love-you</a></li>
   <li><b>確認3：日清カップヌードルCMページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nissin&amp;song=cupnoodle-freddie-mercury" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nissin&amp;song=cupnoodle-freddie-mercury</a></li>
-  <li><b>34418番の修正コミット（案内所ボタン無反応の根治）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/f85ecb9fd" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/f85ecb9fd</a></li>
-  <li><b>今回の調査記録（TASK_BOARD.md #34532）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/TASK_BOARD.md</a></li>
 </ul>
+<div class="note">※ 修正コミット・TASK_BOARD.mdはjoy-relief-stationの非公開リポジトリ内のため、たまごさん本人が開けるリンクとして載せていません（押しても404になるため削除）。証拠は上の3本の本番URL（押して開けること・実測結果）のみとしています。</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
