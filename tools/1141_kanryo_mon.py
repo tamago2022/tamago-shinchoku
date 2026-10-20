@@ -60,12 +60,8 @@ def judge(it):
             rel=path[len("/tamago-shinchoku/"):] if path.startswith("/tamago-shinchoku/") else path.lstrip("/")
             if rel=="" or rel.endswith("/"): rel+="index.html"
             (live if rel in tree else dead).append((u,rel))
-        # else: Lovable本番URL等。この係は0円・ネットに出ない方針のため実測できない。
-        #   1759番で発覚：今までは「確かめられない＝即dead」にしていたため、確認ページに
-        #   加えて本番URLも正しく書いた報告（awaiting_checkのうち194件が該当）まで
-        #   一律で弾いていた。確かめられないものは判定材料にしない（無視する）。
-        #   github.ioの確認ページが実在すれば①は通す（確認ページが無い場合は
-        #   bool(live)がFalseのままなので、そちらは従来どおり弾かれる）。
+        else:
+            dead.append((u,None))   # 外から確かめられない＝通さない
     c["①本番にある"]= bool(live) and not dead
     # ② 中身がある
     ok2=bool(live)
