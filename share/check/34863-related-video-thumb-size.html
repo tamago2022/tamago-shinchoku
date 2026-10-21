@@ -52,8 +52,8 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-「この動画が好きなら」(WatchLikeYouMight.tsx)と「この静けさの、となり」(DeepOceanFunnel.tsx)の小さい固定サムネイルを、カード幅いっぱいの<code>aspect-video</code>へ統一するコードは<strong>origin/mainへ合流済み</strong>（コミット597ab1a7e・74a60489e）。本番はLovableの自動公開便が2026-09-14から停止したままのため<strong>まだ反映されていません</strong>（34863号固有ではなく#34810/#34828と同一の構造的停止）。<br>実測（2026-10-21）：<pre>本番JS  : className:"w-28 aspect-video object-cover rounded-lg shrink-0"（固定幅のまま）
-main側  : className:"w-full aspect-video object-cover shrink-0"（カード幅いっぱい・74a60489e）</pre>
+「この動画が好きなら」と「この静けさの、となり」セクションの小さい固定サムネイルを、<strong>カード幅いっぱいの大きなサムネイル</strong>へ直す作業は、サイトの裏側では完了しています。ただ、<strong>画面にはまだ反映されていません</strong>（公開ボタンが押されていないため）。<br>実測（2026-10-21・本番ページの中身を直接確認）：<pre>今の画面のサムネイル幅: 112px固定（w-28）のまま
+直したあとの幅       : カードの横幅いっぱい（アスペクト比16:9）</pre>
 </div>
 
 <h2>② 数字</h2>
@@ -66,17 +66,15 @@ main側  : className:"w-full aspect-video object-cover shrink-0"（カード幅�
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>次の一手：Lovableで「公開」を押す</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
-  <li><b>本番の対象ページ（現在まだ旧サイズ）</b><a href="https://joy-relief-station.lovable.app/watch?v=Hcs3qJfiZw8&amp;artist=focus&amp;ref=healing-shelf" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=Hcs3qJfiZw8&amp;artist=focus&amp;ref=healing-shelf</a></li>
-  <li><b>mainの修正コミット WatchLikeYouMight</b><a href="https://github.com/tamago2022/joy-relief-station/commit/597ab1a7e" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/597ab1a7e</a></li>
-  <li><b>mainの修正コミット DeepOceanFunnel</b><a href="https://github.com/tamago2022/joy-relief-station/commit/74a60489e" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/74a60489e</a></li>
+  <li><b>本番の対象ページ（今はまだ直る前のサイズ）</b><a href="https://joy-relief-station.lovable.app/watch?v=Hcs3qJfiZw8&amp;artist=focus&amp;ref=healing-shelf" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=Hcs3qJfiZw8&amp;artist=focus&amp;ref=healing-shelf</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>WatchLikeYouMight.tsx（この動画が好きなら）</td><td class="yes">main合流済み・NextUpCardFace/aspect-video統一(597ab1a7e)</td></tr>
-<tr><td>DeepOceanFunnel.tsx（この静けさの、となり）</td><td class="yes">main合流済み・aspect-video統一(74a60489e)</td></tr>
-<tr><td>本番反映</td><td class="no">未反映（公開パイプライン停止中・店主操作待ち）</td></tr>
+<tr><td>「この動画が好きなら」のサムネイル直し</td><td class="yes">裏側で完了</td></tr>
+<tr><td>「この静けさの、となり」のサムネイル直し</td><td class="yes">裏側で完了</td></tr>
+<tr><td>画面への反映</td><td class="no">まだ反映されていません（公開ボタン待ち）</td></tr>
 </table>
 
 <footer>
