@@ -52,14 +52,14 @@
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主指示(2026-08-11)「特定アーティストへの偏りがないか確認し、シャッフル/多様性ロジックを強化してください」への対応。同一内容の#35118で実装済み：personalize.tsにlimitByArtist()を新設し、個人向け枠だけでなくランダム枠(WatchLikeYouMight)・関連導線(RelatedCardsRow)にも1アーティスト最大枚数制限を拡張した(コミット1374d5613)。実装はorigin/mainへ合流済みだが、2026-10-14以降継続中のLovable OAuth認証切れ(invalid_grant)により工場全体の公開が止まっており、本件もまだ本番には出ていない。
+店主指示(2026-08-11)「特定アーティストへの偏りがないか確認し、シャッフル/多様性ロジックを強化してください」への対応。同一内容の#35118で実装済み：おすすめの並べ方に「同じアーティストばかり出さない」ための上限を新設し、今まで対象外だった「この動画が好きなら」枠・「こちらも、同じ流れで」枠にも同じ制限をかけた。実装はこちらの作業場に取り込み済みだが、2026-10-14以降継続中のLovable側ログイン切れにより工場全体の本番公開が止まっており、本件もまだ本番には出ていない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1374d5613</b><span>実装コミット(origin/mainに合流済み)</span></div>
+  <div class="num"><b>取り込み済み</b><span>多様性ガードの実装状態</span></div>
   <div class="num"><b>2026-10-14</b><span>最後にLovable公開が成功した日</span></div>
-  <div class="num"><b>25件以上</b><span>同一OAuth障害でブロック中の案件数(本日時点)</span></div>
+  <div class="num"><b>25件以上</b><span>同一ログイン切れでブロック中の案件数(本日時点)</span></div>
 </div>
 
 
@@ -72,13 +72,13 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>実装(personalize.ts/WatchLikeYouMight.tsx/RelatedCardsRow.tsx)</td><td class="yes">済み</td></tr>
-<tr><td>origin/mainへの合流(git merge-base確認)</td><td class="yes">済み</td></tr>
-<tr><td>Lovable本番への公開</td><td class="no">OAuth invalid_grant障害で未反映</td></tr>
+<tr><td>多様性ガードの実装(3箇所に拡張)</td><td class="yes">済み</td></tr>
+<tr><td>作業場への取り込み</td><td class="yes">済み</td></tr>
+<tr><td>Lovable本番への公開</td><td class="no">ログイン切れで未反映</td></tr>
 </table>
 
 <footer>
-実測: node -e fetchで本番x-deployment-idを確認、最後の公開成功コミット0b3ad6ae7(2026-10-14)に1374d5613を含まないことをgit merge-base --is-ancestorで確認。~/.tamago/lovable_keeper_state.json: lastOkAt=2026-10-14 06:24:19 / needConsent=true / lastFailure=invalid_grant。戻し方はjoy-relief-station/.claude/PENDING_DECISIONS.md #35135参照（たまごさんがChromeでLovableへ再ログイン、または公開ボタンを押すと解消見込み）。
+実測: 本番トップのヘッダー情報を取得し、最後に公開が成功した時点(2026-10-14)より後の変更がまだ本番に出ていないことを確認済み。Lovable側の鍵の状態を見るファイルも「2026-10-14以降ログインが切れたまま」と示している。戻し方は店主向けの判断メモ(#35135)に記録済み（たまごさんがLovableへ再ログイン、または公開ボタンを押すと解消見込み）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
