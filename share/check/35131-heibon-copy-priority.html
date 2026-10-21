@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35131 既存コピーの「平坦」優先候補リスト 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35131 既存コピーの「平坦」優先候補リスト</div>
+<h1>#35131 既存コピーの「平坦」優先候補リスト</h1>
+<div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+既存の楽曲コピー（note）のうち、情報ゼロの汎用文・固有情報が薄い文を <code>scripts/copy-tan/detect-generic-copy.mjs</code> の集計（2026-10-20生成）から抽出し、書き直しの優先候補としてリストアップした（今回は一括書き換えなし・リストのみ）。①最優先＝固有の情報が一切無い定型文のみの73件（全件掲載。表の「結果」列で現状の文面を確認できる）。②次点＝汎用フレーズを含み文字数が短い（固有情報が薄い）200件のうち、最も短い上位20件をサンプル表示（残り全件はCSV/JSONで確認可）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>25,382</b><span>平坦判定の総フラグ数（全34,647曲中）</span></div>
+  <div class="num"><b>73</b><span>①最優先：情報ゼロ（定型文のみ）</span></div>
+  <div class="num"><b>516</b><span>②次点の母集団：汎用フレーズを含む曲</span></div>
+  <div class="num"><b>200</b><span>②次点：今回リストした件数（CSV/JSON）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>① 最優先73件＋②次点200件・全データ(JSON)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json</a></li>
+  <li><b>同内容(CSV・Excel等で開く用)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.csv" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.csv</a></li>
+  <li><b>元データ：平坦コピー全集計(hard/weak/editorial)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json</a></li>
+  <li><b>コピー担当の運用ルール（書き方の基準）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/operations/copy-tan.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/operations/copy-tan.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>Vanessa Moreno / Pedra do Sol • (Clipe Oficial)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=p9oQTtm3IEY</td></tr>
+<tr><td>Vanessa Moreno / Azul • Djavan |</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=3nITsnyRemU</td></tr>
+<tr><td>Vanessa Moreno / Esfinge | Visita Djavan</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=aQOFH9pfrOA</td></tr>
+<tr><td>Vanessa Moreno / Girassóis • (Clipe Oficial)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=g2E5watN_yQ</td></tr>
+<tr><td>Vanessa Moreno / Solar • (Clipe Oficial)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=-z5KPuJOdbw</td></tr>
+<tr><td>Vanessa Moreno / Dança-poesia</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=PRIJTK-7jRo</td></tr>
+<tr><td>Vanessa Moreno / O Silêncio das Estrelas</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=t101wpXxYE0</td></tr>
+<tr><td>Vanessa Moreno / #5- e Fi Maróstica - Virtual Insanity (Jamiroquai)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=cCUCrjRXV2w</td></tr>
+<tr><td>Vanessa Moreno / Zimbadoguê</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=fZ_ZcxEnpwg</td></tr>
+<tr><td>Vanessa Moreno / Coisas do Brasil</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=EsDLj7AGnog</td></tr>
+<tr><td>Vanessa Moreno / Lilás - Djavan | Visita Djavan / Part. Mestre Dalua (Ao Vivo &#x27;Os Capoeira&#x27;)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=LfCCzcWePi0</td></tr>
+<tr><td>Vanessa Moreno / ‘A Violeira’ (Tom Jobim/Chico Buarque)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=zH_J7AbQ7Wo</td></tr>
+<tr><td>Vanessa Moreno / #7 - e Fi Maróstica - Even Flow (Pearl Jam)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=gOC_tGr44Dw</td></tr>
+<tr><td>Vanessa Moreno / e Fi Maróstica - Cores Vivas (Gilberto Gil)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=qtxCQNVkcdI</td></tr>
+<tr><td>Vanessa Moreno / e Fi Maróstica - Palco (Gilberto Gil)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=Ny_3zi0iFZo</td></tr>
+<tr><td>Vanessa Moreno / Performs De Lua Cheia | Off The Record: B-Sides</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=oeLQRAifS0k</td></tr>
+<tr><td>Vanessa Moreno / One Friend (Song Tribute)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=-XAXZ1xa6s8</td></tr>
+<tr><td>Vanessa Moreno / #6 - e Fi Maróstica - Advice for the Young At Heart (Roland Orzabal/Nicky Holland)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=hGyuWw_fLDo</td></tr>
+<tr><td>United Future Organization / My Foolish Dream</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=Be-EFFUeTP0</td></tr>
+<tr><td>United Future Organization / Doctor Doctor</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=J-U5H6hmw6E</td></tr>
+<tr><td>United Future Organization / Lights Out</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=-HpSh5J4bvw</td></tr>
+<tr><td>United Future Organization / Rock Bottom</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=aC5806zO_p8</td></tr>
+<tr><td>United Future Organization / Try Me</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=fNbmymWcyXg</td></tr>
+<tr><td>United Future Organization / Love to Love</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=p9D2JhV4zrE</td></tr>
+<tr><td>United Future Organization / Belladonna</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=rX9vaA3An70</td></tr>
+<tr><td>class / SEVEN – 心にキスをした</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=ZlkzMyFMsW4</td></tr>
+<tr><td>YOASOBI / 「アイドル」 Official Music Video</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=ZRtdQ81jPUQ</td></tr>
+<tr><td>Ado / 【】モンストロ（Monstruo）</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=4IKHox-DKrM</td></tr>
+<tr><td>Ado / 【】ブリキノダンス 歌いました</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=iL7uoLCbJoc</td></tr>
+<tr><td>Ado / 【】会いたくて</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=jTVSU-Lr1ew</td></tr>
+<tr><td>Ado / 【】心という名の不可解</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=BMb5IetESGE</td></tr>
+<tr><td>Ado / 【】エルフ</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=SbxR25brgoE</td></tr>
+<tr><td>asmi / Gerbera</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=kx3E7DdBWWA</td></tr>
+<tr><td>asmi / Call me</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=5G81USzKLEA</td></tr>
+<tr><td>asmi / Fair Sky</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=o48IdFi3yzU</td></tr>
+<tr><td>asmi / ヨワネハキ (MAISONdes)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=4-2Oqf55Ff0</td></tr>
+<tr><td>asmi / Osaka Rendezvous</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=LvusRqUtJlU</td></tr>
+<tr><td>ROLLY（ローリー寺西） / ビュン・ビュン</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=wmmDMIDR96E</td></tr>
+<tr><td>青葉市子 / Ichiko Aoba - さよならペンギン / SAYONARA PENGUIN</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=qnjlQ3MOP98</td></tr>
+<tr><td>Pentatonix / Love Again</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=F80FsZDTgn0</td></tr>
+<tr><td>Pentatonix / Where Are Ü Now</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=eMrh3wYb1mM</td></tr>
+<tr><td>Pentatonix / Waving Through a Window</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=xpqEeFk7gos</td></tr>
+<tr><td>Pentatonix / Come Along</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=u8rT6ij0PSo</td></tr>
+<tr><td>Pentatonix / Run to You</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=sp7PS_UN8Lo</td></tr>
+<tr><td>Pentatonix / Butter x Dynamite</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=2nQn7zj9sQg</td></tr>
+<tr><td>Pentatonix / Cruisin&#x27; for a Bruisin&#x27;</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=a_V6-zAlBeo</td></tr>
+<tr><td>Adam F / The Tree Knows Everything - , Kirsty Hawkshaw</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=9FLcbThvxIU</td></tr>
+<tr><td>影山ヒロノブ / Lazy Habits - Starting Fires</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=LQM8ru6GC4I</td></tr>
+<tr><td>美波 / (MINAMI) PV</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=n497-ERbPkc</td></tr>
+<tr><td>Alessi Brothers / Alessi Rose - First Original Thought</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=4eH1FjGhORU</td></tr>
+<tr><td>Alessi Brothers / Alessi NIYIBITANGA -NI IMPAMO</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=Mc3HP-Iufhg</td></tr>
+<tr><td>Alessi Brothers / Alessi&#x27;s Ark - Follow me</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=Nisty_cwEQ4</td></tr>
+<tr><td>Alessi Brothers / Alessi_Ngaho ririmba</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=3-aDbHYp4es</td></tr>
+<tr><td>Alessi Brothers / alessi rose - oh my</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=637IWypfp8g</td></tr>
+<tr><td>Alessi Brothers / Alessi Rose - Dependent )</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=ciNh4RSZtsc</td></tr>
+<tr><td>Joe / Thomas - Ride Wit U ft. G-Unit</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=-aKKwRXLRkE</td></tr>
+<tr><td>Marisa Monte / Novos Baianos - A Menina Dança</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=LRQXacF4oBA</td></tr>
+<tr><td>岡崎体育 / FIFA21プロクラブディフェンス集(たまにオフェンスも)</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=3YB07ySSra4</td></tr>
+<tr><td>岡崎体育 / のFIFA23 FUT チャンピオンズファイナル</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=ZVuaVJe7pI0</td></tr>
+<tr><td>The Ronettes / Billboard&#x27;s best hits of 2024-All-Time Favorite Tracks Playlist-Ahead of the curve</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=6akQDlKgi5o</td></tr>
+<tr><td>The Ronettes / Year&#x27;s top tracks roundup roundup: Hits 2024 Collection-Leading Hits Mix-Cool-head</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=dUtPjrCejwo</td></tr>
+<tr><td>Mary Wells / Best music roundup of 2024-Cream of the Crop Playlist-Embraced</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=yipQrIRWecs</td></tr>
+<tr><td>Big Mama Thornton / Let&#x27;s Go Get Stoned</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=yvTa-03IULY</td></tr>
+<tr><td>Sam &amp; Dave / Sweet Soul Music</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=1gU898WT2jc</td></tr>
+<tr><td>Rufus / Wainwright - The One You Love</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=tFenIIR47VU</td></tr>
+<tr><td>Ruth Brown / The ultimate hits compilation-Prime Chart-Toppers Lineup-Incorporated</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=liFnhg_ZqP4</td></tr>
+<tr><td>Ruth Brown / Top hits compilation roundup for 2024-Top-Charting Hits Playlist-Corresponding</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=2V2TWEnNTow</td></tr>
+<tr><td>Martin Garrix / &amp; U2 - Fireflies</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=67auoS0oMzU</td></tr>
+<tr><td>Dead Kennedys / Riot</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=wPDawD7HFU4</td></tr>
+<tr><td>Sigrid / Home To You</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=fvUmrVnqLV0</td></tr>
+<tr><td>magicbox / Magical Christmas Music for Kids 🎁 Fun &amp; Festive Tunes!| 2024 Christmas Songs for Little Ones 🎄🎶&quot;</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=LGeLb4HK-3Y</td></tr>
+<tr><td>佐藤竹善 / 28年前に小山田圭吾の人間性を糾弾していた（SING LIKE TALKING）＃小山田圭吾 ＃東京オリンピック ＃フリッパーズギター ＃ ＃SINGLIKETAlKING</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=E8OGFGlL_LU</td></tr>
+<tr><td>Amália Rodrigues / &quot;Grândola, Vila Morena&quot;</td><td class="no">定型文のみ（固有情報なし）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=umbEOUYaxa4</td></tr>
+<tr><td>いきものがかり / YELL</td><td class="no">汎用フレーズ中心・6字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=lz8frtP6_kk</td></tr>
+<tr><td>DREAMS COME TRUE / 未来予想図II</td><td class="no">汎用フレーズ中心・6字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=jysWZ3eW3AA</td></tr>
+<tr><td>George Michael / Last Christmas</td><td class="no">汎用フレーズ中心・7字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=E8gmARGvPlI</td></tr>
+<tr><td>José Feliciano / Feliz Navidad</td><td class="no">汎用フレーズ中心・7字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=xMtuVP8Mj4o</td></tr>
+<tr><td>Incognito / Still a Friend of Mine</td><td class="no">汎用フレーズ中心・7字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=X0tPaeW5lQk</td></tr>
+<tr><td>Mariah Carey / All I Want for Christmas Is You</td><td class="no">汎用フレーズ中心・7字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=yXQViqx6GMY</td></tr>
+<tr><td>サザンオールスターズ / 希望の轍</td><td class="no">汎用フレーズ中心・9字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=UK5xSs9jBlk</td></tr>
+<tr><td>浜崎あゆみ / SEASONS</td><td class="no">汎用フレーズ中心・9字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=AuZSyBa6phU</td></tr>
+<tr><td>Bob James / Westchester Lady</td><td class="no">汎用フレーズ中心・9字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=OKluazZn5oA</td></tr>
+<tr><td>Frank Sinatra / Fly Me to the Moon</td><td class="no">汎用フレーズ中心・9字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=ZEcqHA7dbwM</td></tr>
+<tr><td>T-SQUARE / OMENS OF LOVE</td><td class="no">汎用フレーズ中心・10字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=Jsm4HMeLvSM</td></tr>
+<tr><td>Eagles / Hotel California</td><td class="no">汎用フレーズ中心・10字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=09839DpTctU</td></tr>
+<tr><td>TM NETWORK / Get Wild</td><td class="no">汎用フレーズ中心・11字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=r107W1YXrSM</td></tr>
+<tr><td>岩崎良美 / あなた色のマノン</td><td class="no">汎用フレーズ中心・14字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=b11PxPg6jbE</td></tr>
+<tr><td>The Beatles / Can&#x27;t Buy Me Love</td><td class="no">汎用フレーズ中心・15字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=h3WJiqc_bEs</td></tr>
+<tr><td>Sufjan Stevens / Chicago</td><td class="no">汎用フレーズ中心・15字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=c_-cUdmdWgU</td></tr>
+<tr><td>Blue / One Love</td><td class="no">汎用フレーズ中心・16字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=GFGPSx6cPN0</td></tr>
+<tr><td>柴田淳 / 幻</td><td class="no">汎用フレーズ中心・16字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=kZ-nL1c2GbQ</td></tr>
+<tr><td>Pizzicato Five / TWIGGY TWIGGY</td><td class="no">汎用フレーズ中心・17字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=NcdrTlNlSds</td></tr>
+<tr><td>Creedence Clearwater Revival / Have You Ever Seen The Rain</td><td class="no">汎用フレーズ中心・17字の短文（詳細→JSON/CSV）→ 本番で確認: https://joy-relief-station.lovable.app/watch?v=u1V8YRJnr4Q</td></tr>
+</table>
+
+<footer>
+一括書き換えはまだ実施していない（店主からの今回の指示は「リストアップのみ」）。書き直す際はdocs/operations/copy-tan.mdの「事実は裏取り・魅力は自由」の基準に従う。表の「結果」列のURLは各曲の本番ページ（/watch?v=...）。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
