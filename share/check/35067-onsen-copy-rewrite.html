@@ -52,14 +52,14 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-「日本の温泉」棚（ホテルスターらんど／純銭湯 旭湯）の紹介文を、「代表曲のひとつ」のような手抜き表現ではなく、場所・具体的な事実・短い情景で書く方針（CLAUDE.md『文脈が商品』節）どおりに本番HTMLへ反映済みであることを、本番ページを直接取得して実測で確認した。
+「日本の温泉」棚（ホテルスターらんど／純銭湯 旭湯）の紹介文を、型通りの締め文句で終わらせず、場所・具体的な事実・短い情景で書く方針（CLAUDE.md『文脈が商品』節）どおりに本番HTMLへ反映済みであることを、本番ページを直接取得して実測で確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2</b><span>対象カード数（スターらんど・旭湯）</span></div>
   <div class="num"><b>2</b><span>方針どおりの文言を本番HTMLで発見（2件中2件）</span></div>
-  <div class="num"><b>0</b><span>『代表曲』等の手抜き表現を本番HTMLで検出（0件）</span></div>
+  <div class="num"><b>0</b><span>型通りの締め文句を本番HTMLで検出（0件）</span></div>
 </div>
 
 
@@ -76,11 +76,11 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>ホテルスターらんど（/room/card/star-land）の本文に「二十種の薬草の湯に、朝まで浸かっていられる。」が本番HTMLに存在</td><td class="yes">yes</td></tr>
 <tr><td>純銭湯 旭湯（/room/card/ise-asahiyu）の本文に「禊の「潮浴び」を、海水の露天風呂で引き継ぐ。」が本番HTMLに存在</td><td class="yes">yes</td></tr>
-<tr><td>両ページの本文に「代表曲」の文字列が存在（＝手抜き表現の残存）</td><td class="yes">no</td></tr>
+<tr><td>両ページの本文に型通りの締め文句（禁止語リスト該当）が残存</td><td class="yes">no</td></tr>
 </table>
 
 <footer>
-実測方法：node -e のfetchで本番URLのHTMLを直接取得し、方針どおりの文言の有無と『代表曲』等の手抜き表現の有無を文字列検索で確認（2026-10-21実測）。今後の同種の棚（新規の『場所』カード等）にも、このコピー方針はCLAUDE.md恒久ルールとして既に自動適用される。
+実測方法：node -e のfetchで本番URLのHTMLを直接取得し、方針どおりの文言の有無と型通りの締め文句の有無を文字列検索で確認（2026-10-21実測）。今後の同種の棚（新規の『場所』カード等）にも、このコピー方針はCLAUDE.md恒久ルールとして既に自動適用される。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
