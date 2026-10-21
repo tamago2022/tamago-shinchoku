@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>#35109 フード＆レシピレーダー：茄子(ナス)×中村和成シェフを実装、クリック誤検知も解消 確認ページ</title>
 <style>
-  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
   body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
@@ -16,25 +16,25 @@
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
   .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
   .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
-  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
   .num b{display:block;font-size:1.6rem;line-height:1.2;}
   .num span{color:var(--sub);font-size:0.8rem;}
-  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
   ul.links{list-style:none;margin:0;padding:0;}
-  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
   .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
   .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
   .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
   .shot.before b{color:var(--aka);}
   .shot.after b{color:var(--midori);}
   .shot.plain b{color:var(--ao);}
   .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
-  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
@@ -43,8 +43,8 @@
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35109 フード＆レシピレーダー：茄子(ナス)×中村和成シェフを実装、クリック誤検知も解消</div>
@@ -52,14 +52,16 @@
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-声入力の依頼『那須だったらこのシェフは那須な味噌…那須麻婆…中村さんも確か作ってるはず』は『那須』が『茄子』の聞き取り誤りと判断。YouTube Data APIで中村和成シェフ(既存登録済み)の茄子系動画11本を発見したが、find-embeddable.mjsの実再生テストでは10本がok:false(API上はembeddable:trueでも実際は再生不可、既知の罠)。唯一<code>wcnXjOalkPA</code>(ラタトゥイユ)だけがok:true=実在・実再生確認済みのため、これを<code>food-nakamura-ratatouille</code>として追加しmainへpush済み。『レシピを探す』ボタン無反応の指摘は、選択済みタブの仕様通りの正常挙動が検品ツール側で誤検知されていたもの(姉妹案件#35108で既に修正済み・commit 0ea42f5855)で、実機のクリック検品でも30/30件が反応した。
+声入力の依頼『那須だったらこのシェフは那須な味噌…那須麻婆…中村さんも確か作ってるはず』は『那須』が『茄子(なす)』の聞き取り誤りと判断(那須な味噌=茄子の味噌田楽、那須麻婆=麻婆茄子に相当)。YouTube Data APIで中村和成シェフ(既存登録済み)の茄子系動画11本(麻婆茄子1本含む)を発見したが、find-embeddable.mjsの実再生テストでは10本がok:false(API上はembeddable:trueでも実際は再生不可、既知の罠)。唯一<code>wcnXjOalkPA</code>(ラタトゥイユ)だけがok:true=実在・実再生確認済みのため、これを<code>food-nakamura-ratatouille</code>として追加しmainへpush済み(commit 6e267d0ba)。既存の『麻婆豆腐』料理名タグはキーワード『麻婆』だけで一致するため、将来『麻婆茄子』のレシピを仕入れればこのタグへ自動でヒットする実装になっている(押しすぎて減る心配はない。food-radarは軸をまたいだANDを使わない排他フィルター設計のため、1つのタグを選んでも他のヒット数は減らない)。『レシピを探す』ボタン無反応の指摘は、選択済みタブの仕様通りの正常挙動が検品ツール側で誤検知されていたもの(姉妹案件#35108で既に修正済み・commit 0ea42f5855)。実行ログは以下。<pre>$ node tools/verify_click.mjs https://joy-relief-station.lovable.app/food-radar
+実測: {"url":"https://joy-relief-station.lovable.app/food-radar","totalClickable":197,"tested":30,"autoOkLinkCount":51,"selfLinkCount":3,"truncated":true,"noResponseCount":0,"skippedDisappearedCount":0,"skippedRepurposedCount":0,"consoleErrorCount":0}
+CLICK_VERDICT: PASS - 押せる要素は全て反応しました（30件中30件・全197件）</pre>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番(food-radar)HTTPステータス</span></div>
-  <div class="num"><b>30/30件</b><span>クリック検品で反応した要素(node tools/verify_click.mjs実行・2026-10-21 23:34)</span></div>
-  <div class="num"><b>1/11本</b><span>中村和成の茄子系候補のうち実再生テストPASSした本数(node scripts/tamago-dj/find-embeddable.mjs実行・2026-10-22 0:2x)</span></div>
+  <div class="num"><b>200</b><span>本番(food-radar)HTTPステータス(node -e fetchで実測・2026-10-22 00:3x)</span></div>
+  <div class="num"><b>30/30件</b><span>クリック検品で反応した要素(上記ログのCLICK_VERDICT行・2026-10-21 23:34実行)</span></div>
+  <div class="num"><b>1/11本</b><span>中村和成の茄子系候補のうち実再生テストPASSした本数(node scripts/tamago-dj/find-embeddable.mjs実行・出力ok:true/false・2026-10-22 0:2x)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -72,6 +74,7 @@
 <ul class="links">
   <li><b>本番：ごきげんフード＆レシピレーダー</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
   <li><b>追加したレシピ動画(YouTube)</b><a href="https://www.youtube.com/watch?v=wcnXjOalkPA" target="_blank" rel="noopener">https://www.youtube.com/watch?v=wcnXjOalkPA</a></li>
+  <li><b>麻婆茄子候補(実再生ok:false・不採用)</b><a href="https://www.youtube.com/watch?v=ePbjux9Wdis" target="_blank" rel="noopener">https://www.youtube.com/watch?v=ePbjux9Wdis</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -85,11 +88,9 @@
 <footer>
 mainへの合流(commit 6e267d0ba)は完了。Lovableの『変更を公開』は、CDP接続可能なChromeが本環境に無く、Chrome新規起動は安全上の理由で禁止(1186号)のため、このセッションでは押せていません。次にこの環境を触るセッション・Dispatchが公開を押すまで本番は旧内容のままです。
 </footer>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
-
-<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>
