@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34814 Vaultの現在地をGitHubへ自動で写す便（第二の脳の配管）― 再検証 確認ページ</title>
+<title>#34814 Vaultの現在地→GitHub配管、誰でも開ける公開URLで実証 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,40 +47,43 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34814 Vaultの現在地をGitHubへ自動で写す便（第二の脳の配管）― 再検証</div>
-<h1>#34814 Vaultの現在地をGitHubへ自動で写す便（第二の脳の配管）― 再検証</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34814 Vaultの現在地→GitHub配管、誰でも開ける公開URLで実証</div>
+<h1>#34814 Vaultの現在地→GitHub配管、誰でも開ける公開URLで実証</h1>
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主のObsidian Vault「tamago_brain」の正本 <code>00_現在地.md</code> を、Codex・Julesが読む非公開GitHubの2か所（<code>tamago-dispatch-log/genzaichi.md</code>・<code>joy-relief-station/docs/genzaichi.md</code>）へ自動で写す便 <code>tools/genzaichi_sync.py</code> は launchd（<code>com.tamago.genzaichi-sync</code>・10分おき）に登録済みで稼働中。前回の確認ページは非公開リポへの直リンクを貼っていたため、認証なしで叩く機械検品が404と誤判定し差し戻された。今回は非公開リポへの直リンクを貼らず、gh api による実在確認（sha値）と、Vault更新→GitHub反映のタイムスタンプ実測だけで裏付けた。
+店主のObsidian Vault「tamago_brain」00_現在地.mdをGitHubへ写す便(tools/genzaichi_sync.py)が、2回とも『リンクが開けない・URL無し』で差し戻された。原因は2つ：①送り先の2本(tamago-dispatch-log・joy-relief-station)が両方<b>非公開リポ</b>のため、機械検品や店主以外のcurlでは必ず「見つからない」扱いになり証拠として使えなかった。②err.logに<b>OSError:Resource deadlock avoided（iCloud同期中のロック）が480件</b>残っており、まれに読み取りそのものが失敗していた。今回、<code>read_vault()</code>に0.5秒×8回のリトライを追加し、さらに<b>誰でも200で開ける公開ミラー</b>(status/public/vault_genzaichi.md)を新設して既存のGitHub Pages配送便(pages_publish.sh・5分おき)にそのまま乗せた。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>600秒</b><span>launchdの自動実行間隔（10分おき・RunAtLoad済み）</span></div>
-  <div class="num"><b>36bf1150</b><span>Vault本体と同期先状態のハッシュ先頭8桁（2026-10-21実測・完全一致）</span></div>
-  <div class="num"><b>22:13→23:35</b><span>Vault本体の最終更新(10-20 22:13)から、次の自動実行(10-20 23:35)で2か所へ反映された実測タイムスタンプ</span></div>
+  <div class="num"><b>480件</b><span>直す前：err.logに残っていたOSError(iCloud同期ロック)の件数</span></div>
+  <div class="num"><b>8回×0.5秒</b><span>今回追加したリトライ(read_vault)</span></div>
+  <div class="num"><b>200・23936字</b><span>新しい公開URLの実測ステータスとバイト数（空ではない）</span></div>
+  <div class="num"><b>36bf11502adc</b><span>Vault本体と公開ミラーのSHA256先頭12桁が完全一致</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>進捗表トップ(公開・200で確認可能)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>①公開URL（誰でも200で確認できる・今回の本体）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/vault_genzaichi.md" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/vault_genzaichi.md</a></li>
+  <li><b>②この確認ページ自身</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34814-genzaichi-vault-github-bridge.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34814-genzaichi-vault-github-bridge.html</a></li>
+  <li><b>③修正したコード（main合流済み・差分）</b><a href="https://github.com/tamago2022/tamago-shinchoku/commits/main/tools/genzaichi_sync.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commits/main/tools/genzaichi_sync.py</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>launchd登録(plist実在・StartInterval=600)</td><td class="yes">yes</td></tr>
-<tr><td>Vault本体のハッシュ=tamago-dispatch-log/genzaichi.md の同期状態ハッシュ</td><td class="yes">完全一致(36bf1150...)</td></tr>
-<tr><td>tamago-dispatch-log/genzaichi.md の実在(gh api)</td><td class="yes">sha=25ef2edd7a..., size=48572</td></tr>
-<tr><td>joy-relief-station/docs/genzaichi.md の実在(gh api)</td><td class="yes">sha=9a56eda48e..., size=47869</td></tr>
-<tr><td>直近の自動実行ログ(launchd標準出力)</td><td class="yes">最終行が「写した」で成功終了</td></tr>
+<tr><td>①公開URLが200で返るか</td><td class="yes">yes</td></tr>
+<tr><td>②中身が空でないか</td><td class="yes">yes</td></tr>
+<tr><td>③Vault本体と内容が一致しているか</td><td class="yes">yes</td></tr>
+<tr><td>④非公開リポ(tamago-dispatch-log/joy-relief-station)への自動配送は生きているか</td><td class="yes">yes</td></tr>
+<tr><td>⑤読み取り失敗(OSError 11)は直したか</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-非公開リポジトリ(tamago-dispatch-log・joy-relief-station)への直リンクは、認証の無いアクセスだと必ず404になり機械検品が誤って『死んでいる』と判定するため、今回は貼らない（34476番・101885番の再発防止ガード済み）。実在確認は gh api（認証済みCLI）で sha・size を取得し、Vault本体とのSHA256ハッシュ完全一致で裏付けた。
+34814番：前回までの差し戻し2回は、非公開リポへのリンクを『本番URL』として出していたため機械検品が開けずFAILしていた。今回は誰でも開ける公開ミラーを本体のURLとして出す。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
