@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>うんこバウンス｜ごきげん補給所 おまけゲーム</title>
+<meta name="description" content="タップ・クリックで弾ませて高く跳ばす、1分で覚える家族みんなの跳ねゲー。">
+<style>
+  :root{
+    --bg1:var(--t-panel); --bg2:var(--t-warn-bg); --accent:var(--t-warn); --happy:var(--t-warn);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; width:100%; height:100%;
+    overflow:hidden; background:linear-gradient(180deg,var(--bg1),var(--bg2));
+    font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+    touch-action:none; -webkit-user-select:none; user-select:none;
+  }
+  #wrap{position:relative; width:100%; height:100%;}
+  canvas{display:block; width:100%; height:100%;}
+  #hud{
+    position:absolute; top:12px; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0 16px; pointer-events:none; color:var(--accent);
+    font-weight:700; text-shadow:0 1px 0 #fff;
+  }
+  #hud .score{font-size:28px;}
+  #hud .best{font-size:14px; opacity:0.85;}
+  #title{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+    background:var(--t-panel); gap:14px; padding:24px;
+  }
+  #title h1{margin:0; font-size:30px; color:var(--accent);}
+  #title p{margin:0; max-width:320px; font-size:15px; color:var(--t-warn); line-height:1.7;}
+  #title .fam{font-size:14px; color:var(--t-warn); font-weight:700;}
+  #startBtn{
+    margin-top:6px; padding:14px 36px; font-size:18px; font-weight:800;
+    border:none; border-radius:999px; background:var(--happy); color:var(--t-on-accent);
+    box-shadow:0 6px 0 #c98900; cursor:pointer;
+  }
+  #startBtn:active{transform:translateY(4px); box-shadow:0 2px 0 #c98900;}
+  #gameover{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+    background:var(--t-panel); gap:10px; padding:24px;
+  }
+  #gameover h2{margin:0; font-size:26px; color:var(--accent);}
+  #gameover .msg{font-size:15px; color:var(--t-warn); max-width:300px;}
+  #retryBtn{
+    margin-top:8px; padding:12px 32px; font-size:16px; font-weight:800;
+    border:none; border-radius:999px; background:var(--happy); color:var(--t-on-accent);
+    box-shadow:0 5px 0 #c98900; cursor:pointer;
+  }
+  #footer{
+    position:absolute; bottom:8px; left:0; right:0; text-align:center;
+    font-size:11px; color:var(--t-warn); pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="hud">
+    <div class="score" id="scoreView">0</div>
+    <div class="best" id="bestView">さいこう 0</div>
+  </div>
+
+  <div id="title">
+    <h1>💩 うんこバウンス</h1>
+    <p>タップ・クリックで、うんこちゃんをぽよん！と弾ませよう。<br>
+       タイミングが合うほど「ぽよん…ぽよよん！」と気持ちよく高く跳ねる。<br>
+       落ちたら終わり。さあ、どこまで届くかな？</p>
+    <p class="fam">👨‍👩‍👧‍👦 家族で順番にやって、だれが一番高く跳ばせるか競争してみてね。</p>
+    <button id="startBtn">はじめる</button>
+  </div>
+
+  <div id="gameover">
+    <h2>おちちゃった…💦</h2>
+    <div class="msg" id="goMsg"></div>
+    <button id="retryBtn">もう一回！</button>
+  </div>
+
+  <div id="footer">ごきげん補給所 おまけコーナー・うんこバウンス</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ============ 音（外部ファイル無し・Web Audioだけで鳴らす） ============
+  var actx = null;
+  function getCtx(){
+    if(!actx){
+      try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; }
+    }
+    return actx;
+  }
+  function boop(freqStart, freqEnd, dur, type, vol){
+    var ctx = getCtx();
+    if(!ctx) return;
+    var t0 = ctx.currentTime;
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.setValueAtTime(freqStart, t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(1,freqEnd), t0 + dur);
+    gain.gain.setValueAtTime((vol!==undefined?vol:0.2), t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }
+  function sfxBounce(power){
+    // power 0..1 → 高いほど明るい音
+    boop(220 + power*260, 90, 0.16, "sine", 0.22);
+  }
+  function sfxCombo(){
+    boop(520, 900, 0.12, "triangle", 0.18);
+  }
+  function sfxFall(){
+    boop(260, 40, 0.5, "sawtooth", 0.15);
+  }
+
+  // ============ キャンバス ============
+  var canvas = document.getElementById("c");
+  var ctx2d = canvas.getContext("2d");
+  var W=0, H=0, DPR = Math.min(window.devicePixelRatio||1, 2);
+
+  function resize(){
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+"px"; canvas.style.height = H+"px";
+    ctx2d.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  // ============ ゲーム状態 ============
+  var GROUND_Y_RATIO = 0.78;
+  var state = "title"; // title / playing / over
+  var score = 0;
+  var best = 0;
+  try{ best = parseInt(localStorage.getItem("unkoBounceBest")||"0",10)||0; }catch(e){ best=0; }
+
+  var ball = { x:0, y:0, r:34, vx:0, vy:0, squash:1, rot:0 };
+  var particles = [];
+  var shakeT = 0, shakeMag = 0;
+  var comboTimer = 0, combo = 0;
+  var lastGroundTime = 0;
+  var floatT = 0;
+
+  function resetBall(){
+    ball.x = W*0.5; ball.y = H*GROUND_Y_RATIO - ball.r;
+    ball.vx = (Math.random()-0.5)*1.2;
+    ball.vy = 0;
+    ball.squash = 1; ball.rot = 0;
+    score = 0; combo = 0; comboTimer = 0;
+    particles = [];
+    updateHud();
+  }
+
+  function updateHud(){
+    document.getElementById("scoreView").textContent = Math.floor(score);
+    document.getElementById("bestView").textContent = "さいこう " + Math.floor(best);
+  }
+
+  function spawnParticles(x,y,n,col){
+    for(var i=0;i<n;i++){
+      var a = Math.random()*Math.PI*2;
+      var sp = 1.5 + Math.random()*3.5;
+      particles.push({
+        x:x, y:y,
+        vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 1.5,
+        life:1, col:col||"#ffb703"
+      });
+    }
+  }
+
+  function doShake(mag){ shakeMag = Math.max(shakeMag, mag); shakeT = 0.18; }
+
+  // ============ 入力：弾ませる ============
+  function bounceInput(){
+    if(state!=="playing") return;
+    var groundY = H*GROUND_Y_RATIO;
+    var distToGround = Math.max(0, groundY - (ball.y+ball.r));
+    // 地面に近いほど「ジャストタイミング」とみなし、強く弾む
+    var nearness = Math.max(0, 1 - distToGround/90);
+    var power = 0.45 + nearness*0.95; // 0.45〜1.4
+    ball.vy = -(9 + power*6.5);
+    ball.vx += (Math.random()-0.5)*1.4;
+    ball.squash = 1.45; // 縦に伸びる（押した瞬間の気持ちよさ）
+
+    score += 1 + Math.floor(nearness*4);
+    if(nearness > 0.55){
+      combo += 1;
+      comboTimer = 0.9;
+      if(combo>=3){ sfxCombo(); doShake(4); score += combo; }
+    } else {
+      combo = 0;
+    }
+    sfxBounce(power);
+    spawnParticles(ball.x, ball.y+ball.r*0.6, 10 + Math.floor(power*8), nearness>0.55?"#ff8c42":"#ffd166");
+    updateHud();
+  }
+
+  // ============ 更新 ============
+  var lastT = performance.now();
+  function loop(t){
+    var dt = Math.min(0.033, (t-lastT)/1000);
+    lastT = t;
+    floatT += dt;
+
+    ctx2d.clearRect(0,0,W,H);
+
+    var shakeX=0, shakeY=0;
+    if(shakeT>0){
+      shakeT -= dt;
+      var m = shakeMag * Math.max(0, shakeT/0.18);
+      shakeX = (Math.random()-0.5)*m;
+      shakeY = (Math.random()-0.5)*m;
+    } else { shakeMag = 0; }
+
+    ctx2d.save();
+    ctx2d.translate(shakeX, shakeY);
+
+    drawBackground();
+
+    if(state==="playing"){
+      updatePhysics(dt);
+    }
+    drawGround();
+    drawParticles(dt);
+    drawBall(dt);
+
+    ctx2d.restore();
+
+    requestAnimationFrame(loop);
+  }
+
+  function drawBackground(){
+    // ふわふわ雲（軽い演出だけ・画像無し）
+    ctx2d.save();
+    ctx2d.globalAlpha = 0.6;
+    ctx2d.fillStyle = "#ffffff";
+    for(var i=0;i<3;i++){
+      var cx = ((floatT*14 + i*260) % (W+200)) - 100;
+      var cy = 60 + i*50;
+      ctx2d.beginPath();
+      ctx2d.ellipse(cx, cy, 46, 20, 0, 0, Math.PI*2);
+      ctx2d.ellipse(cx+34, cy+6, 32, 16, 0, 0, Math.PI*2);
+      ctx2d.ellipse(cx-34, cy+8, 30, 15, 0, 0, Math.PI*2);
+      ctx2d.fill();
+    }
+    ctx2d.restore();
+  }
+
+  function drawGround(){
+    var groundY = H*GROUND_Y_RATIO;
+    var grad = ctx2d.createLinearGradient(0,groundY,0,H);
+    grad.addColorStop(0,"#caa06a");
+    grad.addColorStop(1,"#a67c48");
+    ctx2d.fillStyle = grad;
+    ctx2d.fillRect(0, groundY, W, H-groundY);
+    ctx2d.fillStyle = "rgba(255,255,255,0.25)";
+    ctx2d.fillRect(0, groundY, W, 4);
+  }
+
+  function updatePhysics(dt){
+    var groundY = H*GROUND_Y_RATIO;
+    var GRAV = 26;
+    ball.vy += GRAV*dt;
+    ball.x += ball.vx*30*dt;
+    ball.y += ball.vy*30*dt;
+
+    // 壁
+    if(ball.x < ball.r){ ball.x = ball.r; ball.vx *= -0.6; }
+    if(ball.x > W-ball.r){ ball.x = W-ball.r; ball.vx *= -0.6; }
+
+    // squash/stretch を自然に戻す
+    ball.squash += (1-ball.squash) * Math.min(1, dt*8);
+    ball.rot += ball.vx*dt*0.08;
+
+    if(comboTimer>0){ comboTimer -= dt; if(comboTimer<=0) combo=0; }
+
+    // 地面到達＝自動で軽く跳ねる（無反応で落ちるのを防ぎ、常に「跳ねてる」感を出す）
+    if(ball.y + ball.r >= groundY){
+      ball.y = groundY - ball.r;
+      if(ball.vy > 2){
+        spawnParticles(ball.x, groundY, 6, "#d9a35b");
+        doShake(2);
+      }
+      ball.vy = -4.5; // かるい自動バウンド（ぺたんと死なない）
+      ball.squash = 0.6; // 潰れる
+
+      var now = performance.now();
+      if(now - lastGroundTime < 260){
+        // 連続して地面＝タイミングを外し続けている → ゲームオーバー
+        gameOver();
+      }
+      lastGroundTime = now;
+    }
+  }
+
+  function drawParticles(dt){
+    for(var i=particles.length-1;i>=0;i--){
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.25;
+      p.life -= dt*1.6;
+      if(p.life<=0){ particles.splice(i,1); continue; }
+      ctx2d.globalAlpha = Math.max(0,p.life);
+      ctx2d.fillStyle = p.col;
+      ctx2d.beginPath();
+      ctx2d.arc(p.x, p.y, 4*p.life+1, 0, Math.PI*2);
+      ctx2d.fill();
+      ctx2d.globalAlpha = 1;
+    }
+  }
+
+  function drawBall(dt){
+    ctx2d.save();
+    ctx2d.translate(ball.x, ball.y);
+    ctx2d.rotate(Math.sin(ball.rot)*0.15);
+    var sx = 1/Math.sqrt(ball.squash), sy = ball.squash;
+    ctx2d.scale(sx, sy);
+
+    // 体（うんこ型：3段の渦巻きシルエットを丸みで近似）
+    ctx2d.fillStyle = "#8b5a2b";
+    ctx2d.beginPath();
+    ctx2d.ellipse(0, 6, ball.r*0.72, ball.r*0.62, 0, 0, Math.PI*2);
+    ctx2d.fill();
+    ctx2d.beginPath();
+    ctx2d.ellipse(0, -8, ball.r*0.58, ball.r*0.5, 0, 0, Math.PI*2);
+    ctx2d.fill();
+    ctx2d.fillStyle = "#a9733f";
+    ctx2d.beginPath();
+    ctx2d.ellipse(0, -20, ball.r*0.4, ball.r*0.34, 0, 0, Math.PI*2);
+    ctx2d.fill();
+
+    // 顔
+    ctx2d.fillStyle = "#2b1a0a";
+    ctx2d.beginPath();
+    ctx2d.arc(-ball.r*0.22, 2, 3.4, 0, Math.PI*2);
+    ctx2d.arc(ball.r*0.22, 2, 3.4, 0, Math.PI*2);
+    ctx2d.fill();
+    ctx2d.strokeStyle = "#2b1a0a";
+    ctx2d.lineWidth = 2.4;
+    ctx2d.beginPath();
+    ctx2d.arc(0, 10, 9, 0.15*Math.PI, 0.85*Math.PI);
+    ctx2d.stroke();
+    // ほっぺ
+    ctx2d.fillStyle = "rgba(255,120,120,0.55)";
+    ctx2d.beginPath();
+    ctx2d.arc(-ball.r*0.42, 10, 4, 0, Math.PI*2);
+    ctx2d.arc(ball.r*0.42, 10, 4, 0, Math.PI*2);
+    ctx2d.fill();
+
+    ctx2d.restore();
+
+    // コンボ表示
+    if(combo>=3){
+      ctx2d.save();
+      ctx2d.fillStyle = "#e85d04";
+      ctx2d.font = "bold 20px sans-serif";
+      ctx2d.textAlign = "center";
+      ctx2d.fillText(combo+" れんぞく！気持ちいい〜", ball.x, ball.y-ball.r-18);
+      ctx2d.restore();
+    }
+  }
+
+  function gameOver(){
+    state = "over";
+    sfxFall();
+    doShake(8);
+    if(score > best){
+      best = Math.floor(score);
+      try{ localStorage.setItem("unkoBounceBest", String(best)); }catch(e){}
+    }
+    updateHud();
+    var msg = document.getElementById("goMsg");
+    var lines = [
+      "リズムをつかめば、もっと高く跳ねるよ。",
+      "地面に着く直前にタップすると気持ちいいボーナス！",
+      "家族のだれかに代わってもらって、記録を抜いてもらおう。"
+    ];
+    msg.textContent = "今回のスコア：" + Math.floor(score) + "　／　さいこう：" + best + "\n" + lines[Math.floor(Math.random()*lines.length)];
+    document.getElementById("gameover").style.display = "flex";
+  }
+
+  // ============ 画面遷移 ============
+  function startGame(){
+    document.getElementById("title").style.display = "none";
+    document.getElementById("gameover").style.display = "none";
+    resetBall();
+    state = "playing";
+  }
+
+  document.getElementById("startBtn").addEventListener("click", function(){
+    getCtx();
+    startGame();
+  });
+  document.getElementById("retryBtn").addEventListener("click", function(){
+    startGame();
+  });
+
+  function onTap(e){
+    if(state==="title" || state==="over") return;
+    bounceInput();
+    if(e && e.preventDefault) e.preventDefault();
+  }
+  canvas.addEventListener("pointerdown", onTap, {passive:false});
+  window.addEventListener("keydown", function(e){
+    if(e.code==="Space"){ onTap(e); }
+  });
+
+  updateHud();
+  requestAnimationFrame(loop);
+})();
+</script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
