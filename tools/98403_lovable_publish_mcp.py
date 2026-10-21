@@ -20,6 +20,7 @@ LOG = "/private/tmp/q98403/lovable_mcp.log"
 def log(m):
     line = "%s %s" % (time.strftime("%F %T"), m)
     print(line)
+    os.makedirs(os.path.dirname(LOG), exist_ok=True)
     with open(LOG, "a") as f:
         f.write(line + "\n")
 
