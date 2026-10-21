@@ -513,10 +513,20 @@ def hantei_1ken(r, ima):
     # フォールバックに使うのは誤検知が広すぎて撤回されているので、ここでは
     # 粗い動詞判定を伴わない _NOT_TASK（明確な非タスク文言）への一致だけを、
     # 限定的に先に弾く。
+    #
+    # 35038番実例（2026-10-21）：「中国、フランス、日本、韓国、英国に艦船を出して
+    # ほしいと述べている。」（GOOD VIBES円卓Evaluatorコメント内の引用断片）も
+    # DAICHO未登録のhatsugen直の行で、_NOT_TASK（明確な非タスク文言リスト）には
+    # 一致しないため5回再発車していた。shukudai._is_quoted_reference_text()は
+    # 「参考資料ファイル本文に8文字以上で一字一句完全一致」という_NOT_TASKと同じ
+    # 安全度（粗い動詞判定ではない・非対称コストの原則を壊さない）の厳密な引用判定
+    # なので、_NOT_TASKと同じ扱いでここに合流させる。
     try:
         sys.path.insert(0, HERE)
         import shukudai as _shukudai_notask
-        if _shukudai_notask._NOT_TASK.search(r.get("title") or ""):
+        _title = r.get("title") or ""
+        if (_shukudai_notask._NOT_TASK.search(_title)
+                or _shukudai_notask._is_quoted_reference_text(_title)):
             return {"which": which, "aka": False, "state": st,
                     "sonogo": "実行可能な要望が読み取れない発言のため判定対象外（再発車しない・要確認のまま残す）"}
     except Exception:
