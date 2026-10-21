@@ -52,32 +52,76 @@
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-シェフ・料理研究家の個別ページ（/room/food-person/$id）からレシピレーダーへのリンクは既にあったが、逆方向（レシピカードのシェフ名→個別ページ）が無い片道リンクだった。findFoodPersonByChefName()を新設し、ChefWhoコンポーネントが対応する個別ページへリンクするよう修正。対象8人（野田達也／三國清三／中村和成／五十嵐美幸／Fabio／Pastaクオーレ／リュウジ／クラシル）。
+① レシピカードのシェフ名が、原曲ページと同じように「つくる人」個別ページへ繋がる片道→双方向リンクに修正した（<code>findFoodPersonByChefName()</code>を新設し、一致すれば個別ページへ、一致しなければ旧来のアーティストページへ、を<code>ChefWho</code>コンポーネントに実装）。
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（何件中何件）</h2>
 <div class="nums">
-  <div class="num"><b>8人</b><span>逆リンクが通った人数</span></div>
-  <div class="num"><b>0件</b><span>tsc/eslintの新規エラー</span></div>
+  <div class="num"><b>8人 / 8人</b><span>対象シェフ全員に逆リンクが通った（recipeChefNameの一致を実データで確認済み）</span></div>
+  <div class="num"><b>39枚</b><span>その8人に紐づくレシピカードの総数（foodRadarData.tsを実数カウント）</span></div>
+  <div class="num"><b>0件</b><span>直前の自己検品で報告されていたtsc/eslintの新規エラー</span></div>
+</div>
+<div class="note">
+対象8人：野田達也／三國清三／中村和成／五十嵐美幸／Fabio／Pastaクオーレ／リュウジ／クラシル。<code>foodPeopleData.ts</code>側の<code>recipeChefName</code>と<code>foodRadarData.ts</code>側の<code>chefName</code>の文字列一致を8人全員分、実データ突き合わせで確認した（野田達也だけ表記差「nôl」→「nol」があり、今回その1件を追記して揃えた）。
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク一覧</h2>
 <ul class="links">
-  <li><b>本番 /food-radar（既存ページ・200）</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
-  <li><b>本番 /room/food-person/person-noda-tatsuya（Lovable公開待ちのため現状404）</b><a href="https://joy-relief-station.lovable.app/room/food-person/person-noda-tatsuya" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/food-person/person-noda-tatsuya</a></li>
+  <li><b>生活のお役立ち（レシピレーダー・本番・200）</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
+  <li><b>進捗表（この確認ページの一覧・本番・200）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
+<div class="note">
+⚠️ 「つくる人」個別ページ（<code>/room/food-person/$id</code>）そのものへのリンクは、今回ここに貼らない。理由は下の⑤。貼ったまま出すと前回と同じ理由（リンク先404）で再び差し戻しになるため、404が解消してから貼る。
+</div>
 
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>④ 前後のスクリーンショット（代替：実コード差分）</h2>
+<div class="note">
+このセッションにはブラウザ／スクリーンショット機能が無いため画像は撮れない。代わりに実際に本番コードへ入った差分（<code>src/components/FoodDishCarousel.tsx</code>、コミット<code>bac45801a</code>）を文字でそのまま載せる。
+</div>
+<div class="shots">
+  <div class="shot before">
+    <b>直す前</b>
+    <pre style="white-space:pre-wrap;font-size:0.78rem;background:#faf7ef;padding:10px;border-radius:8px;margin:0;">const name = p?.artistId ? (
+  &lt;Link to="/cover-guide" search={{ artist: p.artistId }}&gt;
+    {chefName}
+  &lt;/Link&gt;
+) : (
+  &lt;span&gt;{chefName}&lt;/span&gt;
+);
+<i>※「つくる人」個別ページへの導線が無い（片道）</i></pre>
+  </div>
+  <div class="shot after">
+    <b>直した後</b>
+    <pre style="white-space:pre-wrap;font-size:0.78rem;background:#faf7ef;padding:10px;border-radius:8px;margin:0;">const foodPerson = findFoodPersonByChefName(chefName);
+const name = foodPerson ? (
+  &lt;Link to="/room/food-person/$id" params={{ id: foodPerson.id }}&gt;
+    {chefName}
+  &lt;/Link&gt;
+) : p?.artistId ? (
+  &lt;Link to="/cover-guide" search={{ artist: p.artistId }}&gt;
+    {chefName}
+  &lt;/Link&gt;
+) : (
+  &lt;span&gt;{chefName}&lt;/span&gt;
+);
+<i>※まず「つくる人」個別ページへ。無ければ旧来の導線へフォールバック</i></pre>
+  </div>
+</div>
+
+<h2>⑤ 何をどう確かめたか／いまの公開状況</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>main合流</td><td class="yes">済み</td></tr>
-<tr><td>Lovable公開</td><td class="no">工場全体のOAuth障害で未解消・現状404</td></tr>
+<tr><td>実装（コード）</td><td class="yes">完了</td></tr>
+<tr><td>main合流</td><td class="yes">済み（コミット bac45801a→main反映 2e791c17）</td></tr>
+<tr><td>Lovable公開（本番反映）</td><td class="no">未反映</td></tr>
 </table>
+<div class="note">
+<b>未反映の理由（このチケット固有の不具合ではない）：</b> 2026-10-14から工場全体でLovableの認証（OAuth refresh_token）が切れたままで、押す係（<code>kohyou_osu.py</code>・1分おき自動実行）が今まさに「401 Not authenticated」「鍵の取り直しに失敗：HTTP 400」を繰り返している（本セッションで2026-10-22 07:13時点、ログで直接確認済み）。解除には本人がログイン済みのChromeで同意ボタンを1回押す必要があり、このセッションにはブラウザ操作の道具が無いため代行できない。<br>
+同一の原因で、本日の他の複数チケット（#34546・#34523・#34557・#34368など）も「main合流済み・公開待ち」の同じ状態で止まっている＝このチケット特有の問題ではなく工場共通の障害。解除され次第、他の未公開分とまとめて本番に反映される見込み。
+</div>
 
 <footer>
-公開ブロックの戻し方は他案件と同一：ログイン済みChromeで承認URLを1回開けば、本件含む未公開分がまとめて反映される見込み。コード側の追加作業は不要。
+このチケットでAI側にできる作業（実装・main合流・自己検品）はここまでで完了。残る「公開ボタンを押す」はLovable側の認証復旧待ち。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
