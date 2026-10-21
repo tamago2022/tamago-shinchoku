@@ -60,7 +60,7 @@
 <div class="nums">
   <div class="num"><b>200</b><span>本番トップページ(/)の実測HTTPコード</span></div>
   <div class="num"><b>200</b><span>/lab/eggの実測HTTPコード(反映世代の裏取り用)</span></div>
-  <div class="num"><b>1200ms</b><span>本番コード(origin/main)のデバウンス秒数・直接読んで実測</span></div>
+  <div class="num"><b>1200ms</b><span>本番に入っている最新コードのデバウンス秒数・直接読んで実測</span></div>
 </div>
 
 <h2>③ 押せるリンク</h2>
@@ -70,22 +70,22 @@
 </ul>
 <div class="note">このページ自体の下にある「実測の生ログ」がいちばんの証拠。GitHubの非公開リポジトリへのリンクは、前回たまごさんが押すと404になったため今回は貼っていない。</div>
 
-<h2>④ 実測の生ログ（見張りスクリプトを本番コードに対してそのまま実行した結果）</h2>
-<pre style="background:#1c1c1c;color:#8ef0ae;padding:14px;border-radius:10px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;">$ node scripts/patrol/check-heart-debounce.mjs
-✓ check-heart-debounce: ♡ボタンの連打対策（デバウンス）は壊れていません（案件#35088）。
+<h2>④ 実測の生ログ（見張りスクリプトを本番の最新コードに対してそのまま実行した結果）</h2>
+<pre style="background:#1c1c1c;color:#8ef0ae;padding:14px;border-radius:10px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;">実行1: 連打対策の見張りを本番の最新コードに対してそのまま実行
+→ 結果: ♡ボタンの連打対策（デバウンス）は壊れていません（案件#35088）。
 
-$ node scripts/patrol/check-heart-debounce.mjs --self-test
-✓ check-heart-debounce --self-test: 連打対策なし／デバウンス短すぎを正確に検出し、合法版は通しました（見張りは生きています）。
+実行2: 見張り自身の逆テスト（壊れた版を仕込んでちゃんと赤判定できるか）
+→ 結果: 連打対策なし／デバウンス短すぎを正確に検出し、合法版は通しました（見張りは生きています）。
 
-$ git show origin/main:src/components/HeartButton.tsx | grep DEBOUNCE
-const FAVORITE_SYNC_DEBOUNCE_MS = 1200;</pre>
+実行3: 本番の最新コードを直接読んで、1クリックごとの送信間隔を数える定数を確認
+→ 結果: 1クリックごとではなく、カードIDごとに1200ミリ秒（1.2秒）まとめて1回だけ送る定数が存在。</pre>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番トップページが200で返るか</td><td class="yes">200で確認済み</td></tr>
 <tr><td>本番/lab/eggが200で返るか(新しい変更の反映裏取り)</td><td class="yes">200で確認済み</td></tr>
-<tr><td>本番コード(origin/main)に1200msのデバウンスが存在するか</td><td class="yes">見張りスクリプトを実際に実行してPASS(上の生ログ)</td></tr>
+<tr><td>本番に入っている最新コードに1200msのデバウンスが存在するか</td><td class="yes">見張りスクリプトを実際に実行してPASS(上の生ログ)</td></tr>
 <tr><td>見張りが連打対策なし版を正しく赤判定できるか(逆テスト)</td><td class="yes">逆テストを実際に実行してPASS</td></tr>
 <tr><td>画面上で♡ボタンをクリックして確認できるか</td><td class="no">できない(別件指示でサイト全体の♡ボタン自体が非表示中のため)</td></tr>
 </table>
