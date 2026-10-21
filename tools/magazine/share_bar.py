@@ -106,7 +106,37 @@ SNS_PATH_TT = 'M16.6 3c.3 2.4 1.7 3.9 4 4.1v3.1c-1.5.1-2.9-.4-4-1.2v6.2c0 3.1-2.
 SNS_CSS = ('.cw .cw-sns{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:40px 0 24px}'
            '.cw .cw-share.cw-sns>span{flex-basis:100%;font-size:12px;letter-spacing:.12em;opacity:.8;margin-bottom:2px}'
            '.cw .cw-share.cw-sns a{width:auto;height:34px;border-radius:999px;padding:0 14px 0 11px;gap:7px;background:var(--ink);color:var(--bg,#111);border-color:var(--ink);font-size:12px;letter-spacing:.02em;text-decoration:none}.cw .cw-share.cw-sns b{font-weight:500}'
-           '.cw .cw-share.cw-sns a:hover{background:var(--ink);opacity:.85}.cw .cw-share.cw-sns svg{width:15px;height:15px}')
+           '.cw .cw-share.cw-sns a:hover{background:var(--ink);opacity:.85}.cw .cw-share.cw-sns svg{width:15px;height:15px}'
+           )
+
+# ごきげんの種（LINE・週に1粒）の導線（2026-10-21 たまごさん決定）。
+# 友だち追加URLの正本は joy-relief-station public/gokigen-tane.json の line_url（1か所）。空の間は何も出さない。
+# ページに入れるのは小さな読み役（TANE_SCRIPT・約400バイト）だけ。読み込みが終わってから設定を読み、URLが入っている時だけ
+# 組み立て役 /magazine/assets/cw/tane.js（TANE_JS。`python3 tools/magazine/share_bar.py --tane-js` で書き出す）を読む。
+# React 側は src/components/ShareBar.tsx の SnsAccounts と同じ形（X の横に「毎日たくさん」、その下に LINE「週に1粒」）。
+TANE_TEXT = {
+    'ja': ['毎日たくさん', 'ごきげんの種', 'LINE登録で、週に1粒「ごきげんの種」が届きます'],
+    'en': ['Lots, every day', 'Gokigen Seed', 'Add us on LINE and get one “Gokigen Seed” a week'],
+    'zh-Hans': ['每天很多首', '好心情种子', '加LINE好友，每周送你一粒「好心情种子」'],
+    'es': ['Mucho, cada día', 'Semilla Gokigen', 'Agréganos en LINE y recibe una «Semilla Gokigen» por semana'],
+    'ko': ['매일 잔뜩', '고키겐의 씨앗', 'LINE 친구 추가하면 일주일에 한 알, 「고키겐의 씨앗」이 도착해요'],
+}
+TANE_RE = r'/^https:\/\/(lin\.ee|line\.me|page\.line\.me)\//'
+TANE_SCRIPT = ('<script id="cw-tane">addEventListener("load",function(){setTimeout(function(){fetch("/gokigen-tane.json").then(function(r){return r.json()})'
+               '.then(function(j){var u=j.line_url;if(' + TANE_RE + '.test(u)){window.__taneUrl=u;var s=document.createElement("script");'
+               's.src="/magazine/assets/cw/tane.js";document.body.appendChild(s)}})["catch"](function(){})},1200)})</script>')
+TANE_JS = ('(function(){var u=window.__taneUrl,b=document.querySelector(".cw-sns[data-sns]");if(!u||!' + TANE_RE + '.test(u)||!b||b.querySelector("[data-tane]"))return;'
+           'var T=' + json.dumps(TANE_TEXT, ensure_ascii=False) + ';'
+           'var st=document.createElement("style");st.textContent=".cw .cw-tane{display:flex;flex-basis:100%;align-items:center;gap:10px}'
+           '.cw .cw-tane em{font-style:normal;font-size:12px;line-height:1.4;opacity:.8;flex:1;min-width:0}";document.head.appendChild(st);'
+           'function el(t,c){var e=document.createElement(t);if(c)e.className=c;return e}'
+           r'var x=b.querySelector("a[href*=\"x.com/oasisjoyrelief\"]");if(!x)return;'
+           'var lg="ja";try{lg=localStorage.getItem("gokigen-lang")||document.documentElement.lang||"ja"}catch(e){lg=document.documentElement.lang||"ja"}'
+           'var t=T[lg]||T[lg.split("-")[0]]||T.ja;'
+           'var r1=el("span","cw-tane");r1.setAttribute("data-tane","x");x.parentNode.insertBefore(r1,x);r1.appendChild(x);var n1=el("em");n1.textContent=t[0];r1.appendChild(n1);'
+           'var r2=el("span","cw-tane");r2.setAttribute("data-tane","line");var a=el("a");a.href=u;a.target="_blank";a.rel="noopener";a.setAttribute("aria-label",t[2]);'
+           r'a.innerHTML="<svg aria-hidden=\"true\"><use href=\"#i-line\"/></svg><b></b>";a.querySelector("b").textContent=t[1];r2.appendChild(a);'
+           'var n2=el("em");n2.textContent=t[2];r2.appendChild(n2);r1.parentNode.insertBefore(r2,r1.nextSibling)})();')
 
 
 def sns():
@@ -143,6 +173,15 @@ def add(h):
     h = h.replace('<main class="cw"', symbols() + '<main class="cw"', 1) if 'id="i-line"' not in h else h
     h = h.replace('</head>', '<style id="cw-share">' + CSS + '</style></head>', 1)
     h = h.replace('</body>', SCRIPT + '</body>', 1)
+    return add_tane(h)
+
+
+def add_tane(h):
+    """ごきげんの種（LINE）の導線だけを入れ直す（何度通しても同じ）。既存ページはこれだけ通せば共有部分は変わらない。"""
+    import re as R
+    h = R.sub(r'<script id="cw-tane">.*?</script>', '', h, flags=R.S)
+    h = R.sub(r'(<style id="cw-sns">)[^<]*(</style>)', lambda m: m.group(1) + SNS_CSS + m.group(2), h, count=1)  # SNSの段のCSSを正本にそろえる
+    h = h.replace('</body>', TANE_SCRIPT + '</body>', 1)
     return h
 
 
@@ -154,3 +193,9 @@ def check(h):
     if h.count('class="cw-sharebox"') != 1 or 'data-i18n="c_share_h"' not in h: bad.append('シェアの見出し')
     if OFFICIAL_YOUTUBE not in h: bad.append('YouTubeアカウント')
     return bad
+
+
+if __name__ == '__main__':
+    import sys
+    if '--tane-js' in sys.argv:
+        sys.stdout.write(TANE_JS + '\n')
