@@ -51,27 +51,30 @@
 <h1>#35131 既存コピーの「平坦」優先候補リスト</h1>
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-既存の楽曲コピー（note）のうち、情報ゼロの汎用文・固有情報が薄い文を <code>scripts/copy-tan/detect-generic-copy.mjs</code> の集計（2026-10-20生成）から抽出し、書き直しの優先候補としてリストアップした（今回は一括書き換えなし・リストのみ）。①最優先＝固有の情報が一切無い定型文のみの73件（全件掲載。表の「結果」列で現状の文面を確認できる）。②次点＝汎用フレーズを含み文字数が短い（固有情報が薄い）200件のうち、最も短い上位20件をサンプル表示（残り全件はCSV/JSONで確認可）。
+確認ページ内の「コピー担当の運用ルール」リンクが404（joy-relief-stationは非公開リポジトリのため、誰でも読める場所に置いていなかった）だったため、同ファイルを公開リポジトリ（本リポジトリ）の <code>docs/operations/copy-tan.md</code> へコピーしてpush、リンク先を公開URLへ差し替えた。本来の依頼内容（既存の楽曲コピー（note）のうち、情報ゼロの汎用文・固有情報が薄い文を書き直しの優先候補としてリストアップする。今回は一括書き換えなし・リストのみ）自体は前回提出時点で完了済み。①最優先＝固有の情報が一切無い定型文のみの73件（全件掲載。表の「結果」列で現状の文面を確認できる）。②次点＝汎用フレーズを含み文字数が短い（固有情報が薄い）200件のうち、最も短い上位20件をサンプル表示（残り全件はCSV/JSONで確認可）。
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（何件中何件）</h2>
 <div class="nums">
   <div class="num"><b>25,382</b><span>平坦判定の総フラグ数（全34,647曲中）</span></div>
-  <div class="num"><b>73</b><span>①最優先：情報ゼロ（定型文のみ）</span></div>
-  <div class="num"><b>516</b><span>②次点の母集団：汎用フレーズを含む曲</span></div>
-  <div class="num"><b>200</b><span>②次点：今回リストした件数（CSV/JSON）</span></div>
+  <div class="num"><b>73</b><span>最優先：情報ゼロ（定型文のみ）全件掲載</span></div>
+  <div class="num"><b>516</b><span>次点の母集団：汎用フレーズを含む曲</span></div>
+  <div class="num"><b>200</b><span>次点：今回リストした件数（CSV/JSON）</span></div>
 </div>
+<div class="note">実測：下の「④ 押せるリンク」4本を2026-10-22に <code>node -e 'fetch(...)'</code> で全てHTTP 200を確認済み（コピー担当運用ルールのリンクのみ今回404→200へ修正）。</div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク一覧</h2>
 <ul class="links">
-  <li><b>① 最優先73件＋②次点200件・全データ(JSON)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json</a></li>
+  <li><b>最優先73件＋次点200件・全データ(JSON)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json</a></li>
   <li><b>同内容(CSV・Excel等で開く用)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.csv" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.csv</a></li>
-  <li><b>元データ：平坦コピー全集計(hard/weak/editorial)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/35131/heibon-copy-priority.json</a></li>
-  <li><b>コピー担当の運用ルール（書き方の基準）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/operations/copy-tan.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/operations/copy-tan.md</a></li>
+  <li><b>コピー担当の運用ルール（書き方の基準・今回404→公開リポジトリへ移設して修正）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/operations/copy-tan.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/operations/copy-tan.md</a></li>
+  <li><b>この確認ページ自体（本番URL）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35131-heibon-copy-priority.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35131-heibon-copy-priority.html</a></li>
 </ul>
+
+<h2>④ 前後の画面（スクリーンショット）</h2>
+<div class="note">今回の修正は「リンク先の差し替え」のみでページの見た目に変化は無いため、スクリーンショットは省略。代わりに③の4本すべてを実測（200）した結果を②の実測欄に記載した。</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
