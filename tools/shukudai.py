@@ -410,19 +410,33 @@ _NOT_TASK = re.compile(
 # session_preamble.mdは巨大な文章が毎回全セッションへ配られる構造上、イケハヤ記事と
 # 同じ事故（本文の断片がそのままタスク化される）が今後も形を変えて起きうるため、
 # 参照ファイルとしてここに加え、本文に一字一句一致する断片を型で弾く。
+#
+# 35038番実例（2026-10-21）：「中国、フランス、日本、韓国、英国に艦船を出してほしいと
+# 述べている。」（ホルムズ海峡危機を扱うGOOD VIBES円卓Evaluatorの採点コメント内の
+# 引用断片）が、35054番と全く同じ根本原因（kioku.pyの句点分割）で店主の発言として
+# 誤って取り込まれ、鬼監督98406番で「URL無し・証拠なし」の差し戻しを受けて5回
+# 再発車していた。35054番の対策は「GOOD VIBES RoundtableフォルダのセッションIDを
+# 1本だけ」_QUOTED_REFERENCE_FILESへ個別登録する方式だったが、このフォルダは
+# 同日(2026-08-09〜10)に12本のセッションログを生成する設計であり、該当文は
+# 登録済みの1本（a3b71887-...）ではなく別のセッション（ebb55d4f-...）に入っていた
+# ため救済できなかった。個別ファイルを1本ずつ後追い登録する方式はスケールしない
+# （次に別のセッションIDから同種の断片が割れても同じ穴を踏む）ため、フォルダ全体
+# （_QUOTED_REFERENCE_DIRS）を対象にし、中の*.jsonl全部を参照本文に含める方式へ
+# 一段上げる。
 _QUOTED_REFERENCE_FILES = (
     "/Users/mac/Library/Mobile Documents/iCloud~md~obsidian/Documents/"
     "tamago_brain/00 inbox/イケハヤ　claude codeの教科書　キティちゃん　秘書.md",
-    "/Users/mac/.claude/projects/-Users-mac-Library-Application-Support-GOOD-VIBES-Roundtable-current/"
-    "a3b71887-d69f-4595-a7e4-ab0c20b7ad27.jsonl",
     os.path.join(HERE, "session_preamble.md"),
+)
+_QUOTED_REFERENCE_DIRS = (
+    "/Users/mac/.claude/projects/-Users-mac-Library-Application-Support-GOOD-VIBES-Roundtable-current",
 )
 _QUOTED_REFERENCE_MIN_LEN = 8
 _quoted_reference_cache = {}
 
 
 def _quoted_reference_text():
-    """参考資料ファイルの本文をキャッシュして返す。読めなければ空文字列（fail-safe）。"""
+    """参考資料ファイル・フォルダの本文をキャッシュして返す。読めなければ空文字列（fail-safe）。"""
     key = "text"
     if key not in _quoted_reference_cache:
         chunks = []
@@ -430,6 +444,18 @@ def _quoted_reference_text():
             try:
                 with io.open(path, encoding="utf-8") as f:
                     chunks.append(f.read())
+            except OSError:
+                continue
+        for d in _QUOTED_REFERENCE_DIRS:
+            try:
+                for name in sorted(os.listdir(d)):
+                    if not name.endswith(".jsonl"):
+                        continue
+                    try:
+                        with io.open(os.path.join(d, name), encoding="utf-8") as f:
+                            chunks.append(f.read())
+                    except OSError:
+                        continue
             except OSError:
                 continue
         _quoted_reference_cache[key] = "\n".join(chunks)
