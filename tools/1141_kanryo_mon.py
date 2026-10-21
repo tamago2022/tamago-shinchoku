@@ -20,7 +20,12 @@ def sh(a):
     return o
 ref="origin/main"
 if sh(["git","rev-parse","--verify",ref]).returncode!=0: ref="HEAD"
-tree=set(sh(["git","ls-tree","-r","--name-only",ref]).stdout.splitlines())
+# ★34811号で発見した実測バグ：core.quotepathの既定(true)だと日本語ファイル名が
+#   \346\227\245... のような8進エスケープ文字列で返ってくるため、本番に実在する
+#   完成/...（日本語フォルダ）配下のファイルが「tree未所持」と誤判定され、
+#   既に本番にあるページが①本番にあるで弾かれていた（34813号の誤差し戻しの実因）。
+#   -c core.quotepath=false を付けて生のUTF-8パス名で受け取る。
+tree=set(sh(["git","-c","core.quotepath=false","ls-tree","-r","--name-only",ref]).stdout.splitlines())
 def blob(p):
     r=sh(["git","show",f"{ref}:{p}"])
     return r.stdout if r.returncode==0 else None
