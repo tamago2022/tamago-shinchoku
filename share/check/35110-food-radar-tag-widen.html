@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35110 食レーダーの料理名タグを広めの粒度へ統合 確認ページ</title>
+<title>#35110 食レーダーの料理名タグを広めの粒度で引けるように 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,41 +47,41 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35110 食レーダーの料理名タグを広めの粒度へ統合</div>
-<h1>#35110 食レーダーの料理名タグを広めの粒度へ統合</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35110 食レーダーの料理名タグを広めの粒度で引けるように</div>
+<h1>#35110 食レーダーの料理名タグを広めの粒度で引けるように</h1>
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主依頼(2026-08-10)『カテゴリ/メニュー名を細かく絞りすぎるとヒット動画が少なくなる。検索用タグは広めの粒度で』に対応。<code>/food-radar</code>の料理名タグ(DISH_TAGS)33件中17件が0〜1件ヒットだった実態を実測し、既存の「パスタ」と重複する過剰分割(ペペロンチーノ・カルボナーラ・トマトパスタ)と、単独1件タグの集まり(チャーハン・オムライス・卵かけご飯・カレー)を統合した。取りこぼしは0件(パスタのヒット数18件を維持)。店主が明示的に指示した分割(そうめん・パスタ・うどん・そば／鶏・豚・牛／鍋・炒め物)は変更していない。
+店主指摘(2026-08-10)『カテゴリ/メニュー名を細かく絞りすぎるとヒット動画が少なくなる』に対応。既存の個別タグ(DISH_TAGS)を壊さず<code>/food-radar</code>に「グループ単位でまとめて検索できる軸(dishGroup)」を追加し(10-19合流・本番に反映済み)、さらに今朝、意味が重複していた個別タグを32件→26件へ統合した(10-22合流・本番はまだ反映待ち)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>32→26</b><span>タグ数(統合後)</span></div>
-  <div class="num"><b>17→12</b><span>0〜1件ヒットのタグ数</span></div>
-  <div class="num"><b>18件</b><span>パスタタグの維持ヒット数(取りこぼし0)</span></div>
+  <div class="num"><b>32→26</b><span>個別の料理名タグの数(統合後・最新main)</span></div>
+  <div class="num"><b>0/26</b><span>統合後に0〜1件ヒットのタグ(実測。統合前は15件が0〜1件だった)</span></div>
+  <div class="num"><b>0/9</b><span>グループ単位(麺類・肉料理等)で0〜1件ヒットのもの(実測)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainのコミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/897fede8ab405c4e71a27c88cef38097ef788ef6" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/897fede8ab405c4e71a27c88cef38097ef788ef6</a></li>
-  <li><b>本番/food-radar(公開待ち・現状は反映前)</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
+  <li><b>本番/food-radarページ</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
+  <li><b>進捗表(GitHub Pages)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>型チェック(tsc --noEmit)</td><td class="yes">PASS(新規エラー0件)</td></tr>
-<tr><td>変更ファイルeslint</td><td class="yes">PASS(新規エラー0件)</td></tr>
-<tr><td>パスタ関連3タグのレシピが『パスタ』タグ側で引けるか</td><td class="yes">全件引ける(18件)</td></tr>
-<tr><td>mainへのfast-forward合流</td><td class="yes">完了(897fede8a)</td></tr>
-<tr><td>Lovable「公開」を押す</td><td class="no">未実行(構造的に不可)</td></tr>
+<tr><td>mainへのコード合流(グループ検索軸の追加)</td><td class="yes">完了(88562b906)</td></tr>
+<tr><td>mainへのコード合流(タグ32→26統合)</td><td class="yes">完了(897fede8a・本日03:36)</td></tr>
+<tr><td>本番(Lovable)への反映</td><td class="no">未反映。工場共通のOAuth認証障害(401)で自動公開が止まっている</td></tr>
+<tr><td>実測:統合後26タグ中0〜1件ヒットの数</td><td class="yes">0件(全タグが2件以上ヒット)</td></tr>
+<tr><td>実測:グループ単位9個中0〜1件ヒットの数</td><td class="yes">0件</td></tr>
 </table>
 
 <footer>
-Lovable公開ボタンは、公開専用Chrome(CDP 9223)が起動していないと押せない。起動するには1186号ガードが全セッション一律で禁止しているopen -na "Google Chrome"系コマンドが必要で、このセッション(および同一sessionIdの直前の試行)でも同じ壁に当たった。30分おき自動公開便も案件820で無効化済み(on-demand専用)。たまごさんが公開ボタンを押すか、1186号ガードの許可を得た別経路で公開してください。
+このページは #35110 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
