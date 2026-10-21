@@ -55,24 +55,42 @@
 セッション内の検索・クリック行動だけで好みに近づける企画（Spotifyの精度を引き合いに出した発言）の実装『検索キーワードをパーソナライズ学習に接続』は、コードとしては完成し取り込み済み。ただし本番(Lovable)への『公開』だけがまだ押されておらず、本番サイトにはまだ反映されていない。原因は工場全体で発生しているLovableの認証切れで、このセッションにはブラウザを操作する手段が無く、認証画面を自分で開けないため公開を完走できない。
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（2026-10-22 00:28 実測）</h2>
 <div class="nums">
-  <div class="num"><b>実装取り込み済み</b><span>YES(確認済み)</span></div>
-  <div class="num"><b>本番の見た目</b><span>23:47時点でまだ変化なし(未反映)</span></div>
-  <div class="num"><b>認証リフレッシュ</b><span>要同意(自動更新が失敗)</span></div>
+  <div class="num"><b>mainへの合流</b><span>YES（origin/mainにsrc/lib/searchSignalTags.ts等あり）</span></div>
+  <div class="num"><b>本番サイトの生存</b><span>200（https://joy-relief-station.lovable.app/）</span></div>
+  <div class="num"><b>本番JSに機能コードが含まれる固有語</b><span>0件 / 7件</span></div>
+</div>
+<div class="note">
+本番バンドル <code>/assets/index-3zJ7JRvY.js</code>(84万字) を実際に取得し、実装コード固有のキーワードで検索した結果：
+<pre style="white-space:pre-wrap;font-size:0.82rem;background:#f8f6ef;border-radius:8px;padding:10px;">盛り上が => false
+アップテンポ => false
+しんみり => false
+グループサウンズ => false
+平成一桁 => false
+不朽 => false
+クラブ => false</pre>
+7件とも「false」＝本番にはまだ機能コードが1つも届いていない（mainには存在する固有語）。
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番URL(joy-relief-station)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番トップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a>（200で生存。ただし今回の機能は未反映）</li>
+  <li><b>本番の検索ページ（機能の使用場所）</b><a href="https://joy-relief-station.lovable.app/search" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search</a></li>
+  <li><b>本番の実JSバンドル（直接確認用）</b><a href="https://joy-relief-station.lovable.app/assets/index-3zJ7JRvY.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/index-3zJ7JRvY.js</a></li>
 </ul>
 
-
+<h2>④ 止まっている理由（打開策は2026-10-22に4経路試して全滅・1464番ゲートPASS済み）</h2>
+<table>
+<tr><th>経路</th><th>試したこと</th><th>結果</th></tr>
+<tr><td>cli</td><td>認証鍵の自動更新を強制実行</td><td class="no">need_consent（本人同意待ちのまま）</td></tr>
+<tr><td>api</td><td>Lovable MCPへ現トークンでinitialize</td><td class="no">HTTP 403（鍵が無効）</td></tr>
+<tr><td>doc</td><td>公式APIドキュメントで別の鍵方式を確認</td><td class="no">あるが発行自体にブラウザログインが必要で同じ壁</td></tr>
+<tr><td>cli</td><td>認証URLを直接GET（cookie無し）</td><td class="no">/loginへ302（本人ログインが無いと進めない）</td></tr>
+</table>
 
 <footer>
-公開を押すには、Lovableの認証画面をブラウザで開いて同意するだけで鍵が復活する。ブラウザ操作可能なセッションか店主本人が1回開けば、この案件を含む溜まっている未公開分がまとめて反映される見込み。
+このセッションにはブラウザを操作する手段(claude-in-chrome等)が無く、認証画面を自分の手で開けない。ブラウザ操作が可能な別セッションか店主本人が認証URLを1回開けば、鍵が復活しここを含む未公開分がまとめて反映される見込み。コード側の追加修正は不要。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
