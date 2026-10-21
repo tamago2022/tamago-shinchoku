@@ -52,12 +52,14 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主発言「マイケル・ジャクソンが好きでも動画はYouTubeに何百何千とある」を受けて、仕入れ担当が1本に絞る直前に自問する5問チェックリストを仕入れ手順書(ingest-playbook.md 3.5)に整備した。既存の品質4階層・primary差し替え基準は既にMJを実例として明記済みだったため、新基準は作らず選ぶ直前の手順として並べ直した。あわせてMJ在庫数の記録「42曲」が誤記（実測34曲）だったため実測で訂正した。アプリのコード・画面は変更していないため、本番画面（Lovable）に見た目の変化はない社内運用ドキュメントの変更。
+店主発言「マイケル・ジャクソンが好きでも動画はYouTubeに何百何千とある」を受けて、仕入れ担当が複数候補から1本に絞る直前に自問する5問チェックリストを <code>docs/operations/ingest-playbook.md</code> 3.5に整備した（main合流済み）。既存の品質4階層・primary差し替え基準（3.1〜3.3）は既にMJを実例として明記済みだったため、新基準は作らず「選ぶ直前の手順」として並べ直した。あわせてMJ在庫数の記録が「42曲」という誤記だったため、今回(2026-10-21)自分でgit show origin/main:src/lib/coverGuide.tsのmjエントリ(2543〜2595行目)を数え直した。<code>実測:34曲(youtubeId出現数)、実測:21曲(year出現数)、実測:16曲(1969-1991の範囲)、実測:76%(16÷21)、実測:5曲(範囲外)、実測:13曲(year未入力)</code>——2026-10-16時点の記録と完全一致することを確認した。アプリの画面・コードは変更していない社内運用ドキュメントの変更のため、Lovable本番の見た目に変化はない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>34曲</b><span>coverGuide.tsのmjエントリ実測値（2026-10-16時点）</span></div>
+  <div class="num"><b>34曲</b><span>mjエントリ総数（本番main・2026-10-21に自分で数え直して確認）</span></div>
+  <div class="num"><b>21曲</b><span>year情報あり</span></div>
+  <div class="num"><b>16曲</b><span>黄金期1969-1991に収まる</span></div>
   <div class="num"><b>5問</b><span>選ぶ直前の絞り込みチェックリスト項目数</span></div>
 </div>
 
@@ -65,15 +67,14 @@
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実装コミット1（5問チェックリスト追加）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/2beddab51d32edd1d6018e1449781e12408d2826" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/2beddab51d32edd1d6018e1449781e12408d2826</a></li>
-  <li><b>実装コミット2（曲数の誤記を実測訂正）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/7578018982d6d3954a82f2137accbd87e04e759c" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/7578018982d6d3954a82f2137accbd87e04e759c</a></li>
-  <li><b>反映後のファイル本体（ingest-playbook.md）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/ingest-playbook.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/ingest-playbook.md</a></li>
+  <li><b>①追加した本文・前後比較・実測の生データ（本人が開ける場所に転記済み）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35013-ingest-playbook-evidence.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35013-ingest-playbook-evidence.html</a></li>
+  <li><b>②この確認ページ自体</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35013-mj-ingest-checklist.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35013-mj-ingest-checklist.html</a></li>
 </ul>
 
 
 
 <footer>
-このページは #35013 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+2026-10-21：前回の確認ページがgithub.com/tamago2022/joy-relief-station（非公開リポ）への直リンクを含んでいたため本人が開けず差し戻された。今回は非公開リポへのリンクを一切使わず、追加した本文全文と実測値を上記リンク先（同じtamago-shinchoku上・公開）へそのまま転記した。アプリ画面は変わらない社内ドキュメントの変更のため、スクリーンショットの代わりに本文の前後比較を置いている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
