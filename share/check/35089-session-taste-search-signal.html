@@ -57,9 +57,9 @@
 
 <h2>② 数字（2026-10-22 00:28 実測）</h2>
 <div class="nums">
-  <div class="num"><b>mainへの合流</b><span>YES（origin/mainにsrc/lib/searchSignalTags.ts等あり）</span></div>
+  <div class="num"><b>コードの取り込み</b><span>YES（実装は完成・保存場所に存在）</span></div>
   <div class="num"><b>本番サイトの生存</b><span>200（https://joy-relief-station.lovable.app/）</span></div>
-  <div class="num"><b>本番JSに機能コードが含まれる固有語</b><span>0件 / 7件</span></div>
+  <div class="num"><b>本番に機能が届いているか</b><span>0件 / 7件（未到達）</span></div>
 </div>
 <div class="note">
 本番バンドル <code>/assets/index-3zJ7JRvY.js</code>(84万字) を実際に取得し、実装コード固有のキーワードで検索した結果：
@@ -77,20 +77,20 @@
 <ul class="links">
   <li><b>本番トップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a>（200で生存。ただし今回の機能は未反映）</li>
   <li><b>本番の検索ページ（機能の使用場所）</b><a href="https://joy-relief-station.lovable.app/search" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search</a></li>
-  <li><b>本番の実JSバンドル（直接確認用）</b><a href="https://joy-relief-station.lovable.app/assets/index-3zJ7JRvY.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/index-3zJ7JRvY.js</a></li>
+  <li><b>本番の中身（プログラム本体・直接確認用）</b><a href="https://joy-relief-station.lovable.app/assets/index-3zJ7JRvY.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/index-3zJ7JRvY.js</a></li>
 </ul>
 
-<h2>④ 止まっている理由（打開策は2026-10-22に4経路試して全滅・1464番ゲートPASS済み）</h2>
+<h2>④ 止まっている理由（2026-10-22、4つの道を実際に試したが全部だめだった）</h2>
 <table>
-<tr><th>経路</th><th>試したこと</th><th>結果</th></tr>
-<tr><td>cli</td><td>認証鍵の自動更新を強制実行</td><td class="no">need_consent（本人同意待ちのまま）</td></tr>
-<tr><td>api</td><td>Lovable MCPへ現トークンでinitialize</td><td class="no">HTTP 403（鍵が無効）</td></tr>
-<tr><td>doc</td><td>公式APIドキュメントで別の鍵方式を確認</td><td class="no">あるが発行自体にブラウザログインが必要で同じ壁</td></tr>
-<tr><td>cli</td><td>認証URLを直接GET（cookie無し）</td><td class="no">/loginへ302（本人ログインが無いと進めない）</td></tr>
+<tr><th>試した道</th><th>内容</th><th>結果</th></tr>
+<tr><td>1</td><td>認証の鍵を自動で更新し直す</td><td class="no">本人の同意待ちのまま変わらず</td></tr>
+<tr><td>2</td><td>今の鍵で公開の仕組みへ直接問い合わせ</td><td class="no">鍵が無効と拒否された</td></tr>
+<tr><td>3</td><td>公式の手引きで別の鍵の作り方を確認</td><td class="no">あるが、作るのにも画面ログインが必要で同じ壁</td></tr>
+<tr><td>4</td><td>認証の入口を直接開いてみる</td><td class="no">ログイン画面へ戻されるだけ（本人のログインが無いと進めない）</td></tr>
 </table>
 
 <footer>
-このセッションにはブラウザを操作する手段(claude-in-chrome等)が無く、認証画面を自分の手で開けない。ブラウザ操作が可能な別セッションか店主本人が認証URLを1回開けば、鍵が復活しここを含む未公開分がまとめて反映される見込み。コード側の追加修正は不要。
+このセッションにはブラウザを操作する手段が無く、認証画面を自分の手で開けない。ブラウザを操作できる別のセッションか店主本人が認証の入口を1回開けば、鍵が復活しここを含む未公開分がまとめて反映される見込み。コード側の追加修正は不要。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
