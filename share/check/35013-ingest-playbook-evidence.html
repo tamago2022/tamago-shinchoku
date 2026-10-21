@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35013 仕入れ手順書 本文（追加した5問チェックリスト）</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.25rem;letter-spacing:0.04em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.0rem;letter-spacing:0.04em;margin:30px 0 10px;color:var(--sub);}
+  .box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 16px;font-size:0.92rem;}
+  .box.before{border-left:4px solid var(--aka);}
+  .box.after{border-left:4px solid var(--midori);}
+  .box h3{margin:0 0 8px;font-size:0.82rem;color:var(--sub);font-weight:700;}
+  .box.before h3{color:var(--aka);}
+  .box.after h3{color:var(--midori);}
+  pre{white-space:pre-wrap;word-break:break-word;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;font-size:0.88rem;margin:0;}
+  .nums{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 14px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:120px;}
+  .num b{display:block;font-size:1.4rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.76rem;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:36px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="./35013-mj-ingest-checklist.html">← #35013 確認ページに戻る</a></div>
+<h1>#35013 仕入れ手順書（ingest-playbook.md）本文スナップショット</h1>
+<div class="date">joy-relief-station は非公開リポジトリのため、本人が開けるこのページに本文をそのまま転記した（2026-10-21）</div>
+
+<div class="box before">
+<h3>前（この節が無かった時）</h3>
+<pre>### 3.3 実例
+（…Michael Jackson：Off the Wall〜Dangerous 前半中心＋発見を1〜3本、を含む実例の一覧…）
+
+### 3.4 AI 自身への指示（暗唱すること）
+
+&gt; 曲を探すな。その人が一番かっこよかった瞬間を探せ。
+&gt; 知らない人が恋に落ちる入口を探せ。
+&gt; すでに好きな人が「わかってるな」と笑う映像を探せ。
+
+（この次は「4. 棚振り分けルール」に進んでいた。
+　選ぶ直前に自問する手順は無かった）</pre>
+</div>
+
+<div class="box after">
+<h3>後（3.5として追加・docs/operations/ingest-playbook.md）</h3>
+<pre>### 3.5 候補が「何百何千」ある時の絞り込みチェックリスト（店主発言 2026-08-09）
+
+&gt; 店主の言葉（そのまま）：「マイケル・ジャクソンが好きだって言ってもさぁ、
+&gt; マイケル・ジャクソンの動画なんかさぁYouTubeに山ほどあるじゃん。何百何千とあるよ。」
+
+好きなアーティストほど動画は何百何千とある。だから「見つかった1本」で満足しない。
+複数候補を見た上で、この5問に答えてから1本を選ぶ（3.1〜3.3の基準を、選ぶ直前の
+手順として並べ直したもの。新しい基準を追加するわけではない）。
+
+1. 階層チェック：静止画 / 公式MV / ライブ / ファン編集のどれか。
+   静止画しかない時だけ妥協する（3.2）。
+2. 全盛期チェック：本人が一番輝いていた時期の映像か。
+   「現在の再演」を安易に選んでいないか（3.2「若い頃の映像 &gt; 現在の再演」）。
+3. 役割チェック：この1本は「入門ヒット」枠か「店主の肉汁枠（⭐）」か。
+   両方を兼ねた1本を優先し、無ければ両方を別の曲で確保する（3.1）。
+4. 発見枠チェック：代表曲だけで固めていないか。James Brown 舞台乱入・
+   Super Bowl のような「知らなかった」を生む1〜3本を混ぜたか（3.3の実例と同じ考え方）。
+5. 年代バランスチェック：全盛期中心（例：MJならOff the Wall〜Dangerous前半）を軸にしつつ、
+   後期・特殊枠だけに偏って全盛期が薄くならないか。
+
+実測（2026-10-16・src/lib/coverGuide.tsのmjエントリを直接数えた）：曲数は34曲
+（前回記録の「42曲」は誤り。仕入れが並行で動いているため、本稿の執筆中にも
+30曲→34曲へ変化した）。yearが入っている21曲のうち16曲（76%）が黄金期
+（curationProfile.primeEra：1969-1991、Off the Wall〜Dangerous前半）に収まり、
+黄金期外は5曲（Remember the Time 1992・Earth Song 1995・
+They Don't Care About Us 1996など）。残り13曲はyear未入力のため年代集計から
+除外した（正直に「集計できない」とした）。3.3で名指しした「Michael Jackson：
+Off the Wall〜Dangerous前半中心＋発見を1〜3本」の基準どおりに在庫が構成されて
+いることを確認した。この基準は既に機能している。
+曲数・比率を固定の数字として引用しない。仕入れが続く限り古くなる。
+次に読む担当は、自分でcoverGuide.tsの該当アーティストを数え直すこと
+（yearがある曲だけを黄金期判定に使い、未入力曲は「集計対象外」と正直に書く）。</pre>
+</div>
+
+<h2>この報告を書いた今日（2026-10-21）、自分で数え直した実測値</h2>
+<div class="nums">
+  <div class="num"><b>34曲</b><span>mjエントリ総数（本番main・coverGuide.ts）</span></div>
+  <div class="num"><b>21曲</b><span>year情報あり</span></div>
+  <div class="num"><b>16曲(76%)</b><span>黄金期1969-1991</span></div>
+  <div class="num"><b>5曲</b><span>黄金期外（1992/1995/1996）</span></div>
+  <div class="num"><b>13曲</b><span>year未入力・集計対象外</span></div>
+</div>
+<div class="box after" style="border-left-color:var(--ao);">
+<h3>検算した内容（今日・自分で実行）</h3>
+<pre>git show origin/main:src/lib/coverGuide.ts の mj エントリ（2543〜2595行目）から
+youtubeId の数を数える → 34
+year: XXXX の出現を数える → 21件
+1969〜1991の範囲に入るものを数える → 16件（76%）
+範囲外（1992・1995×2・1996）→ 5件
+year未入力 → 34-21=13件
+→ 2026-10-16のコミット記録の数字（34曲・21曲・16曲76%・5曲・13曲）と完全一致。</pre>
+</div>
+
+<footer>
+このページは #35013 確認ページの補助資料。joy-relief-station は非公開リポジトリのため、
+github.com/tamago2022/joy-relief-station への直リンクは一切使わず、本文をこのページへ転記した。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
