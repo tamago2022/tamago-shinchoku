@@ -1,0 +1,75 @@
+{
+  "updated": "YYYY-MM-DD",
+  "purpose": "依頼者が同じ説明を繰り返さなくて済むように、担当（役割）ごとの恒久ルールと今の現在地を1コマンドで復元する。",
+  "howToUse": "node scripts/roles/role-brief.mjs -- <担当名> で、その担当が読むもの・触る場所・現在地・落とし穴・完成条件を1枚で出す。",
+  "alwaysRead": [
+    "README.md",
+    "AGENTS.md"
+  ],
+  "crossCuttingLaws": [
+    {
+      "title": "確認せず自分で決めて進める",
+      "summary": "不可逆操作・外部公開・金銭・秘密情報・権限変更以外は、聞かずに自分で決めて実行する。"
+    },
+    {
+      "title": "完了は証拠で判定する",
+      "summary": "自己申告ではなく、検品コマンドの実行結果・実URL・実データで完了を確認する。"
+    }
+  ],
+  "reportFormat": [
+    "完了 / 問題 / 判断待ち のいずれかに分類する",
+    "説明・経緯・謝罪は書かず、結果とリンクだけを書く"
+  ],
+  "completionStages": [
+    "実装・自動検品",
+    "レビュー作成",
+    "mainへ合流",
+    "本番反映＋依頼者の確認"
+  ],
+  "sweepTopics": [
+    {
+      "key": "承認したのに実行されていない",
+      "re": "承認.*(未実行|されていない)|OK.*やって"
+    }
+  ],
+  "roles": [
+    {
+      "id": "writer",
+      "name": "執筆担当",
+      "aliases": ["ライター", "らいたー", "writer", "記事"],
+      "mission": "このプロジェクトの文章・コピーを書く・直す。",
+      "playbook": ".claude/playbooks/執筆担当.md",
+      "manuals": [],
+      "docs": [],
+      "skills": [],
+      "touch": ["content/ 以下の原稿"],
+      "doNotTouch": ["公開済みの過去記事の日付"],
+      "verify": ["npm run lint:content"],
+      "done": "依頼された文章が書き上がり、誤字・事実誤認が無い。",
+      "traps": [
+        "まだ事故は無い。見つけたらここに1行足す。"
+      ],
+      "branchHint": "feature/writer-*"
+    },
+    {
+      "id": "reviewer",
+      "name": "検品担当",
+      "aliases": ["レビュアー", "れびゅあー", "reviewer", "検査"],
+      "mission": "執筆担当や実装担当が作ったものを、本人とは別の視点で検査する。",
+      "playbook": ".claude/playbooks/検品担当.md",
+      "manuals": [],
+      "docs": [],
+      "skills": [],
+      "touch": ["検品ログ・チェックリスト"],
+      "doNotTouch": ["検査対象そのものの直接修正（直すのは作った担当）"],
+      "verify": ["npm test"],
+      "done": "チェックリストの全項目に実測の○×がつき、×が無い。",
+      "traps": [
+        "自分の主張を自分の文章で合格にしない。コマンドの実行結果で判定する。"
+      ],
+      "branchHint": null
+    }
+  ],
+  "sweepPriorityNote": "全担当チェックは、残件のうち『判断待ち』で止まっている担当・同じ話題が3回以上出た担当を優先する。",
+  "selfResolutionRule": "詰まったら、①もう一度やる→②別の方法でやる→③過去の記録を見る、を自分で試してから人に上げる。"
+}
