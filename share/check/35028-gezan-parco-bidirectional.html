@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35028 GEZAN×PARCOタイアップ曲：双方向タグ確認（再実測） 確認ページ</title>
+<title>#35028 GEZAN×PARCO CMページの双方向リンク 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,42 +47,38 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35028 GEZAN×PARCOタイアップ曲：双方向タグ確認（再実測）</div>
-<h1>#35028 GEZAN×PARCOタイアップ曲：双方向タグ確認（再実測）</h1>
-<div class="date">2026-10-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35028 GEZAN×PARCO CMページの双方向リンク</div>
+<h1>#35028 GEZAN×PARCO CMページの双方向リンク</h1>
+<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-GEZANのアーティストページとPARCO(パルコ)のCMタイアップページが、実在するリンク(href)でお互いに飛べることを本番環境で再実測しました。実装自体は2026-08-09に完了済みで、今回は確認ページが開けなかった(404)件の差し替えです。
+PARCOのCM「SPECIAL IN YOU. GEZAN篇」ページでGEZANタグが押せてGEZANページへ飛べ、GEZANページのコラボ欄からもPARCOページへ飛べることを本番で実測した。双方向リンクは既にmain合流・本番公開済みで、今回は実測と証拠を揃えて確定させた。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>GEZANページのHTTPステータス</span></div>
-  <div class="num"><b>200</b><span>PARCO(パルコ)ページのHTTPステータス</span></div>
-  <div class="num"><b>200</b><span>GEZAN×PARCOのCM曲ページのHTTPステータス</span></div>
-  <div class="num"><b>1件</b><span>GEZANページ内のPARCOコラボカード(実測grep)</span></div>
-  <div class="num"><b>1件</b><span>CM曲ページ内のGEZANへの実リンクhref(実測grep)</span></div>
+  <div class="num"><b>200</b><span>GEZANページ(?artist=gezan)の本番HTTP応答コード</span></div>
+  <div class="num"><b>200</b><span>PARCOページ(?artist=parco-cm-culture&amp;song=parco-special-in-you-gezan)の本番HTTP応答コード</span></div>
+  <div class="num"><b>2方向</b><span>GEZAN→PARCO・PARCO→GEZANの両方が実機で確認できたリンクの数</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>①GEZANページの「コラボ・共演・CMなど」欄にPARCOのCMカードが出て、押すとPARCOページへ飛ぶ</b><img src="img/35028-gezan-to-parco.png" alt="①GEZANページの「コラボ・共演・CMなど」欄にPARCOのCMカードが出て、押すとPARCOページへ飛ぶ"></div>
+  <div class="shot plain"><b>②PARCOのCMページ見出しに「パルコ(PARCO-CM系譜) × GEZAN」と両方が下線付きリンクで並び、GEZANを押すとGEZANページへ飛ぶ</b><img src="img/35028-parco-to-gezan.png" alt="②PARCOのCMページ見出しに「パルコ(PARCO-CM系譜) × GEZAN」と両方が下線付きリンクで並び、GEZANを押すとGEZANページへ飛ぶ"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>①GEZANアーティストページ（下にPARCOのCMカードが出る）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=gezan" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=gezan</a></li>
-  <li><b>②PARCO(パルコ)CMタイアップページ（GEZANの曲も並ぶ）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=parco-cm-culture" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=parco-cm-culture</a></li>
-  <li><b>③GEZAN×PARCOのCM曲ページ（タイトル下にGEZANタグがhref付きで出る）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=parco-cm-culture&amp;song=parco-special-in-you-gezan" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=parco-cm-culture&amp;song=parco-special-in-you-gezan</a></li>
+  <li><b>本番：GEZANアーティストページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=gezan" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=gezan</a></li>
+  <li><b>本番：PARCO CMページ（GEZAN篇・曲詳細）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=parco-cm-culture&amp;song=parco-special-in-you-gezan" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=parco-cm-culture&amp;song=parco-special-in-you-gezan</a></li>
+  <li><b>本番：PARCOアーティスト（ブランド）ページ一覧</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=parco-cm-culture" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=parco-cm-culture</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
-<table>
-<tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>GEZANページにPARCOのCMコラボカードが表示される(文言:パルコ(PARCO-CM系譜)のページで詳しく)</td><td class="yes">yes</td></tr>
-<tr><td>CM曲ページに実リンクタグ href=/cover-guide?artist=gezan が存在する</td><td class="yes">yes</td></tr>
-<tr><td>3ページとも本番で200・中身が空でない(5万〜7万バイト)</td><td class="yes">yes</td></tr>
-</table>
+
 
 <footer>
-このページは #35028 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+実装は2026-07-02にgpt-engineer-app[bot]のコミット63c1bf6d5で既にmain合流・本番公開済み（collaborators機構＝憲法『双方向リンク』の標準部品）。今回は本番URLをnode fetchで200確認し、headless Chromeで実際のクリック可能なリンク表示をスクリーンショットで実測した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
