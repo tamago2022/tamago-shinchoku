@@ -52,35 +52,34 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の指摘「一括でできない、一つ一つ棚編集で固定もたまに出す」への対応。棚への追加/外す操作は既に一括化済みだったが、「固定(★pin)」操作だけ1件ずつ即時保存のまま残っていた。既存のpendingPicksパターンを流用し、チェックした複数件をまとめて1回で保存できるよう実装した(新state pendingPins、サーバー側adminSetPickStatusBulkへ1回で送信)。
+① 棚への追加/外すは既に一括化済みだったが、「固定(★)」操作だけ1件ずつ即時保存のまま残っていた。既存のpendingPicksパターンを流用し、チェックした複数件をまとめて1回で保存できるよう実装した（新state pendingPins、反映ボタンでadminSetPickStatusBulkへ1回で送信）。commit 26bf4a94bでmainへ合流済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>26bf4a94b</b><span>main合流済み(実測確認)</span></div>
-  <div class="num"><b>7日間</b><span>Lovable認証切れ継続中(10/14→10/21、実測)</span></div>
-  <div class="num"><b>20件以上</b><span>同一の工場全体障害でブロック中の他案件数</span></div>
+  <div class="num"><b>7日間</b><span>Lovable公開がOAuth認証切れで止まっている期間(10/14→10/21・実測)</span></div>
+  <div class="num"><b>16件以上</b><span>同一の工場全体障害でブロック中の他案件数(PENDING_DECISIONS記録)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番トップ(生存確認・HTTP 200)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>Lovable公開画面(たまごさんが1回だけ再ログインで解除可)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+  <li><b>本番トップ（生存確認・HTTP 200）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>実装(棚編集のpendingPins一括保存)</td><td class="yes">済み</td></tr>
-<tr><td>mainへのpush・合流</td><td class="yes">済み(識別子 26bf4a94b)</td></tr>
-<tr><td>Lovable「公開」操作</td><td class="no">OAuth invalid_grant で停止中(needConsent:true)</td></tr>
+<tr><td>実装（棚編集のpendingPins一括保存）</td><td class="yes">済み</td></tr>
+<tr><td>mainへのpush・合流</td><td class="yes">済み（commit 26bf4a94b）</td></tr>
+<tr><td>Lovableの「公開」操作</td><td class="no">OAuth invalid_grant・工場全体の認証切れで保留</td></tr>
 <tr><td>本番URLでの機能確認</td><td class="no">公開待ちのため未反映</td></tr>
 </table>
 
 <footer>
-実測データ: lovable_keeper_state.json = lastOkAt 2026-10-14 06:24 / lastFailure invalid_grant / needConsent true（2026-10-21 22:25時点、7日間変化なし）。lovable_publish_state.json = mainUnpublished true / stoppedForToday true。Chrome新規起動は関所(1186号)で禁止、承認URL直接fetchは302でログイン画面へ誘導され突破不能。コード側の追加作業は不要で、たまごさんが一度ログイン済みブラウザで承認URLを開けば、本件を含む未反映分がまとめて自動公開される見込み。
+実測データ（2026-10-21 22:5x時点）: ~/.tamago/lovable_keeper_state.json = lastOkAt 2026-10-14 06:24 / lastFailure invalid_grant / needConsent true（7日間変化なし）。status/lovable_publish_state.json = mainUnpublished true / stoppedForToday true。コード側の追加作業は不要。Lovableへの再ログイン・承認URL（お手元の鍵ファイル ~/.tamago/lovable_authorize_url.txt に保存済み）を1回だけログイン済みブラウザで開いて「許可」を押せば、本件を含む未反映16件以上がまとめて自動公開される見込み。AI側はChrome新規起動が1186号ゲートで恒久禁止されているため実行不可。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
