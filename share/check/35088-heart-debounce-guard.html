@@ -51,34 +51,42 @@
 <h1>#35088 案件#35088 ♡ボタン連打対策・再発防止ゲート</h1>
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-店主要望(2026-08-10)：ユーザーが増えて♡ボタンを連打しても重くならない設計。連打してもサーバーへの送信をカードごとに1.2秒まとめて1回だけにする実装は、本番サイトへ既に反映済みと再実測で確認した。今回さらに、この対策が将来また消えないように、消えたら自動でビルドが落ちる見張り役を新しく設置した。
+♡ボタンを連打してもサーバーへの送信が増えない対策（カードごとに1.2秒まとめて1回だけ送る）が、本番にちゃんと入っているかを2026-10-21にもう一度直接測り直した。前回の確認ページは、たまごさんが開けない非公開リポジトリのリンクを貼ってしまっていたので、今回それを削除し、誰でも見られる実測の生ログに差し替えた。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>本番トップページ(/)の実測HTTPコード</span></div>
   <div class="num"><b>200</b><span>/lab/eggの実測HTTPコード(反映世代の裏取り用)</span></div>
-  <div class="num"><b>1200ms</b><span>現行の本番コードのデバウンス秒数(実測)</span></div>
+  <div class="num"><b>1200ms</b><span>本番コード(origin/main)のデバウンス秒数・直接読んで実測</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
   <li><b>反映世代裏取り用ページ</b><a href="https://joy-relief-station.lovable.app/lab/egg" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/lab/egg</a></li>
-  <li><b>実装コミット(デバウンス本体)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/fa6d78087fce7b9ca7fa77afb600feaa4afa8421" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/fa6d78087fce7b9ca7fa77afb600feaa4afa8421</a></li>
-  <li><b>再発防止ゲート追加コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/bfa87b992" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/bfa87b992</a></li>
 </ul>
+<div class="note">このページ自体の下にある「実測の生ログ」がいちばんの証拠。GitHubの非公開リポジトリへのリンクは、前回たまごさんが押すと404になったため今回は貼っていない。</div>
+
+<h2>④ 実測の生ログ（見張りスクリプトを本番コードに対してそのまま実行した結果）</h2>
+<pre style="background:#1c1c1c;color:#8ef0ae;padding:14px;border-radius:10px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;">$ node scripts/patrol/check-heart-debounce.mjs
+✓ check-heart-debounce: ♡ボタンの連打対策（デバウンス）は壊れていません（案件#35088）。
+
+$ node scripts/patrol/check-heart-debounce.mjs --self-test
+✓ check-heart-debounce --self-test: 連打対策なし／デバウンス短すぎを正確に検出し、合法版は通しました（見張りは生きています）。
+
+$ git show origin/main:src/components/HeartButton.tsx | grep DEBOUNCE
+const FAVORITE_SYNC_DEBOUNCE_MS = 1200;</pre>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番トップページが200で返るか</td><td class="yes">200で確認済み</td></tr>
 <tr><td>本番/lab/eggが200で返るか(新しい変更の反映裏取り)</td><td class="yes">200で確認済み</td></tr>
-<tr><td>本番コードにデバウンス(1200ms)が存在するか</td><td class="yes">見張りスクリプトでPASS</td></tr>
-<tr><td>見張りが連打対策なし版を正しく赤判定できるか(逆テスト)</td><td class="yes">逆テストでPASS(3種の不良版を検出)</td></tr>
+<tr><td>本番コード(origin/main)に1200msのデバウンスが存在するか</td><td class="yes">見張りスクリプトを実際に実行してPASS(上の生ログ)</td></tr>
+<tr><td>見張りが連打対策なし版を正しく赤判定できるか(逆テスト)</td><td class="yes">逆テストを実際に実行してPASS</td></tr>
 <tr><td>画面上で♡ボタンをクリックして確認できるか</td><td class="no">できない(別件指示でサイト全体の♡ボタン自体が非表示中のため)</td></tr>
 </table>
 
