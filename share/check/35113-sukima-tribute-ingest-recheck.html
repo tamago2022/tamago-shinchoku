@@ -52,16 +52,15 @@
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-夏川りみカバー(#35111)と仕入れ継続64件目(Postmodern Jukebox)は、1回目のAI検品時点(03:22)ではmain未合流で正しい指摘だったが、その後mainへ合流済みになった。今回git merge-base --is-ancestorで独立に再確認し、さらに仕入れ継続65件目分(Uru「奏」/sumika「ガラナ」のトリビュートカバー2曲)を新たに実装してmainへpushした。公開(Lovable)は2026-10-14から続く工場全体のOAuth認証切れでブロック中で、コード側の作業ではない。
+夏川りみカバー(#35111)と仕入れ継続64件目(Postmodern Jukebox)は、1回目の検品時点(03:22)では本体の置き場所にまだ届いていなかったため正しい指摘だったが、その後きちんと届いた。今回あらためて実測し直し、さらに仕入れ継続65件目分(Uru「奏」/sumika「ガラナ」のトリビュートカバー2曲)を新たに仕上げて本体の置き場所へ届けた。表の画面への反映は2026-10-14から続く工場全体の認証切れで止まっており、今回の仕事とは別の原因。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>YES</b><span>31c4321d8(35111号)がorigin/mainの祖先</span></div>
-  <div class="num"><b>YES</b><span>0213c5d16(継続64)がorigin/mainの祖先</span></div>
-  <div class="num"><b>YES</b><span>a3d84a0f4(継続65・今回push)がorigin/mainの祖先</span></div>
-  <div class="num"><b>20950b61e</b><span>本番のdata-commit-sha(上記3件より古い=未反映の証拠)</span></div>
-  <div class="num"><b>2026-10-14</b><span>Lovable OAuth最終成功日(今も復旧せず)</span></div>
+  <div class="num"><b>YES</b><span>35111号が本体の置き場所に届いているか</span></div>
+  <div class="num"><b>YES</b><span>継続64(Postmodern Jukebox)が本体の置き場所に届いているか</span></div>
+  <div class="num"><b>YES</b><span>継続65(今回分)が本体の置き場所に届いているか</span></div>
+  <div class="num"><b>2026-10-14</b><span>認証が最後に通った日(今も止まったまま)</span></div>
 </div>
 
 
@@ -75,12 +74,12 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>31c4321d8は origin/main の祖先か</td><td class="yes">YES</td></tr>
-<tr><td>0213c5d16は origin/main の祖先か</td><td class="yes">YES</td></tr>
-<tr><td>a3d84a0f4は origin/main の祖先か</td><td class="yes">YES</td></tr>
-<tr><td>coverGuide.tsに4文字列(夏川りみ/PMJ/Uru/sumika)が実在するか</td><td class="yes">YES</td></tr>
-<tr><td>新規id・動画IDの重複はないか</td><td class="yes">重複なし</td></tr>
-<tr><td>本番は反映済みか</td><td class="yes">未反映(OAuth障害でブロック中・コード側の問題ではない)</td></tr>
+<tr><td>35111号は本体の置き場所に届いているか</td><td class="yes">YES</td></tr>
+<tr><td>継続64は本体の置き場所に届いているか</td><td class="yes">YES</td></tr>
+<tr><td>継続65(今回分)は本体の置き場所に届いているか</td><td class="yes">YES</td></tr>
+<tr><td>4つの新しい文言(夏川りみ/PMJ/Uru/sumika)は実在するか</td><td class="yes">YES</td></tr>
+<tr><td>新しいidや動画の重複はないか</td><td class="yes">重複なし</td></tr>
+<tr><td>表の画面には反映済みか</td><td class="yes">未反映(認証切れで止まっているだけ・今回の作業の問題ではない)</td></tr>
 </table>
 
 <footer>
