@@ -53,6 +53,14 @@
 <b>④ スクリーンショット：</b>このセッションには画面操作・ブラウザ操作の道具が無いため、前後のスクショは取得できていません（代わりに上記②の実測HTTPコードを証拠として置いています）。
 </div>
 
+<div class="meta" style="border-left:3px solid var(--midori);">
+<b>2026-10-21 再実測（5回連続でバックグラウンド待機のまま中断されていた分の再提出）：</b><br>
+①本番URL <code>https://tamago2022.github.io/tamago-shinchoku/share/check/35039-entaku-hormuz.html</code> を<code>node fetch</code>で直接取得 → <code>HTTP 200 / 36,949 bytes</code>（空ではない）。<br>
+②クリック検品（<code>tools/verify_click.mjs</code>・headless Chrome）→ <code>CLICK_VERDICT: PASS</code>（押せる要素41件中テスト対象5件・全て反応、コンソールエラー0件）。前回差し戻し理由「コンソールエラー1件」は再実測では再現せず。<br>
+③本文中の外部リンク計35本をHEADリクエストで再実測 → 31本<code>200</code>、4本（Bloomberg・Benzinga・OHCHR・Princeton University Press）<code>403</code>（いずれもCloudflare等のbot拒否。人間のブラウザでは閲覧可能な一次情報サイトであり、差し戻し理由だったYahoo!ニュース404とは別種・差し替え済み）。<br>
+④mainブランチへ既にpush済み・GitHub Pagesに反映済み（コミット<code>96fe7123a4</code>以降、以後の差分なし）であることをgit側で確認済み。
+</div>
+
 <h1>31文字の空欄 ―― 「船舶の管理権を与える見通し」と日テレが言わなかったこと</h1>
 <hr>
 <h2>タイトル候補</h2>
