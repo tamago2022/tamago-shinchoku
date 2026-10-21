@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35067 温泉・美しい宿棚のコピー書き直し（35067番） 確認ページ</title>
+<title>#35067 温泉・美しい宿棚のコピー不整合を解消（35067番） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,31 +47,44 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35067 温泉・美しい宿棚のコピー書き直し（35067番）</div>
-<h1>#35067 温泉・美しい宿棚のコピー書き直し（35067番）</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35067 温泉・美しい宿棚のコピー不整合を解消（35067番）</div>
+<h1>#35067 温泉・美しい宿棚のコピー不整合を解消（35067番）</h1>
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-onsen-sauna棚とbeautiful-inns-japan棚で重複登録されている5カードのコピー不一致を解消し、既存データ(薬師山など)で事実を補強。main合流済み(commit fc5ae8bf)。Lovable公開はOAuth鍵切れ(need_consent、2026-10-14から工場全体で継続中)で押せず未反映
+「日本の温泉」棚と「日本の美しい宿」棚に<b>同じidのカードが重複登録</b>されており、片方だけコピーが新方針（事実を1つ入れる・「代表曲のひとつ」式の思考停止文禁止）に直っていて、もう片方は古い抽象文のまま食い違っていた。5カード全部の文言を両棚で一致させ、「べにや無何有」は抽象文（「何もない、をつくってある」）を既存データ(extraCards.tsの「薬師山」)で具体化した。<br><br>
+<table style="width:100%;border-collapse:collapse;font-size:14px" border="1" cellpadding="6">
+<tr><th>カード</th><th>直前(beautiful-inns-japan側)</th><th>直後(両棚で統一)</th></tr>
+<tr><td>SHONAI HOTEL SUIDEN TERRASSE</td><td>山形、鶴岡。田んぼに、建物が浮いている。</td><td>山形、鶴岡。田んぼの上に、温泉とサウナが浮いている。</td></tr>
+<tr><td>NOT A HOTEL NASU</td><td>栃木、那須。窓の外、16万坪ぜんぶ牧場。</td><td>栃木、那須。露天の窓の外、16万坪ぜんぶ牧場。</td></tr>
+<tr><td>里山十帖</td><td>新潟、南魚沼。夕食が、この土地の自己紹介。</td><td>新潟、南魚沼。雪を見ながら、露天風呂に浸かる。</td></tr>
+<tr><td>アマネム</td><td>三重、伊勢志摩。お参りのあとの、長い息。</td><td>三重、伊勢志摩。森と入り江にはさまれた湯に、長い息をつく。</td></tr>
+<tr><td>べにや無何有</td><td>石川、山代温泉。何もない、をつくってある。</td><td>石川、山代温泉。庭の向こうは、薬師山。</td></tr>
+</table>
+<br><b>★本番未反映の理由（正直に書く）</b>：mainへの合流(commit fc5ae8bf)は完了したが、Lovableの「公開」を押す手段がこのセッションに無い。公開便Chrome(CDP 9223)は停止中でChrome再起動は憲法1186号の関所で本人判断のみ、Lovable MCPはOAuthのrefresh_tokenがinvalid_grantで死亡中(need_consent)で承認URLをログイン済みChromeで開く必要があるが、このセッションにブラウザ操作ツールが無い。gh CLIも本環境に存在しない。3つの経路を実際に試した上での結論(tools/1464_dakai_kanmon.py PASS済み)。この詰まりは35067番固有ではなく、2026-09-08頃から続く工場全体のLovable公開基盤障害(98402番等でも同一症状が継続記録されている)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>5件</b><span>不整合を解消したカード数</span></div>
+  <div class="num"><b>5件中5件</b><span>両棚で文言を一致させたカード数</span></div>
+  <div class="num"><b>1件</b><span>具体化した抽象文(べにや無何有)</span></div>
+  <div class="num"><b>0件</b><span>tsc/eslint新規エラー</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番(未反映・現状確認用)</b><a href="https://joy-relief-station.lovable.app/shelf/travel/onsen-sauna" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/travel/onsen-sauna</a></li>
+  <li><b>本番:日本の温泉棚</b><a href="https://joy-relief-station.lovable.app/shelf/travel/onsen-sauna" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/travel/onsen-sauna</a></li>
+  <li><b>本番:日本の美しい宿棚</b><a href="https://joy-relief-station.lovable.app/shelf/travel/beautiful-inns-japan" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/travel/beautiful-inns-japan</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへ合流</td><td class="yes">OK(fc5ae8bf)</td></tr>
-<tr><td>Lovable公開反映</td><td class="no">NG（鍵切れで未反映）</td></tr>
+<tr><td>mainへ合流</td><td class="yes">済み(commit fc5ae8bf)</td></tr>
+<tr><td>Lovable本番公開</td><td class="no">未反映(工場全体のOAuth/Chrome停止障害・構造的に不可)</td></tr>
+<tr><td>本番URL 200応答</td><td class="yes">200(ただし旧コピーのまま)</td></tr>
 </table>
 
 <footer>
