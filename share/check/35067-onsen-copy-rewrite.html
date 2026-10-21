@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35067 35067号：温泉棚のコピー、方針通りに本番反映済みを実測確認 確認ページ</title>
+<title>#35067 温泉・美しい宿棚のコピー書き直し（35067番） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,40 +47,35 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35067 35067号：温泉棚のコピー、方針通りに本番反映済みを実測確認</div>
-<h1>#35067 35067号：温泉棚のコピー、方針通りに本番反映済みを実測確認</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35067 温泉・美しい宿棚のコピー書き直し（35067番）</div>
+<h1>#35067 温泉・美しい宿棚のコピー書き直し（35067番）</h1>
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-「日本の温泉」棚（ホテルスターらんど／純銭湯 旭湯）の紹介文を、型通りの締め文句で終わらせず、場所・具体的な事実・短い情景で書く方針（CLAUDE.md『文脈が商品』節）どおりに本番HTMLへ反映済みであることを、本番ページを直接取得して実測で確認した。
+onsen-sauna棚とbeautiful-inns-japan棚で重複登録されている5カードのコピー不一致を解消し、既存データ(薬師山など)で事実を補強。main合流済み(commit fc5ae8bf)。Lovable公開はOAuth鍵切れ(need_consent、2026-10-14から工場全体で継続中)で押せず未反映
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2</b><span>対象カード数（スターらんど・旭湯）</span></div>
-  <div class="num"><b>2</b><span>方針どおりの文言を本番HTMLで発見（2件中2件）</span></div>
-  <div class="num"><b>0</b><span>型通りの締め文句を本番HTMLで検出（0件）</span></div>
+  <div class="num"><b>5件</b><span>不整合を解消したカード数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番：ホテルスターらんど</b><a href="https://joy-relief-station.lovable.app/room/card/star-land" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/star-land</a></li>
-  <li><b>本番：純銭湯 旭湯 おかげ風呂舘</b><a href="https://joy-relief-station.lovable.app/room/card/ise-asahiyu" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/ise-asahiyu</a></li>
-  <li><b>本番：日本の温泉棚（旅の部屋）</b><a href="https://joy-relief-station.lovable.app/room/travel" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/travel</a></li>
+  <li><b>本番(未反映・現状確認用)</b><a href="https://joy-relief-station.lovable.app/shelf/travel/onsen-sauna" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/travel/onsen-sauna</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>ホテルスターらんど（/room/card/star-land）の本文に「二十種の薬草の湯に、朝まで浸かっていられる。」が本番HTMLに存在</td><td class="yes">yes</td></tr>
-<tr><td>純銭湯 旭湯（/room/card/ise-asahiyu）の本文に「禊の「潮浴び」を、海水の露天風呂で引き継ぐ。」が本番HTMLに存在</td><td class="yes">yes</td></tr>
-<tr><td>両ページの本文に型通りの締め文句（禁止語リスト該当）が残存</td><td class="yes">no</td></tr>
+<tr><td>mainへ合流</td><td class="yes">OK(fc5ae8bf)</td></tr>
+<tr><td>Lovable公開反映</td><td class="no">NG（鍵切れで未反映）</td></tr>
 </table>
 
 <footer>
-実測方法：node -e のfetchで本番URLのHTMLを直接取得し、方針どおりの文言の有無と型通りの締め文句の有無を文字列検索で確認（2026-10-21実測）。今後の同種の棚（新規の『場所』カード等）にも、このコピー方針はCLAUDE.md恒久ルールとして既に自動適用される。
+このページは #35067 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
