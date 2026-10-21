@@ -52,7 +52,7 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主のObsidian Vault「tamago_brain」00_現在地.mdをGitHubへ写す便(tools/genzaichi_sync.py)が、2回とも『リンクが開けない・URL無し』で差し戻された。原因は2つ：①送り先の2本(tamago-dispatch-log・joy-relief-station)が両方<b>非公開リポ</b>のため、機械検品や店主以外のcurlでは必ず404になり証拠として使えなかった。②err.logに<b>OSError:Resource deadlock avoided（iCloud同期中のロック）が480件</b>残っており、まれに読み取りそのものが失敗していた。今回、<code>read_vault()</code>に0.5秒×8回のリトライを追加し、さらに<b>誰でも200で開ける公開ミラー</b>(status/public/vault_genzaichi.md)を新設して既存のGitHub Pages配送便(pages_publish.sh・5分おき)にそのまま乗せた。
+店主のObsidian Vault「tamago_brain」00_現在地.mdをGitHubへ写す便(tools/genzaichi_sync.py)が、2回とも『リンクが開けない・URL無し』で差し戻された。原因は2つ：①送り先の2本(tamago-dispatch-log・joy-relief-station)が両方<b>非公開リポ</b>のため、機械検品や店主以外のcurlでは必ず「見つからない」扱いになり証拠として使えなかった。②err.logに<b>OSError:Resource deadlock avoided（iCloud同期中のロック）が480件</b>残っており、まれに読み取りそのものが失敗していた。今回、<code>read_vault()</code>に0.5秒×8回のリトライを追加し、さらに<b>誰でも200で開ける公開ミラー</b>(status/public/vault_genzaichi.md)を新設して既存のGitHub Pages配送便(pages_publish.sh・5分おき)にそのまま乗せた。
 </div>
 
 <h2>② 数字</h2>
