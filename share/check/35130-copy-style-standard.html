@@ -52,13 +52,14 @@
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-「日本の美しい宿」棚だけで確立していた紹介文の型（3行構造・地名を1行目に単独で置く・形容詞『美しい/静かな/贅沢な』禁止・情報は1行に1つ）を、店主の指示どおり『この棚に限らず、今後仕入れる/書き直す紹介文全般の標準スタイル』として <code>.claude/manuals/01-ingest-linking.md</code> に明文化（commit 6fe46ec27、main反映済み）。棚カードの短文は<code>docs/operations/copy-craft.md</code>、楽曲コピーは<code>docs/operations/copy-tan.md</code>が正本と一本化した。実際に2026-10-17付けで『日本の温泉』棚にも同じ型が適用され、本番で稼働中。
+「日本の美しい宿」棚だけで確立していた紹介文の型（3行構造・地名を1行目に単独で置く・形容詞『美しい/静かな/贅沢な』禁止・情報は1行に1つ）を、店主の指示どおり『この棚に限らず、今後仕入れる/書き直す紹介文全般の標準スタイル』として明文化した。<br><br><b>明文化した場所（本文そのまま・main反映済み）：</b><br><code>.claude/manuals/01-ingest-linking.md</code>「紹介文（whisper・copy・note）の標準スタイル」節に以下を追記：<br><blockquote style='border-left:3px solid var(--t-line);margin:8px 0;padding:6px 12px;font-size:0.85rem;color:var(--t-fg2);'>新しく仕入れる／書き直す紹介文は、すべて下記2つの正本に従う。新しい型を自分で作らない。<br>・棚カードの短文（worlds.tsのwhisper、extraCards.tsのcopy）＝docs/operations/copy-craft.md。『この棚だけの話ではない。今後の同種の棚すべてに適用する』と正本内に明記済みで、2026-10-17に『日本の温泉』棚（onsen-sauna）へも実際に適用され運用が続いている。<br>・楽曲コピー（coverGuide.tsのnote）＝docs/operations/copy-tan.md。</blockquote><b>今後も守られる仕組み（決めただけで終わらせない）：</b> この節がある<code>01-ingest-linking.md</code>は仕入れ・つなげる担当の必読マニュアル（CLAUDE.md『担当別マニュアル』表の01番）で、該当担当は着手前に必ず読む恒久ルールになっている。加えて<code>copy-craft.md</code>内の『今後の同種の棚への適用履歴』節に、2026-10-17の温泉棚への実適用が記録済み＝宣言だけでなく実際に運用が回っている。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2棚</b><span>標準スタイル適用済み棚数（日本の美しい宿／日本の温泉）</span></div>
+  <div class="num"><b>2棚</b><span>型が実際に適用され本番稼働中の棚数（日本の美しい宿／日本の温泉）</span></div>
   <div class="num"><b>200,200</b><span>本番2ページのHTTPステータス実測</span></div>
+  <div class="num"><b>10件,7件</b><span>本番①②でnode fetchにより実測した「地名単独1行目＋動詞言い切り」実例の件数</span></div>
 </div>
 
 
@@ -72,8 +73,12 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番①に型の実例「石川、山代温泉。」が本文に実在するか(実測)</td><td class="yes">石川</td></tr>
-<tr><td>本番②「日本の温泉」棚が200で中身が空でないか(実測)</td><td class="yes">HTTP 200・34554バイト</td></tr>
+<tr><td>本番①実例：石川、山代温泉。／庭の向こうは、薬師山。</td><td class="yes">地名単独1行目＋動詞言い切り</td></tr>
+<tr><td>本番①実例：兵庫、淡路島。／100メートルの床が、宙に浮いている。</td><td class="yes">地名単独1行目＋動詞言い切り</td></tr>
+<tr><td>本番①実例：島根、隠岐。／コンビニが無い。それが目当て。</td><td class="yes">地名単独1行目＋動詞言い切り</td></tr>
+<tr><td>本番②実例：山梨、都留。／二十種の薬草の湯に、朝まで浸かっていられる。</td><td class="yes">地名単独1行目＋動詞言い切り</td></tr>
+<tr><td>本番②実例：三重、伊勢。／禊の「潮浴び」を、海水の露天風呂で引き継ぐ。</td><td class="yes">地名単独1行目＋動詞言い切り</td></tr>
+<tr><td>tools/oni_modoshi.py --self-test（検品係そのものが正しく動くかの自己試験）</td><td class="yes">自己試験：OK／禁止語400語を読み込み</td></tr>
 </table>
 
 <footer>
