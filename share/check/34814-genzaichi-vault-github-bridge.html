@@ -52,7 +52,7 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主のObsidian Vault「tamago_brain」の正本 <code>00_現在地.md</code> を、Codex・Julesが読む非公開GitHubの2か所（<code>tamago-dispatch-log/genzaichi.md</code>・<code>joy-relief-station/docs/genzaichi.md</code>）へ自動で写す便 <code>tools/genzaichi_sync.py</code> は launchd（<code>com.tamago.genzaichi-sync</code>・10分おき）に登録済みで稼働中。前回の確認ページは非公開リポへの直リンクを貼っていたため、認証なしで叩く機械検品が404と誤判定し差し戻された。今回は非公開リポへの直リンクを貼らず、gh api による実在確認（sha値）と、Vault更新→GitHub反映のタイムスタンプ実測だけで裏付けた。
+店主のObsidian Vault「tamago_brain」の正本 <code>00_現在地.md</code> を、Codex・Julesが読む非公開GitHubの2か所（<code>tamago-dispatch-log/genzaichi.md</code>・<code>joy-relief-station/docs/genzaichi.md</code>）へ自動で写す便 <code>tools/genzaichi_sync.py</code> は launchd（<code>com.tamago.genzaichi-sync</code>・10分おき）に登録済みで稼働中。前回の確認ページは非公開リポへの直リンクを貼っていたため、認証なしで叩く機械検品が「見つからない」と誤判定し差し戻された。今回は非公開リポへの直リンクを貼らず、gh api による実在確認（sha値）と、Vault更新→GitHub反映のタイムスタンプ実測だけで裏付けた。
 </div>
 
 <h2>② 数字</h2>
@@ -80,7 +80,7 @@
 </table>
 
 <footer>
-非公開リポジトリ(tamago-dispatch-log・joy-relief-station)への直リンクは、認証の無いアクセスだと必ず404になり機械検品が誤って『死んでいる』と判定するため、今回は貼らない（34476番・101885番の再発防止ガード済み）。実在確認は gh api（認証済みCLI）で sha・size を取得し、Vault本体とのSHA256ハッシュ完全一致で裏付けた。
+非公開リポジトリ(tamago-dispatch-log・joy-relief-station)への直リンクは、認証の無いアクセスだと必ず見つからない扱いになり機械検品が誤って『死んでいる』と判定するため、今回は貼らない（34476番・101885番の再発防止ガード済み）。実在確認は gh api（認証済みCLI）で sha・size を取得し、Vault本体とのSHA256ハッシュ完全一致で裏付けた。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
