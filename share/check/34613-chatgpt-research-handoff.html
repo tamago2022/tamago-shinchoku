@@ -49,17 +49,18 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34613 「ChatGPTにお手紙を書けばリサーチできる」仕組みの実測</div>
 <h1>#34613 「ChatGPTにお手紙を書けばリサーチできる」仕組みの実測</h1>
-<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-21 訂正版：日付の誤りを修正し実測し直し</div>
 
 <div class="fix">
-2026-08-06にたまごさんが言った「リサーチをやってほしければChatGPTにお手紙を書いて、リサーチしながらできるよ」という運用方法が、実際にjoy-relief-stationリポジトリの中で仕組みとして存在し、今も動いているかを実測しました。
+2026-08-06にたまごさんが言った「リサーチをやってほしければChatGPTにお手紙を書いて、リサーチしながらできるよ」という運用方法が、実際にjoy-relief-stationリポジトリの中で仕組みとして存在し、今も動いているかを実測しました。<br>
+<b style="color:var(--aka);">訂正：前回版は「往復メモ形式は2026-10-15にも実績あり」と書きましたが、これは誤りでした。git logで実際のコミット日時を確認した結果、正しくは下記の数字です。</b>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2系統</b><span>実在する仕組みの数（往復メモ形式＋構造化Task Handoff形式）</span></div>
-  <div class="num"><b>2026-10-15</b><span>往復メモ形式（ai-brain/sync/）の直近の実績日</span></div>
-  <div class="num"><b>2026-09-19</b><span>構造化Task Handoff形式（ai-brain/handoffs/）の最後の更新日（以後1ヶ月以上停止）</span></div>
+  <div class="num"><b>2系統</b><span>実装されている仕組みの数（往復メモ形式＋構造化Task Handoff形式）</span></div>
+  <div class="num"><b>2026-09-15</b><span>往復メモ形式（ai-brain/sync/）の最後の更新日（以後36日間停止）</span></div>
+  <div class="num"><b>2026-09-19</b><span>構造化Task Handoff形式（ai-brain/handoffs/）の最後の更新日（以後32日間停止）</span></div>
 </div>
 
 
@@ -72,12 +73,16 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>往復メモ形式（ai-brain/sync/chatgpt⇔claude/latest.md）</td><td class="yes">直近2026-10-15に実績あり・生きている</td></tr>
-<tr><td>構造化Task Handoff形式（ai-brain/handoffs/queue/）</td><td class="no">2026-09-19以降更新なし・未accepted案件1件が放置中</td></tr>
+<tr><td>往復メモ形式（ai-brain/sync/chatgpt⇔claude/latest.md）</td><td class="no">最終コミット2026-09-15（826番）。10月に入ってからの更新は無い。仕組みはあるが36日間使われていない</td></tr>
+<tr><td>構造化Task Handoff形式（ai-brain/handoffs/queue/）</td><td class="no">2026-09-19以降更新なし・未accepted案件1件が放置中。32日間使われていない</td></tr>
 </table>
 
+<div class="note">
+結論：「ChatGPTにお手紙を書けばリサーチできる」仕組み自体は2系統ともコード上に実在し、過去（9月中）は実際に往復していた。ただし2026-10-21現在、<b>どちらも1ヶ月以上使われておらず実質停止中</b>。「仕組みがある」＝「今動いている」ではない、という事実をそのまま書く。
+</div>
+
 <footer>
-実測方法：joy-relief-stationリポジトリのgit log（ai-brain/sync/・ai-brain/handoffs/配下）を直接確認。本番の画面変更を伴う依頼ではなく、たまごさんの発言の意図した運用が実在し機能しているかの事実確認です。
+実測方法：joy-relief-stationリポジトリの<code>git log --format="%ai %H" -- ai-brain/sync/chatgpt/latest.md</code>等、各ファイルの最終コミット日時を直接確認（2026-10-21実行）。前回版の「2026-10-15」という日付は裏取りせずに書いた誤りで、本訂正版で修正済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
