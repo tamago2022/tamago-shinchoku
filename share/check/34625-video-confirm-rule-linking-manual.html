@@ -52,27 +52,36 @@
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-仕入れ・アーティストページ・リンク付け作業（つなげる担当）でも動画ページを開いて確認する場面があるため、CLAUDE.md第三条『動画ページをブラウザ自動操作で開く時の手順』(5手順＋3点セット)を <code>.claude/manuals/01-ingest-linking.md</code> と <code>docs/operations/ingest-playbook.md</code> の2ファイルに明記し、mainへpush済み。コードではなく運用ドキュメントの追記のため、サイトの見た目・Lovable公開には変化なし。
+① 直したこと：仕入れ・アーティストページ・リンク付け作業（つなげる担当）でも動画ページを開いて確認する場面があるため、CLAUDE.md第三条『動画ページをブラウザ自動操作で開く時の手順』(5手順＋3点セット)を2つの運用ドキュメントに明記し、mainへ合流済み（コミット b2208703e）。コードではなく運用ドキュメントの追記のため、サイトの見た目・Lovable公開には変化なし。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+<div class="num"><b>2 / 2</b><span>対象ファイル・両方に追記済み</span></div>
 </div>
+<div class="note">GitHubリポジトリ(joy-relief-station)は非公開のため、たまごさんがリンクを押しても開けません。そのため追記した本文そのものを、下にそのまま貼っています。</div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>追記した本文（そのまま引用・非公開リポジトリのためここに全文を置きます）</h2>
 <ul class="links">
-  <li><b>01-ingest-linking.md（GitHub・mainのL236-239）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/manuals/01-ingest-linking.md#L236-L239" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/manuals/01-ingest-linking.md#L236-L239</a></li>
-  <li><b>ingest-playbook.md（GitHub・mainのL506-509）</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/ingest-playbook.md#L506-L509" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/docs/operations/ingest-playbook.md#L506-L509</a></li>
-  <li><b>mainへのコミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/b2208703e" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/b2208703e</a></li>
+  <li><b>.claude/manuals/01-ingest-linking.md（mainの239行目・つなげる担当の実務ルール節）</b>
+  「動画の実在確認・埋め込み可否確認・タイトル確認・原曲↔カバー往復チェック等で、実際に動画ページをブラウザで開く必要が生じた場合も、CLAUDE.md第三条「動画ページをブラウザ自動操作で開く時の手順」の5手順と3点セットを必ず守る（例外なし）。まずoEmbed/YouTube Data API/curlで済むなら、そちらを優先する（既存運用を変えない）。店主指示2026-08-06・案件98406番。」
+  </li>
+  <li><b>docs/operations/ingest-playbook.md（mainの508行目）</b>
+  「この節でPlaywright等により実際にブラウザで動画ページを開く・再生確認する場合は、必ずCLAUDE.md第三条の5手順（開く→即ミュート→画面で確認→読み取り→即閉じる→閉じたか確認）と3点セット（select_browserでClaude作業用プロフィールを選ぶ／tabId使い回し／tabs_close_mcpで閉じる）を1セットで実行する。1つでも実行・確認できない状況なら、その場面は実行しない。（店主指示2026-08-06・案件98406番）」
+  </li>
 </ul>
 
+<h2>③ 押せるリンク一覧</h2>
+<ul class="links">
+  <li><b>この確認ページ（公開・押せます）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34625-video-confirm-rule-linking-manual.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34625-video-confirm-rule-linking-manual.html</a></li>
+</ul>
+<div class="note">今回はコードではなく社内ルール文書（非公開リポジトリ内）への追記のため、見た目が変わる本番ページや、たまごさんが押して開ける社外URLは存在しません。押せるのは上の確認ページ自身だけです。</div>
 
+<h2>④ スクリーンショット</h2>
+<div class="note">対象外です（運用ドキュメントの文章追記のみで、画面の見た目は変化していません）。</div>
 
 <footer>
-このページは #34625 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #34625 のセッションが作り直した確認資料。1回目はたまごさんが開けない非公開GitHubリンクを貼ってしまい、機械検品で差し戻された（2026-10-21 10:04）。今回はその指摘を反映し、非公開リンクを除去して本文をそのまま引用する形にした。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
