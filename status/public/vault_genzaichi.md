@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-21 17:37:17・hash=36bf11502adc -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-21 18:07:25・hash=704a0a91d828 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -32,6 +32,7 @@
 - **特集「シティポップ」の指摘対応は完了済み**（2026-10-08・commit d69fd0d9c／origin/main反映済み）：「シティポップ特集の直し」が3回クラッシュ(process_interrupted)したため見張り番が引き継いだが、調査の結果**修正自体は別セッションがクラッシュより前に完成・本番反映していた**と判明。本番 https://joy-relief-station.lovable.app/feature/citypop-sekai を実機確認：ヘッダー背景＝松原みき「真夜中のドア」のサムネに差替済み、IN THIS ISSUEは『Out of Time』『真夜中のドア』『フライデー・チャイナタウン』『Plastic Love』『テレフォン・ナンバー』『Remember Summer Days』と英語曲名のまま表示（変な日本語訳なし）。あわせて同クラッシュ連鎖の前セッションが報告していた「特集の入口バナーを原曲カバー含め53曲に自動付与」（commit f11060a47）も同じく本番反映済みを再確認。追加作業なし、クローズ。
 
 ## 最近決まったこと（2026-10-02〜04）
+- 2026-10-21 ごきげんの種（LINE 週1回・金曜20時）：導線をサイト全ページに入れた（友だち追加URLが空の間は出ない。joy-relief-station public/gokigen-tane.json に入れれば全ページに出る）／配信便 tools/gokigen_tane.py（鍵 LINE_CHANNEL_ACCESS_TOKEN が入るまで下書きだけ）／第1号 10-30 キャロル・キング「It's Too Late」・第2号 11-06 杏里「オリビアを聴きながら」の下書きはドライブ「ごきげん一粒」。たまごさん待ち：LINE公式アカウント作成→友だち追加URLと鍵。公開はDispatch。
 - 10-14 Claudeの生成物は全部 Googleドライブ「AI生成物/Claude/<案件>」へ（詩と音楽_僕は見た…／ポッドキャスト神回_日本語音源／HowItHolds／わえちゃん／その他）。iCloud・Mac本体は使わない。納品は tools/claude_nouhin.py。
 - 2026-10-14 外部カードの題名は「何の動画か」（主題の名詞＋していること・スマホで23文字以内に主題）。きっかけ＝「⛱ 「冷やす」でなく「癒す」」→「チャイ香る、さつまいもアイスのビスケットサンド」に直し本番確認済み（芋の棚）。関所 tools/daimei_kanmon.py を取り込み（2210_tanaire／nagekomi_shelf）に接続、落ちた題名は tools/daimei_naoshi.py が5分便で1日20件ずつ直す（前後は status/public/daimei_naoshi.json）。次：1か月後（11/14）に外部カードの差し戻し件数が0に近いかを --tanaoroshi で測る。
 - 2026-10-11 GitHub Actions（非公開のjoy-relief-stationだけが有料枠を食う）：10月は1〜5日で約1,955分＝無料枠2,000分を使い切り、以降は全ジョブが起動前に失敗（PR #906の「支払いが止まっている」の正体）。17本の起動条件を削減（Quality Gateの追いpush毎検査と毎日便をやめる・@発射は発射台Issueだけ・店主確認は判定語だけ・管理職AI1日1回・台帳週1・重複のバンドル重量PR便停止・見回り系7本は3日に1回・ブランチ回収月2回）。見込み約920分/月。11/1に枠が戻れば動く。戻す1語：`python3 tools/actions_waku.py modosu`（記録 status/gh_actions_waku/）。公開リポ（tamago-shinchoku等）は無料なので触っていない。
