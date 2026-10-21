@@ -52,14 +52,16 @@
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-声入力の依頼『那須だったらこのシェフは那須な味噌…那須麻婆…中村さんも確か作ってるはず』は『那須』が『茄子』の聞き取り誤りと判断。YouTube Data APIで中村和成シェフ(既存登録済み)の茄子系動画11本を発見したが、find-embeddable.mjsの実再生テストでは10本がok:false(API上はembeddable:trueでも実際は再生不可、既知の罠)。唯一<code>wcnXjOalkPA</code>(ラタトゥイユ)だけがok:true=実在・実再生確認済みのため、これを<code>food-nakamura-ratatouille</code>として追加しmainへpush済み。『レシピを探す』ボタン無反応の指摘は、選択済みタブの仕様通りの正常挙動が検品ツール側で誤検知されていたもの(姉妹案件#35108で既に修正済み・commit 0ea42f5855)で、実機のクリック検品でも30/30件が反応した。
+声入力の依頼『那須だったらこのシェフは那須な味噌…那須麻婆…中村さんも確か作ってるはず』は『那須』が『茄子(なす)』の聞き取り誤りと判断(那須な味噌=茄子の味噌田楽、那須麻婆=麻婆茄子に相当)。YouTube Data APIで中村和成シェフ(既存登録済み)の茄子系動画11本(麻婆茄子1本含む)を発見したが、find-embeddable.mjsの実再生テストでは10本がok:false(API上はembeddable:trueでも実際は再生不可、既知の罠)。唯一<code>wcnXjOalkPA</code>(ラタトゥイユ)だけがok:true=実在・実再生確認済みのため、これを<code>food-nakamura-ratatouille</code>として追加しmainへpush済み(commit 6e267d0ba)。既存の『麻婆豆腐』料理名タグはキーワード『麻婆』だけで一致するため、将来『麻婆茄子』のレシピを仕入れればこのタグへ自動でヒットする実装になっている(押しすぎて減る心配はない。food-radarは軸をまたいだANDを使わない排他フィルター設計のため、1つのタグを選んでも他のヒット数は減らない)。『レシピを探す』ボタン無反応の指摘は、選択済みタブの仕様通りの正常挙動が検品ツール側で誤検知されていたもの(姉妹案件#35108で既に修正済み・commit 0ea42f5855)。実行ログは以下。<pre>$ node tools/verify_click.mjs https://joy-relief-station.lovable.app/food-radar
+実測: {"url":"https://joy-relief-station.lovable.app/food-radar","totalClickable":197,"tested":30,"autoOkLinkCount":51,"selfLinkCount":3,"truncated":true,"noResponseCount":0,"skippedDisappearedCount":0,"skippedRepurposedCount":0,"consoleErrorCount":0}
+CLICK_VERDICT: PASS - 押せる要素は全て反応しました（30件中30件・全197件）</pre>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>本番(food-radar)HTTPステータス</span></div>
-  <div class="num"><b>30/30件</b><span>クリック検品で反応した要素(node tools/verify_click.mjs実行・2026-10-21 23:34)</span></div>
-  <div class="num"><b>1/11本</b><span>中村和成の茄子系候補のうち実再生テストPASSした本数(node scripts/tamago-dj/find-embeddable.mjs実行・2026-10-22 0:2x)</span></div>
+  <div class="num"><b>200</b><span>本番(food-radar)HTTPステータス(node -e fetchで実測・2026-10-22 00:3x)</span></div>
+  <div class="num"><b>30/30件</b><span>クリック検品で反応した要素(上記ログのCLICK_VERDICT行・2026-10-21 23:34実行)</span></div>
+  <div class="num"><b>1/11本</b><span>中村和成の茄子系候補のうち実再生テストPASSした本数(node scripts/tamago-dj/find-embeddable.mjs実行・出力ok:true/false・2026-10-22 0:2x)</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -72,6 +74,7 @@
 <ul class="links">
   <li><b>本番：ごきげんフード＆レシピレーダー</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
   <li><b>追加したレシピ動画(YouTube)</b><a href="https://www.youtube.com/watch?v=wcnXjOalkPA" target="_blank" rel="noopener">https://www.youtube.com/watch?v=wcnXjOalkPA</a></li>
+  <li><b>麻婆茄子候補(実再生ok:false・不採用)</b><a href="https://www.youtube.com/watch?v=ePbjux9Wdis" target="_blank" rel="noopener">https://www.youtube.com/watch?v=ePbjux9Wdis</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
