@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#34618 力を入れるアーティストと薄いアーティストは混在してよい（34618号） 確認ページ</title>
+<title>#34618 「力を入れるアーティスト」と「薄いアーティスト」は混在してよい方針 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,40 +47,34 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34618 力を入れるアーティストと薄いアーティストは混在してよい（34618号）</div>
-<h1>#34618 力を入れるアーティストと薄いアーティストは混在してよい（34618号）</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34618 「力を入れるアーティスト」と「薄いアーティスト」は混在してよい方針</div>
+<h1>#34618 「力を入れるアーティスト」と「薄いアーティスト」は混在してよい方針</h1>
 <div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-06の店主の発言「力を入れたいアーティストと別に、そこまで力入れてないアーティストは全然いてもいい」を、仕入れマニュアル(.claude/manuals/01-ingest-linking.md)の恒久ルールへ追記しmainへ反映済み。全アーティストのプロフィール文・aliases・erasを均等に厚くしなくてよい、ただし曲数の最低ラインは変わらず守る、という区別を明文化した。本番の実在ページで、薄いアーティストと力を入れたアーティストが両方正常に表示されることをスクショと実測で確認済み。
+2026-08-06の店主指示『力を入れたいアーティストと別に、そこまでとりあえずあるけれども、そこまで力入れてないアーティストは全然いてもいい』を、仕入れマニュアル(.claude/manuals/01-ingest-linking.md)へ恒久ルールとして明文化（commit 6862a0536）。緩めてよいのはプロフィール文(about)・別名(aliases)・年代タグ(eras)などの肉付けだけで、曲数の最低ライン(4〜8曲)は変わらず守る、という区別を明記。本番の既存アーティストページで『薄いアーティスト』(小柳ゆき=about無し・aliases空・eras空・曲10件)と『力を入れたアーティスト』(yuming=プロフィール文・別名多数)が実際に共存していることをWebFetchで実測確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>薄いアーティスト(小柳ゆき)HTTP</span></div>
-  <div class="num"><b>56196</b><span>小柳ゆきページの文字数(実測)</span></div>
-  <div class="num"><b>200</b><span>力を入れたアーティスト(yuming)HTTP</span></div>
-  <div class="num"><b>103662</b><span>yumingページの文字数(実測)</span></div>
+<div class="note">（数字なし）</div>
 </div>
 
-<h2>③ 実データでのスクリーンショット</h2>
-<div class="shots">
-  <div class="shot before"><b>薄いアーティスト：小柳ゆき（about無し・aliases空・eras空・曲10件）</b><img src="share/check/img/34618-koyanagi-thin.png" alt="前"></div>
-  <div class="shot after"><b>力を入れたアーティスト：yuming（about文あり・肉付け充実）</b><img src="share/check/img/34618-yuming-focus.png" alt="後"></div>
-</div>
+
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>薄いアーティストの本番ページ(小柳ゆき)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E5%B0%8F%E6%9F%B3%E3%82%86%E3%81%8D" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=%E5%B0%8F%E6%9F%B3%E3%82%86%E3%81%8D</a></li>
-  <li><b>力を入れたアーティストの本番ページ(yuming)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=yuming" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=yuming</a></li>
+  <li><b>実例1：薄いアーティスト（小柳ゆき）の本番ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=小柳ゆき" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=小柳ゆき</a></li>
+  <li><b>実例2：力を入れたアーティスト（yuming/松任谷由実）の本番ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=yuming" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=yuming</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>小柳ゆき(about無し・aliases空・eras空・曲10件)がHTTP200で正常表示</td><td class="yes">yes</td></tr>
-<tr><td>yuming(about文あり・肉付け充実)がHTTP200で正常表示</td><td class="yes">yes</td></tr>
-<tr><td>仕入れマニュアルへ恒久ルール追記・main反映済み</td><td class="yes">yes</td></tr>
+<tr><td>小柳ゆき（薄い例）本番ページ</td><td class="yes">WebFetchで取得・本文に「小柳ゆき」見出し＋曲一覧(Prelude/Be Alive等)あり・空ではない</td></tr>
+<tr><td>yuming（力を入れた例）本番ページ</td><td class="yes">WebFetchで取得・見出し「松任谷由実」＋「全40曲をご紹介します。」＋曲名多数あり・空ではない</td></tr>
+<tr><td>仕入れマニュアルへの明文化</td><td class="yes">origin/main の .claude/manuals/01-ingest-linking.md に『「力を入れる」アーティストと「とりあえずある」アーティストは混在してよい』の節がgit showで実在確認済み(commit 6862a0536)</td></tr>
+<tr><td>main反映</td><td class="yes">6862a0536 は orign/main の祖先であることを git merge-base --is-ancestor で確認済み</td></tr>
 </table>
 
 <footer>
