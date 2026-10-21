@@ -55,14 +55,16 @@
 セッション内の検索・クリック行動だけで好みに近づける企画（Spotifyの精度を引き合いに出した発言）の実装『検索キーワードをパーソナライズ学習に接続』は、コードとしては完成し取り込み済み。ただし本番(Lovable)への『公開』だけがまだ押されておらず、本番サイトにはまだ反映されていない。原因は工場全体で発生しているLovableの認証切れで、このセッションにはブラウザを操作する手段が無く、認証画面を自分で開けないため公開を完走できない。
 </div>
 
-<h2>② 数字（2026-10-22 00:28 実測）</h2>
+<h2>② 数字（2026-10-22 01:20 実測・リンク404を修正し再測定）</h2>
 <div class="nums">
-  <div class="num"><b>コードの取り込み</b><span>YES（実装は完成・保存場所に存在）</span></div>
+  <div class="num"><b>コードの取り込み</b><span>YES（保存場所の本線に合流済み）</span></div>
   <div class="num"><b>本番サイトの生存</b><span>200（https://joy-relief-station.lovable.app/）</span></div>
   <div class="num"><b>本番に機能が届いているか</b><span>0件 / 7件（未到達）</span></div>
 </div>
 <div class="note">
-本番バンドル <code>/assets/index-3zJ7JRvY.js</code>(84万字) を実際に取得し、実装コード固有のキーワードで検索した結果：
+前回の確認ページは本番バンドルのファイル名を<code>index-3zJ7JRvY.js</code>と書いていたが、これは誤り（その名前のファイルは本番に存在せず404）。
+今回あらためて本番トップページのHTMLから実在するバンドル名を取り直し、その実物を取得して確認した。<br>
+実在するバンドル：<code>/assets/index-2yewNsPF.js</code>（84万3265字）＋<code>/assets/index-BGcUats9.js</code>（1万867字）。この2つを実際に取得し、実装コード固有のキーワードで検索した結果：
 <pre style="white-space:pre-wrap;font-size:0.82rem;background:#f8f6ef;border-radius:8px;padding:10px;">盛り上が => false
 アップテンポ => false
 しんみり => false
@@ -70,27 +72,28 @@
 平成一桁 => false
 不朽 => false
 クラブ => false</pre>
-7件とも「false」＝本番にはまだ機能コードが1つも届いていない（mainには存在する固有語）。
+7件とも、両ファイルとも「false」＝本番にはまだ機能コードが1つも届いていない（mainには存在する固有語）。
 </div>
 
-<h2>③ 押せるリンク</h2>
+<h2>③ 押せるリンク（2026-10-22 01:20 全リンク実測200確認済み）</h2>
 <ul class="links">
-  <li><b>本番トップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a>（200で生存。ただし今回の機能は未反映）</li>
-  <li><b>本番の検索ページ（機能の使用場所）</b><a href="https://joy-relief-station.lovable.app/search" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search</a></li>
-  <li><b>本番の中身（プログラム本体・直接確認用）</b><a href="https://joy-relief-station.lovable.app/assets/index-3zJ7JRvY.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/index-3zJ7JRvY.js</a></li>
+  <li><b>本番トップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a>（実測200で生存。ただし今回の機能は未反映）</li>
+  <li><b>本番の検索ページ（機能の使用場所）</b><a href="https://joy-relief-station.lovable.app/search" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search</a>（実測200）</li>
+  <li><b>本番の中身（プログラム本体・実在する方・直接確認用）</b><a href="https://joy-relief-station.lovable.app/assets/index-2yewNsPF.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/index-2yewNsPF.js</a>（実測200）</li>
 </ul>
 
-<h2>④ 止まっている理由（2026-10-22、4つの道を実際に試したが全部だめだった）</h2>
+<h2>④ 止まっている理由（2026-10-22 01:0x、4つの道を今回もう一度実際に試したが全部だめだった）</h2>
 <table>
 <tr><th>試した道</th><th>内容</th><th>結果</th></tr>
-<tr><td>1</td><td>認証の鍵を自動で更新し直す</td><td class="no">本人の同意待ちのまま変わらず</td></tr>
-<tr><td>2</td><td>今の鍵で公開の仕組みへ直接問い合わせ</td><td class="no">鍵が無効と拒否された</td></tr>
+<tr><td>1</td><td>認証の鍵を自動で更新し直す（心臓の自動巻き直し）</td><td class="no">本人の同意待ちのまま変わらず（needConsent: true）</td></tr>
+<tr><td>2</td><td>今の鍵で公開の仕組みへ直接問い合わせ（tools/kohyou_ima.py を今回も実行）</td><td class="no">HTTP 401「Not authenticated」で拒否された（再実測）</td></tr>
 <tr><td>3</td><td>公式の手引きで別の鍵の作り方を確認</td><td class="no">あるが、作るのにも画面ログインが必要で同じ壁</td></tr>
-<tr><td>4</td><td>認証の入口を直接開いてみる</td><td class="no">ログイン画面へ戻されるだけ（本人のログインが無いと進めない）</td></tr>
+<tr><td>4</td><td>認証の入口（OAuth authorize URL）を直接開いてみる</td><td class="no">ログイン画面へ戻されるだけ（本人のログインが無いと進めない）</td></tr>
 </table>
 
 <footer>
-このセッションにはブラウザを操作する手段が無く、認証画面を自分の手で開けない。ブラウザを操作できる別のセッションか店主本人が認証の入口を1回開けば、鍵が復活しここを含む未公開分がまとめて反映される見込み。コード側の追加修正は不要。
+このセッションにはブラウザを操作する手段が無く、認証画面を自分の手で開けない。ブラウザを操作できるセッション（Chrome「Claude作業用」プロフィールはLovableにログイン済み）が下の1本のURLを開いて同意ボタンを押せば、受け皿（127.0.0.1:41999）が鍵を保存し、このコードを含む未公開分がまとめて本番へ反映される見込み。コード側の追加修正は不要。<br>
+開く場所：<code>https://lovable.dev/oauth/authorize?response_type=code&amp;client_id=6d465f583e1e4ce5801b1616f735670c&amp;redirect_uri=http%3A%2F%2F127.0.0.1%3A41999%2Fcallback&amp;scope=offline+projects%3Aread+projects%3Awrite+workspaces%3Aread+workspaces%3Awrite&amp;state=Twe026USwCSJ1I907WTK9A&amp;code_challenge=BtEFNKdlyTk1AUbLW_FX0Jc3PflbHaLicxHZS3z_eTU&amp;code_challenge_method=S256</code>（押す操作：画面に出る同意ボタンを1回押すだけ）
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
