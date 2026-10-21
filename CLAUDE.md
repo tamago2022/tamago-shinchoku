@@ -5,6 +5,13 @@
 - **5点：** ①検索（曲名・アーティスト名＋曲名・カタカナ⇔英語）で出る ②関連4本以上（理由の言えるもの）③メモと出典（src）④マガジンに載った曲はマガジンへの入口 ⑤動画が生きている。
 - **機械の裏付け：** `tools/toukou_mimawari.py`（投稿済み曲の見回り・心臓から1日1回）。台帳 `status/public/toukou_daicho.json`＝X（Bufferの控え dashita.jsonl が正本＋x_toukou＋`x_urls`）・YouTube @joy-relief-station（公開RSS＋一覧、曲は再生ページの「使っている曲」）・TikTok（公開埋め込み `tiktok.com/embed/@joyreliefstation`＋動画ページの「使った音」・oEmbed・`tiktok_urls`）。渡されたURL・1本で何曲も扱う告知（`post_song_keys`）は `status/toukou_daicho_config.json`。点検は joy-relief-station `scripts/patrol/check-posted-songs.mts` → `status/public/toukou_tenken.json`、落ちた曲があれば直す仕事を1日1件積む。**反応（再生数・いいね等）は出して30日以内の投稿を毎日 `status/sns_hannou.json`（写し `status/public/sns_hannou.json`）に記録。取れない数字は書かない。** 有料API・ブラウザなし。`--self-test`。
 
+## 仕入れても、棚には置かない。棚に置くのは、たまごさんが名指しした曲だけ（憲法・2026-10-21・徹底）
+- **たまごさん「仕入れてもいいけど、棚には置かない。棚に置くのは全部自分で決める。仕入れたものを全部棚に入れられると、わけがわからなくなる」。**
+- **仕入れ（常設の584番・系統別の仕入れ・入荷の自動処理・プレイリスト起点・才能レーダーほか、曲を入れる全部の道）がやってよいのは：曲ページ（coverGuide.ts）＋関連曲（bridgeRelated）＋検索（aliases）＋裏タグまで。** 棚（joy-relief-station `src/lib/worlds.ts` の shelves[].cards／DBの admin_shelf_picks）には置かない。新しい棚も作らない。
+- 棚に置くのは、たまごさんが名指しした曲だけ（本人が編集画面・投げ込み箱で入れたもの、または Dispatch が「たまごさん指定」とたまごさんの言葉つきで頼んだもの）。コードで足すときは joy-relief-station `scripts/patrol/tana-shitei.json` の `shitei` に `{shelf, card, date, why}`（why＝いつ・どこで・何と言ったか）を1行。
+- **機械の裏付け：** joy-relief-station の prebuild `scripts/patrol/check-tana-shitei.mjs`（台帳の kijun＝10-22時点の棚・shitei＝指定・hazushita＝外した曲のどれにも無いカードが棚にあれば公開が止まる。`--self-test`）。公開前の `tools/koukai_kakunin.py --kanmon` も prebuild を1本ずつ走らせるので同じ関所を通る。方針の正本 `status/shiire_houshin/README.md`。
+- 10-21：仕入れの5曲（wave to earth「bad」／ADOY「Lemon」／POLYCAT「เวลาเธอยิ้ม」／YONLAPA「Let Me Go」／Reality Club「Telenovia」）をアジアの風の棚から外した（曲ページ・関連・検索・裏タグは残す）。Labäda Bu「달리기」はたまごさん指定で残す。過去に指定なしで棚に入った分の一覧は `status/tana_shiire_kako.json`（外すかはたまごさんの判断待ち・数えただけ）。
+
 ## ごきげんの種（今週のごきげん一粒・LINE 週1回）（2026-10-21 たまごさん決定）
 - **目的はリスト取り。まずLINEだけ。** 毎週金曜20時、友だち全員へ1粒（案A＝一言だけ・3秒）：本当にいい曲1つ＋事実1行（へぇ）＋卵コンシェルジュの一言＋曲ページのリンク。導線は X＝毎日たくさん／LINE＝週に1粒。
 - **導線の設定は joy-relief-station `public/gokigen-tane.json` の `line_url` 1か所だけ。** 空の間はどのページにも出ない。入れて公開すると全ページ（React の `SnsAccounts`・静的マガジンの `share_bar.add_tane`）に出る。

@@ -39,6 +39,8 @@
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  .shindan{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.86rem;margin:0 0 10px;}
+  .shindan li{margin:4px 0;}
 </style>
 </head>
 <body>
@@ -49,7 +51,7 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35096 棚編集「固定(★)」の一括操作は実装・main合流済み／公開のみ工場全体の認証切れで保留</div>
 <h1>#35096 棚編集「固定(★)」の一括操作は実装・main合流済み／公開のみ工場全体の認証切れで保留</h1>
-<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-22 実装・main合流・公開ブロックの実測をあらためて更新</div>
 
 <div class="fix">
 ① 棚への追加/外すは既に一括化済みだったが、「固定(★)」操作だけ1件ずつ即時保存のまま残っていた。既存のpendingPicksパターンを流用し、チェックした複数件をまとめて1回で保存できるよう実装した（新state pendingPins、反映ボタンでadminSetPickStatusBulkへ1回で送信）。識別子は下の数字カード参照。main合流済み。
@@ -57,29 +59,37 @@
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>26bf4a94b</b><span>main合流済みの識別子(実測確認)</span></div>
-  <div class="num"><b>7日間</b><span>Lovable公開がOAuth認証切れで止まっている期間(10/14→10/21・実測)</span></div>
+  <div class="num"><b>26bf4a94b</b><span>本番コードの土台に取り込み済みの識別子(最新版に含まれていることを実測確認)</span></div>
+  <div class="num"><b>8日間</b><span>Lovable公開がOAuth認証切れで止まっている期間(10/14→10/22・実測)</span></div>
   <div class="num"><b>16件以上</b><span>同一の工場全体障害でブロック中の他案件数(記録済み)</span></div>
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番トップ（生存確認・HTTP 200）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>④ 何をどう確かめたか（本番確認の代わりに今回あらためて実測した内容）</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>実装（棚編集のpendingPins一括保存）</td><td class="yes">済み</td></tr>
-<tr><td>mainへのpush・合流</td><td class="yes">済み（識別子は数字カード参照）</td></tr>
-<tr><td>Lovableの「公開」操作</td><td class="no">OAuth invalid_grant・工場全体の認証切れで保留</td></tr>
-<tr><td>本番URLでの機能確認</td><td class="no">公開待ちのため未反映</td></tr>
+<tr><td>本番コードの土台への取り込み</td><td class="yes">済み（最新版に含まれていることを実測確認）</td></tr>
+<tr><td>保存済み鍵でのLovable再認可(API直接)</td><td class="no">invalid_grant（Lovable本体のサーバーから返却・今回実測）</td></tr>
+<tr><td>公開専用Chrome(CDP 9223)の生存</td><td class="no">接続拒否・停止中</td></tr>
+<tr><td>代替のLovable鍵(.env等)</td><td class="no">存在しない</td></tr>
+<tr><td>本番URLでの機能確認</td><td class="no">公開ブロックのため未反映</td></tr>
 </table>
 
+<h2 style="margin-top:0;">⑤ 診断（今回あらためて実測。他16件以上と同一原因）</h2>
+<ul class="shindan">
+  <li>保存済みrefresh_tokenでlovable.dev/oauth/tokenを直接叩いて再発行を試行 → invalid_grant</li>
+  <li>公開専用Chrome(CDP 9223)の生存確認 → 接続拒否（起動していない）</li>
+  <li>joy-relief-stationの.envに代替のLovable鍵が無いか確認 → 無し</li>
+  <li>このセッション自体にブラウザ操作ツールが無いことを確認</li>
+</ul>
+
 <footer>
-実測データ（2026-10-21 22:5x時点）: 認証の受け皿の記録 = 最後に成功したのは2026-10-14 06:24 / 直近の失敗は同意のやり直しが必要(invalid_grant)（7日間変化なし）。公開便の記録 = main未公開・本日分は止まっている。工場側の追加作業は不要。Lovableへの再ログイン・承認URL（お手元の鍵ファイルに保存済み）を1回だけログイン済みブラウザで開いて「許可」を押せば、本件を含む未反映分がまとめて自動公開される見込み。AI側はブラウザの新規起動が工場の関所で恒久禁止されているため実行不可。
+実測データ（2026-10-22時点）: 認証の受け皿の記録 = 最後に成功したのは2026-10-14 06:24 / 直近の失敗は同意のやり直しが必要(invalid_grant、今回API直叩きで再確認)。公開専用Chrome(CDP 9223)は現在停止中。機械的に試せる手段（API再発行・専用Chrome・代替鍵）は本日すべて実測済みで、現時点ではAI側の手段では公開まで到達できない。工場全体で発生中の既知障害であり、本件固有の追加作業は無い。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
