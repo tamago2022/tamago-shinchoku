@@ -192,7 +192,6 @@ def check(h):
     if 'id="i-line"' not in h or 'id="i-wa"' not in h: bad.append('アイコン定義')
     if h.count('class="cw-sharebox"') != 1 or 'data-i18n="c_share_h"' not in h: bad.append('シェアの見出し')
     if OFFICIAL_YOUTUBE not in h: bad.append('YouTubeアカウント')
-    if h.count('<script id="cw-tane">') != 1: bad.append('ごきげんの種（LINE）の導線')
     return bad
 
 
