@@ -120,8 +120,27 @@ const name = foodPerson ? (
 同一の原因で、本日の他の複数チケット（#34546・#34523・#34557・#34368など）も「main合流済み・公開待ち」の同じ状態で止まっている＝このチケット特有の問題ではなく工場共通の障害。解除され次第、他の未公開分とまとめて本番に反映される見込み。
 </div>
 
+<h2>⑥ 2回目差し戻し（「本番に機能自体が存在しない」）への対応・2026-10-22 追記</h2>
+<div class="note">
+前回の指摘は正しい観察（本番は今も404）だが、原因の特定が違う。<b>コードは既にmainに存在する</b>（<code>src/routes/room.food-person.$id.tsx</code>・<code>src/components/FoodDishCarousel.tsx</code>のChefWho）。今回、origin/main起点の隔離worktree（他セッションの未コミット差分に影響されない独立環境）で<b>ローカルdevサーバーを実際に起動し</b>、本番と同じコードで機能が動くことを実測した。
+</div>
+<div class="nums">
+  <div class="num"><b>8人 / 8人</b><span>対象シェフ全員の個別ページ（<code>/room/food-person/person-*</code>）がローカルでHTTP 200・氏名を本文に含むことを実測</span></div>
+  <div class="num"><b>404</b><span>存在しないID（<code>person-does-not-exist</code>）で正しく404＋「見つかりませんでした」表示</span></div>
+</div>
+<div class="note">
+<b>順リンクの実測証拠</b>（レシピカード→個別ページ）：ローカル<code>/food-radar</code>のSSR出力に以下のHTMLが実在することを確認した。<br>
+<pre style="white-space:pre-wrap;font-size:0.76rem;background:var(--t-panel);padding:10px;border-radius:8px;margin:6px 0 0;">&lt;a href="/room/food-person/person-mikuni-kiyomi" class="text-ink/85 underline-offset-2 hover:underline"&gt;三國清三&lt;/a&gt;</pre>
+</div>
+<div class="note">
+<b>なぜ本番は今も404のままか：</b> これは実装の不備ではなく、2026-10-14から継続している工場全体のLovable OAuth障害が原因（<code>~/.tamago/lovable_keeper_state.json</code>実測：<code>lastOkAt: 2026-10-14 06:24</code>・<code>needConsent: true</code>・<code>lastFailure: invalid_grant</code>、2026-10-22 08:33時点で確認）。本番の<code>x-deployment-id</code>は<code>19c05f2d-...</code>のまま8時間以上変わっておらず、mainにこの機能を含む複数コミットが入った後も一度も公開されていない。解除には認証済みブラウザでの同意操作が必要で、本セッションにはブラウザ操作ツールが無いため代行できない（他の20件以上のチケットも同一原因で同じ状態）。
+</div>
+<div class="note">
+<b>このチケットについての結論：</b> AI側で実行可能な作業（実装・独立環境での実機能検証・main合流確認）は完了している。残るギャップは「Lovableの公開ボタンが自動で押せない」という工場全体の障害であり、この1チケットを差し戻し続けても新しい情報は生まれない。障害が解消され次第、既にmainにある本機能はビルドし直さずそのまま公開される。
+</div>
+
 <footer>
-このチケットでAI側にできる作業（実装・main合流・自己検品）はここまでで完了。残る「公開ボタンを押す」はLovable側の認証復旧待ち。
+このチケットでAI側にできる作業（実装・main合流・独立環境での実機能検証）はここまでで完了。残る「公開ボタンを押す」はLovable側の認証復旧待ち。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
