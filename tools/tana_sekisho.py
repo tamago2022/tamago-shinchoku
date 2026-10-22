@@ -212,7 +212,8 @@ td.k{line-height:1.5;max-width:520px}td.d{white-space:nowrap;font-size:12px}.m{c
 <tbody>
 %(trs)s
 </tbody></table>
-<p class=m>関所：tools/tana_sekisho.py（発車の頭）／joy-relief-station scripts/patrol/check-tana-shitei.mjs（公開の前）</p>
+<p class=m>関所：tools/tana_sekisho.py（発車の頭）／joy-relief-station scripts/patrol/check-tana-shitei.mjs（公開の前）<br>
+全AI向けの決まり：<a href="https://github.com/tamago2022/joy-relief-station/issues/1046">店主の指示メモ #1046</a>（全体像 <a href="https://github.com/tamago2022/joy-relief-station/issues/1040">#1040</a>）／<a href="https://tamago2022.github.io/tamago-shinchoku/">進捗表へ戻る</a></p>
 </body></html>
 """ % {"kazu": data["kazu"], "updatedAt": data["updatedAt"], "hantei": data["hantei"], "trs": trs}
     os.makedirs(os.path.dirname(OUT_HTML), exist_ok=True)
