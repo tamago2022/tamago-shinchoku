@@ -109,7 +109,7 @@ def matome(rows, items=None):
         b["share"] = round(100.0 * b["w"] / tot, 1)
         if b["n"] and b["n"] in items:
             b["title"] = (items[b["n"]].get("title") or "")[:80]
-    return {"sessions": len(rows), "total_w": tot, "top": out[:15]}
+    return {"sessions": len(rows), "total_w": tot, "top": out[:15], "all": [{"key": b["key"], "share": b["share"], "sessions": b["sessions"], "title": (b.get("title") or b.get("first") or "")[:50]} for b in out]}
 
 
 def self_test():
