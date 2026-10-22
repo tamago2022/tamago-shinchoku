@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35153 joy-relief-station 常駐ロールSOP（09/10番ドキュメント反映＋2026-10-22実地確認） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35153 joy-relief-station 常駐ロールSOP（09/10番ドキュメント反映＋2026-10-22実地確認）</div>
+<h1>#35153 joy-relief-station 常駐ロールSOP（09/10番ドキュメント反映＋2026-10-22実地確認）</h1>
+<div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p>09_CAPABILITY_REGISTRY.md・10_PEER_HELP_PROTOCOL.md等の既存ドキュメントを読み、joy-relief-station（ごきげん補給所）の常駐ロール6つ（＋憲法担当）それぞれのSOP「たたき台」を確認・最新化した。</p><p><b>分かったこと：</b>6ロールSOPのたたき台は2026-08-12に`tamago_brain` vault内（<code>AI出力/40_プロジェクト/卵商店街/役割SOP/</code>）に作成済みだったが、本番リポジトリ側の実ファイルパスが「未確認」のまま残っていた。今回、実際にjoy-relief-stationリポジトリへアクセスして実在を確認した。</p><p><b>確認結果（実測）：</b>`.claude/manuals/01-ingest-linking.md`〜`07-sns-pr.md`（計7本）は実在。さらに6+1ロール体制は2026-08-12以降、`.claude/playbooks/roles.json`を正本とする<b>14ロール体制</b>へ拡張されていた（仕入れ・つなげる・見回り・コピーは継続、新設：パーソナライズ・気分診断・棚編集UI・検索・認証・集客販売・公開回収・パロディー・SEO・世界トップ手法リサーチ）。入口は`npm run role -- &lt;担当名&gt;`（別名・ひらがな・音声入力のゆれも吸収）。</p><p><b>唯一「ヘッダー担当」だけは未確認のまま。</b>リポジトリ内を`季節の挨拶`等で検索したが、専用の実装・ロール定義は見つからなかった。2026-08-12のVault下書きに「要たまごさん確認」と書かれていた判断は今も有効（推測で埋めず、正直に「無い」と記録した）。</p>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>7本</b><span>実在確認した .claude/manuals/01〜07（0件→7件、未確認→確認済み）</span></div>
+  <div class="num"><b>14</b><span>roles.jsonに登録済みの現行ロール数（当初の6+1から拡張）</span></div>
+  <div class="num"><b>1件</b><span>確認できなかった項目（ヘッダー担当＝未実装のまま、正直に記録）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表（この号番号35153の状況）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>仕入れ担当：公式リンク必須・由来ストーリー明記</td><td class="yes">roles.json &quot;ingest&quot; に反映済み（manuals/01, docs/operations/ingest-playbook.md）</td></tr>
+<tr><td>つなげる担当：半歩ずつ接続・文脈優先</td><td class="yes">roles.json &quot;link&quot; に反映済み（.claude/manuals/01, docs/operations/link-engine.md）</td></tr>
+<tr><td>棚編集担当：在庫→推薦棚の昇格判断</td><td class="yes">roles.json &quot;shelf&quot;（棚編集UI担当）に反映済み（.claude/manuals/02）</td></tr>
+<tr><td>コピー担当：棚名・一言コピー制作</td><td class="yes">roles.json &quot;copy&quot; に反映済み（.claude/manuals/01, docs/operations/copy-tan.md）</td></tr>
+<tr><td>見回り担当：品質チェック専任・持ち場を守る</td><td class="yes">roles.json &quot;patrol&quot; に反映済み（.claude/manuals/03, docs/operations/patrol-rules.md）</td></tr>
+<tr><td>ヘッダー担当：トップ・季節の挨拶の「顔」演出</td><td class="yes">実装・ロール定義とも未確認（検索で該当コード0件）。2026-08-12下書き時点の「推定・要確認」が今も正しい</td></tr>
+<tr><td>憲法担当：vault全体のコア/詳細層振り分け</td><td class="yes">店舗ロール(roles.json)の対象外＝vault専用メタロール。09/10/13番ドキュメント側で管理継続が正しい設計</td></tr>
+</table>
+
+<footer>
+元の依頼（2026-08-12）：09_CAPABILITY_REGISTRY.md・10_PEER_HELP_PROTOCOL.md等を読み、6役割それぞれのSOP（役割定義／既存ルールを反映した進め方の型／新セッション起動時に読むべきファイルパス）のたたきを作る。たたき自体はtamago_brain vault内に当日作成済みだったが、本番リポジトリ側ファイルの実在確認が「未確認」のまま1ヶ月以上放置され判定日赤になっていた。本セッションでjoy-relief-stationリポジトリへ実アクセスし、7本のマニュアル実在と14ロール体制（roles.json）への拡張を確認。vault側ファイルへの書き込みは本セッションの権限上できなかったため、確認結果はこの確認ページに記録する。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
