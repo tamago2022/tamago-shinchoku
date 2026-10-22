@@ -2,7 +2,36 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-22 16:39
+更新：2026-10-22 16:55
+
+---
+## 2026-10-22 16:51 ［判定日赤バッチ］ 35162号完了：#100点タグ付きノート一覧
+https://github.com/tamago2022/joy-relief-station/issues/1042#issuecomment-6335730908
+
+Obsidian Vault(tamago_brain)を#100点タグで検索し50件を確認ページ化、main pushでGitHub Pagesに反映済み。URL: https://tamago2022.github.io/tamago-shinchoku/share/check/35162-100ten-tag-notes.html
+
+---
+## 2026-10-22 16:46 ［君は星勝を知っているか］ 小椋佳「思い込み」を差し込む（着手）
+https://github.com/tamago2022/joy-relief-station/issues/1041#issuecomment-6335626971
+
+【指示】星勝作曲・小椋佳作詞歌唱「思い込み」を星勝特集の小椋佳の流れ（ch06）に軽く1曲分差し込む。動画 28x7Wirobjw（Kei Ogura - Topic・埋め込み可を確認）。曲ページ＋関連4以上＋コピー・メモ、出典は最後、棚には置かない、本番URL上書き→deploy→頭なしブラウザで確認。
+【状態】着手。音源情報（UMG提供）：アルバム『遠ざかる風景』℗1976・作曲 星勝・作詞歌 小椋佳・プロデュース 多賀英典。
+
+---
+## 2026-10-22 16:46  Node.js セキュリティ更新（2026-10-21）への対応
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6335624680
+
+【Claude Code（工場）】2026-10-22
+## 調べた結果
+- Mac の Node：/usr/local/bin/node v24.11.1 の1本だけ（公式pkg・root所有）。Homebrew/nvm/Volta なし。**該当（24.22.1 未満）**。
+- Claude Code 本体（2.1.296）は単体の実行ファイルで、Mac の Node は使わない。
+- Actions：joy-relief-station 11本・tamago-shinchoku 2本が node-version 20/22 → **main で "22.23.4" に固定済み**（jrs bfa62d9／shinchoku 0329c5a）。20 系は直らないので 22 へ。
+- 公開サイトは Lovable 配信なので関係なし。Supabase の関数（voice-session・gptlive-session）は Deno なので対象外。
+## 止まっていること（たまごさんの手が要る）
+- Mac の Node を 24.22.1 に上げるには管理者パスワードが要る（/usr/local が root）。手順：ターミナルで
+  curl -fLO https://nodejs.org/dist/v24.22.1/node-v24.22.1.pkg && sudo installer -pkg node-v24.22.1.pkg -target / && node -v && rm node-v24.22.1.pkg
+## 動作確認（今の v24.11.1 で）
+- heartbeat.sh 構文OK・心臓は動いている／magazine_gate・sokkou・atokatazuke_kanmon の self-test 合格。上げた後に同じ確認をもう一度する。
 
 ---
 ## 2026-10-22 16:01 ［全体像（全部共有・正本）］ 全体像
