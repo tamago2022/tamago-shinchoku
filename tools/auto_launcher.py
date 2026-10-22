@@ -2785,6 +2785,24 @@ def launch_one(item, q, alive, safe_max):
             log("二重発車を止めました %s番（いまの状態=%s）" % (item.get("n"), _x.get("status")))
             return False
 
+    # ---- 棚の関所（2026-10-22 たまごさん「棚に置くのは本当に慎重にしたい」）----
+    #   棚に入れる・置く・移す仕事は、たまごさんがその日に曲名と棚名を名指しした票
+    #   （tanaMeishi.hi＝今日）だけ発車する。前日以前の言葉では動かさない。止めたら保留(hold)。
+    try:
+        import tana_sekisho
+        _tana_note = tana_sekisho.gate(item)
+        if _tana_note:
+            item["status"] = "hold"
+            item["holdNote"] = _tana_note
+            tana_sekisho.horyu_1ken(item.get("n"), _tana_note)
+            log("🛑 棚の関所：%s番は当日の名指しが無いので保留にしました「%s」" % (item.get("n"), item.get("title")))
+            return False
+    except Exception as _e:
+        if "棚" in str(item.get("title") or "") + str(item.get("what") or "")[:1500]:
+            log("棚の関所でエラー（棚の字があるので念のため発車しない）%s番: %s" % (item.get("n"), _e))
+            return False
+        log("棚の関所でエラー（棚の字が無いので発車は止めない）%s番: %s" % (item.get("n"), _e))
+
     # ---- テスト用のカラ発車（クレジットを1円も使わない）----
     # 2026-09-04 たまごさん「3分で終わるセッションをくるくる回してテストしたい。
     #   中身はなんでもいい。3分で終わって完了報告がDispatchに来る、最低限の動作確認」

@@ -10,6 +10,7 @@
 - **仕入れ（常設の584番・系統別の仕入れ・入荷の自動処理・プレイリスト起点・才能レーダーほか、曲を入れる全部の道）がやってよいのは：曲ページ（coverGuide.ts）＋関連曲（bridgeRelated）＋検索（aliases）＋裏タグまで。** 棚（joy-relief-station `src/lib/worlds.ts` の shelves[].cards／DBの admin_shelf_picks）には置かない。新しい棚も作らない。
 - 棚に置くのは、たまごさんが名指しした曲だけ（本人が編集画面・投げ込み箱で入れたもの、または Dispatch が「たまごさん指定」とたまごさんの言葉つきで頼んだもの）。コードで足すときは joy-relief-station `scripts/patrol/tana-shitei.json` の `shitei` に `{shelf, card, date, why}`（why＝いつ・どこで・何と言ったか）を1行。
 - **機械の裏付け：** joy-relief-station の prebuild `scripts/patrol/check-tana-shitei.mjs`（台帳の kijun＝10-22時点の棚・shitei＝指定・hazushita＝外した曲のどれにも無いカードが棚にあれば公開が止まる。`--self-test`）。公開前の `tools/koukai_kakunin.py --kanmon` も prebuild を1本ずつ走らせるので同じ関所を通る。方針の正本 `status/shiire_houshin/README.md`。
+- **【10-22 追加】名指しは「その日」の言葉だけ有効（たまごさん「棚に置くのは本当に慎重にしたい。これからも慎重にいきたい」）。** 前日以前の言葉（判定日赤の積み直し・古いメモ・ChatGPT等のリサーチ結果）を根拠に棚を動かさない。今ある棚の中身は外さない・足さない。**機械の裏付け：** 発車の頭 `tools/tana_sekisho.py`（`auto_launcher.launch_one` から。棚を変える票は `tanaMeishi:{hi:今日,kyoku,tana,kotoba}` が無ければ hold。`--horyu`／`--ichiran`／`--self-test`）と、joy-relief-station `check-tana-shitei.mjs`（10-22以降の shitei は `said`＝言われた日が `date` と同じでないと公開が止まる）。保留の一覧 `share/check/tana-horyu.html`（進捗表から1クリック）。
 - 10-21：仕入れの5曲（wave to earth「bad」／ADOY「Lemon」／POLYCAT「เวลาเธอยิ้ม」／YONLAPA「Let Me Go」／Reality Club「Telenovia」）をアジアの風の棚から外した（曲ページ・関連・検索・裏タグは残す）。Labäda Bu「달리기」はたまごさん指定で残す。過去に指定なしで棚に入った分の一覧は `status/tana_shiire_kako.json`（外すかはたまごさんの判断待ち・数えただけ）。
 
 ## ごきげんの種（今週のごきげん一粒・LINE 週1回）（2026-10-21 たまごさん決定）
