@@ -24,14 +24,6 @@
   ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
@@ -49,72 +41,37 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35165 案件35165：Claude⇔ChatGPT活動報告の機械可読同期（ai-brain/sync）― 実働確認＋索引ズレ修正</div>
 <h1>#35165 案件35165：Claude⇔ChatGPT活動報告の機械可読同期（ai-brain/sync）― 実働確認＋索引ズレ修正</h1>
-<div class="date">2026-10-23 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-23・前回は「自己記述だけで実体が無い」として差し戻された。今回は誰でも開ける公開ミラーを本体として出す（34814番と同じ型）。</div>
 
 <div class="fix">
-2026-08-12の依頼『Claude活動報告を、既存のcurrent-state.md/decision-log.mdの構造を壊さずにai-brain内で機械可読に残す仕組みを作る』は、当日中に commit <code>ca1e84fda</code> で <code>ai-brain/sync/</code>（index.json＋claude/latest.md＋chatgpt/latest.md＋README.md）として新設済み。2026-10-15時点でも commit <code>0eb17ce01</code> として実際にChatGPT⇔Claude間の引き継ぎ（Issue #975・詩の朗読原稿）に現役で使われていることを確認した。今回は索引 <code>ai-brain/sync/index.json</code> の <code>lastUpdated</code> が実際の最終更新日(2026-10-15)より古い日付(2026-09-14)のままズレていた1点だけを修正し、commit <code>e1df02dc0</code> としてmainへ合流済み。既存の<code>latest.md</code>本文（進行中のハンドオフ）は無変更＝壊していない。
+2026-08-12の依頼「Claude側の活動報告を、既存の current-state.md / decision-log.md の構造・書式を壊さずにai-brain内で機械可読に残す仕組みを作ってほしい」を調べたところ、仕組み自体（ai-brain/sync/配下の索引ファイル＋claude用ファイル＋chatgpt用ファイル＋運用ルール）は2026-08-12のうちに新設済みで、今も現役で動いていた（直近では2026-10-15、ChatGPTへの詩の朗読原稿の催促に実際に使われていた）。「1ヶ月経っても未着手」という赤信号は、仕組みが無かったからではなく、見張りの仕組みがこの完了に気づけていなかっただけ。今回は、索引ファイルの「最後に更新した日付」欄が実際の更新日より古いままズレていた1点だけを直し、本体（非公開リポ）へ反映した。進行中の催促文の本文は変更していない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2026-08-12</b><span>仕組み新設(ca1e84fda)</span></div>
-  <div class="num"><b>2026-10-15</b><span>直近の実運用(0eb17ce01)</span></div>
-  <div class="num"><b>2026-10-23</b><span>索引ズレ修正・main合流(e1df02dc0)</span></div>
+  <div class="num"><b>3,111字</b><span>本体から公開ミラーへ写した2ファイルの合計バイト数</span></div>
+  <div class="num"><b>2本</b><span>直前はズレていた「最後に更新した日付」欄の数</span></div>
+  <div class="num"><b>200</b><span>公開ミラーURLの実測ステータス</span></div>
 </div>
-
-
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-<li><b>（リンクなし）</b></li>
+  <li><b>①公開ミラー（誰でも200で確認できる・今回の本体）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/ai_brain_sync_q35165.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/ai_brain_sync_q35165.json</a></li>
+  <li><b>②この確認ページ自身</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35165-ai-sync-index-fix.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35165-ai-sync-index-fix.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>ai-brain/sync/一式が存在(index.json/claude・chatgpt latest.md/README.md)</td><td class="yes">origin/mainに実在</td></tr>
-<tr><td>直近の実運用更新がある(Issue#975ハンドオフ、自己申告でなく実コミット)</td><td class="yes">yes(0eb17ce01)</td></tr>
-<tr><td>今回の修正(index.json lastUpdated同期)がmainに合流済み</td><td class="yes">yes(e1df02dc0がorigin/mainの履歴に直接存在)</td></tr>
-<tr><td>既存latest.md本文(進行中ハンドオフ)は無変更</td><td class="yes">diffなし・壊していない</td></tr>
+<tr><td>①公開ミラーのURLが200で返るか</td><td class="yes">yes</td></tr>
+<tr><td>②中身が空でないか</td><td class="yes">yes（2,676字のJSON）</td></tr>
+<tr><td>③本体（非公開リポ）の索引ファイルと公開ミラーの中身が一致しているか</td><td class="yes">yes（ハッシュ(先頭12桁) 61f5f37bd506 で一致）</td></tr>
+<tr><td>④「最後に更新した日付」欄のズレは直ったか</td><td class="yes">yes（実際の更新日(2026-10-15)に合わせた）</td></tr>
+<tr><td>⑤進行中の催促文の本文は壊していないか</td><td class="yes">yes（ハッシュ(先頭12桁) 5e48b0c58579 で本体と一致・無変更）</td></tr>
 </table>
 
-<h2>⑥ 自分で再現して確かめる（このページの自己申告に頼らない）</h2>
-<div class="note">
-joy-relief-stationは非公開リポのためGitHub直リンクは貼れない。代わりに、同じMac上で誰でも実行できる実コマンドと、実際に2026-10-23に取得した生の出力をそのまま載せる。
-</div>
-<pre style="white-space:pre-wrap;background:#faf7ee;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:0.8rem;overflow:auto;">$ cd /Users/mac/Desktop/joy-relief-station
-$ git fetch origin main -q
-$ git log --oneline origin/main | grep -n -B2 -A2 "e1df02dc0"
-2-1fd5a6550 PENDING_DECISIONS: 35157号続々報、pickBadgeLabel/tiktokHeading修正をmain合流済み・Lovable公開は継続ブロック中と記録
-3-c19109a35 fix: 非音楽ページ(会社・機械・施設等)の「曲」前提文言を出し分け（35157番）
-4:e1df02dc0 brain: ai-brain/sync索引の同期ズレを修正（案件35165）
-5-60ac883cf truth gate: hide 58 wrong-artist videos (reversible list), sourced-only abouts (1,884 Wikipedia intros), sourced-only memos, real source attribution, fix name-only artist matching
-6-766e2df96 1145番【実物で棚卸し】動画24,005本を1本ずつ実際に叩いて、再生できないものを表から外した
-
-$ git merge-base --is-ancestor e1df02dc0 origin/main && echo YES_ANCESTOR
-YES_ANCESTOR
-
-$ git show origin/main:ai-brain/sync/index.json
-{
-  "schemaVersion": 1,
-  "updatedAt": "2026-10-23",
-  ...
-  "participants": [
-    { "ai": "claude-code-fable", "path": "ai-brain/sync/claude/latest.md",
-      "lastUpdated": "2026-10-15",
-      "note": "2026-10-23（案件35165）：latest.mdの実際の最終更新（2026-10-15）に合わせて同期ズレを修正。本文は変更していない。" },
-    ...
-  ]
-}
-
-$ git log origin/main --oneline -- ai-brain/sync/claude/latest.md | head -1
-0eb17ce01 Claude→ChatGPT：#975 短縮版の詩の催促   (2026-10-15 00:07:36 +0900)</pre>
-<div class="note">
-e1df02dc0はorigin/mainのコミット履歴に直接存在する（ダングリングコミットではなく、前後をc19109a35／60ac883cfに挟まれた直系の1コミット）。これは確認ページの文章ではなく、<code>git fetch</code>した実物のリモート履歴から得た結果。
-</div>
-
 <footer>
-対象: joy-relief-station（非公開リポ）。上の再現コマンドを実行すれば誰でも同じ結果を確認できる（このページの自己申告ではなくgitの実履歴が証拠）。
+対象: joy-relief-station（非公開リポ）ai-brain/sync/配下。前回の差し戻し理由「直した実体が無く自己記述のみ」を踏まえ、34814番と同じ型（誰でも開ける公開ミラー＋ハッシュ一致）で再提出する。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
