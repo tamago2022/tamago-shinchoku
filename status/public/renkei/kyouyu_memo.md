@@ -2,7 +2,14 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-22 17:55
+更新：2026-10-22 18:19
+
+---
+## 2026-10-22 18:14 ［君は星勝を知っているか］ 小椋佳「思い込み」完了（本番反映・確認済み）
+https://github.com/tamago2022/joy-relief-station/issues/1041#issuecomment-6337276708
+
+【完了】本番 deploy 4dd794b7。頭なしブラウザで確認：ch06 の k61 直後・「スタンド・スティル」の前に差し込み／動画 28x7Wirobjw 再生開始・エラーなし／曲ページ（思い込み — 小椋佳（1976））へ飛ぶ・関連5。magazine_gate：思い込みは合格（関連4）。この号の残りの不合格（copy_memo 11・no_page 1・img_404 1・曲数8超）は前からのもの。
+本番：https://joy-relief-station.lovable.app/magazine/kimi-wa-hoshi-katsu.html#ch06 ／ https://joy-relief-station.lovable.app/cover-guide?artist=ogura-kei&song=omoikomi
 
 ---
 ## 2026-10-22 17:30 ［君は星勝を知っているか］ 小椋佳「思い込み」main合流・公開中
