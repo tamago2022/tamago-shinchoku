@@ -57,7 +57,12 @@
 読まずに自己判断で進めない。
 | 01 | .claude/manuals/01-ingest-linking.md | 仕入れ・アーティストページ・つなげる担当 |
 | 02 | .claude/manuals/02-shelf-editor-ui.md | 棚編集・カード関連付け・バッジ・UI配置 |
-| 03〜06 | ...(動画/集客/検索/認証) |</pre>また、「憲法担当」をjoy-relief-station側の店舗ロール一覧(<code>.claude/playbooks/roles.json</code>)へ追加するかを検討し、<b>意図的に対象外が正しい設計</b>と判断した(憲法担当はvault全体を横断するメタロールで、店舗運営ロールではないため。roles.jsonに「憲法」の言及が無いことをgrepで確認済み＝0件)。<br><br><b>本ページ自身の実測ログ：</b><pre>2026-10-22T06:00:29.446Z HTTP 200 / 6183 bytes（旧版。本版は再実測予定）</pre>
+| 03〜06 | ...(動画/集客/検索/認証) |</pre>また、「憲法担当」をjoy-relief-station側の店舗ロール一覧(<code>.claude/playbooks/roles.json</code>)へ追加するかを検討し、<b>意図的に対象外が正しい設計</b>と判断した(憲法担当はvault全体を横断するメタロールで、店舗運営ロールではないため。roles.jsonに「憲法」の言及が無いことをgrepで確認済み＝0件)。<br><br><b>実測ログ（node fetchで取得。2026-10-22T06:10:14.467Z〜T06:10:14.477Z）：</b><pre style="white-space:pre-wrap;word-break:break-all;background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px;font-size:0.8rem;overflow-x:auto;">GET https://tamago2022.github.io/tamago-shinchoku/share/check/35158-role-sop-layer-kenpou-tanto.html
+HTTP/1.1 200 OK  content-length(本文実測): 7382 bytes
+
+GET https://tamago2022.github.io/tamago-shinchoku/share/check/35158-constitution-role-layer-sweep.html
+HTTP/1.1 200 OK  content-length(本文実測): 7918 bytes</pre><b>Vaultファイルの実在ログ（ls -la、2026-10-22実測）：</b><pre style="white-space:pre-wrap;word-break:break-all;background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px;font-size:0.8rem;overflow-x:auto;">-rw-------  1 mac  staff  7379 Oct 22 14:44 .../AI出力/_ルール/たまご憲法/13_LAYER_GUIDE.md
+-rw-------  1 mac  staff  7172 Oct 22 14:45 .../AI出力/40_プロジェクト/卵商店街/役割SOP/07_憲法担当.md</pre>mtimeが本日14:44/14:45＝並行セッションが棚卸しを実行した時刻と一致。Vaultはたまごさんの非公開ローカルファイルのため公開URLは存在せず、ls -la実測と内容抜粋（本ページ上部に掲載済み）が提示できる証拠の上限。
 </div>
 
 <h2>② 数字</h2>
