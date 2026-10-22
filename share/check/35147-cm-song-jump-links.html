@@ -49,37 +49,43 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35147 CMで使われている曲と、その別バージョンをつなげる</div>
 <h1>#35147 CMで使われている曲と、その別バージョンをつなげる</h1>
-<div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-22 実装・main合流まで完了を実測確認／本番(Lovable)公開は工場全体の既知障害でブロック中</div>
 
 <div class="fix">
-企業CMの1枚のカード（例：JR東海『いいなcm』）は、今までそのCM自体のページにしか飛べなかった。CMで使われている曲（山下達郎『SPARKLE』など）や、同じ曲の別バージョン（カバー・コラボ相手）へ、カードのヘッダーから直接飛べるジャンプリンクを追加した。既存データ（coverGuide.tsのusedSongs/collaborators）から自動で組み立てる仕組みで、新しいデータ入力は不要。
+企業CMの1枚のカード（例：JR東海『いいなcm』）は、今までそのCM自体のページにしか飛べなかった。CMで使われている曲（山下達郎『クリスマス・イブ』など）や、同じ曲の別バージョン（カバー・コラボ相手）へ、カードのヘッダーから直接飛べるジャンプリンクを追加した。既存データ（coverGuide.tsのusedSongs/collaborators）から自動で組み立てる仕組みで、新しいデータ入力は不要。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>30件</b><span>関連リンクを持つCM・コラボカード数（棚が指す664件中）</span></div>
-  <div class="num"><b>295baab85</b><span>mainへ合流したコミット</span></div>
+  <div class="num"><b>27件</b><span>ジャンプリンクを持つCM・コラボ系カード数（合計33本のリンク）</span></div>
+  <div class="num"><b>4376a714</b><span>main合流コミット(実装本体)</span></div>
 </div>
+<div class="note">実測：<code>src/lib/shelfCardRelatedLinks.generated.ts</code>のキー数=27、<code>"to":</code>の出現数=33（2026-10-22 自分で数え直し。前回報告の「30件」は不正確だったため訂正）。</div>
 
-
+<h2>③ 本番への反映状況（正直な結果）</h2>
+<div class="note">
+<b class="no">まだ本番に出ていません。</b> 本番の棚ページ <code>/shelf/music/cm</code> を直接取得し、JR東海カードのHTMLを確認したが、ジャンプリンクのUI（<code>→ クリスマス・イブ / 山下達郎</code>のような小さいボタン）は1つも出ていない。それどころか本番側のカード部品自体が、今のソースコード（<code>ShelfCardView.tsx</code>）とは別物の古い構造（<code>cf-title</code>等のクラス名。現在のソースには存在しない）で描かれていた＝本番ビルドがかなり古い時点のまま止まっている。<br>
+原因は本件固有の不備ではなく、<b>2026-10-14から続く工場全体のLovable OAuth認証切れ</b>（<code>refresh_token</code>が<code>invalid_grant</code>）。本日だけで#34546・#35089・#35096・#35111・#35129・#35135・#35139等、20件以上の案件が同じ壁で止まっている。公開専用Chrome(CDP)の新規起動も、たまごさん指示の関所（1186号）で例外なく拒否される。このセッションにはブラウザ操作ツールが無く、物理的に『公開』を押す手段が無い。
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>確認したい棚カードの例：JR東海CM→山下達郎SPARKLEへ飛べる</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro&amp;song=sparkle" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=tatsuro&amp;song=sparkle</a></li>
-  <li><b>本番トップページ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>実装内容が確認できる場所：main合流後のCMの棚（公開されれば、ここにジャンプリンクが増える）</b><a href="https://joy-relief-station.lovable.app/shelf/music/cm" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/cm</a></li>
+  <li><b>本番トップページ（生存確認用）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>実装(linkEngine.ts・ShelfCardView.tsx・VideoCard.tsxへジャンプリンク追加)</td><td class="yes">完了</td></tr>
-<tr><td>mainへ合流(コミット295baab85)</td><td class="yes">完了</td></tr>
-<tr><td>Lovableの『公開』ボタンを押す</td><td class="no">未達</td></tr>
-<tr><td>本番画面での反映確認</td><td class="no">未達(未公開のため)</td></tr>
+<tr><td>実装(linkEngine.tsのbuildHeaderJumpLinks・ShelfCardView.tsx・VideoCard.tsxへジャンプリンク追加)</td><td class="yes">完了</td></tr>
+<tr><td>mainへ合流(コミット4376a7148・merge c6fa615b1、<code>git merge-base --is-ancestor</code>で確認)</td><td class="yes">完了</td></tr>
+<tr><td>件数の実測(27カード・33リンク、ファイルを自分で数え直し)</td><td class="yes">完了</td></tr>
+<tr><td>本番の実際のHTMLを取得し、JR東海カードにジャンプリンクUIが出ているか確認</td><td class="no">出ていない(未反映)</td></tr>
+<tr><td>Lovableの『公開』ボタンを押す</td><td class="no">未達(ツール無し)</td></tr>
 </table>
 
 <footer>
-本番への反映は、Lovable公開専用Chromeがこのセッションから起動できない(憲法で起動禁止)ため未完了。たまごさんがLovable画面で一度『公開』を押すか、ログイン済みの公開専用Chromeが立てば、この変更を含む分がまとめて反映される。
+公開専用Chrome(CDP)の起動はたまごさん指示の関所(1186号)が例外なく拒否し、このセッションにはLovableへログインできるブラウザ操作ツールも無いため、『公開』を押す手段が物理的に無い。Lovable鍵自体も2026-10-14から認証切れ(同意のやり直しが必要)で、これは本件固有ではなく工場全体で今日20件以上の案件を止めている既知の構造障害。たまごさんがLovable画面で一度『公開』を押すか再ログインすれば、本件を含む溜まっている分がまとめて反映される見込み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
