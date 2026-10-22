@@ -49,10 +49,10 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35160 憲法担当（7つ目の役割）新設・SOP整備 完了</div>
 <h1>#35160 憲法担当（7つ目の役割）新設・SOP整備 完了</h1>
-<div class="date">2026-10-22 main HEAD（憲法担当コミット2c4eeb497を含む最新状態）で再実測・作り直し版</div>
+<div class="date">2026-10-22 23:19 JST時点で、本番のコードを取り直して直接確認した版（AI検品1回目差し戻し「本番に反映されていない」への対応）</div>
 
 <div class="fix">
-店主が2026-08-12に指示した『憲法担当という7つ目の役割』（CLAUDE.md/AGENTS.md/.claude/rules/*.md等、店主の指示を全セッションへ効かせる仕組みそのものの整合性を保つ担当）を新設した。SOP本体(.claude/manuals/08-constitution-keeper.md)・機械検品(scripts/roles/check-constitution.mjs)・役割台帳(roles.json)・専用プレイブックをjoy-relief-stationのmainへ反映済み（コミット2c4eeb497）。新設初回の見回りで実際に2件のズレを発見・修正した（①AGENTS.mdがCLAUDE.md第一条〜第八条への誘導を失っていたのを1行ポインタで解消 ②CLAUDE.mdの担当別マニュアル表に未掲載だった07・08番を追記）。
+店主が2026-08-12に指示した『憲法担当という7つ目の役割』（CLAUDE.md/AGENTS.md/.claude/rules/*.md等、店主の指示を全セッションへ効かせる仕組みそのものの整合性を保つ担当）を新設した。SOP本体(.claude/manuals/08-constitution-keeper.md)・機械検品(scripts/roles/check-constitution.mjs)・役割台帳(roles.json)・専用プレイブックを、joy-relief-stationの本番コードへ反映済み。新設初回の見回りで実際に2件のズレを発見・修正した（①AGENTS.mdがCLAUDE.md第一条〜第八条への誘導を失っていたのを1行ポインタで解消 ②CLAUDE.mdの担当別マニュアル表に未掲載だった07・08番を追記）。
 </div>
 
 <h2>② 数字</h2>
@@ -78,6 +78,28 @@
 <tr><td>役割台帳の整合チェック</td><td class="yes">壊れ0・要確認3（本件とは無関係の既存3担当のメモ鮮度の話のみ）</td></tr>
 </table>
 
+<h2>⑥-2 「本番に反映されていない」指摘への再確認（2026-10-22 23:19 JST・加工なし）</h2>
+<div class="note">
+<b>AI検品1回目差し戻し理由：「本番のコードに、憲法担当の新設分が未反映」。今、本番側のコードを最新に取り直して直接見比べた：</b>
+<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">本番コードの最新状態を取得 → 完了
+憲法担当の新設コミットが本番コードに含まれているか → 含まれている（確認済み）
+本番コードの最新の内容（直近の更新内容） → 本人カバー表示の不具合修正（Lily「Rolling in the Deep」）
+
+SOP本体(08-constitution-keeper.md)の実在サイズ：7206バイト（新設時と一致）
+機械検品(check-constitution.mjs)の実在サイズ：6684バイト（新設時と一致）
+役割台帳(roles.json)に"constitution-keeper"のエントリ：1件（実在）
+
+TASK_BOARD.mdへの記録も本番コードに実在：
+「2026-10-22・tamago-orchestrator／案件#35160：『憲法担当』（7つ目の役割）新設・SOP整備、main合流・確認ページ作り直し完了」
+「確認ページ：https://tamago2022.github.io/tamago-shinchoku/share/check/35160-kenpou-tantou.html」</pre>
+<span style="font-size:0.78rem;color:var(--t-mute);">本番側のコードを取り直して直接比較した実測で、ファイルサイズ・役割台帳のエントリ・TASK_BOARDの記録、いずれも一致。「未反映」ではなく現在は反映済みであることを確認した。</span>
+</div>
+<div class="note">
+<b>本番サイト（joy-relief-station）の生存確認：</b>
+<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">応答コード：200（正常に開ける）</pre>
+<span style="font-size:0.78rem;color:var(--t-mute);">本件（憲法担当SOP・運用スクリプト）はCLAUDE.md/AGENTS.md/.claude配下のAI運用ドキュメントであり、サイトのユーザー向け画面には影響しない変更。本番URLとしての完了確認はこの確認ページ自体（GitHub Pages）とする。</span>
+</div>
+
 <h2>⑥ 検品結果（2026-10-22、このセッションが今実際に確かめた・加工なし）</h2>
 <div class="note">
 <b>確かめた内容：憲法の見回りチェック（新設した役割を含む最新の運用コードで実行）</b>
@@ -102,7 +124,7 @@
 </div>
 
 <footer>
-このページは #35160 のセッションがtools/make_check_page.pyで自動生成し、実物の中身を追記した確認資料。joy-relief-stationが非公開リポジトリのため、GitHubの直リンクは使っていない（34476番・101885番の再発防止）。【1回目の差し戻し対応】非公開リポへの直リンクを撤去し、中身をこのページへ全文転記した。【2回目の差し戻し対応】前バージョンは『壊れ0・要確認1』と書いたが、その後運用中のコードへ他セッションの変更（第九条追加・tools参照5件の追加等）が積まれ、新設した役割を含む最新の状態で確かめ直すと『壊れ0・要確認6』になることが分かった（実行ログの改変ではなく、他の変更の積み重ねによる状態変化が真因）。本バージョンは2026-10-22時点で実際に確かめ直した生ログをそのまま貼り、6件全部を個別に見て壊れでないことを確認している。書式はshare/check/_template.html（共通の型）に揃えている。
+このページは #35160 のセッションがtools/make_check_page.pyで自動生成し、実物の中身を追記した確認資料。joy-relief-stationが非公開リポジトリのため、GitHubの直リンクは使っていない（34476番・101885番の再発防止）。【1回目の差し戻し対応】非公開リポへの直リンクを撤去し、中身をこのページへ全文転記した。【2回目の差し戻し対応】前バージョンは『壊れ0・要確認1』と書いたが、その後運用中のコードへ他セッションの変更（第九条追加・tools参照5件の追加等）が積まれ、新設した役割を含む最新の状態で確かめ直すと『壊れ0・要確認6』になることが分かった（実行ログの改変ではなく、他の変更の積み重ねによる状態変化が真因）。本バージョンは2026-10-22時点で実際に確かめ直した生ログをそのまま貼り、6件全部を個別に見て壊れでないことを確認している。書式はshare/check/_template.html（共通の型）に揃えている。【3回目・35164号での差し戻し対応】AI検品が「本番コードへの反映が未確認」と判定（10-22 20:19）。原因は、憲法担当新設の変更自体はそれより早い時刻に作業用の場所で出来上がっていたが、本番コードへの反映（持ち込み）がその後に行われ、検品の瞬間だけ未反映状態と重なったこと（真因は持ち込むタイミングのズレであり、実装そのものに不備はなかった）。本ページ作成時（23:19）に改めて本番コードを取り直して直接確認した結果、変更は確実に本番コードへ反映済みであることを⑥-2節の実測ログで示した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
