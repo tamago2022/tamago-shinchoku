@@ -2,7 +2,8 @@
 # クラウドセッション（Claude Code on the web）を1本起動する。クレジットが減るのはこの道（本物のクラウドセッション）だけ。
 #   Anthropic サポート回答（2026-10-22）：クレジットはクラウドセッション（Web・デスクトップ・CLI・スマホ）だけに使われる。
 #   チャット・Cowork・Dispatch・ルーティン（RemoteTrigger）・リモートコントロールでは減らない。
-#   無人の起動は `claude -p "指示" --cloud`（今のリポジトリのクラウドセッションが作られる）。期限 11/5 16:59 JST は延長不可。残高APIなし。
+#   新規作成は `claude --cloud "説明"`（対話専用。`-p` との併用は「--cloud cannot be combined with --print」で不可＝10-22実測）。疑似端末 script で起動して切り離す。
+#   既存セッションへの追加の指示だけ `claude -p "…" --cloud <session-id>`。期限 11/5 16:59 JST は延長不可。残高APIなし。
 # 使い方（Mac で。子セッションからは status/mac_jobs/pending/*.sh に1行書く）：
 #   bash tools/cloud_hassha.sh <便の名前> tools/cloud_prompts/<依頼文>.md
 #   → ~/tamago/jrs_fix（joy-relief-station main の写し）で、共通の作法(_kyoutsu.md)＋依頼文を `claude -p … --cloud` に渡し、
@@ -21,9 +22,19 @@ LOG="$F/status/cloud_credit/log/$NAME.log"
 PROMPT="$(cat "$F/tools/cloud_prompts/_kyoutsu.md")
 
 $(cat "$PF")"
+# クラウドの作成には claude.ai の本物のログインが要る（工場の setup-token は 403）。tools/cloud_login.sh で作った置き場を使う。
+export CLAUDE_CONFIG_DIR=$HOME/.tamago/claude_cloud
+python3 - <<'PY'
+import json, os
+p = os.path.expanduser("~/.tamago/claude_cloud/.claude.json")
+d = json.load(open(p)) if os.path.exists(p) else {}
+d.setdefault("projects", {}).setdefault("/Users/mac/tamago/jrs_fix", {})["hasTrustDialogAccepted"] = True
+d["hasCompletedOnboarding"] = True
+json.dump(d, open(p, "w"), indent=2)
+PY
 cd "$J"
-{ echo "== $(date '+%F %T') 起動 $NAME ($PF) MODE=${MODE:-p}"; } > "$LOG"
-if [ "${MODE:-p}" = "p" ]; then
+{ echo "== $(date '+%F %T') 起動 $NAME ($PF) MODE=${MODE:-s}"; } > "$LOG"
+if [ "${MODE:-s}" = "p" ]; then
   nohup claude -p "$PROMPT" --cloud >>"$LOG" 2>&1 </dev/null &
 else
   nohup script -q /dev/null claude --cloud "$PROMPT" >>"$LOG" 2>&1 </dev/null &
