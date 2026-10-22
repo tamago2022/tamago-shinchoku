@@ -73,12 +73,19 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>多様性ガードの実装(3箇所に拡張)</td><td class="yes">済み</td></tr>
-<tr><td>作業場への取り込み</td><td class="yes">済み</td></tr>
-<tr><td>Lovable本番への公開</td><td class="no">ログイン切れで未反映</td></tr>
+<tr><td>作業場への取り込み(main合流)</td><td class="yes">済み</td></tr>
+<tr><td>触る検品(2段目)再実行（2026-10-22 09:xx）</td><td class="yes">PASS（押せる要素30件中テスト10件・無反応0・コンソールエラー0）</td></tr>
+<tr><td>本番トップが200で返るか・中身が空でないか</td><td class="yes">済み（200・39,317バイト）</td></tr>
+<tr><td>Lovable本番への「公開」反映</td><td class="no">未反映（OAuth鍵切れで公開ボタンを押す手段が無い）</td></tr>
 </table>
 
+<div class="note">
+【2026-10-22追記・35135号2回目】前回「触る検品でコンソールエラー1件」と判定された件は、同じ本番トップURLへ`verify_click.mjs`を再実行してPASS（無反応0件・コンソールエラー0件）。再現しない一時的な事象だったと判断。<br>
+残る論点はLovableの公開ボタンのみ：OAuth鍵が2026-10-14以降失効し自動巻き直し不可（`status/kagi_seimei.md`実測）。このセッションにはブラウザ操作ツールが無く、承認URLを自分で開けない（`tools/1464_dakai_kanmon.py`で打開策4種を試行・全て不可と確認済み・PASS）。CDPでのChrome起動も1186号関所で禁止。同根の構造的ブロックは#35089・#2122など複数件で既報済み、工場全体の共通課題。
+</div>
+
 <footer>
-実測: 本番トップのヘッダー情報を取得し、最後に公開が成功した時点(2026-10-14)より後の変更がまだ本番に出ていないことを確認済み。Lovable側の鍵の状態を見るファイルも「2026-10-14以降ログインが切れたまま」と示している。戻し方は店主向けの判断メモ(#35135)に記録済み（たまごさんがLovableへ再ログイン、または公開ボタンを押すと解消見込み）。
+実測: 本番トップのヘッダー情報を取得し、最後に公開が成功した時点(2026-10-14)より後の変更がまだ本番に出ていないことを確認済み。Lovable側の鍵の状態を見るファイルも「2026-10-14以降ログインが切れたまま」と示している。解消にはブラウザ操作ツールを持つセッション（またはたまごさん）が承認URL(`~/.tamago/lovable_authorize_url.txt`)を開き「Allow」を押す必要がある。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
