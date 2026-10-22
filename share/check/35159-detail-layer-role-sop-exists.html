@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35159 詳細層＝役割固有SOP・決定ログ・失敗事例の実在確認 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35159 詳細層＝役割固有SOP・決定ログ・失敗事例の実在確認</div>
+<h1>#35159 詳細層＝役割固有SOP・決定ログ・失敗事例の実在確認</h1>
+<div class="date">2026-10-22 Vault実測・本番(GitHub Pages)反映まで確認</div>
+
+<div class="fix">
+2026-08-12にたまごさんが話した「常駐ロール体制の設計」の一連の指示は、長い発言が機械によって35153〜35163番の10件に分割され、1ヶ月以上『未着手』のまま判定日赤になっていた（同根の35158番は本日別作業で完了済み）。35159番の内容は『詳細層＝役割固有のSOP(仕入れ担当/つなげる担当/ヘッダー担当/棚編集担当/コピー担当/見回り担当のSOP等)、個別の決定ログ、過去の失敗事例など、該当する時だけ読めばよいもの』という設計方針そのもの。実際にVaultを調べたところ、この設計は2026-08-12当日に<code>13_LAYER_GUIDE.md</code>内へ既に明文化され、かつ指し示す先の実体（7ロール分のSOPファイル・決定ログ・失敗事例ログ）も全て存在し、内容が入っていることを今回実測で確認した。<br><br><b>①13_LAYER_GUIDE.mdの『詳細層』定義（実在する行をそのまま引用）</b><pre style="white-space:pre-wrap;word-break:break-all;background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:12px;font-size:0.8rem;overflow-x:auto;">## 詳細層＝該当する作業をする時だけ読む
+
+- [[00_たまご憲法]]のうち、以下の条文（特定の作業タイプに紐づく）
+  （第7・8・11〜14条、第22〜29条）
+- 01〜12番の各支援ファイル（[[01_USER_CONTEXT]]〜[[12_EVAL_AND_LEARNING]]）
+- 各プロジェクト・各ロールのSOP（例：`卵商店街/役割SOP/`配下の7ロール分、`Obsidian整理担当/`）
+- [[04_DECISIONS]]（決定ログ）、[[05_FAILURE_CASES]]（失敗事例）</pre><b>②実際にファイルを開いて測った結果（<code>wc -lc</code>の生の出力）</b><pre style="white-space:pre-wrap;word-break:break-all;background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:12px;font-size:0.8rem;overflow-x:auto;">卵商店街/役割SOP/ 配下（7ロール分）
+  00_役割SOP_共通.md            46行 / 5,561バイト
+  01_仕入れ担当.md              46行 / 2,708バイト
+  02_つなげる担当（文脈担当）.md 39行 / 2,539バイト
+  03_ヘッダー担当.md            35行 / 1,753バイト
+  04_棚編集担当.md              37行 / 1,810バイト
+  05_コピー担当.md              35行 / 1,600バイト
+  06_見回り担当.md              76行 / 5,449バイト
+  07_憲法担当.md                58行 / 7,172バイト
+
+04_DECISIONS.md（決定ログ）       76行 / 15,993バイト
+05_FAILURE_CASES.md（失敗事例）  247行 / 37,723バイト</pre>全ファイルが空ではなく、たまごさんの要望どおり『該当する時だけ読む』役割別SOP・決定ログ・失敗事例として既に機能している。Vault（tamago_brain）は非公開のため直リンクではなく実測した生データをこのページに引用した（35158番と同じ扱い）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>7本</b><span>役割固有SOP（仕入れ/つなげる/ヘッダー/棚編集/コピー/見回り/憲法）</span></div>
+  <div class="num"><b>76行</b><span>04_DECISIONS.md（決定ログ）の行数</span></div>
+  <div class="num"><b>247行</b><span>05_FAILURE_CASES.md（失敗事例）の行数</span></div>
+  <div class="num"><b>53,716B</b><span>決定ログ+失敗事例の合計バイト数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+<li><b>（リンクなし）</b></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>01_仕入れ担当.md</td><td class="yes">2,708バイト・存在し内容あり</td></tr>
+<tr><td>02_つなげる担当（文脈担当）.md</td><td class="yes">2,539バイト・存在し内容あり</td></tr>
+<tr><td>03_ヘッダー担当.md</td><td class="yes">1,753バイト・存在し内容あり</td></tr>
+<tr><td>04_棚編集担当.md</td><td class="yes">1,810バイト・存在し内容あり</td></tr>
+<tr><td>05_コピー担当.md</td><td class="yes">1,600バイト・存在し内容あり</td></tr>
+<tr><td>06_見回り担当.md</td><td class="yes">5,449バイト・存在し内容あり</td></tr>
+<tr><td>07_憲法担当.md</td><td class="yes">7,172バイト・存在し内容あり</td></tr>
+<tr><td>04_DECISIONS.md（個別の決定ログ）</td><td class="yes">15,993バイト・存在し内容あり</td></tr>
+<tr><td>05_FAILURE_CASES.md（過去の失敗事例）</td><td class="yes">37,723バイト・存在し内容あり</td></tr>
+<tr><td>13_LAYER_GUIDE.mdが『詳細層』として上記を明示しているか</td><td class="yes">57〜59行目に明記済み</td></tr>
+</table>
+
+<footer>
+元の依頼（35159番）は35158番と同じ2026-08-12の一連の発言の一部で、設計方針そのものはその日のうちにVaultへ実装済みだった。今回は実在するファイルを1件ずつ開いて行数・バイト数を実測し、『詳細層』の定義どおりに機能していることを確認した。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
