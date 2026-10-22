@@ -52,33 +52,81 @@
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が2026-08-12に指示した『憲法担当という7つ目の役割』を新設した。CLAUDE.md/AGENTS.md/.claude/rules/*.md等、店主の指示を全セッションへ効かせる仕組みそのものの整合性を保つ担当。SOP本体（.claude/manuals/08-constitution-keeper.md）・機械検品（scripts/roles/check-constitution.mjs）・役割台帳（.claude/playbooks/roles.json）・現在地メモ（.claude/playbooks/憲法担当.md）をjoy-relief-stationのmainへ反映した。新設初回の見回りで実際に2件のズレを発見・修正（ペーパーワークで終わらせていない）：①AGENTS.mdが2026-09-24の軽量化以降CLAUDE.md第一条〜第八条への誘導を失っていたのを1行ポインタで解消 ②CLAUDE.mdの担当別マニュアル表に未掲載だった07(sns-pr)・08(本担当)を追記。
+店主が2026-08-12に指示した『憲法担当という7つ目の役割』を新設した。CLAUDE.md/AGENTS.md/.claude/rules/*.md等、店主の指示を全セッションへ効かせる仕組みそのものの整合性を保つ担当。SOP本体・機械検品・役割台帳・現在地メモをjoy-relief-stationのmainへ反映した。新設初回の見回りで実際に2件のズレを発見・修正した（①AGENTS.mdがCLAUDE.md第一条〜第八条への誘導を失っていたのを1行ポインタで解消 ②CLAUDE.mdの担当別マニュアル表に未掲載だった07・08番を追記）。joy-relief-stationは非公開リポジトリのため、直リンクではなく実物の中身をこのページ下部にそのまま転記した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+  <div class="num"><b>8</b><span>追加・変更したファイル数</span></div>
+  <div class="num"><b>0</b><span>check-constitution.mjsが検出した壊れ(エラー)件数</span></div>
+  <div class="num"><b>2</b><span>新設初回の見回りで発見・修正した既存のズレ件数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainのコミット（GitHub）</b><a href="https://github.com/tamago2022/joy-relief-station/commit/2c4eeb497d041de4089d1adaaa8cd9f025e8a22f" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/2c4eeb497d041de4089d1adaaa8cd9f025e8a22f</a></li>
-  <li><b>SOP本体 08-constitution-keeper.md</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/manuals/08-constitution-keeper.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/manuals/08-constitution-keeper.md</a></li>
-  <li><b>機械検品 check-constitution.mjs</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/check-constitution.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/roles/check-constitution.mjs</a></li>
+  <li><b>tamago-shinchoku 進捗表</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>node scripts/roles/check-constitution.mjs</td><td class="yes">壊れ0・要確認1（意図的なクロスリポ参照のみ）</td></tr>
-<tr><td>node scripts/roles/role-check.mjs</td><td class="yes">壊れ0</td></tr>
-<tr><td>npm run role -- 憲法担当（role-brief.mjs）</td><td class="yes">完全一致で生成確認済み</td></tr>
+<tr><td>node scripts/roles/check-constitution.mjs</td><td class="yes">壊れ0・要確認1(意図的なクロスリポ参照のみ)</td></tr>
+<tr><td>joy-relief-station mainへの反映</td><td class="yes">git log origin/main に反映済み</td></tr>
+<tr><td>CLAUDE.mdの担当別マニュアル表に08番が記載されているか</td><td class="yes">記載済み</td></tr>
 </table>
 
+<h2>⑥ 実物の中身（joy-relief-stationは非公開リポジトリのため、直リンクの代わりにここへ全文転記）</h2>
+<div class="note">
+<b>CLAUDE.md への追記（担当別マニュアル表に07・08番を追加）：</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">| 07   | `.claude/manuals/07-sns-pr.md`            | SNS・広報（AI広報部・日次投稿運用）                          |
+| 08   | `.claude/manuals/08-constitution-keeper.md` | 憲法担当：CLAUDE.md/AGENTS.md/`.claude/rules/*.md`等、店主の指示を全セッションへ効かせる仕組み自体の整合性維持 |</pre>
+</div>
+<div class="note">
+<b>AGENTS.md への追記（CLAUDE.md第一条〜第八条への誘導ポインタ）：</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">Claude Code固有の第一条〜第八条・0条（自律走行・外部公開の既定許可・AI組織運営等）の全文は、このAGENTS.mdには複製しない。実体は`CLAUDE.md`冒頭と`.claude/rules/00-shared-brain.md`にある（この2つは全セッションに自動で読み込まれる。AGENTS.mdは自動注入されないため、Claude Code以外の入口からだけAGENTS.mdを読むAIは、恒久ルールの全文を上記2ファイルで確認すること）。</pre>
+</div>
+<div class="note">
+<b>新設したSOP本体 .claude/manuals/08-constitution-keeper.md（冒頭・抜粋）：</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;"># 08｜憲法担当（Constitution Keeper）マニュアル
+
+対象：CLAUDE.md・AGENTS.md・.claude/rules/*.md・.claude/manuals/*.md・.claude/playbooks/roles.json・
+.claude/TASK_BOARD.md・.claude/KNOWN_ISSUES.md・.claude/PENDING_DECISIONS.md など、
+「店主の指示を全セッションへ確実に効かせる仕組み」そのものの整合性を保つ担当。
+他の担当（仕入れ・棚編集・検索…）のようにアプリ機能・棚・データは直接は触らない。
+
+## 定例の見回り（機械検品）
+  node scripts/roles/check-constitution.mjs
+
+チェック内容：
+- CLAUDE.md（プロジェクト）・AGENTS.md・.claude/rules/*.md の全ファイルが存在し空でないか。
+- CLAUDE.mdと.claude/rules/00-shared-brain.mdの「第◯条」番号の集合が一致しているか。
+- バッククオート参照されているファイルパスが実在するか（死んだ参照の検出）。
+- AGENTS.mdがCLAUDE.md／.claude/rules/への誘導を失っていないか。
+- CLAUDE.mdの「担当別マニュアル」表と.claude/manuals/の実ファイルがズレていないか。</pre>
+</div>
+<div class="note">
+<b>実行ログ（このセッションでそのまま実測・加工なし）： node scripts/roles/check-constitution.mjs</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;"># 憲法の見回り（CLAUDE.md / AGENTS.md / .claude/rules / 担当別マニュアル表）
+
+△ AGENTS.md内の参照先が実在しない → tools/worktree_reaper.py
+
+合計: 壊れ 0 / 要確認 1 / お知らせ 0</pre>
+<span style="font-size:0.78rem;color:#7a7568;">※「要確認1」は意図的なクロスリポジトリ参照（tamago-shinchoku側のツール名をjoy-relief-station内から言及している行）で、壊れではない。</span>
+</div>
+<div class="note">
+<b>役割台帳 .claude/playbooks/roles.json への追加エントリ（抜粋）：</b>
+<pre style="white-space:pre-wrap;background:#efe9db;padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">"name": "憲法担当",
+"mission": "CLAUDE.md・AGENTS.md・.claude/rules/*.md・.claude/manuals/*.md・.claude/playbooks/roles.json等、
+『店主の指示を全セッションへ効かせる仕組みそのもの』の整合性を保つ。店主が『憲法にして』と言った時、
+全セッションが実際に自動で読むファイル（CLAUDE.md本文・.claude/rules/*.md本文）に実体が入るまでを完了とする。
+アプリ機能・棚・データは直接触らない。",
+"playbook": ".claude/playbooks/憲法担当.md"</pre>
+</div>
+
 <footer>
-このページは #35160 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #35160 のセッションが tools/make_check_page.py で自動生成し、実物の中身を追記した確認資料。joy-relief-stationが非公開リポジトリのため、GitHubの直リンクは一切使っていない（34476番・101885番の再発防止＝tools/make_check_page.pyの --allow-private-repo-link 関所と同じ判断基準）。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
