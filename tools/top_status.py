@@ -675,3 +675,7 @@ if __name__ == "__main__":
     #   joy-relief-station / tamago-shinchoku の open Issue でタイトルに【Claude Codeに頼む】の新着を
     #   5分おきに拾い、発車待ちへ積む→Issueに受付コメント→Dispatchへ1行。AI Drive の新着も30分おき。中で間引き。
     _okosu("claude_uketsuke.py")
+
+    # 2026-10-22 全AIへの共有メモ係（たまごさん「この水汲みを俺がまだやらなきゃいけないのがしんどい」・#1037）。
+    #   待ち行列(status/zen_ai_kyouyu/machi.jsonl)をラベル「店主の指示メモ」のIssueへ書く＋3時間ごとに工場が受けた指示をまとめる。中で5分に間引く。
+    _okosu("zen_ai_kyouyu.py", "--tick")
