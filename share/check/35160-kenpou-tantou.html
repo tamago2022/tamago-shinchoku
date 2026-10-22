@@ -49,17 +49,17 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35160 憲法担当（7つ目の役割）新設・SOP整備 完了</div>
 <h1>#35160 憲法担当（7つ目の役割）新設・SOP整備 完了</h1>
-<div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-22 main HEAD（憲法担当コミット2c4eeb497を含む最新状態）で再実測・作り直し版</div>
 
 <div class="fix">
-店主が2026-08-12に指示した『憲法担当という7つ目の役割』を新設した。CLAUDE.md/AGENTS.md/.claude/rules/*.md等、店主の指示を全セッションへ効かせる仕組みそのものの整合性を保つ担当。SOP本体・機械検品・役割台帳・現在地メモをjoy-relief-stationのmainへ反映した。新設初回の見回りで実際に2件のズレを発見・修正した（①AGENTS.mdがCLAUDE.md第一条〜第八条への誘導を失っていたのを1行ポインタで解消 ②CLAUDE.mdの担当別マニュアル表に未掲載だった07・08番を追記）。joy-relief-stationは非公開リポジトリのため、直リンクではなく実物の中身をこのページ下部にそのまま転記した。
+店主が2026-08-12に指示した『憲法担当という7つ目の役割』（CLAUDE.md/AGENTS.md/.claude/rules/*.md等、店主の指示を全セッションへ効かせる仕組みそのものの整合性を保つ担当）を新設した。SOP本体(.claude/manuals/08-constitution-keeper.md)・機械検品(scripts/roles/check-constitution.mjs)・役割台帳(roles.json)・専用プレイブックをjoy-relief-stationのmainへ反映済み（コミット2c4eeb497）。新設初回の見回りで実際に2件のズレを発見・修正した（①AGENTS.mdがCLAUDE.md第一条〜第八条への誘導を失っていたのを1行ポインタで解消 ②CLAUDE.mdの担当別マニュアル表に未掲載だった07・08番を追記）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>8</b><span>追加・変更したファイル数</span></div>
+  <div class="num"><b>8</b><span>新設時に追加・変更したファイル数</span></div>
   <div class="num"><b>0</b><span>check-constitution.mjsが検出した壊れ(エラー)件数</span></div>
-  <div class="num"><b>2</b><span>新設初回の見回りで発見・修正した既存のズレ件数</span></div>
+  <div class="num"><b>6</b><span>要確認件数（6件全部を個別確認・壊れではないと判定済み）</span></div>
 </div>
 
 
@@ -72,61 +72,37 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>node scripts/roles/check-constitution.mjs</td><td class="yes">壊れ0・要確認1(意図的なクロスリポ参照のみ)</td></tr>
-<tr><td>joy-relief-stationの共有コードへの反映</td><td class="yes">反映済み</td></tr>
-<tr><td>CLAUDE.mdの担当別マニュアル表に08番が記載されているか</td><td class="yes">記載済み</td></tr>
+<tr><td>joy-relief-stationの運用コードへの反映</td><td class="yes">反映済み（運用中のコードに新設した役割の中身が入っていることを確認）</td></tr>
+<tr><td>CLAUDE.mdにだけ第九条が存在する(要確認)</td><td class="yes">第九条本文に『CLAUDE.md・AGENTS.md・00-shared-brain.mdの3か所のうち最低1か所に本文があればよい』と明記済み。設計通りで壊れではない</td></tr>
+<tr><td>CLAUDE.md/AGENTS.md内のtools参照5件が実在しない(要確認)</td><td class="yes">tamago-shinchoku側のツール(tools/koutai_kanmon.py等)への意図的なクロスリポジトリ参照。joy-relief-station内に存在しないのが正常</td></tr>
+<tr><td>役割台帳の整合チェック</td><td class="yes">壊れ0・要確認3（本件とは無関係の既存3担当のメモ鮮度の話のみ）</td></tr>
 </table>
 
-<h2>⑥ 実物の中身（joy-relief-stationは非公開リポジトリのため、直リンクの代わりにここへ全文転記）</h2>
+<h2>⑥ 検品結果（2026-10-22、このセッションが今実際に確かめた・加工なし）</h2>
 <div class="note">
-<b>CLAUDE.md への追記（担当別マニュアル表に07・08番を追加）：</b>
-<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">| 07   | `.claude/manuals/07-sns-pr.md`            | SNS・広報（AI広報部・日次投稿運用）                          |
-| 08   | `.claude/manuals/08-constitution-keeper.md` | 憲法担当：CLAUDE.md/AGENTS.md/`.claude/rules/*.md`等、店主の指示を全セッションへ効かせる仕組み自体の整合性維持 |</pre>
-</div>
-<div class="note">
-<b>AGENTS.md への追記（CLAUDE.md第一条〜第八条への誘導ポインタ）：</b>
-<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">Claude Code固有の第一条〜第八条・0条（自律走行・外部公開の既定許可・AI組織運営等）の全文は、このAGENTS.mdには複製しない。実体は`CLAUDE.md`冒頭と`.claude/rules/00-shared-brain.md`にある（この2つは全セッションに自動で読み込まれる。AGENTS.mdは自動注入されないため、Claude Code以外の入口からだけAGENTS.mdを読むAIは、恒久ルールの全文を上記2ファイルで確認すること）。</pre>
-</div>
-<div class="note">
-<b>新設したSOP本体 .claude/manuals/08-constitution-keeper.md（冒頭・抜粋）：</b>
-<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;"># 08｜憲法担当（Constitution Keeper）マニュアル
-
-対象：CLAUDE.md・AGENTS.md・.claude/rules/*.md・.claude/manuals/*.md・.claude/playbooks/roles.json・
-.claude/TASK_BOARD.md・.claude/KNOWN_ISSUES.md・.claude/PENDING_DECISIONS.md など、
-「店主の指示を全セッションへ確実に効かせる仕組み」そのものの整合性を保つ担当。
-他の担当（仕入れ・棚編集・検索…）のようにアプリ機能・棚・データは直接は触らない。
-
-## 定例の見回り（機械検品）
-  node scripts/roles/check-constitution.mjs
-
-チェック内容：
-- CLAUDE.md（プロジェクト）・AGENTS.md・.claude/rules/*.md の全ファイルが存在し空でないか。
-- CLAUDE.mdと.claude/rules/00-shared-brain.mdの「第◯条」番号の集合が一致しているか。
-- バッククオート参照されているファイルパスが実在するか（死んだ参照の検出）。
-- AGENTS.mdがCLAUDE.md／.claude/rules/への誘導を失っていないか。
-- CLAUDE.mdの「担当別マニュアル」表と.claude/manuals/の実ファイルがズレていないか。</pre>
-</div>
-<div class="note">
-<b>実行ログ（このセッションでそのまま実測・加工なし）： node scripts/roles/check-constitution.mjs</b>
+<b>確かめた内容：憲法の見回りチェック（新設した役割を含む最新の運用コードで実行）</b>
 <pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;"># 憲法の見回り（CLAUDE.md / AGENTS.md / .claude/rules / 担当別マニュアル表）
 
+△ CLAUDE.mdにだけ存在する条文番号 → 第9条（.claude/rules/00-shared-brain.mdに無い）
+△ CLAUDE.md内の参照先が実在しない → tools/admin_login_mimawari.py
+△ CLAUDE.md内の参照先が実在しない → tools/koutai_kanmon.py
+△ CLAUDE.md内の参照先が実在しない → status/public/koutai_kijun.json
+△ AGENTS.md内の参照先が実在しない → tools/hantei_hiduke.py
 △ AGENTS.md内の参照先が実在しない → tools/worktree_reaper.py
 
-合計: 壊れ 0 / 要確認 1 / お知らせ 0</pre>
-<span style="font-size:0.78rem;color:var(--t-mute);">※「要確認1」は意図的なクロスリポジトリ参照（tamago-shinchoku側のツール名をjoy-relief-station内から言及している行）で、壊れではない。</span>
+合計: 壊れ 0 / 要確認 6 / お知らせ 0</pre>
+<span style="font-size:0.78rem;color:var(--t-mute);">前バージョンの確認ページはこのログを「要確認1」と書いていた。本ページ作成時に確かめ直したところ「要確認6」だったため、改変せずそのまま貼っている（真因は上の⑤表・footerに記載）。6件はいずれも壊れ(✗)ではなく要確認(△)であり、完成条件の「壊れ0件」は満たしている。</span>
 </div>
 <div class="note">
-<b>役割台帳 .claude/playbooks/roles.json への追加エントリ（抜粋）：</b>
-<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">"name": "憲法担当",
-"mission": "CLAUDE.md・AGENTS.md・.claude/rules/*.md・.claude/manuals/*.md・.claude/playbooks/roles.json等、
-『店主の指示を全セッションへ効かせる仕組みそのもの』の整合性を保つ。店主が『憲法にして』と言った時、
-全セッションが実際に自動で読むファイル（CLAUDE.md本文・.claude/rules/*.md本文）に実体が入るまでを完了とする。
-アプリ機能・棚・データは直接触らない。",
-"playbook": ".claude/playbooks/憲法担当.md"</pre>
+<b>新設したSOP本体・役割台帳が運用中のコードに実在することを、このページ作成時に直接確認した：</b>
+<pre style="white-space:pre-wrap;background:var(--t-panel);padding:10px;border-radius:8px;font-size:0.82rem;overflow-x:auto;">憲法担当のSOP本体(.claude/manuals/08-constitution-keeper.md)と機械検品(scripts/roles/check-constitution.mjs)は、
+新設した時の変更の一部として運用中のコードに存在する（ファイルサイズ：SOP本体7206バイト・機械検品6684バイト）。
+
+役割台帳(.claude/playbooks/roles.json)にも "id": "constitution-keeper" のエントリが実在する（791行目）。</pre>
 </div>
 
 <footer>
-このページは #35160 のセッションが tools/make_check_page.py で自動生成し、実物の中身を追記した確認資料。joy-relief-stationが非公開リポジトリのため、GitHubの直リンクは一切使っていない（34476番・101885番の再発防止＝tools/make_check_page.pyの --allow-private-repo-link 関所と同じ判断基準）。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #35160 のセッションがtools/make_check_page.pyで自動生成し、実物の中身を追記した確認資料。joy-relief-stationが非公開リポジトリのため、GitHubの直リンクは使っていない（34476番・101885番の再発防止）。【1回目の差し戻し対応】非公開リポへの直リンクを撤去し、中身をこのページへ全文転記した。【2回目の差し戻し対応】前バージョンは『壊れ0・要確認1』と書いたが、その後運用中のコードへ他セッションの変更（第九条追加・tools参照5件の追加等）が積まれ、新設した役割を含む最新の状態で確かめ直すと『壊れ0・要確認6』になることが分かった（実行ログの改変ではなく、他の変更の積み重ねによる状態変化が真因）。本バージョンは2026-10-22時点で実際に確かめ直した生ログをそのまま貼り、6件全部を個別に見て壊れでないことを確認している。書式はshare/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
