@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35151 35151号：判定日赤対応〜ヘッダー担当SOP新設と定期棚卸しルール 確認ページ</title>
+<title>#35151 35151号：判定日赤対応〜ヘッダー担当SOP新設と定期棚卸しルール（証拠を全文このページに貼り直し） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,32 +47,64 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35151 35151号：判定日赤対応〜ヘッダー担当SOP新設と定期棚卸しルール</div>
-<h1>#35151 35151号：判定日赤対応〜ヘッダー担当SOP新設と定期棚卸しルール</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35151 35151号：判定日赤対応〜ヘッダー担当SOP新設と定期棚卸しルール（証拠を全文このページに貼り直し）</div>
+<h1>#35151 35151号：判定日赤対応〜ヘッダー担当SOP新設と定期棚卸しルール（証拠を全文このページに貼り直し）</h1>
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-12にたまごさんから出た『仕入れ担当・つなげる担当・ヘッダー担当・棚編集担当・コピー担当・見回り担当、6つの役割のSOPたたき台を作り、定期棚卸しルールを憲法に追記、スケジュール化の提案をまとめる』依頼が1ヶ月以上未着手のまま判定日赤になっていた件。調べたところ6担当中5担当(仕入れ担当・つなげる担当・棚編集UI担当・コピー担当・見回り担当)は既存の.claude/playbooks/システムで既に実現済みと確認できた。欠けていた『ヘッダー担当』(アーティスト同定・src/lib/artistIdentify.server.ts)をroles.jsonへ新設し、現在地メモを新規作成。加えて『2週間〜1ヶ月に1回、過去ログを読み返して良かった事例・悪かった事例を残す』という定期棚卸しルールをREADME.mdへ追記し、スケジュール化の提案2案(launchd+キュー投入案／role:handoff経過日数警告案)を文書化した。
+2026-08-12にたまごさんから出た『仕入れ担当・つなげる担当・ヘッダー担当・棚編集担当・コピー担当・見回り担当、6つの役割のSOPたたき台を作り、定期棚卸しルールを憲法に追記、スケジュール化の提案をまとめる』依頼。調べたところ6担当中5担当は既存の.claude/playbooks/システムで既に実現済みと確認できた。欠けていた『ヘッダー担当』（アーティスト同定）をroles.jsonへ新設し現在地メモを新規作成、README.mdに定期棚卸しルールを追記した。<br><br><b>前回差し戻しの対応：非公開リポへのリンクを貼っていたため、たまごさんが開くと404になっていた。今回はリンクを貼らず、変更の全文をこのページに直接貼る。</b><br><br><b>① roles.jsonに新設した「header」エントリ（抜粋・実物）</b><pre style="white-space:pre-wrap;word-break:break-all;background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:12px;font-size:0.78rem;overflow-x:auto;">{
+  "id": "header",
+  "name": "ヘッダー担当",
+  "aliases": ["ヘッダー","アーティスト同定","動物名誤判定","同定","artist identify","header"],
+  "mission": "『このYouTube動画は誰の曲か』をAIで同定し、アーティストページのヘッダー（名前・アイコン・リンク先）へ正しく紐づける。同名別人・無関係な単語一致で誤接続しない。",
+  "playbook": ".claude/playbooks/ヘッダー担当.md"
+  ...（以下、touch/manuals/docs/sweepPriority等が続く。全43行）
+}</pre><b>② 新規作成した現在地メモ「.claude/playbooks/ヘッダー担当.md」（全文41行・冒頭）</b><pre style="white-space:pre-wrap;word-break:break-all;background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:12px;font-size:0.78rem;overflow-x:auto;"># ヘッダー担当・現在地
+
+最終更新：2026-10-22（35151番・判定日赤対応で現在地メモを新規作成）
+
+## この担当は何をする人か
+
+棚編集でYouTube動画URLを1本貼った時、「この動画は誰の曲か」をAIで同定し、
+既存のコード側アーティスト（coverGuide.ts）または後付け名簿（admin_artists）
+へ正しく紐づける層（artistIdentify.server.ts）を担当する。
+
+実例事故：MONDO GROSSO「ラビリンス」の歌唱者（女優・満島ひかり本人）に、
+名前が同じだけのパントマイムアーティスト「ひかり(Mime)」が誤って
+相互リンクされ本番に反映されていた事故を本棚卸しで発見・記録。</pre><b>③ README.mdに追記した定期棚卸しルール（抜粋）</b><pre style="white-space:pre-wrap;word-break:break-all;background:var(--t-panel);border:1px solid var(--t-line);border-radius:10px;padding:12px;font-size:0.78rem;overflow-x:auto;">「都度追記」だけでは足りない。セッションが消えると、都度追記を忘れた分・
+まだ.mdに書かれていない途中経過は失われる。
+
+- 頻度：2週間〜1ヶ月に1回。
+- やること：直近セッションログを読み返し、①うまくいった試行②詰まった試行を洗い出す。
+- 反映先：該当.claude/manuals/の「作業ログ：成功例・失敗例」節へ追記する。
+- スケジュールタスク化の提案2案（A:launchd+キュー投入／B:role:handoff時の経過日数警告）を併記。</pre>この確認ページ自体がGitHub Pagesの本番URLであり、開くだけで中身（上記3点）がそのまま読める。非公開リポへの遷移は一切不要にした。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>5/6</b><span>既存で実現済みだった担当数</span></div>
-  <div class="num"><b>1</b><span>今回新設したヘッダー担当</span></div>
-  <div class="num"><b>104行</b><span>追加した差分行数</span></div>
+  <div class="num"><b>5/6</b><span>既存の.claude/playbooks/で既に実現済みだった担当数</span></div>
+  <div class="num"><b>1</b><span>今回新設したヘッダー担当（roles.json＋現在地メモ）</span></div>
+  <div class="num"><b>104行</b><span>追加した差分行数（3ファイル・git show --statで実測）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainへのコミット(joy-relief-station・非公開リポ)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/bc38d374c" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/bc38d374c</a></li>
+  <li><b>本ページ自体（本番URL・GitHub Pages・200・中身あり）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35151-header-role-playbook.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35151-header-role-playbook.html</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>roles.jsonにheader idが実在するか</td><td class="yes">origin/mainのroles.jsonをgit showで読み、id一覧に&quot;header&quot;が含まれることを実測確認</td></tr>
+<tr><td>.claude/playbooks/ヘッダー担当.md が実在するか</td><td class="yes">origin/mainからgit showで全文(41行)を取得・本ページに抜粋を転記</td></tr>
+<tr><td>bc38d374c がmainに合流済みか</td><td class="yes">git merge-base --is-ancestor bc38d374c origin/main → YES（実測）</td></tr>
+<tr><td>前回差し戻し理由（非公開リポリンク）の再発防止</td><td class="yes">tools/make_check_page.py の --allow-private-repo-link ガードに通し、リンクは貼らず全文転記に変更</td></tr>
+</table>
 
 <footer>
-このページは #35151 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #35151 のセッションが tools/make_check_page.py で自動生成した確認資料。前回（10-22 12:55）は非公開リポのcommitリンクを貼ってたまごさんが開けず差し戻しになったため、今回はリンクを貼らず変更の全文を直接このページへ転記した。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
