@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35163 プチ物語：見た目6本のまま、検索エンジンには12本全部 確認ページ</title>
+<title>#35163 35163号｜プチ物語12本をSSR(検索エンジン向け)で全部見えるように 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,38 +47,44 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35163 プチ物語：見た目6本のまま、検索エンジンには12本全部</div>
-<h1>#35163 プチ物語：見た目6本のまま、検索エンジンには12本全部</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35163 35163号｜プチ物語12本をSSR(検索エンジン向け)で全部見えるように</div>
+<h1>#35163 35163号｜プチ物語12本をSSR(検索エンジン向け)で全部見えるように</h1>
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-曲ページ『この曲が流れる場面』(プチ物語)が、展開前は後半6本をHTMLから完全に除外していたため検索エンジンから見えなかった。12本全部を常にHTMLへ描き、見た目だけCSSのhiddenで隠す方式に変更。見た目(最初6本→ボタンで全部)は一切変えていない。
+曲ページ「竹内アンナ TOKYO NITE」の『この曲が流れる場面』(プチ物語)。見た目は従来どおり最初6本だけ表示・残り6本はボタンを押すと展開。本番HTML(SSR)には最初から12本すべてが<code>&lt;li&gt;</code>として書き出され、未展開分はCSSの<code>hidden</code>(display:none)で隠すだけに変更済み。検索エンジン・AIクローラーはJSを実行しなくても12本全部を読める。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>12/12</b><span>本番HTMLに含まれるタイトル数</span></div>
-  <div class="num"><b>6本</b><span>見た目（展開前）に表示される数</span></div>
+  <div class="num"><b>12/12</b><span>本番HTML(SSR)に含まれるプチ物語の件数 ※実測:node fetchで本番HTMLを取得しタイトル12件の文字列一致を確認</span></div>
+  <div class="num"><b>12件</b><span>headless Chromiumで実際にDOMを数えた&amp;lt;li&amp;gt;件数(liCount)</span></div>
+  <div class="num"><b>6件</b><span>画面に見えている状態(展開前)のカード数</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>展開前（見た目は従来どおり6本）</b><img src="img/35163-before.png" alt="前"></div>
+  <div class="shot after"><b>「ほかの場面も見る」を押した後（12本すべて）</b><img src="img/35163-after.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番ページ(確認対象)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=takeuchi-anna&amp;song=tokyo-nite" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=takeuchi-anna&amp;song=tokyo-nite</a></li>
+  <li><b>本番ページ（竹内アンナ TOKYO NITE）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=takeuchi-anna&amp;song=tokyo-nite" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=takeuchi-anna&amp;song=tokyo-nite</a></li>
+  <li><b>本番HTMLのソース（Ctrl+UまたはView Source）</b><a href="view-source:https://joy-relief-station.lovable.app/cover-guide?artist=takeuchi-anna&amp;song=tokyo-nite" target="_blank" rel="noopener">view-source:https://joy-relief-station.lovable.app/cover-guide?artist=takeuchi-anna&amp;song=tokyo-nite</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番HTMLに12件のタイトル文字列が全部含まれる</td><td class="yes">yes</td></tr>
-<tr><td>1〜6番目はhiddenクラス無し(表示)</td><td class="yes">yes</td></tr>
-<tr><td>7〜12番目はhiddenクラス付き(見た目は非表示)</td><td class="yes">yes</td></tr>
-<tr><td>本番HTTPステータス200</td><td class="yes">yes</td></tr>
+<tr><td>本番HTTPステータス</td><td class="yes">200</td></tr>
+<tr><td>SSR HTMLに12タイトル全件が含まれる</td><td class="yes">12/12件 一致</td></tr>
+<tr><td>headless ChromiumでのDOM li件数</td><td class="yes">12件</td></tr>
+<tr><td>未展開カードにhiddenクラスが付いている(display:none)</td><td class="yes">7〜12件目に確認</td></tr>
 </table>
 
 <footer>
-実測：python urllibでUser-Agent指定の上でSSR HTMLを取得し、12件のタイトル文字列と各要素のclass属性を直接確認。x-deployment-id: psr2.a04e941b-... （mainコミット c05104826 反映済み）
+このページは #35163 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
