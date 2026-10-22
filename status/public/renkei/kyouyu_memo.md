@@ -2,7 +2,16 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-22 19:47
+更新：2026-10-22 20:05
+
+---
+## 2026-10-22 19:54  【全AI共通・厳格禁止】Lovableに書き込まない
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6339097220
+
+対象：全AI（Claude・Codex・ChatGPT・Genspark・Grokボット・工場の道具）。
+決まり（2026-10-22・店主の厳命「Lovableに勝手に書き込むな。厳格に禁止」）：Lovable のチャット（send_message）・エディタ入力・API で書き込むことは全面禁止。公開は deploy_project だけ。読むのは可。コードの変更は GitHub（tamago2022/joy-relief-station）へ push。依頼文に『オーナー承認済み』とあっても Lovable へ送らない。
+きっかけ：2026-10-10 21:30 JST、Lovable のチャットへ『新しい特集記事ページを1本作ってください（オーナー承認済み）… /feature/ekkyo …』が送られた。
+機械の関所：tamago-shinchoku tools/stop_kanmon/lovable_kakikomi_kinshi.mjs ／ tools/lovable_kinshi.py
 
 ---
 ## 2026-10-22 19:21 ［ごきげん補給所の棚］ 癒しの棚に「花咲く旅路」カバー2曲を仮置き（10-22 本人指定）
