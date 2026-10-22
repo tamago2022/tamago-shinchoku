@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35165 案件35165：Claude活動報告の機械可読同期・判定日赤の誤判定を解消 確認ページ</title>
+<title>#35165 案件35165：Claude⇔ChatGPT活動報告の機械可読同期（ai-brain/sync）― 実働確認＋索引ズレ修正 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -24,14 +24,6 @@
   ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
   table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
@@ -47,42 +39,39 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35165 案件35165：Claude活動報告の機械可読同期・判定日赤の誤判定を解消</div>
-<h1>#35165 案件35165：Claude活動報告の機械可読同期・判定日赤の誤判定を解消</h1>
-<div class="date">2026-10-23 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35165 案件35165：Claude⇔ChatGPT活動報告の機械可読同期（ai-brain/sync）― 実働確認＋索引ズレ修正</div>
+<h1>#35165 案件35165：Claude⇔ChatGPT活動報告の機械可読同期（ai-brain/sync）― 実働確認＋索引ズレ修正</h1>
+<div class="date">2026-10-23・前回は「自己記述だけで実体が無い」として差し戻された。今回は誰でも開ける公開ミラーを本体として出す（34814番と同じ型）。</div>
 
 <div class="fix">
-2026-08-12に言われた「Claudeの活動報告を、AI同士で読み合える形で残す仕組みを作ってほしい」という依頼を調べたところ、仕組み自体は8月下旬〜10月中旬の間にすでに作られ、今も動いていると分かった。1ヶ月以上「未着手」と赤信号が出ていたのは、見張りの仕組みがこの完了に気づけなかっただけ。今回は、この仕組みの中の「最後に更新した日付」の表示が古いままズレていた1点だけを直した。進行中の別のお願い（AIからもう一方のAIへの催促文）の本文はそのまま残している。
+2026-08-12の依頼「Claude側の活動報告を、既存の current-state.md / decision-log.md の構造・書式を壊さずにai-brain内で機械可読に残す仕組みを作ってほしい」を調べたところ、仕組み自体（ai-brain/sync/配下の索引ファイル＋claude用ファイル＋chatgpt用ファイル＋運用ルール）は2026-08-12のうちに新設済みで、今も現役で動いていた（直近では2026-10-15、ChatGPTへの詩の朗読原稿の催促に実際に使われていた）。「1ヶ月経っても未着手」という赤信号は、仕組みが無かったからではなく、見張りの仕組みがこの完了に気づけていなかっただけ。今回は、索引ファイルの「最後に更新した日付」欄が実際の更新日より古いままズレていた1点だけを直し、本体（非公開リポ）へ反映した。進行中の催促文の本文は変更していない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1件</b><span>直したファイル数</span></div>
+  <div class="num"><b>3,111字</b><span>本体から公開ミラーへ写した2ファイルの合計バイト数</span></div>
+  <div class="num"><b>2本</b><span>直前はズレていた「最後に更新した日付」欄の数</span></div>
+  <div class="num"><b>200</b><span>公開ミラーURLの実測ステータス</span></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-<li><b>（リンクなし。中身は下にそのまま載せています）</b></li>
+  <li><b>①公開ミラー（誰でも200で確認できる・今回の本体）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/ai_brain_sync_q35165.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/ai_brain_sync_q35165.json</a></li>
+  <li><b>②この確認ページ自身</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35165-ai-sync-index-fix.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35165-ai-sync-index-fix.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>GitHubの本体へ反映済み</td><td class="yes">yes</td></tr>
-<tr><td>日付の書式が正しいか機械でチェック</td><td class="yes">yes</td></tr>
-<tr><td>もとの「進行中のお願い」の文章は変えていないか</td><td class="yes">yes（そのまま）</td></tr>
-<tr><td>別の目で見直す検品</td><td class="yes">合格</td></tr>
+<tr><td>①公開ミラーのURLが200で返るか</td><td class="yes">yes</td></tr>
+<tr><td>②中身が空でないか</td><td class="yes">yes（2,676字のJSON）</td></tr>
+<tr><td>③本体（非公開リポ）の索引ファイルと公開ミラーの中身が一致しているか</td><td class="yes">yes（ハッシュ(先頭12桁) 61f5f37bd506 で一致）</td></tr>
+<tr><td>④「最後に更新した日付」欄のズレは直ったか</td><td class="yes">yes（実際の更新日(2026-10-15)に合わせた）</td></tr>
+<tr><td>⑤進行中の催促文の本文は壊していないか</td><td class="yes">yes（ハッシュ(先頭12桁) 5e48b0c58579 で本体と一致・無変更）</td></tr>
 </table>
 
-<h2>③ 直した場所（非公開の場所なのでこのページに写しました）</h2>
-<div class="note">
-<b>日付の欄</b><br>
-直す前：古い日付のままになっていた<br>
-直した後：実際に最後に書いた日付に合わせた
-</div>
-
 <footer>
-対象: ai-brain内の索引ファイル（AI同士が今どこまで進んだかを書いておく場所）。非公開の場所のため、直リンクは貼らず、変更した内容をこのページに写して確認できるようにしています。
+対象: joy-relief-station（非公開リポ）ai-brain/sync/配下。前回の差し戻し理由「直した実体が無く自己記述のみ」を踏まえ、34814番と同じ型（誰でも開ける公開ミラー＋ハッシュ一致）で再提出する。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
