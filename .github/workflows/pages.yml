@@ -37,7 +37,10 @@ concurrency:
   # 2026-10-21（34565番）：再発（形は違う）。run id 39493744463 が2026-10-20T20:38:51Z
   # から "Run actions/checkout@v4" ステップで6分以上進まず止まった（in_progress・checkout
   # ステップのまま更新なし）。キューの先頭を塞ぐ形は前回と同じなので同じ直し方で隔離する。
-  group: pages-2026-10-21
+  # 2026-10-22（35164番）：再発。run id (main=60bd45395) が14:24:39Zから9分以上
+  # "queued"のまま止まり、後続の自分のpush分(main=8854b7748)が"pending"で進めなかった。
+  # 同じ直し方（グループ名を進める）で隔離する。
+  group: pages-2026-10-22
   cancel-in-progress: false
 jobs:
   deploy:
