@@ -81,9 +81,31 @@
 
 
 
+<h2>③ 実測ログ（機械的にファイルを読んだ生の出力）</h2>
+<div class="note">
+<pre style="white-space:pre-wrap;word-break:break-all;background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px;font-size:0.8rem;overflow-x:auto;">$ grep -n '第21条\|第30条\|第31条' 13_LAYER_GUIDE.md
+32:  - 第21条　正しいより楽しい（判断基準）（2026-10-22分類・作業の種類を問わない判断基準のため）
+33:  - 第30条　成果物には必ず「開けるリンク」を添える（2026-10-22分類・全報告に共通する形式ルールのため）
+34:  - 第31条　セッションはたまごに聞かない。最後まで走り切る（2026-10-22分類・第18条と同じ自律走行原則のため）
+
+$ grep -n '第22条\|第23条\|第24条\|第25条\|第26条\|第27条\|第28条\|第29条' 13_LAYER_GUIDE.md
+49:  - 第22条　実在の人物・作品は名前の一致だけで同定しない（→ 仕入れ・同定作業。2026-10-22分類）
+50:  - 第23条　仕入れのフェーズ転換（→ 仕入れ担当固有。2026-10-22分類）
+51:  - 第24条　コピーの書き方（→ コピー担当固有。2026-10-22分類）
+52:  - 第25条　人物・曲の同定（実務適用）（→ 第22条と同じ同定作業。2026-10-22分類）
+53:  - 第26条　棚の扱い（→ 棚編集担当固有。2026-10-22分類）
+54:  - 第27条　導線の2種類（→ つなげる担当固有。2026-10-22分類）
+55:  - 第28条　SNS投稿フォーマット（→ SNS投稿作業固有。2026-10-22分類）
+56:  - 第29条　他人の投稿の使い方（→ SNS投稿作業固有。2026-10-22分類）
+
+$ python3 -c "import urllib.request; r=urllib.request.urlopen('https://tamago2022.github.io/tamago-shinchoku/share/check/35158-constitution-role-layer-sweep.html'); print('STATUS', r.status, 'LEN', len(r.read()))"
+STATUS 200 LEN 11218</pre>
+対象ファイル：tamago_brain Vault内 <code>AI出力/_ルール/たまご憲法/13_LAYER_GUIDE.md</code>（非公開のためパスのみ記載。中身は上の実測ログと①〜④の全文引用がそのまま証拠）。
+</div>
+
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本ページ自体（本番URL・GitHub Pages・200・中身あり）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35158-constitution-role-layer-sweep.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35158-constitution-role-layer-sweep.html</a></li>
+  <li><b>本ページ自体（本番URL・GitHub Pages・200・中身あり・上の実測ログで200確認済み）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35158-constitution-role-layer-sweep.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35158-constitution-role-layer-sweep.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -97,6 +119,7 @@
 
 <footer>
 元の依頼（2026-08-12 09:57、35158〜35161番に分割）：「常駐ロール体制の設計」SOP作成に直結する追加要望として、詳細層＝役割固有SOP・決定ログ・失敗事例の定義、「憲法担当」という7つ目の役割の新設、コア層(FOUNDER_INTENT・第1〜18条)と詳細層の分離設計、を求められていた。調査の結果、本体は2026-08-12当日にtamago_brain Vault内へ既に実装済みと判明（先行セッション#35153が同日確認）。本セッションでは、新設後2ヶ月間止まっていた棚卸し運用を実行し、未分類のまま残っていた第21〜31条をコア/詳細層へ分類した。
+<br><br><b>なぜ「1ヶ月経っても未着手」の判定が続いたか：</b>「器」（憲法担当ロール・コア/詳細層ガイドそのもの）は2026-08-12当日に作られていたが、運用（新しい条文が増えるたびの棚卸し分類）が1度も回らず、第21条以降が未分類のまま放置され続けた。判定日赤システムは号の中身（Vault側の実運用）までは見ておらず、joy-relief-stationリポジトリ側のコード変更有無で機械的に未着手と判定していたため、2ヶ月間ズレたまま残っていた。今回は実際に止まっていた運用そのもの（第21〜31条の分類）を実行して解消した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
