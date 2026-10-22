@@ -51,6 +51,12 @@ DIGEST_MAX = 40
 PATHS = [os.path.expanduser(p) for p in ("~/.local/bin", "~/bin", "~/.npm-global/bin")] + \
         ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"]
 ENV = dict(os.environ, PATH=":".join(PATHS + [os.environ.get("PATH", "")]))
+
+
+def exe(name):
+    """心臓の PATH には gh・gsk が無いことがあるので、自分で探して絶対パスで呼ぶ。"""
+    import shutil
+    return shutil.which(name, path=ENV["PATH"]) or name
 DEFAULT_CONF = {"repo": "tamago2022/joy-relief-station", "label": "店主の指示メモ", "zentai": None}
 PREFIX = "【店主の指示メモ】"
 
@@ -125,7 +131,7 @@ def kakidashi(rec):
 
 
 def _gh(args):
-    p = subprocess.run(["gh"] + args, capture_output=True, text=True, timeout=60, env=ENV)
+    p = subprocess.run([exe("gh")] + args, capture_output=True, text=True, timeout=60, env=ENV)
     if p.returncode != 0:
         raise RuntimeError((p.stderr or p.stdout or "")[:200])
     return p.stdout.strip()
@@ -269,7 +275,7 @@ def drive_okuru(st):
     h = hashlib.sha1(body.encode("utf-8")).hexdigest()
     if st.get("driveHash") == h:
         return
-    p = subprocess.run(["gsk", "drive", "upload", "--upload_path", DRIVE_PATH, "--file_content", txt,
+    p = subprocess.run([exe("gsk"), "drive", "upload", "--upload_path", DRIVE_PATH, "--file_content", txt,
                         "--overwrite", "true", "--no-input"], capture_output=True, text=True, timeout=120, env=ENV)
     if p.returncode == 0 and '"status":"ok"' in (p.stdout or "").replace(" ", ""):
         st["driveHash"] = h
