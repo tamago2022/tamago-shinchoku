@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35165 案件35165：Claude活動報告の機械可読同期・判定日赤の誤判定を解消 確認ページ</title>
+<title>#35165 案件35165：Claude⇔ChatGPT活動報告の機械可読同期（ai-brain/sync）― 実働確認＋索引ズレ修正 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,18 +47,19 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35165 案件35165：Claude活動報告の機械可読同期・判定日赤の誤判定を解消</div>
-<h1>#35165 案件35165：Claude活動報告の機械可読同期・判定日赤の誤判定を解消</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35165 案件35165：Claude⇔ChatGPT活動報告の機械可読同期（ai-brain/sync）― 実働確認＋索引ズレ修正</div>
+<h1>#35165 案件35165：Claude⇔ChatGPT活動報告の機械可読同期（ai-brain/sync）― 実働確認＋索引ズレ修正</h1>
 <div class="date">2026-10-23 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-12の依頼「Claude側の活動報告をai-brain内に機械可読な形で残す仕組みを作る」を調査した結果、仕組み自体はai-brain/sync/配下（index.json＋claude/latest.md＋chatgpt/latest.md＋README.mdの運用ルール）として2026-08-31〜10-15の間に既に実装・稼働中だったと判明した。判定日の自動監視が別セッション実装のため検知できず誤って『未着手』と判定し続けていただけ。今回はindex.json内のlastUpdated同期ズレ（実際の更新日2026-10-15に対し2026-09-14のまま古かった）だけを修正してmainへpush、既存latest.md本文（Issue #975の進行中ハンドオフ）は一切変更していない。
+2026-08-12の依頼『Claude活動報告を、既存のcurrent-state.md/decision-log.mdの構造を壊さずにai-brain内で機械可読に残す仕組みを作る』は、当日中に commit <code>ca1e84fda</code> で <code>ai-brain/sync/</code>（index.json＋claude/latest.md＋chatgpt/latest.md＋README.md）として新設済み。2026-10-15時点でも commit <code>0eb17ce01</code> として実際にChatGPT⇔Claude間の引き継ぎ（Issue #975・詩の朗読原稿）に現役で使われていることを確認した。今回は索引 <code>ai-brain/sync/index.json</code> の <code>lastUpdated</code> が実際の最終更新日(2026-10-15)より古い日付(2026-09-14)のままズレていた1点だけを修正し、commit <code>e1df02dc0</code> としてmainへ合流済み。既存の<code>latest.md</code>本文（進行中のハンドオフ）は無変更＝壊していない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>1件</b><span>変更したファイル数</span></div>
-  <div class="num"><b>+3/-2</b><span>diffの行数</span></div>
+  <div class="num"><b>2026-08-12</b><span>仕組み新設(ca1e84fda)</span></div>
+  <div class="num"><b>2026-10-15</b><span>直近の実運用(0eb17ce01)</span></div>
+  <div class="num"><b>2026-10-23</b><span>索引ズレ修正・main合流(e1df02dc0)</span></div>
 </div>
 
 
@@ -71,38 +72,49 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへpush済み(commit e1df02dc0)</td><td class="yes">yes</td></tr>
-<tr><td>JSON構文チェックOK</td><td class="yes">yes</td></tr>
-<tr><td>既存claude/latest.md本文は無変更（Issue#975ハンドオフ維持）</td><td class="yes">yes</td></tr>
-<tr><td>tamago-verifierによる独立検品</td><td class="yes">合格</td></tr>
+<tr><td>ai-brain/sync/一式が存在(index.json/claude・chatgpt latest.md/README.md)</td><td class="yes">origin/mainに実在</td></tr>
+<tr><td>直近の実運用更新がある(Issue#975ハンドオフ、自己申告でなく実コミット)</td><td class="yes">yes(0eb17ce01)</td></tr>
+<tr><td>今回の修正(index.json lastUpdated同期)がmainに合流済み</td><td class="yes">yes(e1df02dc0がorigin/mainの履歴に直接存在)</td></tr>
+<tr><td>既存latest.md本文(進行中ハンドオフ)は無変更</td><td class="yes">diffなし・壊していない</td></tr>
 </table>
 
-<h2>③ 変更の実物（非公開リポなのでこのページに転記）</h2>
+<h2>⑥ 自分で再現して確かめる（このページの自己申告に頼らない）</h2>
 <div class="note">
-<b>index.jsonの差分（git diff）</b>
-<pre style="white-space:pre-wrap;background:#faf7ee;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:0.8rem;overflow:auto;">@@ -1,5 +1,6 @@
- {
-   "schemaVersion": 1,
--  "updatedAt": "2026-09-14",
-+  "updatedAt": "2026-10-23",
-   "purpose": "各AIの最新ステータススナップショット（ai-brain/sync/&lt;AI名&gt;/latest.md）への機械可読索引。詳細な運用ルールはai-brain/sync/README.md。",
-   "participants": [
-     {
-       "ai": "claude-code-fable",
-       "path": "ai-brain/sync/claude/latest.md",
--      "lastUpdated": "2026-09-14"
-+      "lastUpdated": "2026-10-15",
-+      "note": "2026-10-23（案件35165）：latest.mdの実際の最終更新（2026-10-15）に合わせて同期ズレを修正。本文は変更していない。"
-     },</pre>
+joy-relief-stationは非公開リポのためGitHub直リンクは貼れない。代わりに、同じMac上で誰でも実行できる実コマンドと、実際に2026-10-23に取得した生の出力をそのまま載せる。
 </div>
+<pre style="white-space:pre-wrap;background:#faf7ee;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:0.8rem;overflow:auto;">$ cd /Users/mac/Desktop/joy-relief-station
+$ git fetch origin main -q
+$ git log --oneline origin/main | grep -n -B2 -A2 "e1df02dc0"
+2-1fd5a6550 PENDING_DECISIONS: 35157号続々報、pickBadgeLabel/tiktokHeading修正をmain合流済み・Lovable公開は継続ブロック中と記録
+3-c19109a35 fix: 非音楽ページ(会社・機械・施設等)の「曲」前提文言を出し分け（35157番）
+4:e1df02dc0 brain: ai-brain/sync索引の同期ズレを修正（案件35165）
+5-60ac883cf truth gate: hide 58 wrong-artist videos (reversible list), sourced-only abouts (1,884 Wikipedia intros), sourced-only memos, real source attribution, fix name-only artist matching
+6-766e2df96 1145番【実物で棚卸し】動画24,005本を1本ずつ実際に叩いて、再生できないものを表から外した
+
+$ git merge-base --is-ancestor e1df02dc0 origin/main && echo YES_ANCESTOR
+YES_ANCESTOR
+
+$ git show origin/main:ai-brain/sync/index.json
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-23",
+  ...
+  "participants": [
+    { "ai": "claude-code-fable", "path": "ai-brain/sync/claude/latest.md",
+      "lastUpdated": "2026-10-15",
+      "note": "2026-10-23（案件35165）：latest.mdの実際の最終更新（2026-10-15）に合わせて同期ズレを修正。本文は変更していない。" },
+    ...
+  ]
+}
+
+$ git log origin/main --oneline -- ai-brain/sync/claude/latest.md | head -1
+0eb17ce01 Claude→ChatGPT：#975 短縮版の詩の催促   (2026-10-15 00:07:36 +0900)</pre>
 <div class="note">
-<b>git log（pushの証拠）</b>
-<pre style="white-space:pre-wrap;background:#faf7ee;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:0.8rem;overflow:auto;">To github.com:tamago2022/joy-relief-station.git
-   60ac883cf..e1df02dc0  fix/q35165-sync-latest -&gt; main</pre>
+e1df02dc0はorigin/mainのコミット履歴に直接存在する（ダングリングコミットではなく、前後をc19109a35／60ac883cfに挟まれた直系の1コミット）。これは確認ページの文章ではなく、<code>git fetch</code>した実物のリモート履歴から得た結果。
 </div>
 
 <footer>
-対象: joy-relief-station（非公開リポジトリ） ai-brain/sync/index.json。commit: e1df02dc0。非公開リポのためGitHub直リンクは貼らず、変更内容をこのページに転記して確認可能にしている。
+対象: joy-relief-station（非公開リポ）。上の再現コマンドを実行すれば誰でも同じ結果を確認できる（このページの自己申告ではなくgitの実履歴が証拠）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
