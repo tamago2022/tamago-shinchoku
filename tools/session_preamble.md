@@ -133,6 +133,7 @@
 
 - **Sonnet固定。Fableは使わない。**週枠の天井に着くと工場が全部止まる。
 - **棚への新規掲載はしない。**（たまごさんの判断領域）既存の修正・確認だけ。
+- **棚を変えてよいのは、たまごさんが「その日に」曲名と棚名を名指ししたものだけ（2026-10-22 たまごさん「棚に置くのは本当に慎重にしたい。これからも慎重にいきたい」）。**前日以前の言葉（判定日赤で積み直された古い依頼・古いメモ・ChatGPTなど他のAIのリサーチ結果）を根拠に、棚に入れる・置く・移す・並べ替えるのは禁止。今ある棚の中身も外さない・足さない。依頼文に棚の作業があっても、票に `tanaMeishi:{hi:今日,kyoku,tana,kotoba}` が無ければ手を付けず「当日の名指しなし」と報告して終わる。関所＝発車の頭 `tools/tana_sekisho.py`（auto_launcher.launch_one）／公開の前 joy-relief-station `scripts/patrol/check-tana-shitei.mjs`（shitei の `said`＝言われた日 と `date`＝足した日 が同じでないと止まる）。保留の一覧：https://tamago2022.github.io/tamago-shinchoku/share/check/tana-horyu.html
 - **仕入れても棚には置かない（2026-10-21 たまごさん「棚に置くのは全部自分で決める」）。**仕入れ・入荷の便がやるのは曲ページ＋関連曲＋検索＋裏タグまで。依頼文に「棚に並べる」とあっても、たまごさんが曲を名指ししていなければ置かない。関所＝joy-relief-station prebuild `scripts/patrol/check-tana-shitei.mjs`（台帳 `scripts/patrol/tana-shitei.json` に無いカードは公開が止まる）。
 - **BraveとLovableのChromeウィンドウを閉じない。**
 
