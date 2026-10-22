@@ -2,7 +2,17 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-22 19:05
+更新：2026-10-22 19:29
+
+---
+## 2026-10-22 19:21 ［ごきげん補給所の棚］ 癒しの棚に「花咲く旅路」カバー2曲を仮置き（10-22 本人指定）
+https://github.com/tamago2022/joy-relief-station/issues/1044#issuecomment-6338450965
+
+言われたこと（10-22・たまごさん）：原由子「花咲く旅路」のカバー2曲（原田知世版・夏川りみ版）を癒しの音楽の棚にも。「後ですぐ外せるようにしといて。とりあえず入れといて」。
+やったこと：joy-relief-station main 0fec111 で worlds.ts の healing-music に2枚（healing-harada-hanasaku／healing-natsukawa-hanasaku）を「// 仮置き:kari-1022-hanasaku-iyashi」の印ではさんで追加。台帳 scripts/patrol/tana-shitei.json の shitei に2行（kari・hazusu 付き）。check-tana-shitei ほか prebuild の関所すべてPASS。公開済み（deploy f7cbee38）、本番で40件・2枚表示をスクショで確認。
+外す1行：node scripts/patrol/tana-kari-hazusu.mjs kari-1022-hanasaku-iyashi（→commit・push・公開）。仮置きの一覧は --list。
+本番：https://joy-relief-station.lovable.app/shelf/music/healing-music
+あわせて：判定日赤（tools/hantei_hiduke.py）が古い発言を priority=1 で積む仕組みで、まだ動ける判定日赤は2,984件（うち題名に「棚」126件・棚に入れる／置く系63件）。止めていない。
 
 ---
 ## 2026-10-22 19:05  
