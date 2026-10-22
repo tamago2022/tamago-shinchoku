@@ -2258,6 +2258,27 @@ def _fable_lane(q, items):
     except Exception:
         _lane_max = FABLE_LANE_MAX
     borrow = fable_lane_borrow_pick(items)
+    # 2026-10-22 たまごさん「同時に走るのは最大2本（重い時1本）／線を超えたら急ぎだけ」。
+    #   Fableレーンも工場全体の本数に数える（レーンだけで別枠を作らない）。
+    try:
+        import shuwaku_sen as _sw
+        try:
+            import fuka_hassha as _fk1
+            _fc = (_fk1.hantei(alive=None, source="fable_lane", do_write=False) or {}).get("cap")
+        except Exception:
+            _fc = None
+        _sc = _sw.conc_cap(_fc)
+        _all_alive = len([x for x in items if x.get("status") == "running" and x.get("pid") and _alive(x.get("pid"))])
+        if _all_alive >= _sc:
+            return False
+        _lane_max = min(_lane_max, _sc)
+        if _sw.hantei().get("stopNew"):
+            waiting = [x for x in waiting if _sw.is_meishi_isogi(x)]
+            if borrow is not None and not _sw.is_meishi_isogi(borrow):
+                borrow = None
+    except Exception as _e:
+        log("Fableレーン: 週枠の線が読めないので見送り（%s）" % _e)
+        return False
     if (not waiting and borrow is None) or len(running) >= _lane_max:
         return False
     # 本当に危ないときだけ止める（ロード比とスワップ%はここでは見ない＝Brave分で常時95%前後のため）
@@ -2502,6 +2523,16 @@ def _main_impl():
           if safe_max > _fk.get("cap", 2):
               safe_max = _fk.get("cap", 2)
           log("負荷判定: %s → 採用上限%d本（走行%d本）" % (_fk.get("reason"), safe_max, alive))
+          # 2026-10-22 たまごさん「同時に走るのは最大2本、Macの負荷が高い時は1本」（tools/shuwaku_sen.py）。
+          #   緊急横入りの+1本も含めて、ここが最後の天井。
+          try:
+              import shuwaku_sen as _sw
+              _sc = _sw.conc_cap(_fk.get("cap"))
+          except Exception:
+              _sc = 1
+          if safe_max > _sc:
+              safe_max = _sc
+              log("週枠の線: 同時は最大%d本（重い時1本）→ 採用上限%d本" % (_sc, safe_max))
 
       if alive >= safe_max:
           log("見送り: 走行%d本／上限%d本（空きなし）" % (alive, safe_max))
@@ -2524,9 +2555,23 @@ def _main_impl():
       # 2026-09-05 たまごさん「何も動いてない状態は作らないで。何かしら回しといて。クレジット消費最小で」
       #   本物が出せない（週枠が上限・発車を止めている等）ときでも、工場は回っている状態を保つ。
       #   空回しは Claude を起動しないのでクレジットは1円も使わない。終われば静かに消える。
+      # 2026-10-22 たまごさん「線を超えたら新規発車を止め、急ぎ（たまごさんが名指しした直し）だけ通す」
+      _sen_stop = False
+      _isogi = lambda it: True
+      try:
+          import shuwaku_sen as _sw
+          _sen = _sw.hantei()
+          _sw.write(_sen)
+          _sen_stop = bool(_sen.get("stopNew"))
+          _isogi = _sw.is_meishi_isogi
+          if _sen_stop:
+              log("週枠の線を超えています（%s）→ 新規発車は名指しの急ぎだけ" % _sen.get("senLine"))
+      except Exception as _e:
+          log("週枠の線が読めません（%s）→ 通常どおり" % _e)
       running_now = [it for it in items if it.get("status") == "running"]
       launchable = [it for it in items if it.get("status") == "waiting"
-                    and (not credit_stop or it.get("test"))]
+                    and (not credit_stop or it.get("test"))
+                    and (not _sen_stop or _isogi(it))]
       if not running_now and not launchable:
           nxt = max([int(x.get("n") or 0) for x in items] or [0]) + 1
           items.append({
@@ -2540,7 +2585,8 @@ def _main_impl():
           save_queue(q, snapshot=_snap)
           _snap = queue_store.snapshot_items(q)
 
-      waiting = sorted([it for it in items if it.get("status") == "waiting"], key=rank)
+      waiting = sorted([it for it in items if it.get("status") == "waiting"
+                        and (not _sen_stop or _isogi(it))], key=rank)
 
       # ---- 759番3回目の重複発車を機に追加した恒久ガード（案件#759・2026-09-13）----
       #   status/failures.md #15：759番は実装・本番push・Dispatch完了報告まで全部終わっていたのに

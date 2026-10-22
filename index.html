@@ -696,6 +696,8 @@ function renderPace(p){
   /* 数字の羅列はやめる。帯と線のどちらが前に出ているかを、そのまま日本語で1行だけ書く。 */
   var ideal = idealPct();
   var reset = "リセット " + (p.resetAt ? p.resetAt : "取れない");
+  /* 2026-10-22 週枠の線（目標と実績）を1行。正本は tools/shuwaku_sen.py */
+  if(p.senLine){ $("wLine").textContent = (p.senStop ? "🔴 " : "🟢 ") + p.senLine + "　／　" + reset; return; }
   if(ideal == null || used == null){ $("wLine").textContent = reset; return; }
   var sa = Math.round(used - Math.round(ideal));
   var bun = (sa >= 3) ? ("目安より " + sa + "% 先に使っています")

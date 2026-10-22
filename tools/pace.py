@@ -120,7 +120,8 @@ DAILY_CAP = 30.0        # 1日に使ってよい週枠の割合（超えたら�
 S5_TARGET = 88.0        # 5時間枠の着地目標（2026-09-05 18:55 たまごさん「78に下げちゃったら…目一杯使いたい。85でも90でもいい」）
 S5_FLOOR = 82.0         # これを下回る見込みなら、まだ余っている＝本数を増やしてよい
 # 実測（たまごさんの体感 2026-09-05）：**6本だと重くなる。4本なら平気。5本を試す。**
-CAP_MIN, CAP_MAX = 3, 5  # 同時に走らせる本数の下限・上限（6本は行き過ぎ）
+CAP_MIN, CAP_MAX = 1, 2  # 同時に走らせる本数の下限・上限
+# 2026-10-22 たまごさん「同時に走るのは最大2本、Macの負荷が高い時は1本」（旧 3〜5本）。正本は tools/shuwaku_sen.py
 
 
 # ---- 2026-09-09 20:00 実測バグ（702番）----
@@ -159,6 +160,10 @@ def manage_fuel(d, q):
 
     daily_stop = isinstance(used, (int, float)) and used >= DAILY_CAP
     week_stop = isinstance(over_line, (int, float)) and over_line > WEEK_OVER_STOP
+    # 2026-10-22 たまごさん「線を超えたら新規発車を止め、急ぎ（名指しの直し）だけ通す」。
+    #   no_launch.flag は急ぎまで全部止めてしまうので、ここでは立てない。
+    #   線超えの判定は auto_launcher.py が tools/shuwaku_sen.py で毎回その場で行う（急ぎだけ通す）。
+    daily_stop = week_stop = False
 
     # ① 上限（1日 or 週）に触れたら新規発車だけ止める（走行中はそのまま・0本にはしない）
     if daily_stop or week_stop:
@@ -193,6 +198,13 @@ def manage_fuel(d, q):
     cap_now = (load(cap_path, {}) or {}).get("cap")
     if not isinstance(cap_now, int):
         cap_now = CAP_MAX
+    if cap_now > CAP_MAX or cap_now < CAP_MIN:
+        # 2026-10-22 上限が2本に下がったので、それより大きい値が残っていたら必ず詰める
+        cap_now = max(CAP_MIN, min(CAP_MAX, cap_now))
+        json.dump({"cap": cap_now, "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+                   "why": "2026-10-22 たまごさん指示：同時は最大2本（重い時1本）"},
+                  io.open(cap_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        notes.append("同時本数を最大%d本に詰めました（たまごさん指示 2026-10-22）" % CAP_MAX)
     proposals = []   # (提案cap, 理由, +1/-1/-2/-3の向き)
 
     s5 = (q.get("session5h") or {})
@@ -254,6 +266,16 @@ def manage_fuel(d, q):
 def main():
     q = load(QUOTA, {})
     all_pct = q.get("allPct")
+    _sen = None
+    try:
+        import shuwaku_sen as _sw
+        _sen = _sw.hantei()
+        _sw.write(_sen)
+    except Exception:
+        _sen = None
+    if all_pct is None and _sen and _sen.get("pct") is not None:
+        # 2026-10-22 実測ファイルが読めない間は、たまごさんの実測（status/shuwaku_sen.json の jissoku）を使う
+        all_pct = _sen["pct"]
     if all_pct is None:
         return 0
     now = datetime.now()
@@ -308,6 +330,15 @@ def main():
     per_day_even = round(WEEK_TARGET / DAYS, 1)                       # 14.1
     remain = max(0.0, WEEK_TARGET - all_pct)
     budget_today = round(min(DAILY_CAP, remain / max(1.0, days_left)), 1)   # 今日あと使える目安（上限30%）
+    # 2026-10-22 今日の予算＝たまごさんの線の「今日0時→24時」の伸び（木〜土 約6〜7%・日 約10%・月 約5〜7%）
+    try:
+        if _sen:
+            import shuwaku_sen as _sw2
+            _l0 = _sw2.line_at(today0)[0]
+            _l1 = _sw2.line_at(today0 + timedelta(days=1) - timedelta(seconds=1))[0]
+            budget_today = round(max(0.0, _l1 - _l0), 1)
+    except Exception:
+        pass
     # 2026-09-13（工場が2時間15分止まっていた原因）：
     #   ここは「経過日数÷7」の直線だけで理想ラインを出していたが、quota.py 側は
     #   曲線（水30/木45/金55/土70/日80/月90/火100）＋週間制限の引き上げ倍率を掛けた
@@ -330,6 +361,9 @@ def main():
             line_target = round(min(float(_wt), WEEK_TARGET), 1)
     except (TypeError, ValueError):
         pass
+    # 2026-10-22 たまごさんの日割りの線（日曜朝70・日曜終わり80・月朝85・火朝92）を正本にする
+    if _sen and _sen.get("line") is not None:
+        line_target = _sen["line"]
     over = round(all_pct - line_target, 1)
 
     if used_today is None:
@@ -368,6 +402,8 @@ def main():
         "allPctAsOf": q.get("allPctAsOf"),
         "dataOk": data_ok,
         "suspectZero": suspect_zero,
+        "senLine": (_sen or {}).get("senLine"),
+        "senStop": (_sen or {}).get("stopNew"),
         "note": "火曜18:00リセット。7日で99%に着地するのが理想＝1日目安13〜14%。今日の予算＝残り÷残り日数（遅れも使いすぎも引きずらない）。超えたら赤。",
     }
     try:

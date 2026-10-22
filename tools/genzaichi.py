@@ -445,6 +445,13 @@ def check_launch_silence():
     連続して赤の間は1回だけ dispatch_outbox・failures.md へ書く（毎30分スパムしない）。
     発車が再開したら次の沈黙エピソードのためにアラート済みスタンプを消す。"""
     silence_min = launch_silence_min()
+    # 2026-10-22 週枠の線を超えて意図的に止めている間は「沈黙」として扱わない（自己修復を誤爆させない）
+    try:
+        import shuwaku_sen as _sw
+        if _sw.hantei().get("stopNew"):
+            silence_min = None
+    except Exception:
+        pass
     if silence_min is None or silence_min <= 10 or _launch_has_room() is False:
         try:
             if os.path.exists(LAUNCH_SILENCE_ALERT_STAMP):
