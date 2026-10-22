@@ -447,6 +447,19 @@ async function main() {
       console.error("---DUMP_TEXT_END---");
     }
 
+    // 35143番調査用：innerText に出ない画像バッジ（<img alt="...">等）の有無を
+    // 任意のCSSセレクタで確認する軽量プローブ。既定では何もしない。
+    if (process.env.VC_DUMP_SELECTOR) {
+      const sel = process.env.VC_DUMP_SELECTOR;
+      const selRes = await send("Runtime.evaluate", {
+        expression: `JSON.stringify({count: document.querySelectorAll(${JSON.stringify(sel)}).length, html: Array.from(document.querySelectorAll(${JSON.stringify(sel)})).slice(0,5).map(el => el.outerHTML.slice(0,300))})`,
+        returnByValue: true,
+      });
+      console.error("---DUMP_SELECTOR_START---");
+      console.error(selRes.result?.value || "");
+      console.error("---DUMP_SELECTOR_END---");
+    }
+
     const beforeShot = await send("Page.captureScreenshot", { format: "png" });
     if (OUT_JSON) {
       writeFileSync(OUT_JSON.replace(/\.json$/, "") + ".before.png", Buffer.from(beforeShot.data, "base64"));
