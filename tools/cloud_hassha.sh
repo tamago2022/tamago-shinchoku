@@ -23,15 +23,18 @@ PROMPT="$(cat "$F/tools/cloud_prompts/_kyoutsu.md")
 
 $(cat "$PF")"
 # クラウドの作成には claude.ai の本物のログインが要る（工場の setup-token は 403）。tools/cloud_login.sh で作った置き場を使う。
-export CLAUDE_CONFIG_DIR=$HOME/.tamago/claude_cloud
+# CFG=main なら工場の ~/.claude のログインを使う（たまごさんが本物のログインをしたとき）
+if [ "${CFG:-cloud}" = "main" ]; then CJ=$HOME/.claude.json; else export CLAUDE_CONFIG_DIR=$HOME/.tamago/claude_cloud; CJ=$CLAUDE_CONFIG_DIR/.claude.json; fi
+export CJ
 python3 - <<'PY'
 import json, os
-p = os.path.expanduser("~/.tamago/claude_cloud/.claude.json")
+p = os.environ["CJ"]
 d = json.load(open(p)) if os.path.exists(p) else {}
 d.setdefault("projects", {}).setdefault("/Users/mac/tamago/jrs_fix", {})["hasTrustDialogAccepted"] = True
-d["hasCompletedOnboarding"] = True
+d["hasCompletedOnboarding"] = True if "tamago/claude_cloud" in p else d.get("hasCompletedOnboarding", True)
 json.dump(d, open(p, "w"), indent=2)
 PY
+fi_dummy=1
 cd "$J"
 { echo "== $(date '+%F %T') 起動 $NAME ($PF) MODE=${MODE:-s}"; } > "$LOG"
 if [ "${MODE:-s}" = "p" ]; then
