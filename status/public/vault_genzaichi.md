@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-23 22:01:49・hash=7a2192af410a -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-23 22:21:55・hash=53aae0fe09bc -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -105,13 +105,11 @@
 - 2026-10-11 名カバーの棚を許可制に（台帳 src/lib/meiCoverLedger.ts＝たまごさん指定だけ表示・prebuild点検 check-meicover-gate）。25件を外し（1語で戻せる：MEI_COVER_UNDO_20261011）、風をあつめて(Josh Turner)を追加。ハートは全サイト一時非表示（HEARTS_VISIBLE）。文字マークは左下・英語、グッドカバーだけ左上。added_by列のmigrationは未適用なら台帳だけで動く。
 
 <!-- 自動まとめ:始 -->
-## 今日までに届いた更新（自動まとめ・1日1回／2026-10-22 22:07）
+## 今日までに届いた更新（自動まとめ・1日1回／2026-10-23 22:07）
 
+- **35166号**（10-23 04:17）店主2026-08-12依頼『コア層/詳細層どこに何を書いたか』の確認ページ完成・main合流・gh-pages反映・本番URL200を実測確認。副産物：pages.yml配信パイプが9時間ゾンビ詰まり中だったのを発見しconcurrencyグループ更新で解除(過去5回目の再発)。
 - **Give Me the Night 曲ページ**（10-22 17:19）main 5f4c0f6f0：2ページを1つに（-2→転送）、amassのX投稿をエピソード枠にカードで、元記事ボタン。本番は10/22 03:02から公開停止中（花咲く旅路の5枚が棚の関所で落ちる）。外すかはたまごさん判断待ち
 - **全AIへの共有メモ（#1037）**（10-22 16:25）Grokボットが3時間ごとに読む正本＝joy-relief-station ラベル「店主の指示メモ」のIssue（1企画1本）。公式LINE＝#1039、全体像＝#1040。#1018にも告知。工場の道具 tools/zen_ai_kyouyu.py（kaku＝待ち行列、心臓5分おきに書く、3時間ごとに工場が受けた指示をまとめて#1040へ、公開の写し status/public/renkei/kyouyu_memo.md、Genspark AI Drive /ごきげん補給所_全AI共有メモ.md）。子への枷24に追加。
-- **35028番 GEZAN×PARCO双方向リンク**（10-21 19:19）本番で既に実装済み（2026-07-02合流）と確認。確認ページ https://tamago2022.github.［除去］.html を作成・main合流・GitHub Pages反映・sekisho PASS済み。追加実装は不要だった。
-- **34830号 判定日赤・方向性の現在地メモ化**（10-21 13:21）2026-08-08(土)00:02にスマホから『まずはこの方向性を現在地メモに残して、次に着手するときの土台にしておいてください』と言われたが、『この方向性』が指す直前の会話原文はqueue.json・ai-brain・decision-logのどこにも見つからず特定不可（正直に記録）。同一バッチ(84/352本目)の直前案件#34827『ループエンジニアリングの汎用スキル化を最優先で』が最も近い文脈で、これは既に完了済み（.claude/skills/loop-engineering/SKILL.md切り出し・main反映・確認ページ公開済み）。また2026-08-08前後は『AIが自分で
-- **34499号バッジ複数選択**（10-21 00:37）実装はmainに既存(concierge/good-cover手動選択・自動付与なし)。確認ページ404だったのを作り直し200で公開、本番2件のバッジ表示も実測OK、sekisho.py PASS。完了。
 
 （子セッションは Vault に直接書かない。status/genzaichi_kouho.md に追記→夜にここへ1回だけ反映）
 <!-- 自動まとめ:終 -->
