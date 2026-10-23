@@ -101,6 +101,14 @@ def kiroku(rec):
 
 def gql(tok, q, v=None, who="1170_hako"):
     """★叩く前に必ず2つの門を通す。天井に当たったら叩かない。"""
+    # ★2026-10-24【投稿前の2重検品】書く口(createPost/editPost)は機械＋別のAIを通ってから（tools/x_nijuu_kenpin.py）
+    try:
+        import x_nijuu_kenpin as _xn
+        _t = _xn.mon_gql(q, v)
+    except Exception as _e:
+        _t = {"errors": [{"message": "2重検品の道具が読めない：%s" % str(_e)[:100]}]} if ("createPost" in q or "editPost" in q) else None
+    if _t is not None:
+        return _t
     if not buffer_waku.ake():
         raise RuntimeError(buffer_waku.riyuu())
     if not buffer_kura.tsukau(who):

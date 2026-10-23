@@ -1,0 +1,169 @@
+{
+  "_これは何": "手直し帳の種（tools/tenaoshi_chou.py）。たまごさんの過去の赤入れ。gakubi＝学びの種類、akaire＝言われた1回ずつ（日付・どこ・言葉）。同じ学びが2回（別の日か別の場所）出たら決まりになる。言葉は出どころの写し。足すのは出どころがあるものだけ。",
+  "gakubi": {
+    "mitame-soroe": {
+      "namae": "見た目・型を全部そろえる（ちょっとずつ違うのはダメ）",
+      "sagasu": "ちょっとずつ違う|微妙に違う|似せて作り直さない|完全に同じ|そろえて|揃えて",
+      "regex": null,
+      "level": "check"
+    },
+    "seisaku-tsugou": {
+      "namae": "制作側の都合・注記を読者に出さない",
+      "sagasu": "制作側の都合|制作の都合|注記|oEmbedで|歌詞は引用して",
+      "regex": "oEmbed|歌詞は引用|配信元を確か|転載|検品済|AIが(書|作)",
+      "level": "ng"
+    },
+    "poem": {
+      "namae": "雰囲気だけのポエムにしない（事実と裏話で書く）",
+      "sagasu": "ポエム",
+      "regex": "心に(染み|沁み)|そっと寄り添|優しく包|魔法(だ|の)よう|余韻に浸|心が震え|胸を打|soul-stirring|tugs at",
+      "level": "check"
+    },
+    "suidousui": {
+      "namae": "水道水コピー禁止（「代表曲のひとつ。」のような誰でも書ける一言）",
+      "sagasu": "水道水",
+      "regex": "代表曲のひとつ|名曲です|ぜひ聴いて|おすすめです|必聴|不朽の名|名曲中の名曲|must-listen|timeless classic",
+      "level": "ng"
+    },
+    "torichigae": {
+      "namae": "名前が似た別人・別の曲を取り違えない",
+      "sagasu": "取り違え|別人の曲|Harry Styles|Sugababes|別人のAKIKO",
+      "regex": null,
+      "level": "check"
+    },
+    "shutten": {
+      "namae": "出典で確かめた事実だけ書く（存在しないこと・ズレた数字を書かない）",
+      "sagasu": "存在しないことを書かない|出典が取れない断定|出典で確かめて|ズレていた",
+      "regex": null,
+      "level": "check"
+    },
+    "shutten-honbun": {
+      "namae": "出典名を本文に出さない（最後の出典欄へ）",
+      "sagasu": "文の途中の『Wikipedia』|出典は本文に出さない",
+      "regex": "Wikipedia|ウィキペディア|musicman",
+      "level": "ng"
+    },
+    "iiko": {
+      "namae": "当たり障りのない「いい子すぎる」一言にしない",
+      "sagasu": "いい子すぎ|当たり障りのない",
+      "regex": "素敵ですね|最高です|いいですよね|心温まる",
+      "level": "check"
+    },
+    "imiyaku": {
+      "namae": "曲名・アルバム名を意訳しない",
+      "sagasu": "意訳しない|意訳は",
+      "regex": null,
+      "level": "check"
+    },
+    "shime-onaji": {
+      "namae": "締めを同じ形で続けない",
+      "sagasu": "同じ締めの型|締めの型の連続|締めを同じ",
+      "regex": null,
+      "level": "check"
+    }
+  },
+  "akaire": [
+    {
+      "hi": "2026-10-14",
+      "doko": "CLAUDE.md マガジン（型はシティポップ特集の複製）",
+      "kotoba": "似せて作り直さない",
+      "gakubi": "mitame-soroe"
+    },
+    {
+      "hi": "2026-10-16",
+      "doko": "CLAUDE.md マガジン（見た目は全マガジン完全に同じ）",
+      "kotoba": "ちょっとずつ違うのがムカつく",
+      "gakubi": "mitame-soroe"
+    },
+    {
+      "hi": "2026-10-16",
+      "doko": "CLAUDE.md マガジン（制作側の都合・注記は読者に出さない）",
+      "kotoba": "「動画は全部oEmbedで配信元を確かめて」「歌詞は引用していません」の類は全部書かない",
+      "gakubi": "seisaku-tsugou"
+    },
+    {
+      "hi": "2026-10-16",
+      "doko": "CLAUDE.md マガジン（「この記事を書くきっかけ」とは書かない）",
+      "kotoba": "「この記事を書くきっかけ」とは書かない（全部の記事で本当とは限らない）",
+      "gakubi": "seisaku-tsugou"
+    },
+    {
+      "hi": "2026-10-14",
+      "doko": "CLAUDE.md マガジン（文章は薄くしない）",
+      "kotoba": "雰囲気だけのポエムは削る",
+      "gakubi": "poem"
+    },
+    {
+      "hi": "2026-10-16",
+      "doko": "CLAUDE.md マガジン（各曲の頭の一言）",
+      "kotoba": "説明やポエムにしない",
+      "gakubi": "poem"
+    },
+    {
+      "hi": "日付不明",
+      "doko": "スキル bonjovi-ojisan-kobun",
+      "kotoba": "「代表曲のひとつ。」のような水道水コピーを禁じる",
+      "gakubi": "suidousui"
+    },
+    {
+      "hi": "日付不明",
+      "doko": "status/oni_modoshi/kinshi.json（記憶に7回）",
+      "kotoba": "水道水コピー禁止。",
+      "gakubi": "suidousui"
+    },
+    {
+      "hi": "日付不明",
+      "doko": "スキル sekisho-artist-song（NON STYLEの棚にHarry Styles）",
+      "kotoba": "名前の文字が一致しただけで別人の曲を本人の棚に入れる事故",
+      "gakubi": "torichigae"
+    },
+    {
+      "hi": "日付不明",
+      "doko": "スキル sekisho-artist-song（Sugar Babeの棚にSugababes）",
+      "kotoba": "Sugar Babeの棚にSugababes",
+      "gakubi": "torichigae"
+    },
+    {
+      "hi": "日付不明",
+      "doko": "スキル sekisho-artist-song（akikoの棚に別人のAKIKO）",
+      "kotoba": "akikoの棚に別人のAKIKO",
+      "gakubi": "torichigae"
+    },
+    {
+      "hi": "2026-10-16",
+      "doko": "CLAUDE.md マガジン（存在しないことを書かない）",
+      "kotoba": "字幕の無い動画に「字幕がついているから」と書いた／「40歳近く」「22年前」がズレていた",
+      "gakubi": "shutten"
+    },
+    {
+      "hi": "日付不明",
+      "doko": "スキル sekisho-jijitsu-shutten",
+      "kotoba": "出典が取れない断定は書かせない",
+      "gakubi": "shutten"
+    },
+    {
+      "hi": "2026-10-19",
+      "doko": "CLAUDE.md マガジン（出典は本文に出さない）",
+      "kotoba": "文の途中の『Wikipedia』『musicman』が細かすぎて読みにくい",
+      "gakubi": "shutten-honbun"
+    },
+    {
+      "hi": "2026-10-16",
+      "doko": "CLAUDE.md マガジン（吹き出し）",
+      "kotoba": "感想の要約・当たり障りのない一言・「いい子すぎる」一言は言わない",
+      "gakubi": "iiko"
+    },
+    {
+      "hi": "2026-10-18",
+      "doko": "CLAUDE.md マガジン（5言語）",
+      "kotoba": "曲名・アルバム名は意訳しない",
+      "gakubi": "imiyaku"
+    },
+    {
+      "hi": "2026-10-24",
+      "doko": "Dispatch からの依頼（投稿前の2重検品）",
+      "kotoba": "同じ締めの型の連続",
+      "gakubi": "shime-onaji"
+    }
+  ]
+}

@@ -562,6 +562,10 @@ if __name__ == "__main__":
     except OSError:
         _okosu("toukou_mimawari.py", "--daily")
 
+    # 2026-10-24 手直し帳（1日1回・中で20時間に間引く）。たまごさんの赤入れ（種・共有メモ#1040・Bufferで直した文）を
+    #   流し込み、同じ直しが2回出たら決まりに足す（~/jrs-clone/ai-clone・status/tenaoshi/kimari.json）。0円・AIなし。
+    _okosu("tenaoshi_chou.py", "--daily")
+
     # 2026-10-01 鬼監督（Codex）の返事を拾う係。返事待ちが0なら gh も叩かず即戻る。
     #   合格/差し戻しを status/gaibu/soto_hantei.json と status/oni_codex/hantei.jsonl に戻し、
     #   差し戻しは作業票へ自動で積む（tools/oni_codex.py の冒頭に経緯）。
