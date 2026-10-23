@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35181 管理画面(棚編集)の黒画面フリーズ・実機で再現→原因特定→修正 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35181 管理画面(棚編集)の黒画面フリーズ・実機で再現→原因特定→修正</div>
+<h1>#35181 管理画面(棚編集)の黒画面フリーズ・実機で再現→原因特定→修正</h1>
+<div class="date">2026-10-24 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+店主報告『管理/編集画面が黒っぽい画面で何十秒も固まる・編集できない』を、本番 https://joy-relief-station.lovable.app/admin/shelves へ実際に合言葉でログインして再現した。正体は「使い方ガイド」の全画面案内（bg-black/65の暗幕、画面全体を覆う）。Safariは7日でlocalStorageを消す仕様があり、データが沢山ある店主でも約1週間おきにこの暗幕が再表示され、倉庫・棚タブのボタンがすべて暗幕の下に隠れてクリックが届かなくなっていた。下は本番ページをheadless Chromeで操作し、JavaScript経由でその場で実測した生データ（elementFromPointでボタン座標の最前面要素を確認）：<br><pre>{
+ "overlayPresent": true,
+ "overlayRect": {
+  "w": 1280,
+  "h": 900
+ },
+ "viewport": {
+  "w": 1280,
+  "h": 900
+ },
+ "coversFullViewport": true,
+ "backdropBg": "oklab(0 0 0 / 0.65)",
+ "backdropOpacityClass": "absolute inset-0 bg-black/65",
+ "shelfTabButtonRect": {
+  "x": 375.5703125,
+  "y": 450.25
+ },
+ "topElementAtThatPoint": {
+  "tag": "DIV",
+  "cls": "absolute inset-0 bg-black/65"
+ },
+ "shelfTabButtonIsBlocked": true,
+ "speechBubbleText": "ステップ 1 / 5\n閉じる\n①ここが「倉庫」タブ\n\n曲やリンクなどの素材を貯める場所。ここに入れただけでは、まだ誰にも見えません。\n\n← 前へ\n次へ →"
+}</pre>修正：倉庫か棚に既存データがある時は、この案内を自動で出さないようにした（手動の『？使い方』ボタンはそのまま使える）。コミット 8a1a8e457 をmainへpush済み。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>4.3秒</b><span>本番ログイン〜倉庫タブ表示までの実測時間</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>再現：暗幕が全画面を覆い、下のボタンが押せない状態（本番で実機撮影）</b><img src="img/35181-before-overlay.png" alt="前"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番の対象ページ（合言葉ログインが必要）</b><a href="https://joy-relief-station.lovable.app/admin/shelves" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/shelves</a></li>
+</ul>
+
+
+
+<footer>
+mainへpush済み(commit 8a1a8e457)。公開(Lovable Publish)は2026-10-14から継続中のOAuth認証障害(invalid_grant)で店主の確認待ち以外のセッションからは押せない状態が続いており、今回の修正もこの既知の障害の影響を受ける。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
