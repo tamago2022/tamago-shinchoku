@@ -155,13 +155,11 @@ def from_buffer():
         tok = by.token()
         if not tok:
             return [], "Bufferの鍵なし"
-        orgs = ((by.gql(tok, by.Q_ORGS).get("data") or {}).get("account") or {}).get("organizations") or []
-        chans = []
-        for o in orgs:
-            for c in (by.gql(tok, by.Q_CHANNELS, {"orgId": o["id"]}).get("data") or {}).get("channels") or []:
-                c["_org"] = o["id"]
-                chans.append(c)
-        ch = by.pick_channel(chans, "oasisjoyrelief", ["eggypop2014"])
+        import buffer_kura
+        c0 = buffer_kura.ch_yomu()      # ★IDは覚えてある分を使う＝1日1叩きで済ませる
+        if not (c0 and c0.get("name") == "oasisjoyrelief"):
+            return [], "チャンネルIDの控えが無い（叩かずに戻る）"
+        ch = {"_org": c0["org"], "id": c0["channel_id"]}
         q = by.gql(tok, buffer_sekisho.Q_ALL, {"o": ch["_org"], "c": [ch["id"]], "s": ["scheduled", "sent"]})
         now = [e["node"] for e in ((q.get("data") or {}).get("posts") or {}).get("edges") or []]
     except Exception as e:

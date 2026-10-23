@@ -366,6 +366,14 @@ def _snips(text, srcs):
     return "\n".join(out)[:6000]
 
 
+def _cli(name):
+    for c in (os.path.expanduser("~/.local/bin/" + name), os.path.expanduser("~/.npm-global/bin/" + name),
+              "/opt/homebrew/bin/" + name, "/usr/local/bin/" + name):
+        if os.path.exists(c):
+            return c
+    return None
+
+
 def _call_cli(provider, text_prompt):
     """サブスク内のCLI（追加の従量課金なし）。Codex＝ChatGPTの契約、Claude＝sonnet（書いた側とは別の新しい1回）。"""
     if provider == "Codex":
@@ -512,8 +520,10 @@ def kenpin(text, mae=None, ato=None, post_id=None, src=None, ai=True):
         m["ng"].append("AIクローンメーカーの検品で❌：%s" % c_why)
         m["ok"] = False
     m["clone"] = c_why
+    if not m["ok"]:
+        ai = False          # 機械で落ちた文は、AIに見せる前に直す（呼ぶだけ損）
     old = _oboe(k) if ai else None
-    a = old["ai"] if old else (betsu_ai(text, mae, ato, post_id, src) if ai else {"verdict": "SKIP", "reasons": ["AIは呼ばない指定"]})
+    a = old["ai"] if old else (betsu_ai(text, mae, ato, post_id, src) if ai else {"verdict": "SKIP", "reasons": ["機械で落ちたか、AIは呼ばない指定"]})
     ok = m["ok"] and a.get("verdict") == "OK"
     row = {"at": _now(), "key": k, "post_id": post_id, "head": (text or "")[:60], "zenbun": text, "kikai": m, "ai": a, "ok": ok}
     if not old:
@@ -560,14 +570,19 @@ def mon_gql(query, variables):
 # ---------------------------------------------------------------- 予約済みを見る・直す
 def _buffer():
     import buffer_yoyaku as by
+    import buffer_kura
     tok = by.token()
-    orgs = ((by.gql(tok, by.Q_ORGS).get("data") or {}).get("account") or {}).get("organizations") or []
-    chans = []
-    for o in orgs:
-        for c in (by.gql(tok, by.Q_CHANNELS, {"orgId": o["id"]}).get("data") or {}).get("channels") or []:
-            c["_org"] = o["id"]
-            chans.append(c)
-    ch = by.pick_channel(chans, "oasisjoyrelief", ["eggypop2014"])
+    c0 = buffer_kura.ch_yomu()          # ★IDは変わらない。覚えてあれば聞きに行かない（1日の天井20回を守る）
+    if c0 and c0.get("name") == "oasisjoyrelief":
+        ch = {"_org": c0["org"], "id": c0["channel_id"]}
+    else:
+        orgs = ((by.gql(tok, by.Q_ORGS).get("data") or {}).get("account") or {}).get("organizations") or []
+        chans = []
+        for o in orgs:
+            for c in (by.gql(tok, by.Q_CHANNELS, {"orgId": o["id"]}).get("data") or {}).get("channels") or []:
+                c["_org"] = o["id"]
+                chans.append(c)
+        ch = by.pick_channel(chans, "oasisjoyrelief", ["eggypop2014"])
 
     def yoyaku():
         q = by.gql(tok, by.Q_POSTS, {"orgId": ch["_org"], "channelIds": [ch["id"]]})
@@ -650,6 +665,9 @@ def self_test():
     good = "アデル本人いわく「ダークでブルージーなゴスペル・ディスコ」。\nアルバム『21』の1曲目。"
     if MAE_JA.match(good):
         bad.append("ふつうの書き出しを落とした")
+    for fn in ("_cli", "_call_cli", "_call", "_snips", "_src_text", "betsu_ai", "kenpin", "naosu", "yoyaku_zumi"):
+        if not callable(globals().get(fn)):
+            bad.append("道具の部品が無い：%s" % fn)
     if mon_gql("query { posts }", {}) is not None:
         bad.append("読むだけの問い合わせを止めた")
     print("SELF-TEST", "PASS" if not bad else "FAIL", bad)
