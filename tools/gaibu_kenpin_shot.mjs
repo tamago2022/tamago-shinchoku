@@ -98,7 +98,7 @@ async function main() {
       `--user-data-dir=${profile}`,
       "--no-first-run",
       "--mute-audio",
-      "--window-size=430,1400",
+      "--window-size=430,2800",
       "--disable-features=Translate,MediaRouter",
       "about:blank",
     ],
@@ -113,7 +113,7 @@ async function main() {
     await send("Runtime.enable");
     await send("Emulation.setDeviceMetricsOverride", {
       width: 430,
-      height: 1400,
+      height: 2800,
       deviceScaleFactor: 2,
       mobile: true,
     });
@@ -124,7 +124,7 @@ async function main() {
 
     const shot = await send("Page.captureScreenshot", {
       format: "png",
-      clip: { x: 0, y: 0, width: 430, height: 1400, scale: 1 },
+      clip: { x: 0, y: 0, width: 430, height: 2800, scale: 1 },
     });
     writeFileSync(OUT_FILE, Buffer.from(shot.data, "base64"));
     console.log("保存:", OUT_FILE);
