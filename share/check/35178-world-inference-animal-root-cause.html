@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35178 動物動画の根本原因は特定・main合流済み・Lovable公開はP0停止で未反映 確認ページ</title>
+<title>#35178 動物動画の根本原因2つを特定・両方main合流済み・Lovable公開はP0停止で未反映 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,19 +47,22 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35178 動物動画の根本原因は特定・main合流済み・Lovable公開はP0停止で未反映</div>
-<h1>#35178 動物動画の根本原因は特定・main合流済み・Lovable公開はP0停止で未反映</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35178 動物動画の根本原因2つを特定・両方main合流済み・Lovable公開はP0停止で未反映</div>
+<h1>#35178 動物動画の根本原因2つを特定・両方main合流済み・Lovable公開はP0停止で未反映</h1>
 <div class="date">2026-10-23 根本原因を特定し、確認ページをGitHub Pagesへ反映まで実測確認</div>
 
 <div class="fix">
-動物の動画が文脈に合わない場所に出る不具合(35176/35178号)の根本原因を特定した。原因は src/lib/worldInference.ts の inferWorldFromText() が、動物の種名(犬・猫・パンダ等)が1語でも入っていると他のどんな強い手がかり(MV・ライブ・バンド等の音楽語)より先に無条件で「かわいい動物」判定を返していたこと(動物カテゴリの無条件デフォルトフォールバック)。この根本原因は案件#34368(2026-10-20)でスコア方式へ構造修正され、リポジトリのmainには既に合流済みと実測で確認した。ただし2026-10-22に店主本人がLovable自動公開をP0停止したため、本番(Lovable)への反映はまだ。公開を試みず、正直に「main合流済み・公開は未反映」と報告する。修正前コードと現在のmainコードの両方を実際に実行し、再現と修正の両方を数字で確認した。
+動物の動画が文脈に合わない場所に出る不具合(35176/35178号)の根本原因は<b>2つ重なっていた</b>。<br>
+<b>①直接の原因（主因）</b>：/watch ページ(外部URL取り込み動画)の「こちらもどうぞ」(NextRecommendations)・戻るボタンの行き先・最下部リンクが、動画の内容を一切見ず<code>currentWorld="cute"</code>を無条件・固定で渡していた。ラーメンでも旅行でもモンスタートラックでも、/watchを開けば必ず動物一色になる作りだった。<br>
+<b>②背景の原因</b>：仕組みの土台である src/lib/worldInference.ts の inferWorldFromText() も、動物の種名(犬・猫・パンダ等)が1語でも入っていると他のどんな強い手がかり(MV・ライブ・バンド等の音楽語)より先に無条件で「かわいい動物」判定を返す作りだった(動物カテゴリの無条件デフォルトフォールバック)。①の固定値のせいで、こちらが正しくても/watchでは使われていなかった。<br>
+①は案件#35176として、②は案件#34368(2026-10-20)として、どちらも<b>リポジトリのmainへ合流済み</b>と実測で確認した(②は修正前後のコードを両方実行して再現・修正を数字で確認)。ただし2026-10-22に店主本人がLovable自動公開をP0停止したため、本番(Lovable)への反映はまだ。公開を試みず、正直に「main合流済み・公開は未反映」と報告する。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>18/19</b><span>案件#34368の修正が入る直前のコードで再現テストを実行した結果</span></div>
-  <div class="num"><b>19/19</b><span>現在のリポジトリmainで同じテストを実行した結果</span></div>
-  <div class="num"><b>cute→music</b><span>再現ケース「黒い犬が吠える伝説のバンドOfficial MV」の判定が修正前後でどう変わったか</span></div>
+  <div class="num"><b>2</b><span>重なっていた根本原因の数（①/watchの固定cute・②inferWorldFromTextの無条件animal優先）</span></div>
+  <div class="num"><b>18/19→19/19</b><span>②の修正前→修正後で回帰テストを実行した結果</span></div>
+  <div class="num"><b>cute→music</b><span>②の再現ケース「黒い犬が吠える伝説のバンドOfficial MV」の判定が修正前後でどう変わったか</span></div>
 </div>
 
 
@@ -69,14 +72,15 @@
   <li><b>本番サイト（現状はまだ公開待ちの状態）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
 </ul>
 
-<div class="note">根本原因と修正内容は案件#34368として記録されている（非公開リポジトリのため個別リンクは省略）。2026-10-22に店主本人がLovable自動公開をP0停止しているため、この修正に限らずmain合流済みの変更全般が本番(Lovable)へまだ反映されていない。公開を試みず正直に「main合流済み・公開は未反映」と報告する。</div>
+<div class="note">①(/watchの固定cute)は案件#35176、②(worldInference.tsの無条件animal優先)は案件#34368として記録されている（非公開リポジトリのため個別リンクは省略）。2026-10-22に店主本人がLovable自動公開をP0停止しているため、この修正に限らずmain合流済みの変更全般が本番(Lovable)へまだ反映されていない。公開を試みず正直に「main合流済み・公開は未反映」と報告する。</div>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>動物語+音楽語が両方入る文章が cute に誤判定される(修正直前のコード・実測)</td><td class="no">再現した</td></tr>
-<tr><td>同じ文章が cute に誤判定される(現在のリポジトリmain・実測)</td><td class="yes">再現しない(music と正しく判定)</td></tr>
-<tr><td>回帰テスト scripts/patrol/check-world-inference.mjs がリポジトリmain上に存在し、このケースを含む19件を自動監視している</td><td class="yes">yes</td></tr>
+<tr><td>①/watchページが動画内容を見ずcurrentWorld="cute"を固定で渡していたか(リポジトリの修正差分で確認)</td><td class="yes">yes(修正済み。title/whisperから推定し、無ければ何も出さない方式へ変更)</td></tr>
+<tr><td>②動物語+音楽語が両方入る文章が cute に誤判定される(②の修正直前のコード・実測)</td><td class="no">再現した</td></tr>
+<tr><td>②同じ文章が cute に誤判定される(現在のリポジトリmain・実測)</td><td class="yes">再現しない(music と正しく判定)</td></tr>
+<tr><td>回帰テスト scripts/patrol/check-world-inference.mjs がリポジトリmain上に存在し、②のケースを含む19件を自動監視している</td><td class="yes">yes</td></tr>
 <tr><td>Lovable本番への公開(P0停止中のため今回は実行していない)</td><td class="no">未反映</td></tr>
 </table>
 
