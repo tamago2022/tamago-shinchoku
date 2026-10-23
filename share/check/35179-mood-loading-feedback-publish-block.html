@@ -52,32 +52,31 @@
 <div class="date">2026-10-24 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-依頼(2026-08-12・1ヶ月以上未着手)「不具合だけ見てサクサクに」を受け、既知issue#1491(coverGuide名簿チャンクの取得が遅い回線で数十秒〜130秒かかる実測あり)に対応する修正commit aca0b9450(気分ボタンの待ち時間が長い時、5秒を超えたら文言を『少し時間がかかっています。読み込み中です…』へ切り替えて動いていることを伝える)がorigin/mainへ合流済みであることをgit merge-base --is-ancestorで確認した。しかし本番(Lovable)は未反映。本番HTMLのdata-commit-sha属性(1fd5a6550...)がこの修正commitの子孫でないことをgit merge-base --is-ancestorで確認し、さらに本番JSバンドル全145チャンクを直接取得して新文言・機能マーカー(awaitingMoodLong)を検索したが0件だった。原因はコードではなく、2026-10-14以降継続しているLovable公開の認証切れ(再同意が必要)。この工場で現在20件以上の判定日赤案件が同一原因で『修正済みだが本番未反映』のまま止まっている(直近の同種記録：#35172・#35175・#35157)。公開専用Chrome(CDP 9223)経由の再公開は1186号の関所(Chromeの起動・再起動を例外なく禁止)で拒否され、API経由のOAuth再同意(kohyou_osu.py)もアクセストークン失効(invalid_grant)を実測確認。再同意URLを開く操作はDispatch管轄とされ本セッション(ブラウザ操作ツールなし)では実行不可。
+依頼(2026-08-12・1ヶ月以上未着手)「不具合だけ見てサクサクに」を受け調査した。対象の不具合（気分ボタンを押した後、読み込みに数十秒かかると『止まった・壊れた』と誤解される）への修正は、既にリポジトリの本体（main）へ取り込み済みであることを確認した（コード側の実装は完了済み、今回の追加修正は不要）。しかし本番サイト(Lovable)はまだ反映されていない。本番ページの識別情報を本体の最新状態と比較したところ一致せず、さらに本番で配信されているプログラム一式（145個のファイル全部）を直接取得して新しい案内文の文字列を検索したが見つからなかった。2通りの別々の確認方法で、どちらも『まだ反映されていない』という同じ結果になった。原因はコードの不具合ではなく、2026-10-14から続いているLovable側の公開用ログインの失効（この工場で現在20件以上の案件が同じ原因で足止めされている既知の問題）。公開ボタンを代わりに押す手段（専用ブラウザ経由・API経由の2通り）を両方試したが、ブラウザの起動はたまごさんの指示で禁止されており、API側もログイン失効で使えなかった。ログインのやり直しにはブラウザでの同意操作が必要で、この作業环境には実行する手段が無い。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>aca0b9450</b><span>修正commit(origin/mainの祖先=YES)</span></div>
-  <div class="num"><b>1fd5a6550</b><span>本番data-commit-sha(修正commitの子孫=NO)</span></div>
-  <div class="num"><b>0</b><span>本番JSバンドル145チャンク中、新文言『少し時間がかかっています』の出現数</span></div>
-  <div class="num"><b>0</b><span>本番JSバンドル145チャンク中、機能マーカー『awaitingMoodLong』の出現数</span></div>
+  <div class="num"><b>済</b><span>本体(main)への取り込み</span></div>
+  <div class="num"><b>未反映</b><span>本番サイトへの反映</span></div>
+  <div class="num"><b>0</b><span>本番の配信ファイル145個中、新しい案内文が見つかった数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番URL(実測200・修正未反映)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
-  <li><b>同一原因の先行記録#35175確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35175-ratm-mv-copy-publish-block.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35175-ratm-mv-copy-publish-block.html</a></li>
+  <li><b>本番URL(実測200・まだ未反映)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>同一原因の先行記録(#35175)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35175-ratm-mv-copy-publish-block.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35175-ratm-mv-copy-publish-block.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>コード側の文言修正</td><td class="yes">済</td></tr>
-<tr><td>origin/mainへの合流</td><td class="yes">済(merge-base --is-ancestor で確認)</td></tr>
-<tr><td>本番data-commit-shaが修正commitを含む</td><td class="no">含まない(1fd5a6550)</td></tr>
-<tr><td>本番JSバンドルに新文言・機能マーカーを含む</td><td class="no">145チャンク検索で0件</td></tr>
+<tr><td>本体(main)への取り込み</td><td class="yes">済</td></tr>
+<tr><td>本番サイトの識別情報が最新と一致</td><td class="no">一致しない(古いまま)</td></tr>
+<tr><td>本番の配信ファイルに新しい案内文を含む</td><td class="no">145個中0件</td></tr>
 </table>
 
 <footer>
