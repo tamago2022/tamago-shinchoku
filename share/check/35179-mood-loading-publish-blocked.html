@@ -52,7 +52,7 @@
 <div class="date">2026-10-24 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-気分ボタンを押した時、5秒を超えても『探しています…』のまま変化が無く『止まった・壊れた』と誤解される不具合。修正コード(commit aca0b9450・TasteEntry.tsx)は実装済みでorigin/mainへ合流済みだが、本番(Lovable)への『公開』ボタンがまだ押されておらず、本番は旧文言のまま配信されている。
+気分ボタンを押した時、5秒を超えても『探しています…』のまま変化が無く『止まった・壊れた』と誤解される不具合。直す修正は実装済みで本体コードには合流済みだが、本番(Lovable)への『公開』ボタンがまだ押されておらず、本番は旧文言のまま配信されている。
 </div>
 
 <h2>② 数字</h2>
@@ -71,15 +71,15 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへの合流(commit aca0b9450)</td><td class="yes">origin/mainの祖先と確認済み</td></tr>
+<tr><td>修正コードの本体合流</td><td class="yes">確認済み</td></tr>
 <tr><td>本番ページが200で返る</td><td class="yes">cover-guideページを実測</td></tr>
-<tr><td>本番に新文言が配信されている</td><td class="no">cover-guide-eAfLBQ1X.jsを実測・含まれていない</td></tr>
-<tr><td>MCP直叩きでの公開(deploy_project)</td><td class="no">HTTP 403 Lovable Error(2026-10-22から継続)</td></tr>
-<tr><td>公開専用Chrome(CDP9223)の起動</td><td class="no">1186号ゲートが『Chrome起動は憲法で禁止・例外なし』で拒否</td></tr>
+<tr><td>本番に新文言が配信されている</td><td class="no">本番JSを実測・含まれていない</td></tr>
+<tr><td>自動公開(API直叩き)</td><td class="no">HTTP 403 Lovable Error(2026-10-22から継続)</td></tr>
+<tr><td>公開専用Chromeの起動</td><td class="no">起動禁止ゲートで拒否(例外なし)</td></tr>
 </table>
 
 <footer>
-実測方法：本番ページのHTMLから参照JSチャンクURLを取得し、そのチャンク本文に新文言/旧文言の文字列が含まれるかをNode.jsのhttpsモジュールで直接取得して検査した（ブラウザ不使用）。公開(Lovable『変更を公開』)が通れば、この表の『本番に新文言が配信されている』だけがyesに変わり、他の修正は不要。
+実測方法：本番ページが参照するJSファイルを直接取得し、新文言・旧文言の文字列が含まれるかを機械的に検査した（ブラウザ不使用）。公開(Lovable『変更を公開』)が通れば、この表の『本番に新文言が配信されている』だけがyesに変わり、他の修正は不要。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
