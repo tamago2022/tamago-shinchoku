@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-24 07:12:37・hash=53aae0fe09bc -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-24 07:42:49・hash=5461b818de59 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -12,6 +12,7 @@
 - 工場の送り先（nageru・shigoto_furu・tekizai・irai_gate）からJulesを外した。GitHubの `jules` ラベルは `jules-外した` に改名し、自動起動を止めた。
 
 ## 今動いているプロジェクトと現在の状態
+- **【X投稿の2重検品＋手直し帳】（2026-10-24）** Bufferに入れる・直すXの文は機械＋別のAI（停止札の間は Codex→Claude CLI）を通ったものだけ（tools/x_nijuu_kenpin.py）。赤入れは手直し帳へ流し込み、同じ直しが2回で決まりに（tools/tenaoshi_chou.py・~/jrs-clone/ai-clone）。秋の予約6本の文を直した（時刻は不変）。
 - 10-14 地球観察日記 第2作（Issue #975）：音源受領済み・原稿の枠/声3候補/静止画方針を作成（tamago-shinchoku/status/chikyu2/plan.md）。詩は10-15にChatGPTへ催促済み（#975コメント＋ai-brain/sync/claude/latest.md。1行目【短縮版の詩】のコメントを sozai_hiroi.py が自動で受け取る）、声・画像は見積り約106円（上限170円）の承認待ち。素材は tools/sozai_hiroi.py が【制作依頼】Issueのファイル名を見てDownloads/Desktopから自動で拾う。
 - **【Obsidian円卓会議（34582番・2026-10-07確認）】稼働中。** 2026-08-06にたまごさんが聞いた「URLをぽっと入れたらそれが行われるように」「最終的にオブシリアンで動かせるのか」は、プラグイン`entaku-kaigi`(v1.2.0・2026-09-02更新)で実現済み——**ノートに`@`＋URLを書いて改行するだけで円卓会議が自動発火し、議事録がVaultへ自動保存される**（裸のURLでは発火しない安全装置・偽引用禁止の安全装置つき）。直近実績：2026-10-04に9件生成。顧問は25人登録済み（ゴール100人以上には未達）。このプロジェクトは店主指定の絶対制約により公開Webアプリ・Lovable・joy-relief-stationには一切触れないローカル専用設計のため、公開本番URLは存在しない。確認ページ: https://tamago2022.github.［除去］.html
 - **【Fable・10/9〜10/14投稿枠コピー磨き＋マガジン下書き】（2026-10-06）** main反映済み（commit bbe49bef6）。22曲のnoteを「見出し1行＋出典付き事実」へ、3曲にmemo。マガジン下書き `/feature/midnight-pretenders-abroad`（noindex・台帳未登録）。**次：Lovable Publish→本番で新コピー確認→下書きをたまごさんに見せる→OKなら magazineFeatures.ts/sitemap 登録＋noindex外し。** 本番は10/06 00:48時点で旧コピー（公開待ち）。
