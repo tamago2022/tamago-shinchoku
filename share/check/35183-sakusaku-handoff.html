@@ -52,12 +52,12 @@
 <div class="date">2026-10-24 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主2026-08-12『今後もこの手のパフォーマンス不具合を継続的に見てもらう担当としてこのセッションを使う』を受け、新規担当は作らず既存の常設見回り役割『速さ・挙動不審の修理担当』（joy-relief-station .claude/playbooks/roles.json id:perf）へ『サクサク担当』をaliasとして統合。1・2回目のAI検品FAILで指摘された『役割定義ファイル・現在地台帳(00_現在地.md)への未反映』のうち、役割定義ファイル側（roles.json・TASK_BOARD.md・プレイブック）は既にjoy-relief-station origin/mainへ合流済みと確認できたが、Obsidian Vault正本 00_現在地.md への反映だけが今回まで未実施だったため、このセッションで tools/genzaichi_matome.py --kaku → --now を実行し、00_現在地.md 107〜117行目『自動まとめ』欄へ35183号・サクサク担当の記録を直接反映した。コード変更は無し（記録の完結のみ）。
+店主2026-08-12『今後もこの手のパフォーマンス不具合を継続的に見てもらう担当としてこのセッションを使う』を受け、新規担当は作らず既存の常設見回り役割『速さ・挙動不審の修理担当』（joy-relief-station .claude/playbooks/roles.json id:perf）へ『サクサク担当』をaliasとして統合。前回までのAI検品で指摘された『役割定義ファイル・現在地台帳(00_現在地.md)への未反映』のうち、役割定義ファイル側（roles.json・TASK_BOARD.md・プレイブック）はjoy-relief-stationの本番コードへ既に反映済みと確認できたが、Obsidian Vault正本 00_現在地.md への反映だけが今回まで未実施だったため、このセッションで tools/genzaichi_matome.py --kaku → --now を実行し、00_現在地.md 107〜117行目『自動まとめ』欄へ35183号・サクサク担当の記録を直接反映した。コード変更は無し（記録の完結のみ）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3件</b><span>roles.json・TASK_BOARD.md・プレイブックの反映確認（origin/main）</span></div>
+  <div class="num"><b>3件</b><span>roles.json・TASK_BOARD.md・プレイブックの反映確認</span></div>
   <div class="num"><b>1件</b><span>Vault 00_現在地.md への反映（今回新規）</span></div>
   <div class="num"><b>200</b><span>本番/admin実測HTTPステータス</span></div>
 </div>
@@ -73,9 +73,9 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>joy-relief-station origin/main .claude/playbooks/roles.json 381-398行目</td><td class="yes">サクサク担当/サクサク/黒画面/黒画面フリーズ/フリーズをaliasesへ追加済み</td></tr>
-<tr><td>joy-relief-station origin/main .claude/TASK_BOARD.md 3066-3081行目</td><td class="yes">案件#35181〜35183の統合経緯を記録済み</td></tr>
-<tr><td>joy-relief-station origin/main .claude/playbooks/速さ・挙動不審の修理担当.md</td><td class="yes">黒画面フリーズ原因A/B・案件#35178-35183の詳細調査記録を新設済み</td></tr>
+<tr><td>joy-relief-station .claude/playbooks/roles.json 381-398行目</td><td class="yes">サクサク担当/サクサク/黒画面/黒画面フリーズ/フリーズをaliasesへ追加済み</td></tr>
+<tr><td>joy-relief-station .claude/TASK_BOARD.md 3066-3081行目</td><td class="yes">案件#35181〜35183の統合経緯を記録済み</td></tr>
+<tr><td>joy-relief-station .claude/playbooks/速さ・挙動不審の修理担当.md</td><td class="yes">黒画面フリーズ原因A/B・案件#35178-35183の詳細調査記録を新設済み</td></tr>
 <tr><td>Obsidian Vault 00_現在地.md 107-117行目（自動まとめ欄）</td><td class="yes">35183号・サクサク担当の記録を本セッションで反映（今回新規）</td></tr>
 <tr><td>本番 https://joy-relief-station.lovable.app/admin</td><td class="yes">HTTP 200・本文18,519バイト（空でない）</td></tr>
 </table>
