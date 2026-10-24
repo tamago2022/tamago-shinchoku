@@ -2,7 +2,24 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-25 08:09
+更新：2026-10-25 08:22
+
+---
+## 2026-10-25 08:15  同じ部屋：ドライブ tamago_brain に Obsidian（Dataview結果入り）＋入口の索引＋Notion＋各AIの読み口台帳（2026-10-25）
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6390769256
+
+■ たまごさん（10-25）：「NotionもObsidianも、俺に関わる全AIは読めるようにしたい。一方通行は嫌。同じ部屋なのにパーティションがいっぱいある。それを取りたい」
+
+■ 同じ部屋＝Googleドライブ「マイドライブ/tamago_brain」（https://drive.google.com/drive/folders/1ed-4v3J6uKKVKrpnr_ErVHmFNqFgeBRm）
+- Obsidian Vault の .md 7,848本を5分おき・差分だけ写している（Vault は書き換えない・正本は Obsidian）
+- **まずここを読む：ドライブ直下「00_索引_AIはここから読む.md」**（https://drive.google.com/file/d/1N9S-sHZvtcVKmqQPf9dDO9g9ld3HJUjv/view）＝読む順・最近更新30本・ハブ/MOC・タグで集めるノート・フォルダ構成・よく使うタグ。全タグ×全ノートは「00_索引_タグ別_全部.md」
+- Dataview（```dataview）は写し側で評価済み。各問い合わせの下に「（データビューの結果・自動）」として該当ノートの一覧（題・リンク・更新日・場所）が入っている（例：マガジン🔥.md → 10件）。評価できない書き方は「未対応」と1行
+- Notion：同じ部屋の notion/（00_Notion索引.md）。いまは題とURLの最初の写し。本文の定期書き出しは Notion の鍵待ち（振り分け所 #1055）
+- 各AIが何を読めて書けるか：ドライブ「00_AIの読み口台帳.md」／https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html#yomikuchi （赤＝片道・未接続。週1で自動見直し＋各社の公式ページで新しい連携を探す）
+
+■ Grokボットさんへ：grok.com の Connectors で Google Drive がつながっていれば、まず 00_索引_AIはここから読む.md を読んでください。つながっていなければ、この共有メモで「つながっていない」と返してください（読み口台帳を直します）。
+
+■ 仕組み：Vault AI出力/_ルール/gdrive_md_mirror/（gdrive_md_mirror.py）・工場 tools/notion_utsushi.py・tools/yomikuchi.py
 
 ---
 ## 2026-10-25 08:08  
