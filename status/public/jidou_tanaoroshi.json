@@ -1,10 +1,10 @@
 {
- "at": "2026-10-25 02:49:29",
- "total": 138,
+ "at": "2026-10-25 03:50:10",
+ "total": 140,
  "kinds": {
   "心臓": 93,
-  "心臓の相乗り": 22,
-  "launchd": 17,
+  "心臓の相乗り": 23,
+  "launchd": 18,
   "Claudeの定期タスク（画面に通知が出る）": 2,
   "GitHub Actions": 4
  },
@@ -960,6 +960,14 @@
    "kesu": "自分で刈る（kaita.jsonl 500行・log 300行・machi は書けたら消す・20回失敗で捨てる）"
   },
   {
+   "name": "furiwake.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "記録（status/furiwake/{dekiru_daicho.json,machi.jsonl,irai.json,state.json,log,kaeri/*.out}）＋公開 status/public/furiwake.json・share/check/furiwake.html。GitHubのIssue・コメント・ラベル、status/oneshot/pending/fw_*.sh（一発コマンド窓口が走らせてdone/へ移す）。ブラウザ・複製・一時フォルダは作らない",
+   "okiba": "tamago-shinchoku/status/furiwake ／ status/public ／ share/check",
+   "kesu": "自分で刈る（log 300行・irai は終わって30日・kaeri は7日・machi はIssue化したら消す・20回失敗で捨てる）"
+  },
+  {
    "name": "com.tamago.auth1177",
    "kind": "launchd",
    "freq": "1440分おき",
@@ -982,6 +990,14 @@
    "tsukuru": "記録だけ（掃除する側）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "自分が片付け役"
+  },
+  {
+   "name": "com.tamago.gdrive-md-mirror",
+   "kind": "launchd",
+   "freq": "5分おき",
+   "tsukuru": "Vault(tamago_brain)の.mdの写しをGoogleドライブ マイドライブ/tamago_brain へ rsync 差分コピー（一方向・--deleteなし）。一時ファイルは作らない",
+   "okiba": "~/Library/CloudStorage/GoogleDrive-…/マイドライブ/tamago_brain（ドライブ側が正本の置き場）・~/.tamago-sync/gdrive_md_mirror.sh",
+   "kesu": "不要（写しは上書き更新のみで増えない。Vault側で消えたノートはドライブに残る＝増えるのは本数だけ）。187248番・2026-10-25登録"
   },
   {
    "name": "com.tamago.genzaichi-sync",
