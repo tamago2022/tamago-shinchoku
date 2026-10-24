@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35184 空耳アワー新曲10件・公開が止まっている根本原因 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35184 空耳アワー新曲10件・公開が止まっている根本原因</div>
+<h1>#35184 空耳アワー新曲10件・公開が止まっている根本原因</h1>
+<div class="date">2026-10-24 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+空耳アワーの新曲10件（メタリカ・ザ・クラッシュ・セリーヌ・ディオン・ビリー・ジョエル・TOTO・エリック・クラプトン・アース・ウインド&ファイヤー・ザ・ビートルズ・ケニー・ロギンス・ニルヴァーナ）は<code>main</code>へ合流済み（コミット<code>b541160e0</code>、tamago2022/joy-relief-station origin/main祖先）・原曲との双方向リンクも設定済みです。今回あらためて本番を実測し、公開が止まっている根本原因を特定しました：<b>Lovableのログイン鍵（OAuth）が2026-10-14から切れたまま</b>で、自動の「公開押し係」が10日間・数百回失敗し続けています（鍵の更新も400エラーで失敗）。これは35184番固有の不具合ではなく、同時期の20件以上の案件（#34523・#34522・#34546等）すべてに共通する工場全体の障害です。ブラウザでログインし直す操作はこの作業部屋からは禁止されており（Chrome起動は憲法で全面禁止）、AI側に実行できる手段がありません。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0/10</b><span>本番に出ている新曲</span></div>
+  <div class="num"><b>10日</b><span>鍵が切れてから経った日数(10/14→10/24)</span></div>
+  <div class="num"><b>20件超</b><span>同じ原因で止まっている他の案件数</span></div>
+</div>
+
+
+
+<h2>実測の生ログ（2026-10-24 14:3x JST）</h2>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.78rem;white-space:pre-wrap;word-break:break-all;">
+[本番HTTP実測] node fetchで https://joy-relief-station.lovable.app/cover-guide?artist=soramimi-award を取得
+  HTTP: 200 / x-deployment-id: psr2.767193a1-2d49-4c3a-a4d7-e3a9b6137e23...
+  本文に「メタリカ」「ザ・クラッシュ」「セリーヌ・ディオン」「ビリー・ジョエル」「TOTO」
+  「エリック・クラプトン」「アース・ウインド」「ザ・ビートルズ」「ケニー・ロギンス」
+  「ニルヴァーナ」→ いずれも false（0/10件のみ反映）
+
+[main合流の確認] git merge-base --is-ancestor b541160e0 origin/main → true（含まれている）
+  git log --oneline origin/main | grep b541160e0 → 1行ヒット（origin/main上のコミット）
+  git show origin/main:src/lib/coverGuide.ts | grep -c "メタリカ|ニルヴァーナ|ケニー・ロギンス" → 8（コード側には存在）
+
+[見る係 status/kohyou_kanshi.json]
+  "mainSha": "1b0a0955", "deployChangedAt": "2026-10-24 09:20:43",
+  "machiSec": 18066（mainが入ってから約301分、本番のdeploymentIdは変化なし）
+  "hantei": "赤"
+
+[押す係 status/kohyou_osu.log 直近10行]
+  14:28:14 鍵の取り直しに失敗：HTTPError: HTTP Error 400: Bad Request
+  14:28:15 get_project が読めません：HTTP 401 {"jsonrpc":"2.0","error":{"code":-32001,"message":"Not authenticated"},"id":null}
+  14:29:16 鍵の取り直しに失敗：HTTPError: HTTP Error 400: Bad Request
+  14:29:16 get_project が読めません：HTTP 401 Not authenticated
+  14:30:18 鍵の取り直しに失敗：HTTPError: HTTP Error 400: Bad Request
+  14:30:19 get_project が読めません：HTTP 401 Not authenticated
+  → access_token・refresh_token とも失効（最後に成功したのは status/kohyou_osu.json の
+    "pressedAt": "2026-10-14 13:49:49" ＝ 10日前）
+
+[再認証の試行と結果]
+  1) python3 tools/kohyou_osu.py を自分で実行 → 上と同じ401/400で失敗（人間を待たせず自動復旧を試みたが鍵切れのため不可）
+  2) ~/.tamago/lovable_authorize_url.txt の承認URLをブラウザで開いてボタンを押せば直る設計だが、
+     Chromeの新規起動は憲法1186号で全面禁止（例外なし）。CDP 9223/9222とも接続試行→応答なし（未起動）。
+     既存のログイン済みブラウザセッションもこのセッションには無い。
+  3) launchctl でlovable-publish関連のLaunchAgentを確認 → 該当plistは1件も存在せず
+     （~/Library/LaunchAgents/ に lovable-publish関連は無し）。
+  → ブラウザでの同意操作が必須だが、本セッションに実行できる手段が無いことを確認した。
+
+[同一原因の他案件（status/dispatch_outbox.jsonl / PENDING_DECISIONS.md より抜粋)]
+  #34523 #34522 #34546 等、2026-10-14以降のLovable OAuth失効で20件以上が同じ理由で
+  「main合流済み・公開のみ店主待ち」の状態。35184番固有の不具合ではない。
+</pre>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番ページ（空耳アワー）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=soramimi-award" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=soramimi-award</a></li>
+</ul>
+
+
+
+<footer>
+戻し方：たまごさんがLovable( https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1 )にブラウザで1回ログインし直す、または画面で「公開」を押すと、本件を含め溜まっている分が自動便で一括反映されます。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
