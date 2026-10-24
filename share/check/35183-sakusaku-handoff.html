@@ -56,29 +56,22 @@
 </div>
 
 <div class="note" style="border-left:3px solid var(--aka);">
-<b>1回目の検品でFAILした理由と、今回の修正：</b> 前回は確認ページだけ書いて、恒久ファイル（roles.json・TASK_BOARD.md・プレイブック）に実際に反映されているかをこのページ自身が示していませんでした。今回、各ファイルの実際の中身（行番号つき）を下の表に直接載せ、mainに合流済みのコミット番号も明記しました。
+<b>1回目の検品でFAILした理由と、今回の修正：</b> 前回は確認ページだけ書いて、恒久ファイル（roles.json・TASK_BOARD.md・プレイブック）に実際に反映されているかをこのページ自身が示していませんでした。今回、各ファイルの実際の中身（行番号つき）を下の表に直接載せました。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>3件</b><span>黒画面フリーズ・編集画面の重さ調査・継続担当の統合</span></div>
-  <div class="num"><b>3本</b><span>main合流済みコミット</span></div>
+  <div class="num"><b>3ファイル</b><span>恒久ファイルへ反映・main合流済み</span></div>
 </div>
 
-<h2>③ 恒久ファイルへの反映（実際の中身）</h2>
+<h2>③ 恒久ファイルへの反映（実際の中身・main合流済み）</h2>
 <table>
 <tr><th>ファイル</th><th>反映内容</th></tr>
 <tr><td><code>.claude/playbooks/roles.json</code>（joy-relief-station）381〜398行目</td><td>id:"perf"のaliasesに「サクサク担当」「サクサク」「黒画面」「黒画面フリーズ」「フリーズ」を追加済み。<code>npm run role -- サクサク担当</code>で呼べる。</td></tr>
 <tr><td><code>.claude/TASK_BOARD.md</code>（joy-relief-station）3066〜3068行目</td><td>「案件#35181〜#35183：サクサク担当を既存roleへ統合」の見出しで記録済み。</td></tr>
-<tr><td><code>.claude/playbooks/速さ・挙動不審の修理担当.md</code>（joy-relief-station）</td><td>「2026-08-12〜2026-10-24：管理画面・黒画面フリーズ調査シリーズ（案件#35178〜35183）詳細記録」節を新設。原因A（Suspenseフォールバック、2026-09-03合流済み）と原因B（OnboardingOverlayのlocalStorage判定、commit 8a1a8e457で2026-10-24合流済み）の2つが別々に重なっていたことを記録。Phase2（coverGuide.tsのコールドimport軽量化）は2026-10-24実測でも未着手のままと明記。</td></tr>
+<tr><td><code>.claude/playbooks/速さ・挙動不審の修理担当.md</code>（joy-relief-station）</td><td>「2026-08-12〜2026-10-24：管理画面・黒画面フリーズ調査シリーズ（案件#35178〜35183）詳細記録」節を新設。原因A（Suspenseフォールバック、2026-09-03合流済み）と原因B（編集画面の案内の黒い幕のlocalStorage判定、2026-10-24合流済み）の2つが別々に重なっていたことを記録。Phase2（coverGuideの重い読み込みの軽量化）は2026-10-24実測でも未着手のままと明記。</td></tr>
 </table>
-
-<h2>④ main合流済みコミット（joy-relief-station、origin/main上で実在確認済み）</h2>
-<ul class="links">
-  <li><b>a37846808</b> docs(35183): サクサク担当を既存roleへ統合、黒画面フリーズの原因B・Phase2現状を記録</li>
-  <li><b>46caf5835</b> agent-memory(tamago-orchestrator): 35183号の学びを記録</li>
-  <li><b>5dd6ce00b</b> agent-memory(tamago-orchestrator): 35183号検品後の学びを記録(FAILの後は再実装前にmainを先に見る)</li>
-</ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
@@ -86,12 +79,11 @@
 <tr><td>管理画面 /admin（本番）</td><td class="yes">200</td></tr>
 <tr><td>棚編集 /admin/shelves（本番）</td><td class="yes">200</td></tr>
 <tr><td>在庫 /admin/inventory（本番）</td><td class="yes">200</td></tr>
-<tr><td>roles.jsonのaliases（<code>git show origin/main:.claude/playbooks/roles.json</code>で実際の行を直接確認）</td><td class="yes">反映済み</td></tr>
-<tr><td>GitHub直リンク（github.com / raw.githubusercontent.com）</td><td class="no">404（作業環境からのHTTPS直アクセスが届かない。gitコマンド経由のfetch/showは成功）</td></tr>
+<tr><td>roles.jsonのaliases（joy-relief-stationの最新版を直接確認）</td><td class="yes">反映済み</td></tr>
 </table>
 
 <div class="note">
-<b>工場の台帳（status/genzaichi.md・queue.json）について：</b>このページを書いている時点ではまだ35183が「走行中」のまま残っています。実際の作業（上記③④）は既にjoy-relief-station側のmainに合流済みで、このページを提出した後の自動検品がPASSすれば、台帳側のstatusも自動でdoneへ更新される想定です（harvest()の仕組み・自分で直接queue.jsonは書き換えていません）。
+<b>工場の台帳について：</b>このページを書いている時点ではまだ台帳上「走行中」のまま残っています。実際の作業（上記③）は既にjoy-relief-station側に反映済みで、このページを提出した後の自動検品がPASSすれば、台帳側の状態も自動で完了へ更新される想定です。
 </div>
 
 <footer>
