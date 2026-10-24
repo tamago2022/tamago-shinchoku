@@ -1,20 +1,42 @@
 {
- "measuredAt": "2026-10-23T09:25:55+09:00",
+ "measuredAt": "2026-10-24T09:26:07+09:00",
  "launchAgents": {
   "checked": 17,
   "zombies": []
  },
  "viteZombies": {
-  "checked": 3,
-  "killed": [],
+  "checked": 6,
+  "killed": [
+   {
+    "pid": "44574",
+    "command": "node /private/tmp/q35182_wtmain/node_modules/.bin/vite dev --port 5399",
+    "reason": "参照先の作業フォルダが既に無い",
+    "rssKB": 41876,
+    "signaled": true
+   },
+   {
+    "pid": "44552",
+    "command": "npm exec vite dev --port 5399",
+    "reason": "子のvite/esbuildを片づけたため道連れ",
+    "rssKB": 37116,
+    "signaled": true
+   },
+   {
+    "pid": "44575",
+    "command": "/Users/mac/Desktop/joy-relief-station/node_modules/@esbuild/darwin-x64/bin/esbuild --service=0.28.2 --ping",
+    "reason": "親のvite devを片づけたため道連れ（孤児防止）",
+    "rssKB": 17200,
+    "signaled": true
+   }
+  ],
   "keptCount": 3,
-  "freedRssMB": 0.0
+  "freedRssMB": 93.9
  },
  "queueArchive": {
-  "ran": true,
-  "output": "完了を911件、ひかえへ移しました",
-  "beforeBytes": 18764635,
-  "afterBytes": 17617385
+  "ran": false,
+  "output": "Command '['python3', '/Users/mac/tamago/tamago-shinchoku/tools/archive_done.py']' timed out after 60 seconds",
+  "beforeBytes": 17451339,
+  "afterBytes": 17451021
  },
  "worktreeReaper": {
   "ran": true,
@@ -22,54 +44,56 @@
  },
  "logArchive": {
   "ran": true,
-  "output": "moved 397 files -> /Users/mac/tamago/tamago-shinchoku/status/_archive/logs-2026-10-23"
+  "output": "moved 504 files -> /Users/mac/tamago/tamago-shinchoku/status/_archive/logs-2026-10-24"
  },
  "laterTabs": {
   "wasStaleBeforeRun": false,
-  "prevGeneratedAt": "2026-10-22T16:53:40.121104",
-  "prevGapMin": 992.3,
+  "prevGeneratedAt": "2026-10-23T13:06:57.356283",
+  "prevGapMin": 1219.2,
   "ranThisTime": false,
   "error": null,
-  "entryCount": 144,
-  "nowGeneratedAt": "2026-10-22T16:53:40.121104"
+  "entryCount": 85,
+  "nowGeneratedAt": "2026-10-23T13:06:57.356283"
  },
  "disk": {
-  "diskFreeGB": 202.6,
-  "dropFromPrevGB": 2.1,
-  "alert": false
+  "diskFreeGB": 195.6,
+  "dropFromPrevGB": 7.0,
+  "alert": true
  },
  "load": {
-  "load1": 4.9,
-  "load5": 5.0,
+  "load1": 8.8,
+  "load5": 8.0,
   "alert": false,
   "topCpu": [
    {
-    "pcpu": "97.1",
-    "comm": "Python"
+    "pcpu": "79.0",
+    "comm": "fileproviderd"
    },
    {
-    "pcpu": "46.1",
+    "pcpu": "38.3",
     "comm": "mds_stores"
    },
    {
-    "pcpu": "6.2",
-    "comm": "fseventsd"
-   },
-   {
-    "pcpu": "5.2",
-    "comm": "Brave Browser"
-   },
-   {
-    "pcpu": "4.0",
+    "pcpu": "28.1",
     "comm": "Python"
+   },
+   {
+    "pcpu": "27.7",
+    "comm": "Python"
+   },
+   {
+    "pcpu": "20.5",
+    "comm": "node"
    }
   ]
  },
  "watchdogs": {
   "disk_guardian": {
    "alive": true,
-   "lastUpdateAgoMin": 0.9
+   "lastUpdateAgoMin": 0.3
   }
  },
- "problemsNotified": []
+ "problemsNotified": [
+  "ディスク空きが前回より7.0GB減少(現在195.6GB)。原因は自動特定不可・手動確認が要る"
+ ]
 }
