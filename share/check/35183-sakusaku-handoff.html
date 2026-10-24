@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35183 サクサク担当、継続担当として記録しました 確認ページ</title>
+<title>#35183 サクサク担当、継続担当として記録しました（恒久ファイル＋Vault現在地まで反映・3回目） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,47 +47,41 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35183 サクサク担当、継続担当として記録しました</div>
-<h1>#35183 サクサク担当、継続担当として記録しました</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35183 サクサク担当、継続担当として記録しました（恒久ファイル＋Vault現在地まで反映・3回目）</div>
+<h1>#35183 サクサク担当、継続担当として記録しました（恒久ファイル＋Vault現在地まで反映・3回目）</h1>
 <div class="date">2026-10-24 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主から「今後もこの手のパフォーマンス不具合を継続的に見てもらう担当としてこのセッションを使う」と言われていた件（2026-08-12）。新しい担当を作らず、既存の常設見回り役割「速さ・挙動不審の修理担当」に「サクサク担当」という呼び名を足して統合しました。あわせて、同じ時期に調べていた管理画面の黒画面フリーズについて、原因がもう1つ見つかっていた（編集画面の案内の黒い幕が古いデータのまま残ることがある）のに記録されていなかったので、詳しく書き残しました。コード変更はありません（記録のみ）。
-</div>
-
-<div class="note" style="border-left:3px solid var(--aka);">
-<b>1回目の検品でFAILした理由と、今回の修正：</b> 前回は確認ページだけ書いて、恒久ファイル（roles.json・TASK_BOARD.md・プレイブック）に実際に反映されているかをこのページ自身が示していませんでした。今回、各ファイルの実際の中身（行番号つき）を下の表に直接載せました。
+店主2026-08-12『今後もこの手のパフォーマンス不具合を継続的に見てもらう担当としてこのセッションを使う』を受け、新規担当は作らず既存の常設見回り役割『速さ・挙動不審の修理担当』（joy-relief-station .claude/playbooks/roles.json id:perf）へ『サクサク担当』をaliasとして統合。前回までのAI検品で指摘された『役割定義ファイル・現在地台帳(00_現在地.md)への未反映』のうち、役割定義ファイル側（roles.json・TASK_BOARD.md・プレイブック）はjoy-relief-stationの本番コードへ既に反映済みと確認できたが、Obsidian Vault正本 00_現在地.md への反映だけが今回まで未実施だったため、このセッションで tools/genzaichi_matome.py --kaku → --now を実行し、00_現在地.md 107〜117行目『自動まとめ』欄へ35183号・サクサク担当の記録を直接反映した。コード変更は無し（記録の完結のみ）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>3件</b><span>黒画面フリーズ・編集画面の重さ調査・継続担当の統合</span></div>
-  <div class="num"><b>3ファイル</b><span>恒久ファイルへ反映・main合流済み</span></div>
+  <div class="num"><b>3件</b><span>roles.json・TASK_BOARD.md・プレイブックの反映確認</span></div>
+  <div class="num"><b>1件</b><span>Vault 00_現在地.md への反映（今回新規）</span></div>
+  <div class="num"><b>200</b><span>本番/admin実測HTTPステータス</span></div>
 </div>
 
-<h2>③ 恒久ファイルへの反映（実際の中身・main合流済み）</h2>
-<table>
-<tr><th>ファイル</th><th>反映内容</th></tr>
-<tr><td><code>.claude/playbooks/roles.json</code>（joy-relief-station）381〜398行目</td><td>id:"perf"のaliasesに「サクサク担当」「サクサク」「黒画面」「黒画面フリーズ」「フリーズ」を追加済み。<code>npm run role -- サクサク担当</code>で呼べる。</td></tr>
-<tr><td><code>.claude/TASK_BOARD.md</code>（joy-relief-station）3066〜3068行目</td><td>「案件#35181〜#35183：サクサク担当を既存roleへ統合」の見出しで記録済み。</td></tr>
-<tr><td><code>.claude/playbooks/速さ・挙動不審の修理担当.md</code>（joy-relief-station）</td><td>「2026-08-12〜2026-10-24：管理画面・黒画面フリーズ調査シリーズ（案件#35178〜35183）詳細記録」節を新設。原因A（Suspenseフォールバック、2026-09-03合流済み）と原因B（編集画面の案内の黒い幕のlocalStorage判定、2026-10-24合流済み）の2つが別々に重なっていたことを記録。Phase2（coverGuideの重い読み込みの軽量化）は2026-10-24実測でも未着手のままと明記。</td></tr>
-</table>
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>確認ページ自身（更新履歴）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35183-sakusaku-handoff.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35183-sakusaku-handoff.html</a></li>
+  <li><b>本番 管理画面</b><a href="https://joy-relief-station.lovable.app/admin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin</a></li>
+</ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>管理画面 /admin（本番）</td><td class="yes">200</td></tr>
-<tr><td>棚編集 /admin/shelves（本番）</td><td class="yes">200</td></tr>
-<tr><td>在庫 /admin/inventory（本番）</td><td class="yes">200</td></tr>
-<tr><td>roles.jsonのaliases（joy-relief-stationの最新版を直接確認）</td><td class="yes">反映済み</td></tr>
+<tr><td>joy-relief-station .claude/playbooks/roles.json 381-398行目</td><td class="yes">サクサク担当/サクサク/黒画面/黒画面フリーズ/フリーズをaliasesへ追加済み</td></tr>
+<tr><td>joy-relief-station .claude/TASK_BOARD.md 3066-3081行目</td><td class="yes">案件#35181〜35183の統合経緯を記録済み</td></tr>
+<tr><td>joy-relief-station .claude/playbooks/速さ・挙動不審の修理担当.md</td><td class="yes">黒画面フリーズ原因A/B・案件#35178-35183の詳細調査記録を新設済み</td></tr>
+<tr><td>Obsidian Vault 00_現在地.md 107-117行目（自動まとめ欄）</td><td class="yes">35183号・サクサク担当の記録を本セッションで反映（今回新規）</td></tr>
+<tr><td>本番 https://joy-relief-station.lovable.app/admin</td><td class="yes">HTTP 200・本文18,519バイト（空でない）</td></tr>
 </table>
 
-<div class="note">
-<b>工場の台帳について：</b>このページを書いている時点ではまだ台帳上「走行中」のまま残っています。実際の作業（上記③）は既にjoy-relief-station側に反映済みで、このページを提出した後の自動検品がPASSすれば、台帳側の状態も自動で完了へ更新される想定です。
-</div>
-
 <footer>
-このページは #35183 のセッションが tools/make_check_page.py を土台に更新した確認資料（2026-10-24・2回目）。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #35183 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

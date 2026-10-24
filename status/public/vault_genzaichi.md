@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-24 11:33:02・hash=5461b818de59 -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-24 11:43:02・hash=3ab573ba4e23 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -106,8 +106,10 @@
 - 2026-10-11 名カバーの棚を許可制に（台帳 src/lib/meiCoverLedger.ts＝たまごさん指定だけ表示・prebuild点検 check-meicover-gate）。25件を外し（1語で戻せる：MEI_COVER_UNDO_20261011）、風をあつめて(Josh Turner)を追加。ハートは全サイト一時非表示（HEARTS_VISIBLE）。文字マークは左下・英語、グッドカバーだけ左上。added_by列のmigrationは未適用なら台帳だけで動く。
 
 <!-- 自動まとめ:始 -->
-## 今日までに届いた更新（自動まとめ・1日1回／2026-10-23 22:07）
+## 今日までに届いた更新（自動まとめ・1日1回／2026-10-24 11:38）
 
+- **35183号 サクサク担当**（10-24 11:38）店主2026-08-12依頼：今後もパフォーマンス不具合を継続的に見る担当としてこのセッションを使いたい。新規担当は作らず既存role『速さ・挙動不審の修理担当』にalias『サクサク担当』『サクサク』『黒画面』『黒画面フリーズ』『フリーズ』を統合済み(joy-relief-station .claude/playbooks/roles.json、npm run role -- サクサク担当 で呼べる)。同時期に調べていた管理画面黒画面フリーズの原因はA(Suspenseフォールバック、2026-09-03合流済み)とB(OnboardingOverlayのlocalStorage判定、com
+- **35183番 サクサク担当**（10-24 11:38）店主2026-08-12『今後もこの手のパフォーマンス不具合を継続的に見てもらう担当としてこのセッションを使う』を受け、新規担当は作らず既存の常設見回り役割『速さ・挙動不審の修理担当』（id:perf）へ『サクサク担当』をaliasとして統合済み（joy-relief-station origin/main .claude/playbooks/roles.json 381-398行目、npm run role -- サクサク担当 で呼べる）。同時期の管理画面『黒画面フリーズ』調査も合流：原因A(Suspenseフォールバック・2026-09-03合流)に加え原因B(オンボーディング暗幕のloc
 - **35166号**（10-23 04:17）店主2026-08-12依頼『コア層/詳細層どこに何を書いたか』の確認ページ完成・main合流・gh-pages反映・本番URL200を実測確認。副産物：pages.yml配信パイプが9時間ゾンビ詰まり中だったのを発見しconcurrencyグループ更新で解除(過去5回目の再発)。
 - **Give Me the Night 曲ページ**（10-22 17:19）main 5f4c0f6f0：2ページを1つに（-2→転送）、amassのX投稿をエピソード枠にカードで、元記事ボタン。本番は10/22 03:02から公開停止中（花咲く旅路の5枚が棚の関所で落ちる）。外すかはたまごさん判断待ち
 - **全AIへの共有メモ（#1037）**（10-22 16:25）Grokボットが3時間ごとに読む正本＝joy-relief-station ラベル「店主の指示メモ」のIssue（1企画1本）。公式LINE＝#1039、全体像＝#1040。#1018にも告知。工場の道具 tools/zen_ai_kyouyu.py（kaku＝待ち行列、心臓5分おきに書く、3時間ごとに工場が受けた指示をまとめて#1040へ、公開の写し status/public/renkei/kyouyu_memo.md、Genspark AI Drive /ごきげん補給所_全AI共有メモ.md）。子への枷24に追加。
