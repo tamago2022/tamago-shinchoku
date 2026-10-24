@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """クラウド便を毎日2〜3本、自動で起動する（心臓 heartbeat.sh から1時間に1回）。2026-10-22。
 - 順番は status/cloud_credit/junban.txt（上から）。起動できた（ログに claude.ai/code の URL が出た）行は done.txt へ。
-- 1日（JST）3本まで・1回の呼び出しで1本・7〜23時だけ・2026-11-01 23:59 JST で自動停止（期限 11/5 16:59 の前に使い切る）。
+- 1日（JST）4本まで・1回の呼び出しで1本・7〜23時だけ・2026-11-01 23:59 JST で自動停止（期限 11/5 16:59 の前に使い切る）。
 - 起動の中身は tools/cloud_hassha.sh（claude --cloud）。403（ログインの権限不足）なら、その日は6時間おきにだけ試し、Dispatch へ1日1行。
 - 依頼文の作り足し（p5〜p12）は Dispatch／子が tools/cloud_prompts/ に置き junban.txt に1行足す。
 逆テスト：--self-test"""
@@ -10,7 +10,7 @@ F = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 C = os.path.join(F, "status", "cloud_credit")
 JST = datetime.timezone(datetime.timedelta(hours=9))
 END = datetime.datetime(2026, 11, 1, 23, 59, tzinfo=JST)
-MAX_DAY = 3
+MAX_DAY = 4
 URL_RE = re.compile(r"claude\.ai/code/session_[A-Za-z0-9]+|\bsession_[A-Za-z0-9]{20,}")
 
 def junban(path):
@@ -25,7 +25,7 @@ def load():
 def decide(now, st, todo):
     """次に起動する行（無ければ None と理由）"""
     if now > END: return None, "期限後（11/1で停止）"
-    if not (7 <= now.hour < 23): return None, "時間外"
+    if not (7 <= now.hour < 23) and not os.environ.get("CLOUD_IGNORE_HOURS"): return None, "時間外"
     day = now.strftime("%Y-%m-%d"); d = st.get(day, {})
     if d.get("ok", 0) >= MAX_DAY: return None, "今日は上限"
     last403 = d.get("last403")
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     if "--self-test" in sys.argv:
         t = lambda h, d=22: datetime.datetime(2026, 10, d, h, tzinfo=JST)
         ok = (decide(t(10), {}, [["a", "b"]])[0] == ["a", "b"] and decide(t(3), {}, [["a", "b"]])[0] is None
-              and decide(t(10), {"2026-10-22": {"ok": 3}}, [["a", "b"]])[0] is None
+              and decide(t(10), {"2026-10-22": {"ok": 4}}, [["a", "b"]])[0] is None
               and decide(t(10, 2) + datetime.timedelta(days=31), {}, [["a", "b"]])[0] is None
               and decide(t(10), {"2026-10-22": {"last403": t(8).isoformat()}}, [["a", "b"]])[0] is None
               and decide(t(15), {"2026-10-22": {"last403": t(8).isoformat()}}, [["a", "b"]])[0] == ["a", "b"])

@@ -5,7 +5,7 @@
 #   クラウドの作成には user:sessions:claude_code・user:profile の権限が要る＝claude.ai のアカウントで1回ログインが要る。
 # 置き場：CLAUDE_CONFIG_DIR=~/.tamago/claude_cloud（工場の ~/.claude のログインには触らない）。
 # 使い方：
-#   bash tools/cloud_login.sh start   → URL を status/cloud_credit/login_url.txt に出して待つ（12時間）
+#   bash tools/cloud_login.sh start   → URL を status/cloud_credit/login_url.txt に出して待つ（60時間）
 #   （人：URL を開いて「許可」→ 画面に出たコードを Dispatch に貼る）
 #   bash tools/cloud_login.sh code <コード>   → 待っているログインにコードを渡す
 #   bash tools/cloud_login.sh status
@@ -26,10 +26,9 @@ start)
 code)
   printf '%s' "$2" > $D/code.txt; sleep 25
   cat $S/login_result.txt 2>/dev/null; claude auth status 2>&1 | head -8
-  # ログインできたら、今日の便（status/cloud_credit/kyou.txt：1行＝「名前 依頼文」）をそのまま全部起動する
+  # ログインできたら、junban.txt の上から3本（白飛び・ずれ・初回表示）をその場で起動（cloud_mainichi が done.txt へ移すので心臓と二重にならない）
   if claude auth status 2>&1 | grep -q '"loggedIn": true'; then
-    while read -r N P; do [ -n "$N" ] && bash /Users/mac/tamago/tamago-shinchoku/tools/cloud_hassha.sh "$N" "$P" | tail -3; done < $S/kyou.txt
-    python3 /Users/mac/tamago/tamago-shinchoku/tools/cloud_kaishuu.py
+    for i in 1 2 3; do CLOUD_IGNORE_HOURS=1 python3 /Users/mac/tamago/tamago-shinchoku/tools/cloud_mainichi.py; done
   fi ;;
 status)
   claude auth status 2>&1 | head -8 ;;

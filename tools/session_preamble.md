@@ -249,3 +249,5 @@
 
 ### 24. Dispatch・店主から受けた指示は、言われなくても共有メモに書く（2026-10-22・#1037）
 - **作業を始める前に `python3 tools/zen_ai_kyouyu.py kaku --dispatch --kikaku "企画名" --title "件名" --body "言われたこと・決まったこと・店主の入力待ち・次の作業"` を1回。**（gh不要・サンドボックスからも可。心臓が5分以内にラベル「店主の指示メモ」の企画Issueへ書く。無ければ作る。Grok Botが3時間ごとに読む）鍵・個人情報は書かない。
+
+- **X・YouTubeのリンクは、まず `python3 tools/link_yomu.py <URL>` で読む（本文・投稿者・日時・画像/動画の数・引用元・自分リプのリンク・YouTubeの字幕と説明欄。無料・ログイン不要・サンドボックスからも可）。読めなければGrokボットに共有メモ経由で頼む（`python3 tools/zen_ai_kyouyu.py kaku --title "このリンクを読んで" --body "<URL>"`）。たまごさんに「スクショください」と言わない。**（2026-10-25・link_yomu）
