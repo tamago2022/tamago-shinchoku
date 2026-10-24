@@ -1,9 +1,9 @@
 {
- "at": "2026-10-25 06:57:05",
- "total": 141,
+ "at": "2026-10-25 07:57:38",
+ "total": 144,
  "kinds": {
   "心臓": 94,
-  "心臓の相乗り": 23,
+  "心臓の相乗り": 26,
   "launchd": 18,
   "Claudeの定期タスク（画面に通知が出る）": 2,
   "GitHub Actions": 4
@@ -16,6 +16,10 @@
   {
    "name": "jidou_tanaoroshi.py",
    "zure": "下見では chukan_shimau・claude_nouhin・shimau・worktree_taihi・youryou_jougen が要りそう"
+  },
+  {
+   "name": "com.tamago.gdrive-md-mirror",
+   "zure": "下見では youryou_jougen が要りそう"
   },
   {
    "name": "com.tamago.joy-relief-station.link-watch",
@@ -976,6 +980,30 @@
    "kesu": "自分で刈る（log 300行・irai は終わって30日・kaeri は7日・machi はIssue化したら消す・20回失敗で捨てる）"
   },
   {
+   "name": "notion_utsushi.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "Notionのページを.mdにしてドライブ tamago_brain/notion/ へ（公式API・無料・NOTION_TOKEN があるときだけ）。status/notion_utsushi/{state.json,log}・status/public/notion_utsushi.json。ブラウザ・複製・一時フォルダは作らない（ドライブの写しはその場で上書き）",
+   "okiba": "マイドライブ/tamago_brain/notion ／ tamago-shinchoku/status/notion_utsushi",
+   "kesu": "自分で刈る（log 300行・写しは上書きのみ）"
+  },
+  {
+   "name": "yomikuchi.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "各AIの読み口（Obsidian/ドライブ/GitHub/Notion の読む・書く）を できること台帳 に持たせ、週1で実測と各社公式ページの見直し。status/yomikuchi/{state.json,log,news/*.txt}・status/public/yomikuchi.json・ドライブ tamago_brain/00_AIの読み口台帳.md・share/check/furiwake.html の読み口の表",
+   "okiba": "tamago-shinchoku/status/yomikuchi ／ status/public ／ マイドライブ/tamago_brain",
+   "kesu": "自分で刈る（log 300行・news は5本を上書きのみ・候補は60件で刈る）"
+  },
+  {
+   "name": "hikkomi.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "記録だけ（status/hikkomi/daicho.json・state.json・hikkomi.log〔300行で自分で刈る〕・status/public/hikkomi.json・share/check/hikkomi.html）＋joy-relief-station へのpushで一時のgit index 1個（tempfile・終わったら自分で消す）。作業場（worktree）・ブラウザは作らない",
+   "okiba": "tamago-shinchoku/status/hikkomi・share/check",
+   "kesu": "自分（log 300行・一時 index は finally で削除）"
+  },
+  {
    "name": "com.tamago.auth1177",
    "kind": "launchd",
    "freq": "1440分おき",
@@ -1003,9 +1031,9 @@
    "name": "com.tamago.gdrive-md-mirror",
    "kind": "launchd",
    "freq": "5分おき",
-   "tsukuru": "Vault(tamago_brain)の.mdの写しをGoogleドライブ マイドライブ/tamago_brain へ rsync 差分コピー（一方向・--deleteなし）。一時ファイルは作らない",
-   "okiba": "~/Library/CloudStorage/GoogleDrive-…/マイドライブ/tamago_brain（ドライブ側が正本の置き場）・~/.tamago-sync/gdrive_md_mirror.sh",
-   "kesu": "不要（写しは上書き更新のみで増えない。Vault側で消えたノートはドライブに残る＝増えるのは本数だけ）。187248番・2026-10-25登録"
+   "tsukuru": "Vault(tamago_brain)の.mdの写しをGoogleドライブ マイドライブ/tamago_brain へ差分コピー（一方向・消さない）。2026-10-25からgdrive_md_mirror.py：Dataviewの結果を写し側だけに書き足す・00_索引_AIはここから読む.md／00_索引_タグ別_全部.md を作る。一時ファイルは作らない（その場で上書き＝ドライブのURLが変わらない）",
+   "okiba": "~/Library/CloudStorage/GoogleDrive-…/マイドライブ/tamago_brain ・ ~/.tamago-sync/{gdrive_md_mirror.sh,gdrive_md_mirror.py,mirror_state.json,gdrive_md_mirror.log}（正本は Vault AI出力/_ルール/gdrive_md_mirror/）",
+   "kesu": "不要（写しは上書き更新のみ。log は200KBで500行に自分で刈る・mirror_state.json は本数ぶんで増えない）。187248番・2026-10-25登録／同日 Dataview対応に作り替え"
   },
   {
    "name": "com.tamago.genzaichi-sync",
