@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-24 17:19
+更新：2026-10-24 17:31
+
+---
+## 2026-10-24 17:28 ［ごきげん補給所］ 2026-10-24 キフネス新作／アーティスト説明文の復活（たまごさん本人指定）
+https://github.com/tamago2022/joy-relief-station/issues/1050#issuecomment-6382031800
+
+・The Kiffness「Donald Trump BURP REMIX!」の曲ページ（公式YouTube ZvfePoni9eM＝X投稿2113627309634994460と同じ70秒）。コンシェルジュ推し・関連5本・Eating the Catsと双方向。
+・キフネスのページ：同じ動画（CAyWN9ba9J8）3枚→1枚、Lonely Catの重複も1枚に（曲ページは残す・戻し方 tamago-shinchoku status/kiffness_1024/kakushita.json）。
+・「このアーティストが好きなら」：吉幾三・HYBS等はAI生成の5枠埋め（coverGuide.profiles.generated.ts の越境同ポジ・同時代）だった→Weird Al／DJ Cummerbund／Pomplamoose／DJ Earworm／アダム・ローズに手書きで差し替え。
+・説明文が消えた理由：10-15 8960dc4ff（アダム・ローズ修正）で全ページ非表示→10-22再表示→10-23 60ac883cf（truthGate.ts）が出典なし2,024件を隠した。以前の文をWikipediaと1件ずつ照合して復活中（src/lib/aboutsRestored.generated.ts）。
+・新しい決まり：説明文を消す・隠すのは、たまごさんのその日の名指しだけ（prebuild scripts/patrol/check-about-keep.mjs が止める）。
+・未了：ウケるの棚（DB）への追加は書き込みの道（Lovable MCPの認証401・service_role鍵なし）が無く未実施。台帳 tana-shitei.json には本人指定として記録済み。
 
 ---
 ## 2026-10-24 16:54  

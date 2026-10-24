@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-24 17:13:22・hash=3ab573ba4e23 -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-24 17:33:23・hash=d2223273abe0 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -67,6 +67,12 @@
 - 【#695・動画消失の自動対応・新設完了】店主依頼「動画が消された時に差し替えか自動引っ込めを」を実装。原因判明：既存の夜間見張り（daily-link-watch.sh）が未コミットのローカルファイル3本に依存しており、専用worktreeが毎晩`git reset --hard origin/main`する設計のため**6夜連続でモジュールが見つからず全滅**していた。この3本（link-audit-full.mjs／fill-missing-videos.mjs／daily-link-watch.sh）を初めてoriginへコミット（commit c6a82dd5）。あわせて①fill-missing-videos.mjsの表読み戻しが末尾カンマでJSON.parse失敗→毎晩{}扱いで過去の差し替えを全消去していたサイレント事故を修正、②searchReplacement.mjsに版違い（live/remix等）・出どころ（公式/Topic/VEVO以外除外）の関所を追加（Prince「Sometimes It Snows in April」で実機試験：わざと死んだIDに書き換え→検知→引っ込め→ライブ版や第三者チャンネルを弾いてスタジオ版だけ選定→差し替え→投稿予定の自動HOLD→自動復帰、を実測確認）、③新設`oneshot/link-watch-report.mjs`が投稿予定(ops/social/*.jsonl)のHOLD/復帰と「死んだ◯件／自動差し替え◯件／引っ込めたまま◯件」の日次1行を出し#642へ通知。
 - 今夜23:18に手動起動で実際の初回本番点検を実行中（36,432曲・94件が消えている判明・1,208件の穴埋め探索を25分枠で実行中）。完了後、mainへの反映と本番確認を行う。
 - 残り（10/7夜期限）：#692 Tier A/B証拠待ちのGenspark再提出、#699残り682件、#711〜721残り121件（空欄が正）、#724〜726残り989件、コピー空24,037件は定型文（憲法24条違反）で0件、#642は別セッションが並行して継続中（READY 87件）。
+
+## 2026-10-24 キフネス新作・アーティスト説明文の復活（たまごさん本人指定）
+- 済：The Kiffness「Donald Trump BURP REMIX!」曲ページ（YouTube・コンシェルジュ推し・関連5本・Eating the Catsと双方向）／重複映像を1枚に／「このアーティストが好きなら」を手書きに。
+- 説明文：10-15アダム・ローズ修正で全非表示→10-23 truthGateが出典なし2,024件を隠した。Wikipediaと照合して618件復活済み。残り約1,100件はCodexの枠が戻りしだい自動で続き（Mac の outputs/tool/tsuzuki2.sh）、263件はWikipediaが見つからず未復活。
+- 決まり：説明文を消す・隠すのは、たまごさんのその日の名指しだけ（prebuild check-about-keep.mjs）。
+- 止まっている：ウケるの棚（DB）への追加＝DBに書く道が無い（Lovable MCP 401・service_role鍵なし）。
 
 ## 止まっていること・たまごの判断待ち
 - 地球観察日記 第2作：見積り約106円（上限170円）の承認（#975に「承認 170円」）。詩の短縮版はChatGPTが#975へ。
