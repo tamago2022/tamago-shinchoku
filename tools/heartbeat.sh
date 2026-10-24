@@ -490,7 +490,11 @@ while :; do
   tick_every 240 && ( python3 "$REPO/tools/subsc_calendar.py" >> "$REPO/status/subsc_calendar.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-21 ごきげんの種（今週のごきげん一粒・LINE 週1回）。5分おき：1日1回 次の2号の下書き、金曜20〜23時に broadcast。
   #   鍵（LINE_CHANNEL_ACCESS_TOKEN）が無い間は送らず下書きだけ。無料枠200通を超えそうなら送らず Dispatch へ1行＝0円。
+  #   2026-10-25 たまごさん方針確定：配信・運営はGrokボット担当。gokigen_tane.py は送らない（HAISHIN_TANTOU）＝下書きのネタ帳だけ。
   tick_every 20 && ( python3 "$REPO/tools/gokigen_tane.py" --tick >> "$REPO/status/gokigen_tane.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-10-25 LINE配信の記録係：Grokボットが #1039 に書く【LINE配信記録】を拾い、sns_hannou（platform=line）と週まとめ sns_shuukei.json へ。
+  #   中で6時間に1回へ間引く。gh で読むだけ・送らない＝0円。
+  tick_every 20 && ( python3 "$REPO/tools/line_haishin.py" --tick >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-10-15 クラウドセッションクレジット問い合わせ（Gmail thread 1a13bbf5804e4282）の返事見張り。1日1回 outbox に1行→Dispatch がGmailで確認。11/5で自動停止。0円。
   # 2026-10-22 クラウド便を毎日2〜3本自動で起動（claude --cloud・クレジット$248を11/1までに使い切る）。順番 status/cloud_credit/junban.txt。11/1で自動停止。
   tick_every 240 && ( python3 "$REPO/tools/cloud_mainichi.py" >> "$REPO/status/cloud_credit/mainichi.log" 2>&1 & ) >/dev/null 2>&1

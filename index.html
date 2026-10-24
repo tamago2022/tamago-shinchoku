@@ -182,6 +182,8 @@ footer a{display:block; padding:5px 0}
 <div id="okoshiLine" style="font-size:15px;margin:0 0 10px">自動で起こした回数　読み込み中…</div>
 <!-- 2026-10-11 案件ごとの家計簿：今月の外部API合計（円）。出どころ status/public/kakeibo.json（tools/kakeibo.py が20分おき） -->
 <a id="kakeiboLine" href="share/check/kakeibo.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">家計簿　読み込み中…</a>
+<!-- 2026-10-25 SNS（先週）：X・TikTok・YouTube・LINE を同じ見え方で1行ずつ。出どころ status/public/sns_shuukei.json（tools/line_haishin.py が週1）。LINEの配信はGrokボット担当・記録は #1039 -->
+<div id="snsShuukei" style="font-size:15px;margin:0 0 10px">SNS（先週）　読み込み中…</div>
 
 <!-- ここだけは赤で出す。切れていると何も動かないので。 -->
 <div id="loginNg"></div>
@@ -414,6 +416,36 @@ var DISK_AKA_GB = 50;
     if(!d || typeof d.gokei !== "number"){ ln.textContent = "お金　取れていません"; return; }
     ln.textContent = "お金　今月 " + d.gokei.toLocaleString() + "円（カードから引かれた実額）・解約候補 " + (d.kouhoN||0) + "件 ›";
   }).catch(function(){ ln.textContent = "お金　取れていません"; });
+})();
+
+/* 2026-10-25 SNS（先週）：X・TikTok・YouTube・LINE。取れない数字は出さない */
+(function(){
+  var el = document.getElementById("snsShuukei");
+  if(!el) return;
+  var NAME = {x:"X", tiktok:"TikTok", youtube:"YouTube", line:"LINE"};
+  var KEY = {views:"再生", likes:"いいね", comments:"コメント", shares:"シェア", saves:"保存", replies:"返信", reads:"既読", clicks:"クリック", friends:"友だち", sent:"届いた人"};
+  getJson("status/public/sns_shuukei.json").then(function(d){
+    var w = d && d.weeks && d.weeks[0];
+    if(!w){ el.textContent = "SNS（先週）　まだ記録がありません"; return; }
+    el.textContent = "";
+    var h = document.createElement("div");
+    h.textContent = "SNS（先週 " + w.kara.slice(5) + "〜" + w.made.slice(5) + "）";
+    el.appendChild(h);
+    ["x","tiktok","youtube","line"].forEach(function(k){
+      var s = w.sns[k], row = document.createElement("div");
+      row.style.paddingLeft = "1em";
+      if(!s){ row.textContent = NAME[k] + "　0本"; }
+      else {
+        var parts = [];
+        Object.keys(KEY).forEach(function(n){ if(typeof s[n] === "number") parts.push(KEY[n] + " " + s[n].toLocaleString()); });
+        row.textContent = NAME[k] + "　" + s.honsuu + "本" + (parts.length ? "・" + parts.join("・") : "");
+      }
+      if(k === "line" && d.line && d.line.zure && d.line.zure.length){
+        row.textContent += "（決まり「" + d.line.kimari + "」とずれ " + d.line.zure.length + "件）";
+      }
+      el.appendChild(row);
+    });
+  }).catch(function(){ el.textContent = "SNS（先週）　取れていません"; });
 })();
 
 /* 2026-10-11 新しい特集（一番上）＋家計簿の1行 */

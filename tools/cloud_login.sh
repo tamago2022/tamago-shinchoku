@@ -19,16 +19,18 @@ mkdir -p $D/bin; printf '#!/bin/sh\nexit 0\n' > $D/bin/open; cp $D/bin/open $D/b
 export PATH=$D/bin:$PATH BROWSER=/usr/bin/true
 case "$1" in
 start)
-  pkill -f "cloud_login.exp" 2>/dev/null; rm -f $D/code.txt $S/login_url.txt $S/login_result.txt
+  pkill -f "cloud_login.exp" 2>/dev/null; rm -f $S/code.txt $D/code.txt $S/login_url.txt $S/login_result.txt
   nohup /usr/bin/expect /Users/mac/tamago/tamago-shinchoku/tools/cloud_login.exp >/dev/null 2>&1 &
+  pkill -f cloud_login_watch.sh 2>/dev/null; nohup bash /Users/mac/tamago/tamago-shinchoku/tools/cloud_login_watch.sh >/dev/null 2>&1 &
   disown; sleep 20
   cat $S/login_url.txt 2>/dev/null || echo "URLが出ない（$LOG を見る）" ;;
 code)
   printf '%s' "$2" > $D/code.txt; sleep 25
   cat $S/login_result.txt 2>/dev/null; claude auth status 2>&1 | head -8
   # ログインできたら、junban.txt の上から3本（白飛び・ずれ・初回表示）をその場で起動（cloud_mainichi が done.txt へ移すので心臓と二重にならない）
-  if claude auth status 2>&1 | grep -q '"loggedIn": true'; then
-    for i in 1 2 3; do CLOUD_IGNORE_HOURS=1 python3 /Users/mac/tamago/tamago-shinchoku/tools/cloud_mainichi.py; done
+  if grep -q OK $S/login_result.txt 2>/dev/null; then
+    nohup bash -c 'for i in 1 2 3; do CLOUD_IGNORE_HOURS=1 python3 /Users/mac/tamago/tamago-shinchoku/tools/cloud_mainichi.py; done' >> /Users/mac/tamago/tamago-shinchoku/status/cloud_credit/mainichi.log 2>&1 &
+    disown; echo "3本の起動を切り離して開始"
   fi ;;
 status)
   claude auth status 2>&1 | head -8 ;;

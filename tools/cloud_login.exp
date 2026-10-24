@@ -10,9 +10,11 @@ expect -re {(https://claude\.com/cai/oauth/authorize[^\s\x07\x1b]*state=[A-Za-z0
 set url $expect_out(1,string)
 set f [open "$S/login_url.txt" w]; puts $f $url; close $f
 expect -re {Paste code}
-while {![file exists "$D/code.txt"]} { if {[clock seconds] > $deadline} { exit 1 }; sleep 5 }
-set f [open "$D/code.txt" r]; set code [string trim [read $f]]; close $f
-file delete "$D/code.txt"
+# コードは status/cloud_credit/code.txt に1行置けば2秒以内に渡る（mac_jobs の列を待たない＝コードの寿命内に届く）
+while {![file exists "$S/code.txt"] && ![file exists "$D/code.txt"]} { if {[clock seconds] > $deadline} { exit 1 }; sleep 2 }
+if {[file exists "$S/code.txt"]} { set cf "$S/code.txt" } else { set cf "$D/code.txt" }
+set f [open $cf r]; set code [string trim [read $f]]; close $f
+file delete $cf
 send -- "$code\r"
 expect {
   -re {(?i)success|logged in|Login successful} { set r "OK" }

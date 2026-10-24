@@ -29,7 +29,7 @@ def decide(now, st, todo):
     day = now.strftime("%Y-%m-%d"); d = st.get(day, {})
     if d.get("ok", 0) >= MAX_DAY: return None, "今日は上限"
     last403 = d.get("last403")
-    if last403 and (now - datetime.datetime.fromisoformat(last403)).total_seconds() < 6 * 3600: return None, "403のあと6時間待ち"
+    if last403 and not os.environ.get("CLOUD_IGNORE_HOURS") and (now - datetime.datetime.fromisoformat(last403)).total_seconds() < 6 * 3600: return None, "403のあと6時間待ち"
     if not todo: return None, "順番が空"
     return todo[0], "起動"
 
