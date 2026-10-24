@@ -408,6 +408,19 @@ def push_generated(daicho):
 
 
 # ------------------------------------------------------------------ 一覧ページ
+def _link_label(u):
+    """リンクの文字に動画ID・投稿IDをもう一度書かない（鬼監督§0：同じ動画が同じページに2回出る扱いになる）"""
+    u = str(u or "")
+    m = re.search(r"(?:twitter\.com|x\.com)/([^/?#]+)/status", u)
+    if m and m.group(1) not in ("i",):
+        return "X @%s の投稿" % m.group(1)
+    if tweet_id(u):
+        return "Xの投稿"
+    if yt_id(u):
+        return "YouTubeの動画"
+    return "リンク"
+
+
 def page():
     daicho = jload(DAICHO, {})
     st = jload(STATE, {})
@@ -431,16 +444,16 @@ def page():
         for k, e in lst:
             kouho = e.get("kouho") or []
             if kouho:
-                kh = "<br>".join('<a href="%s">%s</a>%s%s' % (esc(c.get("url")), esc(c.get("url")), "（%s）" % esc(c.get("by")) if c.get("by") else "",
+                kh = "<br>".join('<a href="%s">%s</a>%s%s' % (esc(c.get("url")), esc(_link_label(c.get("url"))), "（%s）" % esc(c.get("by")) if c.get("by") else "",
                                                              "" if c.get("ikiteru", True) else "※消えている") for c in kouho)
                 kh = "あり<br>" + kh
             else:
                 kh = "なし（探し中：工場＋Grok）"
             parts.append("<tr><td>%s</td><td>%s</td><td><a href=\"%s\">%s</a><br><small>%s</small></td><td>%s</td><td>%s</td><td>%s%s</td></tr>" % (
-                esc(e.get("hikkonda")), esc(e.get("title") or "（題名なし）"), esc(e.get("ref") or e.get("url")), esc(e.get("ref") or e.get("url")),
+                esc(e.get("hikkonda")), esc(e.get("title") or "（題名なし）"), esc(e.get("ref") or e.get("url")), esc(_link_label(e.get("ref") or e.get("url"))),
                 esc(e.get("riyuu")), esc("・".join(e.get("shelves") or []) or "棚の外（関連・検索のみ）"), kh,
                 esc(jotai_label.get(e.get("jotai"), e.get("jotai"))),
-                ("<br><small>→ %s</small>" % esc(e.get("sashikae", {}).get("url"))) if e.get("sashikae") else ""))
+                ("<br><small>→ %s</small>" % esc(e.get("sashikae", {}).get("title") or "差し替え先")) if e.get("sashikae") else ""))
         parts.append("</table>")
     kensu = st.get("kensu") or {}
     doc = """<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
