@@ -1,0 +1,116 @@
+{
+ "kousin": "2026-10-25 03:46:54",
+ "furiwakejo": "https://github.com/tamago2022/joy-relief-station/issues?q=label%3A%E3%81%A7%E3%81%8D%E3%82%8B%E4%BA%BA%E3%81%84%E3%81%BE%E3%81%99%E3%81%8B",
+ "daicho": "https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html",
+ "ai": [
+  {
+   "id": "factory",
+   "namae": "Claude工場（Mac上のClaude Code）",
+   "dekiru": [
+    "mac_command",
+    "git",
+    "github_issue",
+    "lovable_publish",
+    "headless_browser",
+    "mac_file"
+   ],
+   "uketsuke": "command_ingest.queue_add（発車待ち status/queue.json）→ auto_launcher が着火",
+   "henji": "queue.json の項目の state（done/failed）と結果の一言を、振り分けIssueにコメント",
+   "dekinai": [
+    "パスワード・二段階認証の入力",
+    "macOSの許可ダイアログを押す",
+    "有料APIを叩く"
+   ],
+   "youkakunin": []
+  },
+  {
+   "id": "dispatch",
+   "namae": "Dispatch（Cowork）",
+   "dekiru": [
+    "web_research",
+    "gmail_draft",
+    "calendar",
+    "github_issue"
+   ],
+   "uketsuke": "status/dispatch_outbox.jsonl に type=furiwake で1行",
+   "henji": "振り分けIssueにコメント（Dispatch が書く）。来なければ締め切りで次の候補へ",
+   "dekinai": [
+    "Macの上でコマンドを打つ（サンドボックスなので届かない）",
+    "許可ポップアップが出るコネクタを子から呼ぶ"
+   ],
+   "youkakunin": [
+    "Dispatch が dispatch_outbox の type=furiwake を拾って動くか（既存の type は drive_nouhin 等）"
+   ]
+  },
+  {
+   "id": "grok",
+   "namae": "Grokボット（司令塔）",
+   "dekiru": [
+    "x_read",
+    "github_read",
+    "github_issue",
+    "login"
+   ],
+   "uketsuke": "共有メモ（ラベル「店主の指示メモ」のIssue・企画「できる人いますか」）に zen_ai_kyouyu で依頼を書く。Grokボットは3時間ごとにGitHubを読む",
+   "henji": "振り分けIssueへのコメント（tamago-factory の印が無いもの。Grokボットは tamago2022 名義で書く）",
+   "dekinai": [
+    "xAIのAPIは team_blocked・クレジット無しで403（2026-09-22実測）＝工場から直接は呼べない",
+    "公開掲示板 ai-kaigi は誰も読まない（実測）"
+   ],
+   "youkakunin": [
+    "ログイン周りを本当に通せるか（たまごさんの言葉のみ・実測なし）"
+   ]
+  },
+  {
+   "id": "chatgpt",
+   "namae": "ChatGPT（Codex・エージェント）",
+   "dekiru": [
+    "codex_pr",
+    "github_issue",
+    "browser_agent"
+   ],
+   "uketsuke": "振り分けIssueに「@codex」から始まるコメント（本文ではなくコメントで起きる・#450実測）",
+   "henji": "chatgpt-codex-connector[bot] のコメント／PR",
+   "dekinai": [
+    "APIの直通（チャッピー）は残高切れ 429（2026-09-23実測）",
+    "ブラウザのエージェントはChatGPTの画面から始める必要があり、GitHubからは起こせない（要確認）"
+   ],
+   "youkakunin": [
+    "2026-10-18 たまごさん「Jules／Codexは使えない。全部閉じていい」→ 2026-10-25「ChatGPTに回して」で再開。Codexの枠が今も残っているか",
+    "ChatGPTのエージェントをGitHubから起こす道があるか"
+   ]
+  },
+  {
+   "id": "genspark",
+   "namae": "Genspark",
+   "dekiru": [
+    "article",
+    "image",
+    "video",
+    "ai_drive",
+    "web_research"
+   ],
+   "uketsuke": "AI Drive の受付 /できる人いますか/<番号>.md に依頼を置く（gsk drive upload・無料）",
+   "henji": "AI Drive /tamago-inbox/<番号>/ への納品（claude_uketsuke が拾う）／振り分けIssueへのコメント",
+   "dekinai": [
+    "Genspark側から自分でAI Driveの受付を見に来るかは未確認"
+   ],
+   "youkakunin": [
+    "Gensparkが /できる人いますか/ を自分で読みに来るか（来ないなら genspark_tanomu で起こす）"
+   ]
+  }
+ ],
+ "irai": [
+  {
+   "issue": 1051,
+   "url": "https://github.com/tamago2022/joy-relief-station/issues/1051",
+   "yaritai": "Obsidianの写し（gdrive_md_mirror の install.sh）をMac本体で1回実行する",
+   "jotai": "終わった",
+   "ate": "factory",
+   "tameshita": [
+    "factory"
+   ],
+   "kaeri": "25 03:43:54）\n- 保存先フォルダ：マイドライブ/tamago_brain\n- Vault側の.md：7846本 ／ Drive側の.md：3661本\n- 初回：\n- 2回目（差分だけ・0なら正常）：\n- 5分おき登録（launchd）：yes\n== Drive側の確認\n/Users/mac/Library/CloudStorage/GoogleDrive-eggypop2010@gmail.com/マイドライブ/tamago_brain\n    3678\n-\t0\tcom.tamago.gdrive-md-mirror\n== rc=0 end 2026-10-25 03:43:56\n"
+  }
+ ]
+}
