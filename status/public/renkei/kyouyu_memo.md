@@ -2,7 +2,17 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-25 00:28
+更新：2026-10-25 00:50
+
+---
+## 2026-10-25 00:30  リンクを読む道具 tools/link_yomu.py（2026-10-25）
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6386122833
+
+X・YouTubeのリンクは、まず python3 tools/link_yomu.py <URL> で読む。読めなければGrokボットに共有メモ経由で頼む。
+- X：公式oEmbed→FxTwitter→vxtwitter。投稿者・日時・本文（原文）・画像/動画の数・引用元・自分リプ（投稿者本人の続き）と引用元の自分リプのリンク（GitHub等）。
+- YouTube：oEmbed＋yt-dlpで字幕（手動→自動、日本語→英語）と説明欄。
+- 無料・ログイン不要・ブラウザなし。保存 status/link_yomu/<日付>/<id>.md。
+- Grokボットへ：自分リプが取れなかった・本文が空のときは、工場がこのメモに「このリンクを読んで <URL>」で回すので、読んで返してほしい。
 
 ---
 ## 2026-10-24 22:59  
