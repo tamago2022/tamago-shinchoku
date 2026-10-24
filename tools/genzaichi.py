@@ -385,7 +385,23 @@ def _launch_has_room():
     safe_max = m.get("safeMax")
     if safe_max is None:
         safe_max = 3
-    alive = m.get("sessions")
+    # 2026-10-25 誤報の直し：10-22から発車係は shuwaku_sen.conc_cap（最大2本・重い時1本）を
+    #   最後の天井にしている。ここが safeMax(4) だけを見ていたため、走行2本／上限2本の正当な満員を
+    #   「空き枠があるのに着火が無い＝発車係が動いていない」と赤にしていた（10-25 02:44）。
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(ST), "tools"))
+        import shuwaku_sen as _sw
+        safe_max = min(safe_max, int(_sw.conc_cap(safe_max)))
+    except Exception:
+        pass
+    # 走行本数は queue.json の running を正とする（machine.json の sessions は手動セッションも数える）
+    alive = None
+    try:
+        q = json.load(io.open(os.path.join(ST, "queue.json"), encoding="utf-8"))
+        alive = len([it for it in (q.get("items") or []) if it.get("status") == "running"])
+    except Exception:
+        alive = m.get("sessions")
     if alive is None:
         return True  # 走行本数も分からない→安全側（余地ありとみなし、通常どおり沈黙を疑う）
     return alive < safe_max
@@ -596,11 +612,18 @@ def build():
     avg = (cost / n_child) if n_child else 0.0
     dep_h, dep_id = deploy_alive()
 
-    hb = os.path.join(ST, "heartbeat.log")
-    try:
-        hb_min = (now - datetime.datetime.fromtimestamp(os.path.getmtime(hb), JST)).total_seconds() / 60
-    except Exception:
-        hb_min = None
+    # 2026-10-25 誤報の直し：heartbeat.log は「1時間に1回の生存行」と強制終了の時しか書かれない
+    #   （heartbeat.sh 末尾）。そのため心臓が普通に回っていても最大60分「沈黙」と出ていた
+    #   （10-25 02:44「44分沈黙」＝実際は .heartbeat_progress が毎周更新されていた）。
+    #   1周ごとに必ず書かれる .heartbeat_progress（無ければ .heartbeat_alive）を一番新しいものとして見る。
+    hb_min = None
+    for _hbf in (".heartbeat_progress", ".heartbeat_alive", "heartbeat.log"):
+        try:
+            _m = (now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(ST, _hbf)), JST)).total_seconds() / 60
+        except Exception:
+            continue
+        if hb_min is None or _m < hb_min:
+            hb_min = _m
 
     red_flags = []
     if dep_h is None:

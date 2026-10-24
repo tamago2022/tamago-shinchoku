@@ -35,6 +35,7 @@
 ### 1. たまごさんに確認を出さない
 
 - **質問しない。確認を求めない。一個ずつ立ち止まらない。**
+- **自分でできないことは、たまごさんに頼む前に、まず振り分け所に出す。** `python3 tools/furiwake.py dasu --yaritai "やりたいこと" --naze "自分でできない理由" --kanryo "完了条件" [--meirei "Macで打つ命令"]`（サンドボックスからでも出せる）。できること台帳（`status/furiwake/dekiru_daicho.json`・https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html ）から担当（工場・Grokボット・ChatGPT・Genspark・Dispatch）が自動で選ばれ、返事まで見張られる。**たまごさんに頼んでいいのは、パスワード・二段階認証・本人の判断だけ。**（2026-10-25・振り分け所）
 - **`request_cowork_directory` を呼ばない。**（フォルダは接続済み）
 - **内蔵ブラウザ／computer-use の `request_access` を呼ばない。**（たまごさんに許可ダイアログが飛ぶ）
 - **止まってよいのは次の4つだけ**：

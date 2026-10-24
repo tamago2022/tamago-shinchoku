@@ -209,6 +209,8 @@ while :; do
   #   心臓の1周が最大120秒に伸びる可能性はあるが、「毎回殺されて0本のまま」より遥かにマシ。
   run_with_timeout 120 python3 "$REPO/tools/auto_launcher.py"  >/dev/null 2>&1
   [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ auto_launcher.pyが120秒以内に終わらず強制終了しました" >> "$LOG"
+  # 2026-10-25 回収だけを別に回す（発車係が120秒で殺されると最後の回収に届かず、死んだ子が枠を塞ぐ）。投げっぱなし・専用の鍵つき。
+  tick_every 4 && ( run_with_timeout 170 python3 "$REPO/tools/auto_launcher.py" --harvest-only >/dev/null 2>&1 & ) >/dev/null 2>&1
   run_with_timeout 45 python3 "$REPO/tools/command_ingest.py" >/dev/null 2>&1
   [ $? -eq 124 ] && echo "$(date '+%F %T') ⏱ command_ingest.pyが45秒以内に終わらず強制終了しました" >> "$LOG"
   # ---- ここから下は「投げっぱなしの相乗り」。tick_every で起動の頻度を落としてある ----

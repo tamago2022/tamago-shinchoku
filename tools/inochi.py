@@ -260,10 +260,23 @@ def _r_gitlock():
 def _p_login():
     """Claudeのログイン切れ。★更新用の鍵が空＝また必ず切れる。
     これはこちらでは絶対に直せない唯一のもの。"""
+    # 2026-10-25 誤報の直し：auth_keeper.json の "notified": {"expired": <10-18の通知時刻>}
+    #   （＝過去に一度知らせた控え）と lastNgWhy（過去の失敗理由）の文字に "expired" 等が
+    #   入っているだけで、state=ok・直近で生きている確認が取れていても 10-18 から毎回赤にしていた
+    #   （inochi_state.json login renzoku 6357）。auth_keeper の今の判定（state／lastOkAt）を正本にする。
+    ak = _load(os.path.join(ST, "auth_keeper.json"), None)
+    if isinstance(ak, dict) and ak.get("state") == "ok":
+        try:
+            ok_age = time.time() - float(ak.get("lastOkAt") or 0)
+        except Exception:
+            ok_age = 1e9
+        if ok_age < 6 * 3600:
+            return True, "ログインは生きている（auth_keeper state=ok・%.0f分前に確認）" % (ok_age / 60)
     marks = []
     for name in ("auth_state.json", "auth_watch.json", "auth_keeper.json"):
         d = _load(os.path.join(ST, name), None)
         if isinstance(d, dict):
+            d = {k: v for k, v in d.items() if k not in ("notified", "lastNgWhy")}
             marks.append(json.dumps(d, ensure_ascii=False))
     blob = " ".join(marks)
     # 飲み込まれがちな印は必ず表に出す

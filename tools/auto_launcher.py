@@ -3125,7 +3125,27 @@ def main():
             log("queue_light再生成（main終端）に失敗: %s" % e)
 
 
+def harvest_only():
+    """2026-10-25 発車係が毎回120秒で殺され、main()の最後の回収(_harvest_pass)まで届かず、
+    死んだ子(35191番・pid消滅)が running のまま枠を塞いで発車が53分止まった（10-25 01:52〜03:33）。
+    回収だけを心臓の相乗りから別に回す。二重に走らないよう専用の鍵を取る。"""
+    try:
+        f = io.open(os.path.join(REPO, "status", ".harvest_only.lock"), "a+")
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except Exception:
+        return 0
+    try:
+        _harvest_pass()
+    except RuntimeError:
+        pass
+    except Exception as e:
+        log("harvestパス（単独）に失敗: %s" % e)
+    return 0
+
+
 if __name__ == "__main__":
+    if "--harvest-only" in sys.argv[1:]:
+        sys.exit(harvest_only())
     try:
         sys.exit(main())
     except RuntimeError:
