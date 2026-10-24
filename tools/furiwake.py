@@ -523,6 +523,15 @@ def tick(force=False):
 JOTAI = {"mada": "これから回す", "matsu": "返事待ち", "owari": "終わった", "dare_mo": "誰もできなかった", "tamago": "たまごさんの番"}
 
 
+def _yomikuchi_section(d):
+    """2026-10-25 読み口（どのAIがどの部屋を読めて・書けるか）をこの台帳ページに統合。壊れていても台帳は出す。"""
+    try:
+        import yomikuchi
+        return yomikuchi.html_table(json.loads(json.dumps(d)))
+    except Exception:
+        return ""
+
+
 def kakidasu(irai):
     d = daicho()
     pub = {"kousin": time.strftime("%F %T"), "furiwakejo": FURIWAKE_URL, "daicho": PAGE_URL,
@@ -550,9 +559,10 @@ th{background:#faf6ef;white-space:nowrap}.y{color:#a35a00}h1{font-size:20px}h2{f
 <p>自分でできないことは、たまごさんに頼む前に<a href="%s">振り分け所（GitHub・ラベル「できる人いますか」）</a>へ。担当は工場の振り分け係が自動で選んで依頼し、返事まで見張ります。<br>
 たまごさんに回してよいのは <b>パスワード・二段階認証・本人の判断</b> だけ。更新 %s</p>
 <h2>誰が何をできるか</h2><div style="overflow-x:auto"><table><tr><th>AI</th><th>できること</th><th>頼み方</th><th>できないこと</th><th>要確認</th></tr>%s</table></div>
+%s
 <h2>依頼の一覧（新しい順）</h2><table><tr><th>Issue</th><th>やりたいこと</th><th>状態</th><th>担当</th></tr>%s</table>
 <p><a href="https://tamago2022.github.io/tamago-shinchoku/">進捗表へ戻る</a></p></html>
-""" % (FURIWAKE_URL, pub["kousin"], "".join(rows), irows)
+""" % (FURIWAKE_URL, pub["kousin"], "".join(rows), _yomikuchi_section(d), irows)
     os.makedirs(os.path.dirname(PAGE), exist_ok=True)
     open(PAGE, "w", encoding="utf-8").write(page)
 

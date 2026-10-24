@@ -687,3 +687,14 @@ if __name__ == "__main__":
     # 2026-10-25 振り分け所（たまごさん「『これできる人いますか』と調べて、できる人に仕事を回して。俺を楽させるのが皆様方の仕事」）。
     #   status/furiwake/machi.jsonl → ラベル「できる人いますか」のIssue → できること台帳で担当を選んで依頼 → 返事を見張る。中で2分に間引く。
     _okosu("furiwake.py", "--tick")
+
+    # 2026-10-25 同じ部屋（たまごさん「NotionもObsidianも全AIが読めるように。一方通行は嫌。パーティションを取りたい」）。
+    #   Notion→ドライブ tamago_brain/notion/（鍵 NOTION_TOKEN がある時だけ・中で6時間／書き出し途中は10分に間引く）
+    #   各AIの読み口台帳（できること台帳に統合・赤＝片道/未接続・週1で実測＋各社公式ページの見直し）
+    _okosu("notion_utsushi.py", "--tick")
+    _okosu("yomikuchi.py", "--tick")
+
+    # 2026-10-25 引っ込み係（たまごさん「『見つかりません』のままは嫌。自動で引っ込んで。今月引っ込んだリストが欲しい。Grokにも探させて」）。
+    #   棚の X 投稿・YouTube 動画を毎日1回確かめ、消えたものを joy-relief-station の hikkomi.generated.ts に書いて自動で隠す。
+    #   一覧 share/check/hikkomi.html。差し替え候補が無いものは毎週 振り分け所→Grok。中で10分に間引く（見回り20時間・Grok 6.5日）。
+    _okosu("hikkomi.py", "--tick")
