@@ -77,7 +77,7 @@ SHOKI = {
     },
     "dispatch": {
         "obsidian": {"yomu": "o", "kaku": "o", "michi": "Cowork のフォルダ接続（/Users/mac）（実測）"},
-        "drive": {"yomu": "o", "kaku": "o", "michi": "Google Drive コネクタ（検索・読む・作る・更新）（読むは実測）"},
+        "drive": {"yomu": "o", "kaku": "o", "michi": "Cowork のフォルダ接続から Drive for desktop の中を直接読み書き（実測 2026-10-25）。Google Drive コネクタは権限不足で要再接続（同日実測）"},
         "github": {"yomu": "s", "kaku": "s", "michi": "サンドボックスから api.github.com に出られない。工場の窓口（oneshot・振り分け所・共有メモ係）経由で間接に読み書き",
                    "tsunagu": "今は工場経由で足りている。直通が要るときは Cowork に GitHub コネクタを足す"},
         "notion": {"yomu": "o", "kaku": "o", "michi": "Notion コネクタ（読むは実測 2026-10-25）"},
@@ -294,7 +294,7 @@ def md_table(d):
                 an.append("- **%s × %s**：%s" % (a["namae"], hn, c["tsunagu"]))
         L.append("| %s | %s |" % (a["namae"], " | ".join(cs)))
     L += ["", "## つなぐ案（赤の所に1行ずつ）"] + (an or ["- 赤なし"])
-    L += ["", "## 入口", "- まず [00_索引_AIはここから読む](00_%E7%B4%A2%E5%BC%95_AI%E3%81%AF%E3%81%93%E3%81%93%E3%81%8B%E3%82%89%E8%AA%AD%E3%82%80.md)",
+    L += ["", "## 入口", "- まず [00_索引_AIはここから読む](<00_索引_AIはここから読む.md>)",
           "- 仕事を頼み合う所：GitHub tamago2022/joy-relief-station のラベル「できる人いますか」／全AI共有メモ #1040"]
     return "\n".join(L) + "\n"
 
@@ -305,9 +305,7 @@ def kakidasu(d):
         for a in d.get("ai", [])]})
     if os.path.isdir(DRIVE_ROOT):
         try:
-            tmp = os.path.join(DRIVE_ROOT, ".yk_tmp")
-            open(tmp, "w", encoding="utf-8").write(md_table(d))
-            os.replace(tmp, DRIVE_MD)
+            open(DRIVE_MD, "w", encoding="utf-8").write(md_table(d))   # その場で上書き（差し替えるとドライブのURLが変わる）
         except Exception as e:
             log("ドライブへ書けず %s" % e)
     try:

@@ -228,9 +228,7 @@ def fname(title, pid):
 
 def write(path, text):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = os.path.join(os.path.dirname(path), ".nu_tmp")
-    open(tmp, "w", encoding="utf-8").write(text)
-    os.replace(tmp, path)
+    open(path, "w", encoding="utf-8").write(text)   # その場で上書き（差し替えるとドライブのURLが変わる）
 
 
 def doc(page, title, body, himitsu):
