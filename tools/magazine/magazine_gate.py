@@ -16,6 +16,10 @@
   ⑧ 曲は6〜8曲（上限8）。章（section id="chNN"）のうち主役の動画（cw-video--main）を持つものを曲として数え、8超を不合格。
      既存の号が落ちるので、まずは警告（kyoku_over8・Dispatch に号の一覧を1行）。gokaku には効かせない（KYOKU_GATE_STRICT=True で効く）。
 
+2026-10-25 追加（たまごさん「関連の型をサイト全体の決まりに」）：
+  ⑨ 関連の型＝見出しは「関連」・カードはB（真ん中）・4〜5枚・「未設定」の表示ゼロ。
+     main の写しで joy-relief-station の関所 scripts/patrol/check-related-kata.mjs を走らせ、落ちたら不合格（kanren_kata_ng）。
+
 曲の決め方（アーティストの取り違え禁止＝sekisho-artist-song の基準）：
   ・マガジンの動画ID が coverGuideLite の曲の動画ID と完全一致（1曲だけ）→ その曲
   ・すでに貼ってあるリンクは、リンク先の曲のアーティスト名がマガジンの表記と一致する時だけ正しいとする
@@ -383,10 +387,13 @@ def run(only=None, tsumu=True, put=True):
         # ⑧ 曲数（上限8）
         kyoku = {n: kyokusuu(open(os.path.join(md, n), encoding='utf-8').read()) for n in names}
         over8 = [{'page': n, 'songs': k} for n, k in sorted(kyoku.items()) if k > MAX_SONGS]
+        # ⑨ 関連の型（2026-10-25）
+        kata_ng = kanren_kata(w)
         cnt['img_404'] = len(img_ng); cnt['shutten_ng'] = len(sh_ng); cnt['kyoku_over8'] = len(over8)
+        cnt['kanren_kata_ng'] = len(kata_ng)
         res = {'at': time.strftime('%F %T'), 'sec': int(time.time() - t0), 'count': cnt, 'changed': changed,
-               'img_ng': img_ng, 'shutten_ng': sh_ng, 'kyokusuu': kyoku, 'kyoku_over8': over8,
-               'gokaku': not img_ng and not sh_ng and not (KYOKU_GATE_STRICT and over8),
+               'img_ng': img_ng, 'shutten_ng': sh_ng, 'kyokusuu': kyoku, 'kyoku_over8': over8, 'kanren_kata_ng': kata_ng,
+               'gokaku': not img_ng and not sh_ng and not kata_ng and not (KYOKU_GATE_STRICT and over8),
                'mags': {n: rows for n, rows in mags.items()}}
         if put and changed:
             res['pushed'] = push(w, changed)
@@ -400,6 +407,17 @@ def run(only=None, tsumu=True, put=True):
         return res
     finally:
         shutil.rmtree(w, ignore_errors=True)   # 使ったらしまう
+
+
+def kanren_kata(w):
+    """⑨ 関連の型（見出し＝関連・カード＝B・4〜5枚・未設定の表示ゼロ）。落ちた行の一覧を返す（空＝合格）。"""
+    sc = os.path.join(w, 'scripts', 'patrol', 'check-related-kata.mjs')
+    if not os.path.exists(sc):
+        return ['関所 scripts/patrol/check-related-kata.mjs が main に無い']
+    p = subprocess.run(['node', sc], capture_output=True, text=True, env=ENV, cwd=w, timeout=120)
+    if p.returncode == 0:
+        return []
+    return [l.strip() for l in (p.stderr or p.stdout or '').splitlines() if l.strip()][:20] or ['check-related-kata が落ちた']
 
 
 def push(w, changed):
@@ -495,7 +513,7 @@ def report(res):
     sys.path.insert(0, TOOLS)
     import claude_uketsuke as cu
     cu.outbox('【マガジンの関所】%d号・曲%d' % (c['mags'], c['songs']),
-              ('不合格：壊れた画像%d・本文の出典リンク%d／' % (c.get('img_404', 0), c.get('shutten_ng', 0)) if (c.get('img_404') or c.get('shutten_ng')) else '') + '曲%d／ページが無かった%d（ほか名前の合う候補あり%d）／関連4未満%d／コピー・メモ不足%d／リンク取り違え%d／本番で開かない%d／その場で直した%d（直す便：%s）' % (
+              ('不合格：壊れた画像%d・本文の出典リンク%d・関連の型%d／' % (c.get('img_404', 0), c.get('shutten_ng', 0), c.get('kanren_kata_ng', 0)) if (c.get('img_404') or c.get('shutten_ng') or c.get('kanren_kata_ng')) else '') + '曲%d／ページが無かった%d（ほか名前の合う候補あり%d）／関連4未満%d／コピー・メモ不足%d／リンク取り違え%d／本番で開かない%d／その場で直した%d（直す便：%s）' % (
                   c['songs'], c['no_page'], c.get('cand', 0), c['related_lt4'], c['copy_memo_ng'], c['link_ng'], c['prod_ng'], c['fixed'], '、'.join(res.get('jobs') or []) or 'なし'),
               [SITE + '/magazine/backnumber.html'])
     if res.get('kyoku_over8'):
@@ -533,6 +551,13 @@ def self_test():
     assert kyokusuu('<main>' + ''.join(ch(i, i % 2 == 0) for i in range(1, 8)) + '<section class="cw-close"></section></main>') == 7
     assert kyokusuu('<main>' + ''.join(ch(i) for i in range(1, 10)) + '</main>') == 9 > MAX_SONGS
     assert kyokusuu('<main><section class="cw-chapter" id="ch01"><p>動画なし</p></section></main>') == 0
+    # ⑨ 関連の型：関所が無い写しは不合格
+    import tempfile as _tf
+    _d = _tf.mkdtemp(prefix='mgate_selftest_')
+    try:
+        assert kanren_kata(_d) and '無い' in kanren_kata(_d)[0]
+    finally:
+        shutil.rmtree(_d, ignore_errors=True)
     print('SELF-TEST OK')
     return 0
 
