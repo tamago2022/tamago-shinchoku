@@ -345,6 +345,34 @@ def hold_block(items, limit=8):
     return {"total": len(holds), "items": rows}
 
 
+def awaiting_check_block(items, limit=8):
+    """35219番：「日付・何時に完了で俺が見て確認します、まだなのか、俺の確認待ちなのか
+    全部わかるようにして」（2026-08-13 01:03）への対応。
+
+    進捗表はこれまで「走っているもの」「次に発車」「後回し」＝★ぜんぶ『まだ』側の状態だけを
+    映し、status="awaiting_check"（＝機械が終えて、たまごさんが見るだけで閉じられる状態。
+    auto_launcher.py のコメント通り「たまごさんの確認待ち」）は一度も homepage に出していなかった。
+    recentDone（完了・ts付き）も同様に計算済みなのに index.html 側が描いていなかった
+    （この関数と同じ35219番の対応で index.html 側に renderAwaitingCheck/renderRecentDone を追加）。
+
+    日時は finishedAt（機械が作業を終えた時刻）→ checkedAt（検品した時刻）→ startedAt の順で
+    採れたものを使う。無ければ空リスト（機械が『0件』を偽装しない＝既存hold_blockと同じ原則）。"""
+    ac = [x for x in items if x.get("status") == "awaiting_check"]
+
+    def when(x):
+        return x.get("finishedAt") or x.get("checkedAt") or x.get("startedAt") or ""
+
+    ac_sorted = sorted(ac, key=when, reverse=True)
+    rows = [
+        {"n": x.get("n"), "title": (x.get("title") or x.get("label") or "")[:60],
+         "hyoudai": hyoudai_of(x),
+         "at": when(x),
+         "url": next((u for u in (x.get("urls") or []) if u), None)}
+        for x in ac_sorted[:limit]
+    ]
+    return {"total": len(ac), "items": rows}
+
+
 # joy-relief-station 側の状態ファイル（案件820：Lovable公開便）。
 # クロスリポジトリ参照だが、sync-lovable-publish-dashboard.mjs も同じ os.homedir()+Desktop 前提で
 # data.js を直接書いているのと同じやり方（このマシン内で完結する運用なので固定パスで問題ない）。
@@ -442,6 +470,9 @@ def build():
         "lovablePublish": lovable_publish_block(),
         # 1371番：後回し／手を止めた仕事（hold）。09-17の軽量化で表示が消えていた分。
         "hold": hold_block(items),
+        # 35219番：「まだ」(waiting/running/hold)と「俺の確認待ち」(awaiting_check)を
+        # 日付・何時付きで見分けられるように。
+        "awaitingCheck": awaiting_check_block(items),
     }
     tmp = "%s.tmp.%d" % (OUT, os.getpid())
     with io.open(tmp, "w", encoding="utf-8") as f:
