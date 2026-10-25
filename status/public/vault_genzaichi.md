@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-26 01:58:21・hash=2c5c403e56b8 -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-26 02:28:54・hash=f42b1f4dc626 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -33,6 +33,7 @@
 - **特集「シティポップ」の指摘対応は完了済み**（2026-10-08・commit d69fd0d9c／origin/main反映済み）：「シティポップ特集の直し」が3回クラッシュ(process_interrupted)したため見張り番が引き継いだが、調査の結果**修正自体は別セッションがクラッシュより前に完成・本番反映していた**と判明。本番 https://joy-relief-station.lovable.app/feature/citypop-sekai を実機確認：ヘッダー背景＝松原みき「真夜中のドア」のサムネに差替済み、IN THIS ISSUEは『Out of Time』『真夜中のドア』『フライデー・チャイナタウン』『Plastic Love』『テレフォン・ナンバー』『Remember Summer Days』と英語曲名のまま表示（変な日本語訳なし）。あわせて同クラッシュ連鎖の前セッションが報告していた「特集の入口バナーを原曲カバー含め53曲に自動付与」（commit f11060a47）も同じく本番反映済みを再確認。追加作業なし、クローズ。
 
 ## 最近決まったこと（2026-10-02〜04）
+- **リンクの出し方を全AI統一**（10/26）：コードブロックに入れず本文に。曲は「|曲|YouTube URL|」表、URLは [https://…](https://…) 形式（URL自体をリンク文字）。単体リンクも同形式。詳細は 00_決定ログ.md。
 - 2026-10-25 **同じ部屋（全AIが読める）**：Vault の .md をドライブ「マイドライブ/tamago_brain」へ5分おき・差分だけ写す（Dataview は写し側だけ結果の一覧を書き足す・Vault は書き換えない）。AIの入口＝ドライブ直下「00_索引_AIはここから読む.md」。Notion は tamago_brain/notion/（鍵 NOTION_TOKEN 待ち・振り分け所 #1055）。各AIの読み口（赤＝片道・未接続）＝ドライブ「00_AIの読み口台帳.md」／https://tamago2022.github.［除去］.html#yomikuchi（週1自動見直し）。仕組み：Vault AI出力/_ルール/gdrive_md_mirror/・工場 tools/notion_utsushi.py・tools/yomikuchi.py。
 - 2026-10-22 棚は慎重に：棚に入れる・置く・移すのは、たまごさんがその日に曲名と棚名を名指ししたものだけ。前日以前の言葉で動かさない。今ある棚はそのまま。棚の依頼67件を保留（一覧 https://tamago2022.github.［除去］.html ／関所 tools/tana_sekisho.py・check-tana-shitei.mjs／メモ https://github.［除去］）
 - 2026-10-21 **仕入れても棚には置かない。棚はたまごさんが名指しした曲だけ。**仕入れは曲ページ＋関連＋検索＋裏タグまで。関所＝joy-relief-station prebuild check-tana-shitei（台帳 scripts/patrol/tana-shitei.json）。アジアの5曲を棚から外した（main cf6007d42・公開待ち）。過去分の一覧は工場 status/tana_shiire_kako.json（外すかはたまごさんの判断待ち）。
