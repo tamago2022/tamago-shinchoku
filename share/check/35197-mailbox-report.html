@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35197 担当間メールボックスの完成報告 確認ページ</title>
+<title>#35212 担当間メールボックスの完成報告（再実測） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,19 +47,19 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35197 担当間メールボックスの完成報告</div>
-<h1>#35197 担当間メールボックスの完成報告</h1>
-<div class="date">2026-10-25 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35212 担当間メールボックスの完成報告（再実測）</div>
+<h1>#35212 担当間メールボックスの完成報告（再実測）</h1>
+<div class="date">2026-10-25 joy-relief-station本体（main）の .claude/mailbox/ を直接grepで再実測。前回ページ(#35197)の数字が実物と食い違っていたため作り直し。</div>
 
 <div class="fix">
-joy-relief-stationの各担当向け「メールボックス」（.claude/mailbox/）は、2026-08-12の店主指示を起点に実装され、本体（main）に既に取り込まれて使える状態になっている。15担当すべてに伝言ファイルが揃い、実際に担当間の往復（仕入れ担当⇔つなげる担当の大塚食品汚染修正の依頼・返信など）で使われている。
+joy-relief-stationの各担当向け「メールボックス」（.claude/mailbox/）は、2026-08-12の店主指示を起点に実装され、<b>1か所＝joy-relief-station本体（main）の`.claude/mailbox/`</b>に作られている（worktree等の作業用コピーにも同じファイルが複製されるが、正本は1か所）。14担当すべてに伝言ファイルが揃い、実際に担当間の往復（仕入れ担当⇔つなげる担当の大塚食品汚染修正、公開・回収担当へのLovable OAuth復旧依頼など）で使われている。
 </div>
 
-<h2>② 数字</h2>
+<h2>② 数字（grep実測。コマンド: <code>grep -c '^### ' *.md</code>）</h2>
 <div class="nums">
-  <div class="num"><b>16</b><span>ファイル総数（README含む、本体で実測）</span></div>
-  <div class="num"><b>15</b><span>担当数（全役割分）</span></div>
-  <div class="num"><b>4</b><span>実際にやり取りされた伝言の件数（実測）</span></div>
+  <div class="num"><b>15</b><span>ファイル総数（README 1 + 担当14、実測）</span></div>
+  <div class="num"><b>14</b><span>担当数（ファイルの数ではなく役割の数）</span></div>
+  <div class="num"><b>6</b><span>実際にやり取りされた伝言の件数（14担当ファイルの「### 」見出しを数えて合計、実測）</span></div>
 </div>
 
 
@@ -69,17 +69,18 @@ joy-relief-stationの各担当向け「メールボックス」（.claude/mailbo
   <li><b>tamago-shinchoku 進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>⑤ 何をどう確かめたか（14担当ファイルを1件ずつgrepで数えた結果）</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>つなげる担当.md</td><td class="yes">2件（引き継ぎ・大塚食品返信）</td></tr>
-<tr><td>仕入れ担当.md</td><td class="yes">1件（大塚食品汚染修正の返信）</td></tr>
-<tr><td>公開・回収担当.md</td><td class="yes">1件（Lovable OAuth復旧依頼）</td></tr>
-<tr><td>その他12担当（未使用・正常）</td><td class="yes">0件</td></tr>
+<tr><td>つなげる担当.md</td><td class="yes">2件（前任からの引き継ぎ・大塚食品汚染修正の返信）</td></tr>
+<tr><td>仕入れ担当.md</td><td class="yes">2件（大塚食品汚染修正の返信・DeepOcean周辺の棚卸し依頼）</td></tr>
+<tr><td>公開・回収担当.md</td><td class="yes">1件（2026-10-22・Lovable OAuth復旧依頼、未対応のまま）</td></tr>
+<tr><td>集客・販売担当.md</td><td class="yes">1件（2026-08-16・DeepOcean販売仮説）</td></tr>
+<tr><td>その他10担当（クイック補給・気分診断／コピー／パロディー／パーソナライズ／棚編集UI／検索／見つけてもらう／見回り／認証・管理ログイン／速さ・挙動不審の修理）</td><td class="yes">0件（空メールボックス＝正常な状態）</td></tr>
 </table>
 
 <footer>
-正本はjoy-relief-station（非公開リポジトリ）の .claude/mailbox/ 。本人が開けないGitHub直リンクは貼らず、内容はこのページに転記した。運用ルール・書き方はREADME.mdに記載（『気づいたら放置せず該当担当へ一言』『対応済みはアーカイブへ移動して保持』）。35195号（15番目の担当分追加）は別セッションが並行対応中のため、本ページは『完成状況の報告』のみを担う。
+正本はjoy-relief-station（非公開リポジトリ）の main ブランチ .claude/mailbox/ の1か所のみ（15ファイル）。他のworktree・作業コピーにも同名ファイルが複製されることがあるが、それらは正本の写しであり別の場所に新規に作ったものではない。本人が開けないGitHub直リンクは貼らず、内容はこのページに転記した。運用ルール・書き方はREADME.mdに記載（『気づいたら放置せず該当担当へ一言』『対応済みはアーカイブへ移動して保持』）。前回ページ(#35197)は「16ファイル/15担当/4件」と書いていたが、実測と食い違っていたため本ページで15ファイル/14担当/6件に訂正した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
