@@ -52,14 +52,14 @@
 <div class="date">2026-10-25 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-代表曲一覧・同時代ヒット・発信者カードの4箇所で、良い動画(サムネ)が仕入れられていない曲を空のプレースホルダー枠のまま出さず、カードごと非表示にした（src/components/CoverGuidePageBody.tsx）。
+代表曲一覧・同時代ヒット・発信者カードの4箇所で、良い動画(サムネ)が仕入れられていない曲を空のプレースホルダー枠のまま出さず、カードごと非表示にした。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>一致</b><span>本番のdata-commit-sha＝現在のmain HEAD(47042a3b2)</span></div>
-  <div class="num"><b>YES</b><span>修正コミットbfb1c549がmainの祖先(git merge-base実測)</span></div>
-  <div class="num"><b>0件</b><span>サンプルページでプレースホルダー(旧bg-muted枠)の残存を検索した結果</span></div>
+  <div class="num"><b>一致</b><span>本番ページに埋め込まれた更新番号が、最新版と完全一致(実測)</span></div>
+  <div class="num"><b>含まれる</b><span>直した内容は、本番が読み込んでいる最新版に含まれている(実測)</span></div>
+  <div class="num"><b>0件</b><span>サンプルページで旧プレースホルダー枠の残存を検索した結果</span></div>
 </div>
 
 
@@ -73,9 +73,8 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへの合流</td><td class="yes">git merge-base --is-ancestor bfb1c5492 origin/main</td></tr>
-<tr><td>本番(Lovable)がmain最新と一致</td><td class="yes">node fetchでdata-commit-sha=47042a3b2を実測</td></tr>
-<tr><td>サンプルページに旧プレースホルダー枠が残っていないか</td><td class="yes">cover-guide?artist=otoboke-beaverのHTMLに&#x27;w-full aspect-video bg-muted&#x27;が0件</td></tr>
+<tr><td>本番(Lovable)が最新版と一致しているか</td><td class="yes">本番ページの更新番号を直接取得して突き合わせ</td></tr>
+<tr><td>サンプルページに旧プレースホルダー枠が残っていないか</td><td class="yes">cover-guide?artist=otoboke-beaverの本文を直接取得して検索</td></tr>
 </table>
 
 <footer>
