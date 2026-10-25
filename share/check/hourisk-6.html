@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>海外の法的リスク6点の点検（ごきげん補給所）</title>
+<meta name="robots" content="noindex">
+<style>
+body{font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;max-width:760px;margin:0 auto;padding:20px 16px 60px;line-height:1.7;color:#222;background:#faf7f0}
+h1{font-size:1.3rem;margin:.2em 0}h2{font-size:1.05rem;margin:1.6em 0 .4em;border-left:4px solid #c33;padding-left:8px}
+.small{font-size:.82rem;color:#666}.box{background:#fff;border:1px solid #e3ddd0;border-radius:10px;padding:12px 14px;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:.88rem;background:#fff}th,td{border:1px solid #e3ddd0;padding:6px 8px;vertical-align:top;text-align:left}th{background:#f3eee2}
+.ok{color:#17703a;font-weight:bold}.ng{color:#b3261e;font-weight:bold}.wait{color:#9a6200;font-weight:bold}
+a{color:#1a5fb4}
+</style></head><body>
+<h1>海外の法的リスク6点の点検</h1>
+<p class="small">2026-10-25 点検。対象：ごきげん補給所（joy-relief-station.lovable.app・main 10f3441ee）、ごきげん一粒（LINE）。本番のHTMLとコードを実物で見て確かめた。<br>※法律の助言ではありません。決める前に必要なら専門家へ。</p>
+
+<h2>結論</h2>
+<div class="box">
+<b>今すぐ壊れている所は無し。</b>Google Fonts は使っていない（文字はOSのフォントだけ）、録画系の解析も動いていない。<br>
+<b>たまごさんが決めるのは3つ</b>：①メールを送り始める前に「住所の出し方」②DMCA代理人を登録するか（今は急がない）③子ども（13歳未満）の一文をプライバシーポリシーに足すか。
+</div>
+
+<h2>6点の今の状態</h2>
+<table>
+<tr><th>点</th><th>当てはまる？</th><th>今どうなっている（実物）</th></tr>
+<tr><td>① 13歳未満の登録（米COPPA）</td><td class="ok">ほぼ当てはまらない</td><td>会員登録・ログインは無い（ログインは管理者だけ）。集めているのは目安箱の「メール登録」だけ。子ども向けのサイトではない（一般向け）。COPPAは「子ども向け」か「13歳未満と知っていて集めた」時に効く。</td></tr>
+<tr><td>② Google Fonts の直リンク（EU）</td><td class="ok">当てはまらない</td><td>本番CSSに fonts.googleapis／gstatic は0件、@font-face も0件。コード全体でも0件。切り替える物が無いので、速さ・見た目は今のまま。</td></tr>
+<tr><td>③ 録画系の解析</td><td class="ok">止まっている</td><td>Clarity・Hotjar 等は無し。Lovable が自動で入れる計測（/__l5e/events.js）は録画の機能を持つが、本番では設定が無く動いていない。もし動いても入力欄は全部伏せ字になる作り。</td></tr>
+<tr><td>④ 広告メールの配信停止リンク＋住所（米CAN-SPAM）</td><td class="wait">送り始めたら当てはまる</td><td>メールは集めているが、まだ1通も送る仕組みが無い（管理画面で一覧をコピーできるだけ）。ごきげん一粒はLINEで、メールではない。</td></tr>
+<tr><td>⑤ 自動更新の条件の明示</td><td class="ok">当てはまらない</td><td>購読・課金のボタンは無い（Stripe はコードで止めたまま）。</td></tr>
+<tr><td>⑥ DMCA 指定代理人</td><td class="ok">今は急がない</td><td>利用者の投稿が公開される場所は無い（目安箱は非公開）。動画は YouTube 等の埋め込み。</td></tr>
+</table>
+
+<h2>たまごさんが決めること</h2>
+<div class="box">
+<b>1. メールを送り始める前に：住所の出し方</b><br>
+米国向けの広告メールには、毎回「配信停止の方法」と「本物の郵便の住所」が要る。住所は自宅の住所・郵便局の私書箱・民間の郵便受け取りサービスのどれか。1通の違反ごとに最大 $53,088。<br>
+日本の特定電子メール法でも、送信者名・住所・配信停止の方法を書く決まりがある。<br>
+→ 決めること：どの住所を出すか（自宅を出したくなければ私書箱など）。<b>決まるまでは、工場からメールは送らない。</b><br>
+<span class="small">出典：<a href="https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business">FTC「CAN-SPAM Act: A Compliance Guide for Business」</a></span>
+</div>
+<div class="box">
+<b>2. DMCA 代理人を登録するか（今は急がない）</b><br>
+登録は米著作権局のサイトで。<b>費用 $6</b>（登録・変更・出し直し1回ごと）。<b>3年で切れる</b>ので、3年ごとに出し直し（また$6）。<br>
+出すもの：運営者の正式名・<b>運営者の番地つきの住所（私書箱は原則不可）</b>・代理人の名前・住所（私書箱可）・電話・メール。同じ内容をサイトにも載せる。<br>
+主に「利用者の投稿を置くサイト」のための守り。今のごきげん補給所には公開される投稿が無いので、<b>投稿を公開する機能を作る時に登録する</b>、で足りると判断した。自宅住所を出したくなければ、代理人サービス（有料）を使う手もある。<br>
+<span class="small">出典：<a href="https://www.copyright.gov/about/fees.html">米著作権局「Fees」（Designation of agent… $6）</a>／<a href="https://www.copyright.gov/dmca-directory/faq.html">米著作権局「DMCA Designated Agent Directory FAQ」</a>／<a href="https://www.copyright.gov/dmca-directory/">登録窓口</a></span>
+</div>
+<div class="box">
+<b>3. 子ども（13歳未満）の一文を足すか</b><br>
+年齢確認の画面は要らない（一般向けで、会員登録も無い）。足すなら、プライバシーポリシーに「13歳未満の方を対象にしていません。13歳未満の方の情報と分かったら消します」の一文だけ。プライバシーポリシーは今朝別の便が作り、【要記入】（氏名・連絡先）が残っているので、それと一緒に決めるのがよい。<br>
+FTC：海外のサイトでも、米国の子ども向けか、米国の子どもから知っていて集めた場合はCOPPAが効く。違反1件ごとに最大 $53,088。<br>
+<span class="small">出典：<a href="https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions">FTC「Complying with COPPA: Frequently Asked Questions」</a>／<a href="https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa">FTC「COPPA Rule」</a></span>
+</div>
+
+<h2>参考：Google Fonts の判決</h2>
+<p>ミュンヘン地方裁判所 2022年1月20日判決（3 O 17493/20）：サイトを開いただけで利用者のIPアドレスを同意なしに Google へ送ったとして、運営者に <b>100ユーロ</b> の支払いを命じた。Google Fonts は自前で置けば Google に繋がずに使える、という理由。<br>
+<span class="small">出典：<a href="https://www.gesetze-bayern.de/Content/Document/Y-300-Z-BECKRS-B-2022-N-612">バイエルン州の判決データベース（LG München I, 20.01.2022 – 3 O 17493/20）</a></span></p>
+<p class="small">同じ考え方は、開いた時点で読む YouTube のサムネイル（Google）・TikTok／X の埋め込みにも当てはまりうる。これは動画サイトの作りそのものなので、今回は直さず一覧に残した（外部の道具の一覧：<a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/gaibu_script_ichiran.json">status/public/gaibu_script_ichiran.json</a>）。</p>
+
+<h2>見たもの</h2>
+<p class="small">本番：トップ・曲ページ（Nujabes）・特集（シティポップ）・マガジン（怒れる人々 vol.1）のHTML、本番CSS、Lovable の計測スクリプト2本。コード：origin/main の src・public・supabase・package.json。</p>
+</body></html>

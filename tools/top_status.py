@@ -701,3 +701,7 @@ if __name__ == "__main__":
     #   棚の X 投稿・YouTube 動画を毎日1回確かめ、消えたものを joy-relief-station の hikkomi.generated.ts に書いて自動で隠す。
     #   一覧 share/check/hikkomi.html。差し替え候補が無いものは毎週 振り分け所→Grok。中で10分に間引く（見回り20時間・Grok 6.5日）。
     _okosu("hikkomi.py", "--tick")
+
+    # 2026-10-25 Grokボットとのリアルタイム通信（たまごさん「GitHubに書いても3時間おきにしか見ない。Bot同士みたいにリアルタイムに。全部仕組みで」）。
+    #   共有メモに書いた瞬間の呼び鈴を Reason Network で Grok へ送る／Grok からの文を受付へ／serve claude の常駐を守る。中で50秒に間引く。
+    _okosu("grok_tsuushin.py", "--tick")
