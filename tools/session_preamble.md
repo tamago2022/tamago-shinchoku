@@ -93,6 +93,12 @@ push の直前に main を取り直し、自分の差分だけを載せる。古
 
 - **① 実装 → ② main合流 → ③ 「公開」を押す → ④ 本番URLを自分の目で確認 → ⑤ Dispatchへ報告**、ここまでで1セット。
 - **main合流だけは成果ゼロ。**「直しました」と言わない。
+- **tamago-shinchoku自身のshare/check/*.htmlは、mainへpushしただけでは本番(GitHub Pages)に出ない。**
+  配信経路は main push → machine_status_push.sh(launchd・15分おき) → `tools/pages_publish.sh`が
+  別枝gh-pagesへ10分クールダウン付きでforce push → そこだけをpages.ymlが検知してビルドする構造
+  （963番の設計。mainのpushはpages.ymlの対象外）。**404のまま報告へ行く前に、必ず
+  `bash tools/pages_publish.sh --force` を自分で1回叩いてから本番URLを確認する。**
+  （2026-09-30/2026-10-20/2026-10-26・3回目の再発。F-20260930011822/F-20261020103228/F-20261026073743）
 
 ### 7. 報告は短く
 
