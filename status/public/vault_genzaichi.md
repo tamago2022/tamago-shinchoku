@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-25 11:55:23・hash=287aabd33abe -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-25 12:36:25・hash=0c1ff184954b -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -79,6 +79,11 @@
 - 入口＝Reason Network（無料・Grokボット自身が #1035 で依頼）。工場のMacに reason 0.2.596 を入れた。道具 tools/grok_tsuushin.py（心臓毎分）：共有メモに書いた瞬間に Grok へ呼び鈴／Grokからの文は受付へ／serve claude（作業場 status/grok_tsuushin/madoguchi・コマンド不可）。
 - GitHub直通 .github/workflows/grok-yobirin.yml（joy-relief-station 4fb636ffe）：Grokが Secrets GROK_WEBHOOK_URL と変数 GROK_YOBIRIN=1 を入れるまで skip。
 - 止まっていること：たまごさんの初回サインイン1回（リンクは Dispatch に出した）→ Grok側の参加（#1052 で依頼・締め切り10/26）。
+
+## 2026-10-25 法務チェックの型（4人でクアドラプルチェック）
+- 正本：joy-relief-station Issue #1060（海外6点＋日本7点。列＝Claude/Grok/ChatGPT/Genspark の判定と出典）。道具 tools/houmu_check.py（心臓10分おき：返事集め→食い違い🔴→たまごさんの1枚 share/check/houmu-1060.html＝本人判断・食い違いだけ）。
+- 依頼済み：ChatGPT（@codex）／Genspark（AI Drive /できる人いますか/1060.md）／Grok（共有メモ「法務チェック」＋Reason Network待ち行列。RNは未サインイン）。GrokBotの特商法の住所の調べ結果も #1060 に集める。法律の助言ではない。
+- Claudeの判定の要点：特商法は今は販売なし＝表示義務なし。売る時は個人でも「請求があれば遅滞なく開示」と書けば氏名・住所・電話を省略可（消費者庁Q&A A15/A17）。PPは要対応（メール取得＝利用目的の公表）。
 
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
