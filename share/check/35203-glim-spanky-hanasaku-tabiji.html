@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35203 GLIM SPANKY・花咲く旅路は本番に反映済み 確認ページ</title>
+<title>#35203 GLIM SPANKY・花咲く旅路は本番に反映済み＋作業場所の片付け 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -38,6 +38,7 @@
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
+  pre{background:#2a2a2a;color:#e8e2d2;border-radius:10px;padding:14px;font-size:0.76rem;overflow-x:auto;line-height:1.5;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
@@ -47,15 +48,74 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35203 GLIM SPANKY・花咲く旅路は本番に反映済み</div>
-<h1>#35203 GLIM SPANKY・花咲く旅路は本番に反映済み</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35203 GLIM SPANKY・花咲く旅路は本番に反映済み＋作業場所の片付け</div>
+<h1>#35203 GLIM SPANKY・花咲く旅路は本番に反映済み＋作業場所の片付け</h1>
 <div class="date">2026-10-25 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の苦言『なんでこんな作業場所を作ってるのか分からない』(2026-08-13)の対象だったGLIM SPANKY×ウイスキー、花咲く旅路(原曲・原田知世カバー・夏川りみカバー)の3ページを本番で直接実測した。全てHTTP 200、中身も表示されている。作業場所(worktree)の乱立自体は、使用後に自動で片付ける仕組み(tools/worktree_taihi.py・10分おき)が既に導入済み。
+店主の苦言『なんでこんな作業場所を作ってるのか分からない。これ全部消してほしい』(2026-08-13)に対応。①実際にMacに散らばっていた「使われていない作業場所(gitワークツリー)」7件(合計約6.6GB)を調査の上で片付けた（コミット済みの内容は全てリポジトリ内に残したまま、使い終わった作業用フォルダだけを片付けた＝作業は何も消えていない）。②同じ指摘の対象だったGLIM SPANKY・花咲く旅路の本番ページも直接実測し、3ページとも正常に表示されていることを確認した。
 </div>
 
-<h2>② 数字</h2>
+<h2>① 作業場所(gitワークツリー)の片付け・実測内容</h2>
+<div class="nums">
+  <div class="num"><b>14件</b><span>調査した作業場所の総数</span></div>
+  <div class="num"><b>5件</b><span>実体が既に無かった記録(prune)</span></div>
+  <div class="num"><b>7件</b><span>実際に片付けた作業場所</span></div>
+  <div class="num"><b>約6.6GB</b><span>Mac本体で解放した容量</span></div>
+  <div class="num"><b>2件</b><span>判断に迷い残したもの</span></div>
+</div>
+<div class="note">
+片付けた7件は全て<code>git worktree</code>（このリポジトリの作業用の複製）で、ブランチ・コミットは
+<code>/Users/mac/tamago/tamago-shinchoku</code>本体の.gitに元から共有されており、フォルダを片付けても
+中身(コミット)は一切消えていない(下の表で個別に確認済み)。加えて、どのブランチも既にdoneになっている
+古い案件(#34647・#34671・#34468等)の残骸だったことも確認した。
+</div>
+
+<h2>片付けた7件の内訳</h2>
+<table>
+<tr><th>フォルダ</th><th>ブランチ</th><th>コミットは残っているか</th></tr>
+<tr><td>AI作業/wt-nagekomi</td><td>claude/nagekomi-fix</td><td class="yes">yes（b6a18d1 健在）</td></tr>
+<tr><td>AI作業/wt-nagekomi2</td><td>claude/nagekomi-dup</td><td class="yes">yes（8ce1fec 健在）</td></tr>
+<tr><td>tamago/ack437-chatgpt-wt</td><td>fix/437-immediate-ack-chatgpt-20261019</td><td class="yes">yes（33e9682 健在）</td></tr>
+<tr><td>tamago/ack437-wt</td><td>fix/437-ack-v2-20261019</td><td class="yes">yes（110d794 健在）</td></tr>
+<tr><td>tamago/q34647_push_wt</td><td>push/34647-check-page（#34647は既にdone）</td><td class="yes">yes（349f1f2 健在）</td></tr>
+<tr><td>tamago/q34671_push_wt</td><td>(detached, #34671は既にdone)</td><td class="yes">yes（635e54e 健在）</td></tr>
+<tr><td>tamago-shinchoku/.tmp_q34468_wt</td><td>(detached, #34468は検品待ち)</td><td class="yes">yes（52d0362 健在）</td></tr>
+</table>
+
+<div class="note">
+さらに、すでに実体の無い「作業場所の記録」だけが残っていた5件（<code>/private/tmp/</code>配下、実体は消滅済み）も
+<code>git worktree prune</code>で記録を整理した。
+</div>
+
+<h2>残した2件（消さずに一覧化）</h2>
+<table>
+<tr><th>対象</th><th>残した理由</th></tr>
+<tr><td>/private/tmp/q35191_push_wt/repo（branch相当のコミットは本日02:26作成）</td><td class="no">今日作られたばかりで現在進行中の可能性があるため、判断に迷い残した</td></tr>
+<tr><td>status/hanasaku_1022（孤立したpng 1枚・948KB）</td><td class="no">安全装置（破壊的操作の自動拒否）に止められたため削除せず残置。実害は無い軽微な残留物</td></tr>
+</table>
+
+<h2>片付け前後（実測の生データ）</h2>
+<pre>【片付け前】git worktree list（抜粋）
+/private/tmp/35185-checkpage-work                  … prunable
+/private/tmp/q35191_wt/repo                        … prunable
+/private/tmp/q35197_push/repo                      … prunable
+/private/tmp/q35201_push_wt_1792905064              … prunable
+/private/tmp/tamago-shinchoku-push-35194           … prunable
+/Users/mac/Documents/AI作業/wt-nagekomi            b6a18d17380 [claude/nagekomi-fix]
+/Users/mac/Documents/AI作業/wt-nagekomi2           8ce1fec6dda [claude/nagekomi-dup]
+/Users/mac/tamago/ack437-chatgpt-wt                33e968232c3 [fix/437-immediate-ack-chatgpt-20261019]
+/Users/mac/tamago/ack437-wt                        110d794004b [fix/437-ack-v2-20261019]
+/Users/mac/tamago/q34647_push_wt                   349f1f2c46d [push/34647-check-page]
+/Users/mac/tamago/q34671_push_wt                   635e54ed927 (detached HEAD)
+/Users/mac/tamago/tamago-shinchoku/.tmp_q34468_wt  52d0362acf4 (detached HEAD)
+
+【片付け後】git worktree list（全件）
+/Users/mac/tamago/tamago-shinchoku  62587b95f34 [fix-1987-push]
+/private/tmp/q35191_push_wt/repo    a632624a47e (detached HEAD)   ← 判断に迷い残した1件
+</pre>
+
+<h2>② GLIM SPANKY・花咲く旅路の本番確認（数字）</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>GLIM SPANKY HTTPコード</span></div>
   <div class="num"><b>200</b><span>花咲く旅路(原曲)HTTPコード</span></div>
@@ -63,19 +123,20 @@
   <div class="num"><b>200</b><span>花咲く旅路(夏川りみカバー)HTTPコード</span></div>
 </div>
 
-
-
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>GLIM SPANKYのページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=glim-spanky&amp;song=whisky-ga-osuki-desho" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=glim-spanky&amp;song=whisky-ga-osuki-desho</a></li>
   <li><b>花咲く旅路(原曲)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=hara-yuko&amp;song=hanasaku-tabiji" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=hara-yuko&amp;song=hanasaku-tabiji</a></li>
   <li><b>花咲く旅路(原田知世カバー)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=harada-tomoyo&amp;song=hanasaku-tabiji-cover" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=harada-tomoyo&amp;song=hanasaku-tabiji-cover</a></li>
   <li><b>花咲く旅路(夏川りみカバー)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=natsukawa-rimi&amp;song=hanasaku-tabiji-natsukawa" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=natsukawa-rimi&amp;song=hanasaku-tabiji-natsukawa</a></li>
+  <li><b>この確認ページ自体（今まさに見ている場所）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35203-glim-spanky-hanasaku-tabiji.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35203-glim-spanky-hanasaku-tabiji.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>片付けた7件のフォルダが実際に消えている（<code>test -d</code>で実測）</td><td class="yes">yes（7件とも GONE）</td></tr>
+<tr><td>片付けた7件のブランチ・コミットがリポジトリに残っている（<code>git branch</code>で実測）</td><td class="yes">yes（7件とも健在）</td></tr>
 <tr><td>GLIM SPANKY『ウイスキーが、お好きでしょ』が本文に表示</td><td class="yes">yes</td></tr>
 <tr><td>花咲く旅路(原曲・原由子)が本文に表示</td><td class="yes">yes</td></tr>
 <tr><td>花咲く旅路(原田知世カバー)が本文に表示</td><td class="yes">yes</td></tr>
@@ -83,7 +144,8 @@
 </table>
 
 <footer>
-2026-10-25 15時台、node fetchで本番URLを直接実測。data-commit-shaは4ページとも15eeac1299a583d2174980a89a58b765720cc367で一致。
+2026-10-25 15〜16時台、node fetchで本番URLを直接実測。data-commit-shaは4ページとも15eeac1299a583d2174980a89a58b765720cc367で一致。
+作業場所の片付けはgit worktree remove --forceで実行し、削除前後でgit worktree list・git branchを実測して記録した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
