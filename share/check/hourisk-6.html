@@ -11,7 +11,7 @@ table{border-collapse:collapse;width:100%;font-size:.88rem;background:#fff}th,td
 a{color:#1a5fb4}
 </style></head><body>
 <h1>海外の法的リスク6点の点検</h1>
-<p class="small">2026-10-25 点検。対象：ごきげん補給所（joy-relief-station.lovable.app・main 10f3441ee）、ごきげん一粒（LINE）。本番のHTMLとコードを実物で見て確かめた。<br>※法律の助言ではありません。決める前に必要なら専門家へ。</p>
+<p class="small">2026-10-25 点検。対象：ごきげん補給所、ごきげん一粒（LINE）。本番のHTMLとコードを実物で見て確かめた。<br>※法律の助言ではありません。決める前に必要なら専門家へ。</p>
 
 <h2>結論</h2>
 <div class="box">
@@ -23,10 +23,10 @@ a{color:#1a5fb4}
 <table>
 <tr><th>点</th><th>当てはまる？</th><th>今どうなっている（実物）</th></tr>
 <tr><td>① 13歳未満の登録（米COPPA）</td><td class="ok">ほぼ当てはまらない</td><td>会員登録・ログインは無い（ログインは管理者だけ）。集めているのは目安箱の「メール登録」だけ。子ども向けのサイトではない（一般向け）。COPPAは「子ども向け」か「13歳未満と知っていて集めた」時に効く。</td></tr>
-<tr><td>② Google Fonts の直リンク（EU）</td><td class="ok">当てはまらない</td><td>本番CSSに fonts.googleapis／gstatic は0件、@font-face も0件。コード全体でも0件。切り替える物が無いので、速さ・見た目は今のまま。</td></tr>
-<tr><td>③ 録画系の解析</td><td class="ok">止まっている</td><td>Clarity・Hotjar 等は無し。Lovable が自動で入れる計測（/__l5e/events.js）は録画の機能を持つが、本番では設定が無く動いていない。もし動いても入力欄は全部伏せ字になる作り。</td></tr>
+<tr><td>② Google Fonts の直リンク（EU）</td><td class="ok">当てはまらない</td><td>本番の見た目の設定にも、サイトの中身全体にも Google Fonts の読み込みは0件。切り替える物が無いので、速さ・見た目は今のまま。</td></tr>
+<tr><td>③ 録画系の解析</td><td class="ok">止まっている</td><td>Clarity・Hotjar 等は無し。Lovable が自動で入れる計測は録画の機能を持つが、本番では設定が無く動いていない。もし動いても入力欄は全部伏せ字になる作り。</td></tr>
 <tr><td>④ 広告メールの配信停止リンク＋住所（米CAN-SPAM）</td><td class="wait">送り始めたら当てはまる</td><td>メールは集めているが、まだ1通も送る仕組みが無い（管理画面で一覧をコピーできるだけ）。ごきげん一粒はLINEで、メールではない。</td></tr>
-<tr><td>⑤ 自動更新の条件の明示</td><td class="ok">当てはまらない</td><td>購読・課金のボタンは無い（Stripe はコードで止めたまま）。</td></tr>
+<tr><td>⑤ 自動更新の条件の明示</td><td class="ok">当てはまらない</td><td>購読・課金のボタンは無い。</td></tr>
 <tr><td>⑥ DMCA 指定代理人</td><td class="ok">今は急がない</td><td>利用者の投稿が公開される場所は無い（目安箱は非公開）。動画は YouTube 等の埋め込み。</td></tr>
 </table>
 
@@ -55,8 +55,8 @@ FTC：海外のサイトでも、米国の子ども向けか、米国の子ど�
 <h2>参考：Google Fonts の判決</h2>
 <p>ミュンヘン地方裁判所 2022年1月20日判決（3 O 17493/20）：サイトを開いただけで利用者のIPアドレスを同意なしに Google へ送ったとして、運営者に <b>100ユーロ</b> の支払いを命じた。Google Fonts は自前で置けば Google に繋がずに使える、という理由。<br>
 <span class="small">出典：<a href="https://www.gesetze-bayern.de/Content/Document/Y-300-Z-BECKRS-B-2022-N-612">バイエルン州の判決データベース（LG München I, 20.01.2022 – 3 O 17493/20）</a></span></p>
-<p class="small">同じ考え方は、開いた時点で読む YouTube のサムネイル（Google）・TikTok／X の埋め込みにも当てはまりうる。これは動画サイトの作りそのものなので、今回は直さず一覧に残した（外部の道具の一覧：<a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/gaibu_script_ichiran.json">status/public/gaibu_script_ichiran.json</a>）。</p>
+<p class="small">同じ考え方は、開いた時点で読む YouTube のサムネイル（Google）・TikTok／X の埋め込みにも当てはまりうる。これは動画サイトの作りそのものなので、今回は直さず一覧に残した（外部の道具の一覧は工場に保存済み）。</p>
 
 <h2>見たもの</h2>
-<p class="small">本番：トップ・曲ページ（Nujabes）・特集（シティポップ）・マガジン（怒れる人々 vol.1）のHTML、本番CSS、Lovable の計測スクリプト2本。コード：origin/main の src・public・supabase・package.json。</p>
+<p class="small">本番のトップ・曲ページ（Nujabes）・特集（シティポップ）・マガジン（怒れる人々 vol.1）と、その見た目の設定・Lovable の計測2本。サイトの中身（画面・データ・保存先）全体。</p>
 </body></html>
