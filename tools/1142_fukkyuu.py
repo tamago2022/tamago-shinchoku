@@ -78,22 +78,27 @@ def rec(kind, naoshita, what, detail=""):
     return row
 
 
-def _kurikaeshi_block(i):
-    """2026-10-26・#35224の無限ループで発見：`naosu_stuck()`は`redoCount`しか見ず、
-    `touchCheckFailCount`（触る検品の失敗）だけでstuck化した項目はタイトルが
-    正当な作業指示（`_yuurei_kanda`がFalse）であるため、ここまでは常にwaitingへ
-    無条件で戻っていた。だが失敗理由(failReasons)が同じ文面で繰り返されている
-    ケース（例：Lovable公開ブロックのような外部要因）は、戻しても同じ結果になる
-    だけ。1142自身の条件②「やり直して安全（冪等）」を満たさないため、
-    取り消さず・waitingへも戻さず、stuckのまま保留して人の目に残す。
+def _redo_total(i):
+    """redoCount／ownerRedoCount／aiVerifyFailCount／touchCheckFailCountの合計。
+    2026-10-26・#35224の無限ループで発見：`naosu_stuck()`は`redoCount`しか見ず、
+    `touchCheckFailCount`（触る検品の失敗）だけでstuck化した項目を取り逃していた。
+    800番で用意済みの`redo_guard.redo_total()`をそのまま使う（基準を2か所に書かない）。
     """
     try:
         import redo_guard
-        total = redo_guard.redo_total(i)
+        return redo_guard.redo_total(i)
     except Exception:
-        total = (int(i.get("redoCount") or 0) + int(i.get("touchCheckFailCount") or 0)
-                  + int(i.get("aiVerifyFailCount") or 0) + int(i.get("ownerRedoCount") or 0))
-    if total < 3:
+        return (int(i.get("redoCount") or 0) + int(i.get("touchCheckFailCount") or 0)
+                 + int(i.get("aiVerifyFailCount") or 0) + int(i.get("ownerRedoCount") or 0))
+
+
+def _kurikaeshi_block(i):
+    """タイトルは正当な作業指示（`_yuurei_kanda`がFalse）でも、失敗理由(failReasons)
+    が同じ文面で繰り返されているケース（例：Lovable公開ブロックのような外部要因）は、
+    waitingへ戻しても同じ結果になるだけ。1142自身の条件②「やり直して安全（冪等）」を
+    満たさないため、取り消さず・waitingへも戻さず、stuckのまま保留して人の目に残す。
+    """
+    if _redo_total(i) < 3:
         return False
     reasons = [r for r in (i.get("failReasons") or []) if r]
     if len(reasons) < 2:
@@ -123,10 +128,12 @@ def naosu_stuck():
         return rec("stuck", False, "キューが読めません", str(e)[:80])
     items = q.get("items") or []
     all_stuck = [i for i in items if str(i.get("status")) == "stuck"]
-    # ★redoCount>=2 かつ 具体的な作業指示が読み取れない項目は、戻さず取り消す。
+    # ★やり直し合計(redo_total)>=2 かつ 具体的な作業指示が読み取れない項目は、戻さず取り消す。
     #   （1142の3条件のうち②「やり直して安全」を満たさない＝毎回同じ徒労になる）
+    #   2026-10-26修正：以前は`redoCount`単独でしか見ておらず、`touchCheckFailCount`
+    #   だけで積み上がった#35224のような項目を取り逃していた（無限ループの直接原因）。
     yuurei = [i for i in all_stuck
-              if int(i.get("redoCount") or 0) >= 2 and _yuurei_kanda(i.get("title"))]
+              if _redo_total(i) >= 2 and _yuurei_kanda(i.get("title"))]
     # ★2026-10-26（#35224の無限ループで発見）：タイトルは正当な作業指示でも、
     #   同じ失敗理由が繰り返し出ている項目はwaitingへ戻さずstuckのまま保留する。
     kurikaeshi = [i for i in all_stuck if i not in yuurei and _kurikaeshi_block(i)]
@@ -160,7 +167,7 @@ def naosu_stuck():
         i["cancelledAt"] = now().isoformat()
         i["restoreWhy"] = ("1142_fukkyuu：%d回やり直しても具体的な作業指示が無い"
                             "（たまごさんの相槌・感想の類）ため取り消し（1377番の再発防止）"
-                            % int(i.get("redoCount") or 0))
+                            % _redo_total(i))
     for i in kurikaeshi:
         i["repeatBlockedAt"] = now().isoformat()
         i["restoreWhy"] = ("1142_fukkyuu：同じ失敗理由が繰り返されたためwaitingへ戻さず"
