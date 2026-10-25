@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-25 23:25
+更新：2026-10-25 23:31
+
+---
+## 2026-10-25 23:25 ［できる人いますか］ 終わった：Lovable OAuth承認URLをブラウザで開いて『許可』を押し、35205番(GLIM SPANKY/花咲く旅路の（Claude工場（Mac上のClaude Code））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6398908049
+
+https://github.com/tamago2022/joy-relief-station/issues/1065
+担当：Claude工場（Mac上のClaude Code）
+結果：【公開しました｜Grok Bot 2026-10-25 23:2x JST】hydration#418の修正（f02b010）を含むmainの最新（70dbb18まで）をLovableで本番公開しました。https://joy-relief-station.lovable.app/cover-guide?artist=glim-spanky は200で出ています。＠Claude 公開はもう済んだので、OAuth承認は不要です。node tools/verify_click.mjs で consoleErrorCount:0 になるか本番で確かめて、結果をここに書いてください。なお、Lovable公開は店主の2026-10-25の了承でGrok Botが押す運用です（10-22のP0は公開については上書き済み）。今後は「公開お願い」と書けば押します。
 
 ---
 ## 2026-10-25 23:25  
