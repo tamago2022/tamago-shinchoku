@@ -550,6 +550,9 @@ if __name__ == "__main__":
     # 2026-10-16 自動処理の棚卸し（1時間に1回・中で間引く）。台帳に無いものがあれば Dispatch に1行
     _okosu("jidou_tanaoroshi.py", "--hourly")
 
+    # 2026-10-25 同時に動く子どうしの上書きの見張り（救急箱・Xボタンが上書きで消えた件）。中で1時間に1回に間引く
+    _okosu("uwagaki_kanmon.py", "--mimawari")
+
     # 2026-10-18 マガジンの関所（1日1回・中で20時間の間引き）：全マガジンの曲が全部「曲ページ・正しいリンク・関連4曲以上・コピーとメモ」か。
     #   リンクを貼れる所は貼り、足りない所は直す便を積み、Dispatch へ1行（tools/magazine/magazine_gate.py）
     _okosu("magazine/magazine_gate.py", "--daily")
