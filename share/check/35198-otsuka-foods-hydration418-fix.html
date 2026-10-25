@@ -52,7 +52,7 @@
 <div class="date">2026-10-25 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-大塚食品ページのデータ汚染は着手前に既に解消済みでした。本当に止まっていたのは、全cover-guideページ共通のReactエラー(#418)。ShareBar.tsxのShareUnderTitleがマウントと同時にDOMへ直接ノードを挿入していたのが原因と特定し、requestAnimationFrameで1フレーム後ろへ逃がして修正。コードはmainへ合流済み(commit f02b01031)です。公開(たまごさんの『公開』ボタン)は2026-10-22の方針でAIが押せないため、本番反映はたまごさんの操作待ちです。
+大塚食品ページのデータ汚染は着手前に既に解消済みでした。本当に止まっていたのは、全cover-guideページ共通のReactエラー(#418)。タイトル直下の共有ボタンがページの読み込みと同時にDOMへ直接ノードを挿入していたのが原因と特定し、1フレーム後ろへ逃がして修正。コードの本体への合流は完了しています。公開(たまごさんの『公開』ボタン)は2026-10-22の方針でAIが押せないため、本番反映はたまごさんの操作待ちです。
 </div>
 
 <h2>② 数字</h2>
@@ -71,7 +71,7 @@
 
 
 <footer>
-公開(Lovableの『公開』ボタン)は2026-10-22付けの店主指示でAIが押せません。たまごさんが1回押すと、この修正を含む未公開分がまとめて本番へ反映される見込みです。main合流済みコミットID: f02b01031
+公開(Lovableの『公開』ボタン)は2026-10-22付けの店主指示でAIが押せません。たまごさんが1回押すと、この修正を含む未公開分がまとめて本番へ反映される見込みです。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
