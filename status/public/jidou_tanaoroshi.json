@@ -1,21 +1,23 @@
 {
- "at": "2026-10-25 08:57:55",
+ "at": "2026-10-25 09:59:50",
  "total": 144,
  "kinds": {
   "心臓": 94,
-  "心臓の相乗り": 26,
+  "心臓の相乗り": 27,
   "launchd": 18,
-  "Claudeの定期タスク（画面に通知が出る）": 2,
+  "Claudeの定期タスク（画面に通知が出る）": 1,
   "GitHub Actions": 4
  },
- "mitouroku": [
-  "claude-teiki:claude-duet-japan-watch"
- ],
+ "mitouroku": [],
  "kari": 110,
  "zure": [
   {
    "name": "jidou_tanaoroshi.py",
    "zure": "下見では chukan_shimau・claude_nouhin・shimau・worktree_taihi・youryou_jougen が要りそう"
+  },
+  {
+   "name": "uwagaki_kanmon.py",
+   "zure": "下見では worktree_taihi が要りそう"
   },
   {
    "name": "com.tamago.gdrive-md-mirror",
@@ -820,6 +822,14 @@
    "kesu": "作り直し型（毎回上書き）"
   },
   {
+   "name": "uwagaki_kanmon.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "記録だけ（status/public/uwagaki_kanmon.json・status/.uwagaki_mimawari_at・outboxに1行）。push用の一時索引は tempfile で作り finally で消す",
+   "okiba": "tamago-shinchoku/status",
+   "kesu": "自分（一時フォルダは finally で削除）／記録は youryou_jougen"
+  },
+  {
    "name": "toukou_mimawari.py",
    "kind": "心臓の相乗り",
    "freq": "毎周（15秒・中で間引くものあり）",
@@ -1146,14 +1156,6 @@
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
-  },
-  {
-   "name": "claude-teiki:claude-duet-japan-watch",
-   "kind": "Claudeの定期タスク（画面に通知が出る）",
-   "freq": "0 9 * * *",
-   "tsukuru": null,
-   "okiba": null,
-   "kesu": null
   },
   {
    "name": "claude-teiki:rusuban-mimawari-30min",
