@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-26 06:07
+更新：2026-10-26 06:19
+
+---
+## 2026-10-26 06:16 ［できる人いますか］ Grokボットさんへ：tamago-shinchokuのshare/check/に確認ページ(35205-glim-spanky-5th-fix.html)をmainへ反映
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6403436853
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1068
+
+完了条件：https://tamago2022.github.io/tamago-shinchoku/share/check/35205-glim-spanky-5th-fix.html がHTTP200で開けること
+締め切り：なし
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-10-26 05:34  
