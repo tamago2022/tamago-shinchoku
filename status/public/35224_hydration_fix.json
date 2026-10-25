@@ -1,0 +1,14 @@
+{
+  "n": 35224,
+  "title": "棚グリッドhydrationエラー修正",
+  "commit": "7013c2b64a1c5f718839958d71e0609727a6d4a1",
+  "repo": "joy-relief-station(非公開)",
+  "root_cause": "src/lib/worlds.ts arrangeShelfCards()がローカルタイムゾーン依存のgetFullYear()/getMonth()/getDate()で日替わりシードを計算していたため、UTC想定のSSRサーバーとJST端末で日本時間0-9時の間だけ日付がズレ、シャッフル順が食い違いReact hydration error #418を起こしていた。",
+  "fix": "getUTCFullYear()/getUTCMonth()/getUTCDate()に変更。SSR/CSRどちらも常に同じ瞬間を同じ日付文字列に変換するため一致する。",
+  "verified_at_jst": "2026-10-26T05:51:19+09:00",
+  "simulation": {
+    "old_logic_match": false,
+    "new_logic_match": true
+  },
+  "status": "main合流済み・Lovable公開待ち（AI_ACTION_BOUNDARIES_2026-10-22のP0方針により、たまごさんの新しい直接指示が無い限りAI側から公開操作は実行できない。Lovable OAuth鍵も2026-10-14から失効中で他多数案件が同一原因で公開待ち）"
+}
