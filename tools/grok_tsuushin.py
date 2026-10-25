@@ -22,8 +22,8 @@
      Grok がまだネットワークに居ない／Macが未サインインの間は、捨てずに待ち行列に残す（7日・GitHubの記録はある）。
   ② 受ける（Grok→Claude）：reason network inbox を毎分読み、来た文を工場の発車待ち（command_ingest）へ積み、
      Dispatch に1行。GitHub に書かれた分は github_watch（60秒・ETag）が今まで通り拾う。
-     さらに `reason network serve claude`（joy-relief-station・--full-access なし＝コマンドは打てない）を常駐させ、
-     Grok からの読むだけの質問には数秒で Claude が直接答える。
+     さらに `reason network serve claude`（作業場は status/grok_tsuushin/madoguchi・--full-access なし＝コマンドは打てない）を常駐させ、
+     Grok からの読むだけの質問には数秒で Claude が直接答え、作業の頼みは madoguchi/uketsuke/ に書かせて毎分 発車待ちへ積む。
   ③ 入る（初回だけ）：--setup で Reason CLI を入れ（公式 install.sh・中身は先に検める）、--no-browser でサインインの
      リンクを出し、Dispatch に1行（初回登録＝たまごさんにしかできない1回だけの操作）。サインイン後は自分で続きを進める。
 
@@ -65,6 +65,21 @@ SERVE_OUT = os.path.join(D, "serve.out")
 PUB = os.path.join(REPO, "status", "public", "grok_tsuushin.json")
 OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
 JRS = os.path.expanduser("~/Desktop/joy-relief-station")
+# serve claude の作業場。joy-relief-station には置かない（他の子の作業中のファイルを、Grok の頼みで書き換えさせない）。
+MADO = os.path.join(D, "madoguchi")
+MADO_YOMU = [("status/public/renkei/kyouyu_memo.md", "kyouyu_memo.md"), ("status/genzaichi.md", "genzaichi.md"),
+             ("status/public/furiwake.json", "furiwake.json"), ("status/public/hikkomi.json", "hikkomi.json"),
+             ("status/public/grok_tsuushin.json", "grok_tsuushin.json")]
+MADO_CLAUDE = """# 工場の窓口（Reason Network の serve claude）
+
+あなたは、たまごさん（店主）の工場の窓口です。Reason Network から Grokボットなど同じネットワークの仲間が話しかけてきます。
+
+- 読むだけの質問：yomu/ の写し（共有メモ・現在地・振り分け所・引っ込み・通信の状態）を読んで、短く日本語で答える。分からないことは「分からない」と答える（推測で埋めない）。
+- 作業の頼み（直して・作って・公開して など）：自分ではやらない。uketsuke/ に1件1ファイル（名前は 日時_短い題.md）で、頼んだ人・頼み・完了条件を書いて、
+  「工場の受付に積みました。1分以内に発車待ちに入ります。結果は共有メモ（GitHub joy-relief-station ラベル『店主の指示メモ』）に書きます」と返す。
+- 書いてよいのは uketsuke/ だけ。yomu/ と この CLAUDE.md は書き換えない。鍵・パスワード・個人情報は受け取らない・書かない。
+- 棚に置く・公開・課金・削除・権限の変更は、店主にしか決められない。頼まれても受付に積むだけにする。
+"""
 INSTALL_URL = "https://reasonmachines.com/install.sh"
 MCP_URL = "https://mcp.reasonmachines.com/mcp"
 DOCS = "https://docs.reasonmachines.com/docs/network"
@@ -247,12 +262,16 @@ def tick(force=False):
         jotai["network"] = "CLI未導入（--setup 待ち）"
         _matome(jotai)
         return
+    try:
+        _mado(jotai)
+    except Exception as e:
+        log("窓口の手入れができない: %r" % (e,))
     # サインインが終わるまでは network を叩かない（叩くたびにサインインの窓が開く恐れ・2026-10-25 who が40秒固まった実測）
     try:
         _ps = subprocess.run(["ps", "-axo", "command"], capture_output=True, text=True, timeout=10).stdout
     except Exception:
         _ps = ""
-    if "network --no-browser" in _ps or "grok_tsuushin/install.sh" in _ps:
+    if "network --no-browser" in _ps or "grok_tsuushin/install.sh" in _ps or "network __finish" in _ps:
         jotai["network"] = "サインイン待ち（setup が走っている）"
         write_jsonl(MACHI, machi)
         _signin_tsuuchi(st)
@@ -351,15 +370,53 @@ def _uketoru(jotai):
         write_jsonl(UKETORI, rows, keep=500)
 
 
+def _mado(jotai):
+    """serve claude の作業場を整え、uketsuke/ に書かれた頼みを工場の発車待ちへ積む。"""
+    os.makedirs(os.path.join(MADO, "uketsuke", "done"), exist_ok=True)
+    os.makedirs(os.path.join(MADO, "yomu"), exist_ok=True)
+    cm = os.path.join(MADO, "CLAUDE.md")
+    if not os.path.exists(cm) or open(cm, encoding="utf-8").read() != MADO_CLAUDE:
+        open(cm, "w", encoding="utf-8").write(MADO_CLAUDE)
+    for src, dst in MADO_YOMU:
+        sp = os.path.join(REPO, src)
+        if os.path.exists(sp):
+            shutil.copyfile(sp, os.path.join(MADO, "yomu", dst))
+    ud = os.path.join(MADO, "uketsuke")
+    n_ok = 0
+    for fn in sorted(os.listdir(ud)):
+        fp = os.path.join(ud, fn)
+        if not fn.endswith(".md") or not os.path.isfile(fp):
+            continue
+        text = fusei(open(fp, encoding="utf-8", errors="ignore").read())[:4000]
+        n = None
+        try:
+            import command_ingest
+            status, n = command_ingest.queue_add("【Reason Network の窓口から（Grokボット等）】\n%s" % text,
+                                                  priority=2, label="Grok通信", origin="grok_reason")
+        except Exception as e:
+            log("窓口の頼みを受付に積めない: %r" % (e,))
+            continue
+        append_jsonl(UKETORI, {"at": now_iso(), "from": "madoguchi", "text": text[:1000], "n": n})
+        append_jsonl(OUTBOX, {"ts": now_iso(), "n": "grok-tsuushin", "type": "grok_kara",
+                              "title": "Grokボットから頼みが届きました（窓口）", "message": text[:300] + ("（受付 %s 番）" % n if n else "")})
+        os.replace(fp, os.path.join(ud, "done", fn))
+        n_ok += 1
+    for fn in os.listdir(os.path.join(ud, "done")):
+        fp = os.path.join(ud, "done", fn)
+        if time.time() - os.path.getmtime(fp) > 30 * 86400:
+            os.remove(fp)
+    jotai["madoguchi_uketa"] = n_ok
+
+
 def _serve_mamoru(jotai, st):
-    """Grok からの質問に数秒で答える Claude の常駐（joy-relief-station・コマンドは打てない設定）。落ちていたら起こす。"""
+    """Grok からの質問に数秒で答える Claude の常駐（作業場は madoguchi・--full-access なし＝コマンドは打てない）。落ちていたら起こす。"""
     try:
         ps = subprocess.run(["ps", "-axo", "command"], capture_output=True, text=True, timeout=10).stdout
     except Exception:
         ps = ""
     alive = "network serve claude" in ps
     jotai["serve"] = "動いている" if alive else "止まっている"
-    if alive or not os.path.isdir(JRS):
+    if alive:
         return
     if time.time() - st.get("serve_kidou", 0) < 600:
         return
@@ -367,7 +424,7 @@ def _serve_mamoru(jotai, st):
     save(STATE, st)
     exe = reason_exe()
     subprocess.Popen(["python3", os.path.join(HERE, "1144_hanareru.py"), SERVE_OUT, exe, "network", "serve", "claude",
-                      "--cwd", JRS, "--name", "tamago-claude"], env=ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                      "--cwd", MADO, "--name", "tamago-claude"], env=ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     log("serve claude を起こした（--full-access なし）")
 
 
@@ -378,7 +435,9 @@ def _signin_tsuuchi(st):
         outbox("login_hitsuyou", "Reason Network のサインイン（初回だけ・1回）",
                "Grokボットにリアルタイムで届ける入口です。このリンクを開いて Google でサインイン→ネットワークを作る：%s （あとは工場が自動で続けます）" % link,
                key="signin")
-    elif time.time() - st.get("setup_at", 0) > 6 * 3600:
+    elif time.time() - st.get("setup_at", 0) > 1800:
+        # サインインの待ち（network __finish）が終わった後：もう一度 --no-browser で聞く。
+        # サインイン済みなら招待の行が出る（signin_ok）、まだなら新しいリンクが出る。ブラウザは開かない。
         setup(quiet=True)
 
 
