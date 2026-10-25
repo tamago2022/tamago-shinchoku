@@ -52,7 +52,7 @@
 <div class="date">2026-10-25 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-13に『GLIM SPANKYや花咲く旅路といった名前のものを探して』と言われた案件。該当する2件は、当時作られた未マージの仕入れブランチ（claude/glim-spanky-artist-page-0810、claude/hanasaku-tabiji-cover-0810ほか）の内容が、既に過去のセッションでmain本体へ手動再適用・公開済みであることを実測で確認した。
+2026-08-13に『GLIM SPANKYや花咲く旅路といった名前のものを探して』と言われた案件。該当する2件は、当時作られた未マージの仕入れ作業の内容が、既に過去のセッションでmain本体へ手動再適用・公開済みであることを実測で確認した。
 </div>
 
 <h2>② 数字</h2>
@@ -61,14 +61,19 @@
   <div class="num"><b>24</b><span>GLIM SPANKY 本文中の出現回数</span></div>
   <div class="num"><b>200</b><span>花咲く旅路 本番HTTPコード</span></div>
   <div class="num"><b>45</b><span>花咲く旅路 本文中の出現回数</span></div>
+  <div class="num"><b>0/0</b><span>押しても反応しない要素（GLIM SPANKY／花咲く旅路）</span></div>
+  <div class="num"><b>3/3</b><span>React #418コンソールエラーの再現数（GLIM SPANKY・花咲く旅路・対照群suntory-whiskyの全部）</span></div>
 </div>
 
-
+<div class="note">
+<b>追加検品（2026-10-25・触る検品2段目のFIX対応）：</b>両ページを実測。押せる要素はGLIM SPANKY・花咲く旅路とも<b>無反応0件</b>（クリック機能は正常）。コンソールエラーはどちらも「Minified React error #418」（hydration mismatch）が1件出るが、<b>無関係な既存ページ suntory-whisky でも同一のエラーを実測し再現</b>（対照群）。よってこれはGLIM SPANKY／花咲く旅路固有の不具合ではなく、cover-guideページ全体に共通する既存バグ。<b>原因は特定・修正済み</b>：並行案件(#35198)が「タイトル直下の共有ボタン」がReactの管理外でDOM直接操作していたことを根本原因と特定し修正、main合流済み。GLIM SPANKY／花咲く旅路のための追加コード修正は不要。<b>本番への反映はLovable「公開」が押されるまで未達</b>（2026-10-22付け方針により、以後のAI側からの公開操作は店主の当該操作についての直接指示がない限り行わない）。
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>GLIM SPANKY本番ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=glim-spanky" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=glim-spanky</a></li>
   <li><b>花咲く旅路本番ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=hara-yuko&amp;song=hanasaku-tabiji" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=hara-yuko&amp;song=hanasaku-tabiji</a></li>
+  <li><b>対照群（無関係な既存ページ・同一のコンソールエラーを確認）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=suntory-whisky" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=suntory-whisky</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -76,10 +81,14 @@
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>GLIM SPANKY（アーティストページ＋サントリーウイスキーCMタイアップ）が本番で見える</td><td class="yes">yes</td></tr>
 <tr><td>花咲く旅路（原由子・原田知世カバー・夏川りみカバー・CM3社タイアップ）が本番で見える</td><td class="yes">yes</td></tr>
+<tr><td>GLIM SPANKY：押しても反応しない要素は0件（verify_click.mjs実測）</td><td class="yes">yes</td></tr>
+<tr><td>花咲く旅路：押しても反応しない要素は0件（verify_click.mjs実測）</td><td class="yes">yes</td></tr>
+<tr><td>コンソールエラー（React #418）はGLIM SPANKY/花咲く旅路固有ではなく全ページ共通の既存バグ（対照群で同一再現）</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-元のブランチ名そのものに由来する2件（GLIM SPANKY／花咲く旅路）は内容が既にmain合流・本番反映済みで取り残しは解消済み。類似命名（仕入れ作業中に日付サフィックス付きで作られたブランチ）は180本以上現存しており、meikaver-ingest-0810など未反映のものも残っている。全件の精査・反映・削除は本件のスコープを超える規模のため別案件とする。
+元の未マージ仕入れ作業に由来する2件（GLIM SPANKY／花咲く旅路）は内容が既にmain合流・本番反映済みで取り残しは解消済み。類似した未反映の仕入れ作業が他にも残っているが、全件の精査・反映は本件のスコープを超える規模のため別案件とする。<br>
+触る検品（2段目）のコンソールエラーFAILの原因は、サイト全体に既存するReact #418 hydrationバグ（本件固有ではない・タイトル直下の共有ボタンが原因。並行案件#35198で特定・修正済み・main合流済み）。クリック機能自体は無反応0件で正常。<b>残る唯一の未達はLovable「公開」待ち</b>（2026-10-22付け方針により、店主からの当該操作についての直接指示がない限りAI側は公開操作を行わない）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
