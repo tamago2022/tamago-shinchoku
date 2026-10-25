@@ -35,6 +35,7 @@
 ### 1. たまごさんに確認を出さない
 
 - **質問しない。確認を求めない。一個ずつ立ち止まらない。**
+- **自分でできないことは、たまごさんに頼む前に、まず振り分け所に出す。** `python3 tools/furiwake.py dasu --yaritai "やりたいこと" --naze "自分でできない理由" --kanryo "完了条件" [--meirei "Macで打つ命令"]`（サンドボックスからでも出せる）。できること台帳（`status/furiwake/dekiru_daicho.json`・https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html ）から担当（工場・Grokボット・ChatGPT・Genspark・Dispatch）が自動で選ばれ、返事まで見張られる。**たまごさんに頼んでいいのは、パスワード・二段階認証・本人の判断だけ。**（2026-10-25・振り分け所）
 - **`request_cowork_directory` を呼ばない。**（フォルダは接続済み）
 - **内蔵ブラウザ／computer-use の `request_access` を呼ばない。**（たまごさんに許可ダイアログが飛ぶ）
 - **止まってよいのは次の4つだけ**：
@@ -84,10 +85,20 @@
   （bashのwhileループは起動時の本体を使い続ける）。**再起動させると二重起動事故**になるので触らない。
   心臓が毎周回で呼ぶ**Pythonファイルは毎回読み直される**ので、そこへ1行足すのが正しい入れ方。
 
+### 5.5 他の子の変更を上書きしない（2026-10-25）
+push の直前に main を取り直し、自分の差分だけを載せる。古い写しのファイルを丸ごと載せない（救急箱とXボタンが一度これで消えた）。
+`python3 tools/uwagaki_kanmon.py --push --repo <リポ> --msg "説明" 変えたファイル...` を使えば、取り直し・差分だけ・押し負けのやり直しまで機械がやる。
+
 ### 6. push だけでは本番は変わらない
 
 - **① 実装 → ② main合流 → ③ 「公開」を押す → ④ 本番URLを自分の目で確認 → ⑤ Dispatchへ報告**、ここまでで1セット。
 - **main合流だけは成果ゼロ。**「直しました」と言わない。
+- **tamago-shinchoku自身のshare/check/*.htmlは、mainへpushしただけでは本番(GitHub Pages)に出ない。**
+  配信経路は main push → machine_status_push.sh(launchd・15分おき) → `tools/pages_publish.sh`が
+  別枝gh-pagesへ10分クールダウン付きでforce push → そこだけをpages.ymlが検知してビルドする構造
+  （963番の設計。mainのpushはpages.ymlの対象外）。**404のまま報告へ行く前に、必ず
+  `bash tools/pages_publish.sh --force` を自分で1回叩いてから本番URLを確認する。**
+  （2026-09-30/2026-10-20/2026-10-26・3回目の再発。F-20260930011822/F-20261020103228/F-20261026073743）
 
 ### 7. 報告は短く
 
@@ -249,3 +260,5 @@
 
 ### 24. Dispatch・店主から受けた指示は、言われなくても共有メモに書く（2026-10-22・#1037）
 - **作業を始める前に `python3 tools/zen_ai_kyouyu.py kaku --dispatch --kikaku "企画名" --title "件名" --body "言われたこと・決まったこと・店主の入力待ち・次の作業"` を1回。**（gh不要・サンドボックスからも可。心臓が5分以内にラベル「店主の指示メモ」の企画Issueへ書く。無ければ作る。Grok Botが3時間ごとに読む）鍵・個人情報は書かない。
+
+- **X・YouTubeのリンクは、まず `python3 tools/link_yomu.py <URL>` で読む（本文・投稿者・日時・画像/動画の数・引用元・自分リプのリンク・YouTubeの字幕と説明欄。無料・ログイン不要・サンドボックスからも可）。読めなければGrokボットに共有メモ経由で頼む（`python3 tools/zen_ai_kyouyu.py kaku --title "このリンクを読んで" --body "<URL>"`）。たまごさんに「スクショください」と言わない。**（2026-10-25・link_yomu）
