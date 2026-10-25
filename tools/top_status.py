@@ -705,3 +705,7 @@ if __name__ == "__main__":
     # 2026-10-25 Grokボットとのリアルタイム通信（たまごさん「GitHubに書いても3時間おきにしか見ない。Bot同士みたいにリアルタイムに。全部仕組みで」）。
     #   共有メモに書いた瞬間の呼び鈴を Reason Network で Grok へ送る／Grok からの文を受付へ／serve claude の常駐を守る。中で50秒に間引く。
     _okosu("grok_tsuushin.py", "--tick")
+
+    # 2026-10-25 法務チェックの型（たまごさん「1人がチェックしただけだと漏れる。2人、3人、4人でクアドラプルチェックで」）。
+    #   Claude・Grok・ChatGPT・Genspark の判定を Issue のコメント等から集め、食い違いに🔴→たまごさんの1枚 share/check/houmu-<番号>.html。中で10分に間引く。
+    _okosu("houmu_check.py", "--tick")

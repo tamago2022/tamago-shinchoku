@@ -271,6 +271,11 @@ def tick(force=False):
         _ps = subprocess.run(["ps", "-axo", "command"], capture_output=True, text=True, timeout=10).stdout
     except Exception:
         _ps = ""
+    if not st.get("signed_in") and not signin_ok() and "--renew-loop" not in _ps and reason_exe():
+        subprocess.Popen(["python3", os.path.join(HERE, "1144_hanareru.py"), os.path.join(D, "renew.out"),
+                          "python3", os.path.abspath(__file__), "--renew-loop"], env=ENV,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        log("期限切れの出し直し係を起こした")
     if "network --no-browser" in _ps or "grok_tsuushin/install.sh" in _ps or "network __finish" in _ps:
         jotai["network"] = "サインイン待ち（setup が走っている）"
         write_jsonl(MACHI, machi)
@@ -435,10 +440,69 @@ def _signin_tsuuchi(st):
         outbox("login_hitsuyou", "Reason Network のサインイン（初回だけ・1回）",
                "Grokボットにリアルタイムで届ける入口です。このリンクを開いて Google でサインイン→ネットワークを作る：%s （あとは工場が自動で続けます）" % link,
                key="signin")
-    elif time.time() - st.get("setup_at", 0) > 1800:
-        # サインインの待ち（network __finish）が終わった後：もう一度 --no-browser で聞く。
-        # サインイン済みなら招待の行が出る（signin_ok）、まだなら新しいリンクが出る。ブラウザは開かない。
-        setup(quiet=True)
+    # 期限切れの出し直しは renew_loop（切れた瞬間・2026-10-25 たまごさん「30分ごと→切れた瞬間」）。
+
+
+SIGNIN_JSON = os.path.expanduser("~/.reason/network-sign-in.json")
+SIGNIN_NOW = os.path.join(D, "signin_now.txt")   # 今有効なリンクと期限（status/＝公開しない）
+
+
+def signin_jotai():
+    """Reason CLI のサインイン待ちの控え。{url, code, expiresAt(ms)} か {ended: "...expired..."}。"""
+    d = load(SIGNIN_JSON, {})
+    return d if isinstance(d, dict) else {}
+
+
+def _kigire(d):
+    if not d:
+        return False
+    if "expired" in (d.get("ended") or "").lower():
+        return True
+    e = d.get("expiresAt")
+    return bool(e) and time.time() * 1000 >= e
+
+
+def _dashinaosu(why):
+    """期限切れのリンクを捨てて、すぐ新しいリンクを出す（ブラウザは開かない）。"""
+    subprocess.run(["pkill", "-f", "network __finish"], capture_output=True)
+    time.sleep(1)
+    exe = reason_exe()
+    subprocess.Popen(["python3", os.path.join(HERE, "1144_hanareru.py"), SETUP_OUT, exe, "network", "--no-browser"],
+                     env=ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    old = signin_jotai().get("url")
+    for _ in range(60):
+        time.sleep(2)
+        d = signin_jotai()
+        if d.get("url") and d.get("url") != old and not _kigire(d):
+            _shirase(d, why)
+            return d
+        if signin_ok():
+            return {}
+    log("出し直したがリンクが出ない（%s）" % why)
+    return {}
+
+
+def _shirase(d, why=""):
+    exp = time.strftime("%H:%M", time.localtime(d["expiresAt"] / 1000)) if d.get("expiresAt") else "不明"
+    open(SIGNIN_NOW, "w", encoding="utf-8").write("%s\n期限 %s\n" % (d["url"], exp))
+    append_jsonl(OUTBOX, {"ts": now_iso(), "n": "grok-tsuushin", "type": "login_hitsuyou",
+                          "title": "Reason Network のサインイン（新しいリンク・%sまで）" % exp,
+                          "message": "%s （期限 %s。切れたら工場がすぐ出し直します）" % (d["url"], exp)})
+    log("新しいサインインのリンクを出した（%s・期限 %s）" % (why, exp))
+
+
+def renew_loop():
+    """期限の時刻まで眠り、切れた瞬間に出し直す（サインインが済むまで）。tick が1本だけ起こす。"""
+    while True:
+        if signin_ok() or load(STATE, {}).get("signed_in"):
+            log("サインイン済み：出し直し係を終える")
+            return 0
+        d = signin_jotai()
+        if _kigire(d) or not d.get("url"):
+            _dashinaosu("期限切れ")
+            continue
+        wait = max(1.0, d["expiresAt"] / 1000.0 - time.time() + 1) if d.get("expiresAt") else 30
+        time.sleep(min(wait, 30))
 
 
 def signin_ok():
@@ -530,6 +594,8 @@ def self_test():
     ok &= "［鍵は伏せた］" in t and "正本：https://github.com/x/y/issues/1" in t
     ok &= bool(KIKEN.search("sudo rm -rf /")) and not KIKEN.search("mkdir -p ~/.reason/bin && chmod +x reason") and not KIKEN.search("with passwordless sudo. If")
     ok &= _ts("2026-10-25T10:00:00+0900") > 0
+    ok &= _kigire({"ended": "The last sign-in link expired before it was used."}) and _kigire({"expiresAt": 1})
+    ok &= not _kigire({"expiresAt": (time.time() + 600) * 1000}) and not _kigire({})
     print("SELFTEST", "PASS" if ok else "FAIL")
     return 0 if ok else 1
 
@@ -545,12 +611,15 @@ def main(argv):
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--setup", action="store_true")
     ap.add_argument("--jotai", action="store_true")
+    ap.add_argument("--renew-loop", action="store_true")
     ap.add_argument("--self-test", action="store_true")
     a = ap.parse_args(argv)
     if a.self_test:
         return self_test()
     if a.setup:
         return setup()
+    if a.renew_loop:
+        return renew_loop()
     if a.tick:
         tick(force=a.force)
         return 0
