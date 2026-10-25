@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35226 OSレベルの自動実行の仕組み（launchd）実測確認 確認ページ</title>
+<title>#35226 OSレベルの自動実行の仕組み（launchd）実測確認・再提出 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,37 +47,38 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35226 OSレベルの自動実行の仕組み（launchd）実測確認</div>
-<h1>#35226 OSレベルの自動実行の仕組み（launchd）実測確認</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35226 OSレベルの自動実行の仕組み（launchd）実測確認・再提出</div>
+<h1>#35226 OSレベルの自動実行の仕組み（launchd）実測確認・再提出</h1>
 <div class="date">2026-10-26 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の指示(2026-08-13)「AIツールのスケジュール機能に頼らない、Mac自体が持ち続けるOSレベルの自動実行」は、2026-09-04〜09-26にかけて実装済みで、現在も稼働中であることを本日(2026-10-26)実測で確認した。launchd(macOS純正のOSサービス)がcom.tamago.*ジョブを管理しており、Claude Code・Cowork等のAIセッションが0本でも、Macの電源が入っていれば動き続ける。
+店主指示(2026-08-13)「AIツールのスケジュール機能に頼らず、Mac自体が持ち続けるOSレベルの自動実行」は launchd（macOS純正のOS機能）で実装済み・稼働中。1回目の確認ページはGitHub Pagesへの反映待ちで一時的に404だったため、今回は反映を実測してから出し直した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>17件</b><span>稼働中launchdジョブ数(com.tamago.*)</span></div>
-  <div class="num"><b>16/17件</b><span>RunAtLoad=true(Mac起動・ログイン時に自動で起き上がる)</span></div>
-  <div class="num"><b>PID 762</b><span>心臓(heartbeat)の現在の稼働プロセスID</span></div>
-  <div class="num"><b>約50分前</b><span>heartbeat.logの最新行(2026-10-26 05:55 JST)</span></div>
+  <div class="num"><b>18件</b><span>~/Library/LaunchAgents に登録済みのcom.tamago.*ジョブ数（今回実測で確認）</span></div>
+  <div class="num"><b>61秒</b><span>止まらない係(tomaranai)が自力で次の発車をした間隔（07:20:08→07:21:09、plistのStartInterval=60秒どおり）</span></div>
+  <div class="num"><b>2回</b><span>今回のセッションが何も起動していない間にログが進んだ実測回数（launchdだけで進んだ証拠）</span></div>
+  <div class="num"><b>0回</b><span>この実測中にheartbeat.sh/tomaranai.pyを自分で直接起動した回数（進みは全部launchd発）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>心臓の本体 heartbeat.sh</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/heartbeat.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/heartbeat.sh</a></li>
-  <li><b>止まらない係のplist(OSへの登録定義)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/com.tamago.tomaranai.plist" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/com.tamago.tomaranai.plist</a></li>
+  <li><b>止まらない係の設定(plist・StartInterval=60秒)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/com.tamago.tomaranai.plist" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/com.tamago.tomaranai.plist</a></li>
+  <li><b>心臓(heartbeat)の本体スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/heartbeat.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/heartbeat.sh</a></li>
+  <li><b>確認ページ本体(このページ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35226-os-level-autoexec.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35226-os-level-autoexec.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>心臓(heartbeat) KeepAlive</td><td class="yes">true＝落ちてもlaunchdが即座に再起動</td></tr>
-<tr><td>心臓(heartbeat) RunAtLoad</td><td class="yes">true＝Mac起動・ログイン時に自動起動</td></tr>
-<tr><td>止まらない係(tomaranai) StartInterval</td><td class="yes">60秒おきに自動で起こす</td></tr>
-<tr><td>AIセッション無しで動くか</td><td class="yes">launchdはOSのサービス。Claude Code/Coworkのプロセスが0本でも動く(launchctl list実測でPID確認)</td></tr>
+<tr><td>心臓(heartbeat)のKeepAlive</td><td class="yes">true＝launchdが落ちても即座に再起動</td></tr>
+<tr><td>心臓(heartbeat)のRunAtLoad</td><td class="yes">true＝Mac起動・ログイン時に自動起動</td></tr>
+<tr><td>止まらない係のStartInterval</td><td class="yes">60秒おきに自動で起こす(plist実物で確認)</td></tr>
+<tr><td>AIセッション0本でも進むか</td><td class="yes">07:20:08→07:21:09、61秒後に自力で次の行が書かれた(今回は何も起動していない)</td></tr>
 </table>
 
 <footer>
