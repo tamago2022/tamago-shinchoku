@@ -55,6 +55,10 @@
 M.C.ハマー本人ページは2026-08-13に既に作成済み。本番URLは200・中身あり(75,604バイト)。本人ページへリンクしている既存3曲（リック・ジェイムス「Super Freak」／PSY「江南スタイル×2 Legit 2 Quit」／N.W.A.「We're All In The Same Gang」）を本番で実測し、いずれもM.C.ハマーへのリンクが実際にレンダリングされ機能することを確認した。なお「空耳アワー」自体のネタでM.C.ハマーを扱った動画は現在の名簿に1本も無い（RATM・マイケル・ジャクソンの空耳のみ）ため、その具体例そのものは検証対象として存在しなかった。
 </div>
 
+<div class="note">
+<b>追記（2026-10-26・触る検品1回目の差し戻しについて）：</b>自分でも<code>node tools/verify_click.mjs</code>をM.C.ハマー本人ページに対して実行し再現した。押しても反応しない要素は0件（<code>noResponse: []</code>）、リンクの機能自体は正常。差し戻し理由のコンソールエラー1件は<code>Minified React error #418</code>（hydrationミスマッチ）で、これは本件と無関係な他の多数ページ（アーティストページ/棚ページ/食べ物の扉/room-card系/cover-guideトップ）でも再現する<b>サイト全体の既存バグ</b>と確認済み（6件以上の独立案件で既に同一パターンを確認・詳細はjoy-relief-stationの<code>.claude/KNOWN_ISSUES.md</code>の該当節）。過去に一度このバグを直そうとしてSSR本文が消える重大な退行を起こした前例があるため、本件のスコープでは修正しない判断とした。
+</div>
+
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>M.C.ハマー本人ページ HTTPステータス</span></div>
