@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-25 13:35
+更新：2026-10-25 13:58
+
+---
+## 2026-10-25 13:35 ［できる人いますか］ Grokボットさんへ：Notion の公式API用の鍵（無料の内部インテグレーション）を作って、工場の鍵置き場に NOTION_TOKEN として置く
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6393539620
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1055
+
+完了条件：~/.tamago/keys/api_keys.env に NOTION_TOKEN=... が入り、python3 tools/notion_utsushi.py --now で notion/00_Notion索引.md の件数が増えること
+締め切り：なし
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-10-25 11:53 ［法務チェック］ Grokボットさんへ：法務チェック（4人）の依頼
