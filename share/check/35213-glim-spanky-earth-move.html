@@ -52,14 +52,14 @@
 <div class="date">2026-10-26 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-曲ページ自体はコード側に実装済み・main合流済み。本番で出ていたコンソールエラー(React #418)の根本原因を特定したところ、同じ原因は2026-10-06のcommitで既にorigin/mainで修正済みと判明（useHydrated化）。本番に未反映なのはこのページだけの問題ではなく、Lovableの公開(Publish)がOAuth認証切れ(2026-10-14以降)＋Chrome起動禁止ゲートで止まっている、20件以上の既存案件と同一の構造的ブロッカー。コード側の追加修正は不要。
+曲ページ自体はコードとして既に組み込み済み。本番で出ていたエラーの原因を調べたところ、同じ原因は少し前の作業で既に直っていたと判明した。本番にまだ出ていないのはこのページだけの問題ではなく、Lovableの公開ボタンがOAuth認証切れ(2026-10-14以降)とChrome起動禁止の二重ロックで押せない、20件以上の他の案件とも共通する構造的な壁。これ以上コードを直す必要は無い。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>200</b><span>本番HTTPステータス(実測)</span></div>
-  <div class="num"><b>20+</b><span>同一原因でブロック中の既存案件数(PENDING_DECISIONS記録)</span></div>
-  <div class="num"><b>2026-10-14</b><span>Lovable公開のOAuth認証切れが続いている最後の成功日</span></div>
+  <div class="num"><b>20+</b><span>同一の壁でブロック中の他の案件数</span></div>
+  <div class="num"><b>2026-10-14</b><span>Lovable公開の認証が切れたままの開始日</span></div>
 </div>
 
 
@@ -73,12 +73,12 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>本番URL 200・中身あり</td><td class="yes">yes</td></tr>
-<tr><td>main合流(曲データ+hydration修正ともに祖先確認済み)</td><td class="yes">yes</td></tr>
-<tr><td>Lovable公開反映(OAuth認証切れでブロック中)</td><td class="yes">no</td></tr>
+<tr><td>曲データ・エラー修正ともに組み込み済み</td><td class="yes">yes</td></tr>
+<tr><td>Lovable公開反映(認証切れでブロック中)</td><td class="yes">no</td></tr>
 </table>
 
 <footer>
-原因：Lovable公開のOAuth refresh_tokenがinvalid_grantのまま2026-10-14以降復旧していない。自動公開(lovable-publish.mjs)はCDP付きChromeが必要だが、Chrome起動は1186号ゲートで例外なく禁止されている。戻し方：たまごさんが①公開専用Chromeを自分でCDP付きで開く、②1186号ゲートを一時解除する、③Lovable認証URLをログイン済みブラウザで開き直す、のいずれか1回。コード側の追加対応は無い。
+原因：Lovable公開の認証が切れたまま2026-10-14以降戻っていない。自動で公開する仕組みはブラウザの起動が必要だが、その起動自体が憲法で禁止されている。戻し方：たまごさんが①公開用の画面を自分で開く、②その禁止を一時的に外す、③Lovableの認証画面をログイン済みのブラウザで開き直す、のいずれか1回。コード側にできることは無い。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
