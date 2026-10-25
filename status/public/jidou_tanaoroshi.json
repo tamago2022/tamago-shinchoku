@@ -1,9 +1,9 @@
 {
- "at": "2026-10-25 11:00:19",
- "total": 145,
+ "at": "2026-10-25 12:01:32",
+ "total": 146,
  "kinds": {
   "心臓": 94,
-  "心臓の相乗り": 28,
+  "心臓の相乗り": 29,
   "launchd": 18,
   "Claudeの定期タスク（画面に通知が出る）": 1,
   "GitHub Actions": 4
@@ -1017,9 +1017,17 @@
    "name": "grok_tsuushin.py",
    "kind": "心臓の相乗り",
    "freq": "毎周（15秒・中で間引くものあり）",
-   "tsukuru": "記録だけ（status/grok_tsuushin/{machi,okutta,uketori}.jsonl〔500行で自分で刈る・待ちは7日で捨てる〕・state.json・log〔300行〕・setup.out・serve.out・install.sh〔次のsetupで上書き〕）・status/public/grok_tsuushin.json。Reason CLI を ~/.local/bin に1回入れる（公式install.sh・networkの道＝CLIのみ）。常駐 reason network serve claude（作業場 status/grok_tsuushin/madoguchi・--full-accessなし）を1本。madoguchi/yomu は毎分写し直し、uketsuke/done は30日で消す。作業場・ブラウザは作らない",
+   "tsukuru": "記録だけ（status/grok_tsuushin/{machi,okutta,uketori}.jsonl〔500行で自分で刈る・待ちは7日で捨てる〕・state.json・log〔300行〕・setup.out・serve.out・install.sh〔次のsetupで上書き〕）・status/public/grok_tsuushin.json。Reason CLI を ~/.local/bin に1回入れる（公式install.sh・networkの道＝CLIのみ）。常駐 reason network serve claude（作業場 status/grok_tsuushin/madoguchi・--full-accessなし）を1本。madoguchi/yomu は毎分写し直し、uketsuke/done は30日で消す。作業場・ブラウザは作らない。サインインが済むまで出し直し係（--renew-loop）を1本だけ常駐（期限の時刻まで眠り、切れた瞬間に新しいリンク→Dispatch。サインイン済みで自分で終わる）・signin_now.txt・renew.out",
    "okiba": "tamago-shinchoku/status/grok_tsuushin・~/.local/bin/reason・~/.config/reason",
    "kesu": "自分（jsonl 500行・log 300行・待ち7日）。serve は1本だけ（ps で確かめてから起こす）"
+  },
+  {
+   "name": "houmu_check.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "記録（status/houmu_check/<回>/{kai.json,kaitou/*.md}・state.json・log・src/ の公式出典の写し）＋公開 status/public/houmu_check.json・share/check/houmu-<Issue番号>.html。GitHubのIssue・コメント・ラベル、Genspark AI Drive /できる人いますか/<番号>.md、grok_tsuushin・zen_ai_kyouyu の待ち行列へ1行。ブラウザ・複製・一時フォルダは作らない",
+   "okiba": "tamago-shinchoku/status/houmu_check ／ status/public ／ share/check",
+   "kesu": "自分で刈る（log 300行）。kai.json・ページは法務の記録として残す（1回1ファイル・数KB）。src/ は出典の写しで回ごとに上書き"
   },
   {
    "name": "com.tamago.auth1177",
