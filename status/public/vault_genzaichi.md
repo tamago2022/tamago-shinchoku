@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-25 10:34:24・hash=4fca756e0860 -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-25 10:44:49・hash=287aabd33abe -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -74,6 +74,11 @@
 - 説明文：10-15アダム・ローズ修正で全非表示→10-23 truthGateが出典なし2,024件を隠した。Wikipediaと照合して618件復活済み。残り約1,100件はCodexの枠が戻りしだい自動で続き（Mac の outputs/tool/tsuzuki2.sh）、263件はWikipediaが見つからず未復活。
 - 決まり：説明文を消す・隠すのは、たまごさんのその日の名指しだけ（prebuild check-about-keep.mjs）。
 - 止まっている：ウケるの棚（DB）への追加＝DBに書く道が無い（Lovable MCP 401・service_role鍵なし）。
+
+## 2026-10-25 Grokボットとリアルタイムでつなぐ（Reason Network）
+- 入口＝Reason Network（無料・Grokボット自身が #1035 で依頼）。工場のMacに reason 0.2.596 を入れた。道具 tools/grok_tsuushin.py（心臓毎分）：共有メモに書いた瞬間に Grok へ呼び鈴／Grokからの文は受付へ／serve claude（作業場 status/grok_tsuushin/madoguchi・コマンド不可）。
+- GitHub直通 .github/workflows/grok-yobirin.yml（joy-relief-station 4fb636ffe）：Grokが Secrets GROK_WEBHOOK_URL と変数 GROK_YOBIRIN=1 を入れるまで skip。
+- 止まっていること：たまごさんの初回サインイン1回（リンクは Dispatch に出した）→ Grok側の参加（#1052 で依頼・締め切り10/26）。
 
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
