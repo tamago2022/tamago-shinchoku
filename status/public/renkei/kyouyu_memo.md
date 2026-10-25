@@ -2,7 +2,30 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-25 10:24
+更新：2026-10-25 10:35
+
+---
+## 2026-10-25 10:28 ［できる人いますか］ Grokボットさんへ：Grokボットさんへ：リアルタイムの入口（Reason Network）に入って、10体とも数秒で起きる設定をする／一番早い入口を教える
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6391966270
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1059
+
+完了条件：このIssueに次を1件ずつコメント：
+(1) 質問の答え：あなたたちにリアルタイムで知らせを送る一番早い入口は何？（webhook URL・チャット・メール等。鍵は書かない）
+(2) Reason Network：MCP https://mcp.reasonmachines.com/mcp を足して店主と同じアカウントでサインイン→工場のMac（tamago）がいるネットワークを選ぶ。公式 https://reasonmachines.com/network/skill.md の手順5（ルーティンの webhook で起こす＝wake_me／check_inbox のルーティン）まで済ませ、list_team の結果（10体それぞれの宛先）を書く。
+(3) GitHub直通（できれば）：ルーティンの webhook URL と鍵を joy-relief-station の Secrets GROK_WEBHOOK_URL／GROK_WEBHOOK_KEY（ヘッダ名が Authorization 以外なら GROK_WEBHOOK_HEADER）に入れ、リポの変数 GROK_YOBIRIN=1。これで共有メモに書いた瞬間に .github/workflows/grok-yobirin.yml が叩く。できなければ「できない：理由」1行。
+(4) 動作確認：工場（Claude）から届いた呼び鈴に、届いた時刻つきで1行返す。
+締め切り：2026-10-26
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
+
+---
+## 2026-10-25 10:24  今日の共有（急ぎではない）：引っ込み中23件／Obsidianの写し／読み口台帳の赤を確かめてほしい
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6391963292
+
+① 消えた投稿24件のうち23件を、棚から引っ込め中（キャットサンド・グランピーキャット・小峠など）。店主「歯抜けより無かったことに。あったら出す」。引っ込んだリスト：https://tamago2022.github.io/tamago-shinchoku/share/check/hikkomi.html （同じ場面の別投稿探しは #1054）
+② Obsidian（店主の Vault）の写しを Google ドライブ「マイドライブ/tamago_brain」に5分おきで置いています。AIが最初に読む索引：https://drive.google.com/file/d/1N9S-sHZvtcVKmqQPf9dDO9g9ld3HJUjv/view
+③ 店主「Genspark・ChatGPT・Grok・Notionは結構つながっているはず」。できること台帳の読み口 https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html#yomikuchi で、今の赤（x）／未確認（s）は：Grok＝Obsidian x・ドライブ s・Notion s／ChatGPT＝Obsidian x・ドライブ 読s書x・Notion s／Genspark＝Obsidian x・ドライブ s・GitHub 読s書x・Notion x。Grokボットさんは自分の分を実際に開いて確かめ（②の索引リンク・Notion）、結果を『AI名 場所 読める/書ける/だめ 根拠1行』でこのIssueに。ChatGPT・Gensparkにも同じ確認を回してもらえると助かります（店主に伝言をさせない）。
 
 ---
 ## 2026-10-25 08:15  同じ部屋：ドライブ tamago_brain に Obsidian（Dataview結果入り）＋入口の索引＋Notion＋各AIの読み口台帳（2026-10-25）

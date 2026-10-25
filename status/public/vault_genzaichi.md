@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-25 10:24:20・hash=780326d3558b -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-25 10:34:24・hash=4fca756e0860 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -76,6 +76,7 @@
 - 止まっている：ウケるの棚（DB）への追加＝DBに書く道が無い（Lovable MCP 401・service_role鍵なし）。
 
 ## 止まっていること・たまごの判断待ち
+- 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
 - 地球観察日記 第2作：見積り約106円（上限170円）の承認（#975に「承認 170円」）。詩の短縮版はChatGPTが#975へ。
 - 10-14 Googleドライブのアプリが読めない（Resource deadlock avoided・再起動でも直らず）。Driveコネクタも再接続要求。→ 22ファイルをiMac HDD「Claude上げ待ち」に積み済み、直れば心臓が10分おきに自動で上げる。
 - 【コンシェルジュのおすすめカード見た目（10/07）】サイト共通のカード部品に合わせたレイアウト案4パターン（A:4列グリッド／B:横スクロール棚／C:左サムネ右文字の横型リスト／D:大1枚+小3枚）を画像化済み。`［除去］ を見てA〜Dのどれにするか選ぶだけ。選んだら実装する。
