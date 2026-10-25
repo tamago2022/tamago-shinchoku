@@ -78,6 +78,29 @@ def rec(kind, naoshita, what, detail=""):
     return row
 
 
+def _kurikaeshi_block(i):
+    """2026-10-26・#35224の無限ループで発見：`naosu_stuck()`は`redoCount`しか見ず、
+    `touchCheckFailCount`（触る検品の失敗）だけでstuck化した項目はタイトルが
+    正当な作業指示（`_yuurei_kanda`がFalse）であるため、ここまでは常にwaitingへ
+    無条件で戻っていた。だが失敗理由(failReasons)が同じ文面で繰り返されている
+    ケース（例：Lovable公開ブロックのような外部要因）は、戻しても同じ結果になる
+    だけ。1142自身の条件②「やり直して安全（冪等）」を満たさないため、
+    取り消さず・waitingへも戻さず、stuckのまま保留して人の目に残す。
+    """
+    try:
+        import redo_guard
+        total = redo_guard.redo_total(i)
+    except Exception:
+        total = (int(i.get("redoCount") or 0) + int(i.get("touchCheckFailCount") or 0)
+                  + int(i.get("aiVerifyFailCount") or 0) + int(i.get("ownerRedoCount") or 0))
+    if total < 3:
+        return False
+    reasons = [r for r in (i.get("failReasons") or []) if r]
+    if len(reasons) < 2:
+        return False
+    return len(set(reasons[-3:])) <= 1
+
+
 def _yuurei_kanda(title):
     """1377番（2026-09-28）：たまごさんの相槌が「判定日赤｜」付きqueue項目として
     無限に stuck→waiting→running を繰り返し、複数セッションが空振りし続けた事故の
@@ -104,13 +127,17 @@ def naosu_stuck():
     #   （1142の3条件のうち②「やり直して安全」を満たさない＝毎回同じ徒労になる）
     yuurei = [i for i in all_stuck
               if int(i.get("redoCount") or 0) >= 2 and _yuurei_kanda(i.get("title"))]
-    target = [i for i in all_stuck if i not in yuurei]
-    if not target and not yuurei:
+    # ★2026-10-26（#35224の無限ループで発見）：タイトルは正当な作業指示でも、
+    #   同じ失敗理由が繰り返し出ている項目はwaitingへ戻さずstuckのまま保留する。
+    kurikaeshi = [i for i in all_stuck if i not in yuurei and _kurikaeshi_block(i)]
+    target = [i for i in all_stuck if i not in yuurei and i not in kurikaeshi]
+    if not target and not yuurei and not kurikaeshi:
         return rec("stuck", True, "固まった案件は0件", "")
     if DRY:
-        return rec("stuck", False, "固まった案件 %d件・うち幽霊項目%d件（下見だけ）"
-                   % (len(target), len(yuurei)),
-                   "／".join(str(i.get("n")) for i in (target + yuurei)[:10]))
+        return rec("stuck", False,
+                   "固まった案件 %d件・幽霊項目%d件・繰り返しブロック%d件（下見だけ）"
+                   % (len(target), len(yuurei), len(kurikaeshi)),
+                   "／".join(str(i.get("n")) for i in (target + yuurei + kurikaeshi)[:10]))
     # ★触る前に必ず控えを取る（1コマンドで戻せる形）
     try:
         bak = os.path.join(STATUS, "_1142_gomi")
@@ -134,14 +161,22 @@ def naosu_stuck():
         i["restoreWhy"] = ("1142_fukkyuu：%d回やり直しても具体的な作業指示が無い"
                             "（たまごさんの相槌・感想の類）ため取り消し（1377番の再発防止）"
                             % int(i.get("redoCount") or 0))
+    for i in kurikaeshi:
+        i["repeatBlockedAt"] = now().isoformat()
+        i["restoreWhy"] = ("1142_fukkyuu：同じ失敗理由が繰り返されたためwaitingへ戻さず"
+                            "stuckのまま保留（外部要因の疑い。状況が変わるまで人の確認待ち。"
+                            "#35224の無限ループ再発防止）")
     tmp = p + ".tmp1142"
     json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(tmp, p)
     detail = "／".join(str(i.get("n")) for i in target[:10])
     if yuurei:
         detail += "（うち取り消し：%s）" % "／".join(str(i.get("n")) for i in yuurei)
-    return rec("stuck", True, "固まった案件 %d件を順番待ちへ戻した（幽霊項目%d件は取り消し）"
-               % (len(target), len(yuurei)), detail)
+    if kurikaeshi:
+        detail += "（うち繰り返しブロックで保留：%s）" % "／".join(str(i.get("n")) for i in kurikaeshi)
+    return rec("stuck", True,
+               "固まった案件 %d件を順番待ちへ戻した（幽霊項目%d件は取り消し・繰り返しブロック%d件は保留）"
+               % (len(target), len(yuurei), len(kurikaeshi)), detail)
 
 
 # ── ①' 順番待ち(waiting)のまま列を占有し続ける幽霊項目を取り消す ──────────
