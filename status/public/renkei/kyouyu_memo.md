@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-25 21:58
+更新：2026-10-25 22:25
+
+---
+## 2026-10-25 22:17 ［GLIM SPANKY判定日赤35205］ 35205番：再確認のみ・結論変わらず
+https://github.com/tamago2022/joy-relief-station/issues/1067#issuecomment-6398159529
+
+触る検品2段目1回目FAIL(18:36)を受けて再調査。結論は前走(#35205既報)と同一：データ側(GLIM SPANKY/花咲く旅路)はmain合流・本番反映済み。hydration#418は全ページ共通の既存バグ(f02b01031でmain合流済み、対照群suntory-whiskyでも再現)、35205固有ではない。残るはLovable公開のみ、2026-10-22のP0方針(店主コミット39ef7198f)により店主の直接指示が無い限りAIは公開操作をしない。新規コード変更なし。依頼文は1773_tanomanai_kanmonでPASS確認済み。
 
 ---
 ## 2026-10-25 20:19  

@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-25 21:57:53・hash=0c1ff184954b -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-25 22:18:01・hash=2c5c403e56b8 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -124,13 +124,13 @@
 - 2026-10-11 名カバーの棚を許可制に（台帳 src/lib/meiCoverLedger.ts＝たまごさん指定だけ表示・prebuild点検 check-meicover-gate）。25件を外し（1語で戻せる：MEI_COVER_UNDO_20261011）、風をあつめて(Josh Turner)を追加。ハートは全サイト一時非表示（HEARTS_VISIBLE）。文字マークは左下・英語、グッドカバーだけ左上。added_by列のmigrationは未適用なら台帳だけで動く。
 
 <!-- 自動まとめ:始 -->
-## 今日までに届いた更新（自動まとめ・1日1回／2026-10-24 11:38）
+## 今日までに届いた更新（自動まとめ・1日1回／2026-10-25 22:03）
 
+- **35199番:大塚食品ページ汚染調査**（10-25 11:53）main反映(8932b5ca6)まで完了。仁鶴・松山容子の持ち歌から無関係動画4件除去(竹内まりや/尾崎豊/五木ひろし＆市川由紀乃/生活笑百科)、二重の部屋(otsuka-chemical-bon-curry)は2026-08-13に統合済みと確認。Lovable公開はCDP:9223未開通(1186号のChrome起動禁止で自分では直せない、既知の構造的ギャップの3回目再発)で本番は未反映のまま
+- **振り分け所（できる人いますか）**（10-25 03:54）2026-10-25 稼働。tools/furiwake.py（心臓2分おき）＋できること台帳 status/furiwake/dekiru_daicho.json・share/check/furiwake.html。ラベル「できる人いますか」＋Issue型を joy-relief-station に設置。試し#1051（gdrive_md_mirror install.sh）を工場が実行→Drive tamago_brain 7756/7846本・launchd登録yes・rsync rc=23で約90本未転送。次：未転送の原因、Codex枠の生死、Gensparkが受付を読むか
+- **35188号・美空ひばり愛燦燦の本人映像確認**（10-24 19:43）2026-08-12指示の対象を特定(KIMIKAカバー混入疑い)→2026-08-13に既に修正済み(aiCovers双方向)と実測確認。新規実装なし、記録push済み。本番 https://joy-relief-station.lovable.app/cover-guide?artist=misora-hibari&song=aisansan で200・本人映像(dTa3WS6wmz8)とKIMIKAカバーバッジ両方確認。次の一手なし(完了)
 - **35183号 サクサク担当**（10-24 11:38）店主2026-08-12依頼：今後もパフォーマンス不具合を継続的に見る担当としてこのセッションを使いたい。新規担当は作らず既存role『速さ・挙動不審の修理担当』にalias『サクサク担当』『サクサク』『黒画面』『黒画面フリーズ』『フリーズ』を統合済み(joy-relief-station .claude/playbooks/roles.json、npm run role -- サクサク担当 で呼べる)。同時期に調べていた管理画面黒画面フリーズの原因はA(Suspenseフォールバック、2026-09-03合流済み)とB(OnboardingOverlayのlocalStorage判定、com
 - **35183番 サクサク担当**（10-24 11:38）店主2026-08-12『今後もこの手のパフォーマンス不具合を継続的に見てもらう担当としてこのセッションを使う』を受け、新規担当は作らず既存の常設見回り役割『速さ・挙動不審の修理担当』（id:perf）へ『サクサク担当』をaliasとして統合済み（joy-relief-station origin/main .claude/playbooks/roles.json 381-398行目、npm run role -- サクサク担当 で呼べる）。同時期の管理画面『黒画面フリーズ』調査も合流：原因A(Suspenseフォールバック・2026-09-03合流)に加え原因B(オンボーディング暗幕のloc
-- **35166号**（10-23 04:17）店主2026-08-12依頼『コア層/詳細層どこに何を書いたか』の確認ページ完成・main合流・gh-pages反映・本番URL200を実測確認。副産物：pages.yml配信パイプが9時間ゾンビ詰まり中だったのを発見しconcurrencyグループ更新で解除(過去5回目の再発)。
-- **Give Me the Night 曲ページ**（10-22 17:19）main 5f4c0f6f0：2ページを1つに（-2→転送）、amassのX投稿をエピソード枠にカードで、元記事ボタン。本番は10/22 03:02から公開停止中（花咲く旅路の5枚が棚の関所で落ちる）。外すかはたまごさん判断待ち
-- **全AIへの共有メモ（#1037）**（10-22 16:25）Grokボットが3時間ごとに読む正本＝joy-relief-station ラベル「店主の指示メモ」のIssue（1企画1本）。公式LINE＝#1039、全体像＝#1040。#1018にも告知。工場の道具 tools/zen_ai_kyouyu.py（kaku＝待ち行列、心臓5分おきに書く、3時間ごとに工場が受けた指示をまとめて#1040へ、公開の写し status/public/renkei/kyouyu_memo.md、Genspark AI Drive /ごきげん補給所_全AI共有メモ.md）。子への枷24に追加。
 
 （子セッションは Vault に直接書かない。status/genzaichi_kouho.md に追記→夜にここへ1回だけ反映）
 <!-- 自動まとめ:終 -->
