@@ -1,0 +1,24 @@
+{
+  "_setsumei": "ごきげん補給所（joy-relief-station.lovable.app）が読み込む外部の道具の一覧。2026-10-25 法的リスク6点の監査で、本番HTML（トップ・曲ページ・特集・マガジン）と origin/main（10f3441ee）を実物で確認。",
+  "kakunin_bi": "2026-10-25",
+  "google_fonts": {"tsukatte_iru": false, "konkyo": "本番CSS styles-D22qnck-.css に fonts.googleapis/gstatic 0件・@font-face 0件。src/・public/ の全ファイルにも0件。文字はOSのフォント（system-ui 等）だけ"},
+  "rokuga_kei": {
+    "clarity_hotjar_fullstory_logrocket_posthog_ほか": "コードに無し（見つかった語は曲名・訳文の中の言葉だけ）",
+    "lovable_events": {
+      "script": "/__l5e/events.*.js（Lovableが本番に自動で入れる）",
+      "rokuga_kinou": "中に rrweb の録画機能あり。ただし動くのは script 札に data-replay=\"rrweb\" と data-replay-sample-rate>0 がある時だけ。本番の札には無い＝録画は止まっている（rrweb-record.js も読まれていない）",
+      "moshi_ugoita_baai": "入力欄は全部伏せ字（maskAllInputs:true、email・password・textarea も）"
+    }
+  },
+  "gaibu": [
+    {"mono": "/~flock.js", "dare": "Lovable", "nani": "ページの閲覧数の計測（自サイト経由 /~api/analytics → tinybird）", "itsu": "全ページ"},
+    {"mono": "/__l5e/events.*.js", "dare": "Lovable", "nani": "エラー・操作の計測。録画は無効", "itsu": "全ページ"},
+    {"mono": "i.ytimg.com / img.youtube.com / i9.ytimg.com", "dare": "Google（YouTube）", "nani": "動画のサムネイル画像", "itsu": "曲ページ・棚・特集・マガジン（開いた時点で読む）"},
+    {"mono": "www.youtube.com/embed・iframe_api / www.youtube-nocookie.com/embed", "dare": "Google（YouTube）", "nani": "動画の再生（マガジンは押した時に nocookie 版）", "itsu": "再生時・曲ページ"},
+    {"mono": "https://www.tiktok.com/embed.js", "dare": "TikTok", "nani": "TikTok動画の埋め込み", "itsu": "TikTokを載せた曲ページ（CoverGuidePageBody）"},
+    {"mono": "https://platform.twitter.com/widgets.js", "dare": "X", "nani": "ポストの埋め込み", "itsu": "Xを載せたカード・watch ページ（VideoCard・watch.tsx）"},
+    {"mono": "upload.wikimedia.org / thumb.wikimedia.org", "dare": "Wikimedia", "nani": "マガジンの風景写真", "itsu": "マガジン"},
+    {"mono": "Supabase", "dare": "Supabase（米国）", "nani": "目安箱・メール登録の保存、閲覧の記録", "itsu": "送信時・閲覧時"}
+  ],
+  "share_link_dake": "x.com・facebook.com・threads.com・web.whatsapp.com・social-plugins.line.me・b.hatena.ne.jp・tiktok.com はリンクだけ（押すまで何も読まない）"
+}
