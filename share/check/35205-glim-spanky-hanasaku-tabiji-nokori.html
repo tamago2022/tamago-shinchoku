@@ -66,7 +66,7 @@
 </div>
 
 <div class="note">
-<b>追加検品（2026-10-25・触る検品2段目のFIX対応）：</b>node tools/verify_click.mjs で両ページを実測。押せる要素はGLIM SPANKY（27件テスト中）・花咲く旅路（3件テスト中）とも<b>無反応0件</b>（クリック機能は正常）。コンソールエラーはどちらも「Minified React error #418」（hydration mismatch）が1件出るが、<b>無関係な既存ページ suntory-whisky でも同一のエラーを実測し再現</b>（対照群）。よってこれはGLIM SPANKY／花咲く旅路固有の不具合ではなく、cover-guideページ全体に共通する既存バグ（2026-08-01から店主へ2回報告済み・35198番で既発見・`.claude/KNOWN_ISSUES.md`に記録済み・本番JSにソースマップが無く圧縮コードからの根本特定は過去2回断念）であることを3件目の独立した実測として確認した。
+<b>追加検品（2026-10-25・触る検品2段目のFIX対応）：</b>node tools/verify_click.mjs で両ページを実測。押せる要素はGLIM SPANKY（27件テスト中）・花咲く旅路（3件テスト中）とも<b>無反応0件</b>（クリック機能は正常）。コンソールエラーはどちらも「Minified React error #418」（hydration mismatch）が1件出るが、<b>無関係な既存ページ suntory-whisky でも同一のエラーを実測し再現</b>（対照群）。よってこれはGLIM SPANKY／花咲く旅路固有の不具合ではなく、cover-guideページ全体に共通する既存バグ。<b>原因は特定・修正済み</b>：並行案件#35198（4回目調査）が`src/components/ShareBar.tsx`の`ShareUnderTitle`（タイトル直下の共有ボタン。Reactの管理外でDOM直接操作していた）を根本原因と特定し、`requestAnimationFrame`二重化で修正、commit `f02b01031`としてorigin/mainへ合流済み。GLIM SPANKY／花咲く旅路のための追加コード修正は不要。<b>本番への反映はLovable「公開」が押されるまで未達</b>（2026-10-22付けP0方針により、以後のAI側からの公開操作は店主の当該操作についての直接指示がない限り行わない）。
 </div>
 
 <h2>④ 押せるリンク</h2>
@@ -88,7 +88,7 @@
 
 <footer>
 元のブランチ名そのものに由来する2件（GLIM SPANKY／花咲く旅路）は内容が既にmain合流・本番反映済みで取り残しは解消済み。類似命名（仕入れ作業中に日付サフィックス付きで作られたブランチ）は180本以上現存しており、meikaver-ingest-0810など未反映のものも残っている。全件の精査・反映・削除は本件のスコープを超える規模のため別案件とする。<br>
-触る検品（2段目）のコンソールエラーFAILは、サイト全体に既存するReact #418 hydrationバグ（本件固有ではない・35198番で既発見・ソースマップ無しで本番からの根本特定は断念済み）が原因。クリック機能自体は無反応0件で正常。
+触る検品（2段目）のコンソールエラーFAILの原因は、サイト全体に既存するReact #418 hydrationバグ（本件固有ではない・ShareBar.tsxのShareUnderTitleが原因。並行案件#35198で特定・修正済み・commit f02b01031でmain合流済み）。クリック機能自体は無反応0件で正常。<b>残る唯一の未達はLovable「公開」待ち</b>（2026-10-22付けP0方針により、店主からの当該操作についての直接指示がない限りAI側は公開操作を行わない。方針の詳細はai-brain/company-os/AI_ACTION_BOUNDARIES_2026-10-22.md）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
