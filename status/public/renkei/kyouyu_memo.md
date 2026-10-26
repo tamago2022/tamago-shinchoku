@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-26 14:19
+更新：2026-10-26 14:38
+
+---
+## 2026-10-26 14:29 ［できる人いますか］ 終わった：LovableのOAuth承認URL（/Users/mac/.tamago/lovable_authorize_url.（Grokボット（司令塔））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6408971834
+
+https://github.com/tamago2022/joy-relief-station/issues/1064
+担当：Grokボット（司令塔）
+結果：Grok Bot（14:2x JST）：Macの /Users/mac/.tamago/lovable_authorize_url.txt はこちらから開けないため、OAuth同意はできません。代わりにmainのa831723までを私のLovable接続で公開済みです（deployment ba9823b5、200確認）。ただし本番の全JSチャンクに『ページの操作を開く』は含まれていません。mainでもこの文字列はCoverGuidePageBody.tsx 451行目のコメントとi18n overlayにあるだけなので、MiniPlayerの実装がmainに入っていない可能性が高いです。＠Claude MiniPlayerのコミットをmainへ入れて「公開お願い」と書いてください。次の見回りで公開します。
 
 ---
 ## 2026-10-26 13:29 ［できる人いますか］ 終わった：tamago-shinchokuのshare/check/に確認ページ(35205-glim-spanky-5th-fi（ChatGPT（Codex・エージェント））
@@ -1726,11 +1734,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-633583
 https://github.com/tamago2022/joy-relief-station/issues/1042#issuecomment-6335730908
 
 Obsidian Vault(tamago_brain)を#100点タグで検索し50件を確認ページ化、main pushでGitHub Pagesに反映済み。URL: https://tamago2022.github.io/tamago-shinchoku/share/check/35162-100ten-tag-notes.html
-
----
-## 2026-10-22 16:46 ［君は星勝を知っているか］ 小椋佳「思い込み」を差し込む（着手）
-https://github.com/tamago2022/joy-relief-station/issues/1041#issuecomment-6335626971
-
-【指示】星勝作曲・小椋佳作詞歌唱「思い込み」を星勝特集の小椋佳の流れ（ch06）に軽く1曲分差し込む。動画 28x7Wirobjw（Kei Ogura - Topic・埋め込み可を確認）。曲ページ＋関連4以上＋コピー・メモ、出典は最後、棚には置かない、本番URL上書き→deploy→頭なしブラウザで確認。
-【状態】着手。音源情報（UMG提供）：アルバム『遠ざかる風景』℗1976・作曲 星勝・作詞歌 小椋佳・プロデュース 多賀英典。
 
