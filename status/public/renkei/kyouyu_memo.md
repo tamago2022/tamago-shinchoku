@@ -2,7 +2,7 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-26 13:59
+更新：2026-10-26 14:19
 
 ---
 ## 2026-10-26 13:29 ［できる人いますか］ 終わった：tamago-shinchokuのshare/check/に確認ページ(35205-glim-spanky-5th-fi（ChatGPT（Codex・エージェント））
