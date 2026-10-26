@@ -52,33 +52,39 @@
 <div class="date">2026-10-26 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-Final View特集ページ(本人のチベット旅行体験記)のヒーロー写真と祈祷旗写真の背景に、コントラスト・彩度を上げビネット(縁を暗くする加工)を足した映画的カラーグレーディングを実装し、サイトの土台へ合流済み。2026-08-13深夜の音声依頼は対象特定の文脈が復元不能だったため、サイト内で最も一致する実在箇所(Final View特集)を選び実装した推定対応で、正式な対象確認は振り分け所へ依頼済み・本人判断待ち。<br>本番(Lovable)への公開は、2026-10-14から続く認証切れに加え、2026-10-22のたまごさんの指示で「新しい個別の指示が無い限りAIはLovableを操作しない」方針になったため、AI側では進められない。たまごさん本人が公開ボタンを押すまで反映されない。
+2026-08-13深夜の音声依頼「本人がその近所かなんかに絵晴れてる時に絵出してぱし合ったiPhoneで撮ったやつだから、それをもっと魅力的な背景にしてきれい、映画きれいに見えるようにして」は対象特定の文脈が復元不能だったため、サイト内で最も一致する実在箇所(Final View特集・Nujabes、本人のチベット旅行体験記)を選び実装した推定対応(35224号と同一作業)。ヒーロー写真と祈祷旗写真にコントラスト・彩度アップ+ビネット(縁を暗くする加工)の映画的カラーグレーディングを実装し、サイトの土台(main)へ合流。本番(Lovable)を実測したところ、既に反映され稼働していることを確認した(以前の「公開待ち」は解消済み)。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2/2</b><span>カラーグレーディングを加えた画像(ヒーロー写真+祈祷旗写真)・サイトの土台へ合流済み</span></div>
-  <div class="num"><b>0/1</b><span>本番(Lovable)への公開反映(本人の操作待ち)</span></div>
+  <div class="num"><b>2/2</b><span>カラーグレーディングを加えた画像(ヒーロー写真+祈祷旗写真)</span></div>
+  <div class="num"><b>1/1</b><span>本番(Lovable)で実測確認(filter:contrast/saturate・ビネットが本番HTMLに実在)</span></div>
+  <div class="num"><b>13/13</b><span>押せる要素の反応確認(全39件中13件サンプル・コンソールエラー0件)</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>加工前(元写真そのまま)</b><img src="img/35224-final-view-before.png" alt="前"></div>
+  <div class="shot after"><b>加工後(本番で実際に表示中)</b><img src="img/35224-final-view-after.png" alt="後"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番ページ(現状・公開待ちのため未反映)</b><a href="https://joy-relief-station.lovable.app/feature/final-view" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/feature/final-view</a></li>
+  <li><b>本番ページ(Final View特集)</b><a href="https://joy-relief-station.lovable.app/feature/final-view" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/feature/final-view</a></li>
+  <li><b>同一作業の確認ページ(#35224)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35224-final-view-cinematic-live.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35224-final-view-cinematic-live.html</a></li>
   <li><b>進捗表(工場の状況一覧)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>サイトの土台への合流</td><td class="yes">yes</td></tr>
-<tr><td>見た目や動きが崩れていないか(文字だけの変更)</td><td class="yes">yes</td></tr>
-<tr><td>本番(Lovable)への公開反映</td><td class="no">no</td></tr>
+<tr><td>本番ページで加工済みCSSが実在するか(contrast/saturate)</td><td class="yes">yes</td></tr>
+<tr><td>押しても無反応の要素が無いか(verify_click.mjs)</td><td class="yes">yes</td></tr>
+<tr><td>対象特定が音声から確実か(推定対応であることの明記)</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-このページは #35225 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #35225 のセッションが tools/make_check_page.py で自動生成した確認資料。35224号と同一の実装作業。以前のバージョンは404・非公開リンク・スクショ欠落の不備があったため作り直した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
