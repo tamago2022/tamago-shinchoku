@@ -52,14 +52,14 @@
 <div class="date">2026-10-27 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-N.W.A.・PSY・Rick Jamesの曲ページからM.C.ハマー本人ページへのリンクは、本番(Lovable)で実際に機能することを2026-10-27 19:2x JSTに再実測して確認した。N.W.A.の曲ページで<code>node tools/verify_click.mjs</code>を実行し、「MC Hammer / U Can't Touch This」ボタンを実際に押して別UIへ切り替わる動作まで確認済み（consoleErrorCount:0・noResponseCount:0・PASS 14/14・全73件）。M.C.ハマー本人ページ側も同様にPASS（consoleErrorCount:0・noResponseCount:0・PASS 9/9・全76件）。過去2回の検品落ち（コンソールエラー1件／確認ページ404）の真因は判明済み：①確認ページ404はpush直後の反映待ちタイムラグで、現在は両ファイルとも本番200で解消。②コンソールエラーは案件#35224（棚の日替わりシャッフルがローカル時刻を使っていたためSSR/CSRの日付がJST00時〜09時台だけズレるhydration不一致。原因・修正ともmainに合流済みで祖先確認済み）が原因で、JST0-9時台だけ再現する時間依存バグ。今回19時台の実測では2回とも0件で再現しなかった。このバグ自体はM.C.ハマー固有ではなくサイト全体の既知バグで、本件(#35228)のスコープ外。公開中のLovable本番にはこの#35224修正がまだ反映されていない（OAuth鍵が2026-10-14から失効・再同意はブラウザ操作が必要なためDispatchへ委任済み・振り分け所チケットfw-20261027184328-234a7／Issue #1075・返答待ち）が、#35228本体（M.C.ハマー本人ページとそこへのリンク機構）自体は2026-08-13から本番で稼働中であり、今回の実測でも正常動作を確認した。
+N.W.A.・PSY・Rick Jamesの曲ページからM.C.ハマー本人ページへのリンクは、本番(Lovable)で実際に押して機能することを確認した。N.W.A.の曲ページ（King Tee/Ice-T/MC Hammer等のコラボ曲）で<code>node tools/verify_click.mjs</code>を実行し、押しても無反応な要素は0件（21件中21件がPASS）。M.C.ハマー本人ページ側も同じURLを4回繰り返し実測し、押しても無反応な要素は4回とも0件だった（＝リンク先ページ自体も正常に動く）。一方、コンソールエラー(React #418)は4回中1回だけ出て3回は出なかった＝時刻に関係なく間欠的に出る既存の全サイト共通バグで、原因は未特定（35220/34397/34409/34604号など複数案件で同一症状が既記録、修正を試みて失敗・副作用でrevertされた前例もある）。前回・前々回の差し戻しで「JST0-9時台だけ再現する」と書いたのは誤りだったため、この実測を根拠に訂正した（失敗台帳 F-20261027195651-quick）。M.C.ハマー本人ページ自体は2026-08-13から本番で稼働中。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2/2</b><span>2026-10-27 19時台の再実測でconsoleErrorCount:0（N.W.A.・本人ページ両方）</span></div>
-  <div class="num"><b>0</b><span>押しても無反応だった要素(noResponseCount、両ページとも)</span></div>
-  <div class="num"><b>JST0-9時</b><span>コンソールエラー(#418)が再現する時間帯(原因確定済み・本件スコープ外)</span></div>
+  <div class="num"><b>0/4</b><span>押しても無反応だった要素(noResponseCount)。4回実測とも0件＝リンクは常に機能</span></div>
+  <div class="num"><b>1/4</b><span>コンソールエラー(#418)が出た回数。時刻に関係ない間欠バグ(既知・原因未特定・本件スコープ外)</span></div>
+  <div class="num"><b>21/21</b><span>N.W.A.曲ページでのクリック検品PASS件数</span></div>
 </div>
 
 <h2>③ 実データでのスクリーンショット</h2>
@@ -79,8 +79,8 @@ N.W.A.・PSY・Rick Jamesの曲ページからM.C.ハマー本人ページへの
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>リンク元→本人ページの機構(コード)</td><td class="yes">実装済み・コードレベルで動作確認</td></tr>
 <tr><td>本番ページが200で中身あり</td><td class="yes">yes</td></tr>
-<tr><td>本番でクリック検品が無エラー(2026-10-27 19時台・2ページ再実測)</td><td class="yes">yes(2/2・consoleErrorCount:0)</td></tr>
-<tr><td>JST0-9時台のみ再現する既知バグ(#418)の原因・修正</td><td class="yes">確定済み・mainへ合流済み(本件スコープ外・公開はDispatch委任中)</td></tr>
+<tr><td>本番でクリックしても無反応な要素(noResponseCount、mc-hammerページ4回実測)</td><td class="yes">yes(4/4・常に0件)</td></tr>
+<tr><td>既存バグ(#418)の時間帯限定説は実測で誤りと判明・訂正</td><td class="no">時刻と無関係な間欠バグ(発生率約25%・原因未特定・本件スコープ外)</td></tr>
 </table>
 
 <footer>
