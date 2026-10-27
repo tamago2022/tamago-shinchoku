@@ -43,7 +43,11 @@ concurrency:
   # 2026-10-23（35166番）：再発。run id 39828690567 が2026-10-22T18:08:03Zから
   # "in_progress"のまま9時間以上止まり（ステップ更新なし）、後続run 39837693356が
   # "pending"のまま進めなかった。同じ直し方（グループ名を進める）で隔離する。
-  group: pages-2026-10-23
+  # 2026-10-27（35246番）：再発。gh-pages側は7a81f548cまで正常にforce push済み
+  # （raw.githubusercontentで200・実体確認済み）だが、公開先(tamago2022.github.io)が
+  # 404のまま＝gh-pagesへのpushはActionsのデプロイを一度も完走させられていない。
+  # 同じ直し方（グループ名を進める）で隔離する。
+  group: pages-2026-10-27
   cancel-in-progress: false
 jobs:
   deploy:
