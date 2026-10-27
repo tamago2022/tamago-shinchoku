@@ -588,6 +588,10 @@ if __name__ == "__main__":
     #   リンクを貼れる所は貼り、足りない所は直す便を積み、Dispatch へ1行（tools/magazine/magazine_gate.py）
     _okosu("magazine/magazine_gate.py", "--daily")
 
+    # 2026-10-27 白飛びの見張り（1日1回・中で20時間に間引く・Macが混んでいたら次の回）：本番を全場面コマ撮りし、
+    #   一瞬だけ出る白が1コマでもあれば Dispatch へ1行＋印（koutai_kanmon --pre-publish が白飛びを直す公開以外を止める）
+    _okosu("shirotobi_mimawari.py", "--daily")
+
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:

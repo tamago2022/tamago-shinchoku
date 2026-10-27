@@ -53,7 +53,7 @@ const now = () => Date.now() - t0;
 function send(method, params = {}) {
   const id = ++idn;
   ws.send(JSON.stringify({ id, method, params }));
-  return new Promise((res, rej) => { pend.set(id, { res, rej }); setTimeout(() => { if (pend.has(id)) { pend.delete(id); rej(new Error("timeout " + method)); } }, 30000); });
+  return new Promise((res, rej) => { pend.set(id, { res, rej }); setTimeout(() => { if (pend.has(id)) { pend.delete(id); rej(new Error("timeout " + method)); } }, Number(process.env.SHIRO_TIMEOUT || 30000)); });
 }
 async function ev(expr) {
   const r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true });
@@ -76,7 +76,7 @@ try {
       const n = frames.length;
       const f = `f${String(n).padStart(5, "0")}.jpg`;
       writeFileSync(join(OUT, f), Buffer.from(d.params.data, "base64"));
-      frames.push({ f, t: now(), url: null });
+      frames.push({ f, t: now(), url: null, sy: Math.round(d.params.metadata?.scrollOffsetY ?? -1) });
       ws.send(JSON.stringify({ id: ++idn, method: "Page.screencastFrameAck", params: { sessionId: d.params.sessionId } }));
     }
   });
@@ -90,7 +90,7 @@ try {
   await send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
   await send("Page.startScreencast", { format: "jpeg", quality: 60, maxWidth: 390, maxHeight: 844, everyNthFrame: 1 });
 
-  for (const s of STEPS) {
+  for (const s of STEPS) { try {
     let at = now();
     let done = "";
     if (s.kind === "goto") { await send("Page.navigate", { url: s.url }); done = s.url; }
@@ -140,7 +140,7 @@ try {
     await sleep(1500);
     const u = await ev("location.href").catch(() => "?");
     events[events.length - 1].landed = u;
-  }
+  } catch (e) { events.push({ error: String(e), step: s.label }); } }
   await send("Page.stopScreencast");
   await sleep(500);
 } catch (e) {
