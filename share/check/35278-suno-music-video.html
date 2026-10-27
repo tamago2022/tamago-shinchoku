@@ -52,12 +52,13 @@
 <div class="date">2026-10-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主の質問『Sunoのアカウントを取ったら、こういう曲を作っておいてと頼んで、生成された曲の上に絵を当てて合わせることはできるか』への調査結果。結論＝<b>できます</b>。Sunoの公式Web UIに加え、サードパーティAPI（例：sunoapi.org）が『曲生成』『Music Video Generation（曲に絵・映像を合わせて動画化）』の両方をAPIとして提供している。店主がSunoの有料アカウントを取り、API利用登録をすれば、Claude Codeから①曲の指示を送って生成→②生成物に画像を当てて動画化、までを自動化できる。
+店主の質問『Sunoのアカウントを取ったら、こういう曲を作っておいてと頼んで、生成された曲の上に絵を当てて合わせることはできるか』を調査。結論＝<b>できる</b>。Suno公式サイトに加え、サードパーティAPI(sunoapi.org)が『曲をテキスト指示で生成』するAPIと、生成した曲に画像を合わせて動画化する<code>create-music-video</code>という専用APIエンドポイントの両方を提供していることを実際にsitemapとAPIドキュメントを取得して確認した。店主がSunoの有料アカウントとAPI利用登録を済ませれば、Claude Codeから①曲の指示を送って生成→②生成物に画像を当てて動画化、までを自動化できる。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+  <div class="num"><b>2</b><span>確認した項目(曲生成/動画化)のうち実現可能だった数</span></div>
+  <div class="num"><b>200</b><span>suno.com・docs.sunoapi.org 両方のHTTP応答(生きている)</span></div>
 </div>
 
 
@@ -65,15 +66,16 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>Suno公式サイト</b><a href="https://suno.com" target="_blank" rel="noopener">https://suno.com</a></li>
-  <li><b>サードパーティAPIドキュメント(sunoapi.org・Music Video Generation機能の記載あり)</b><a href="https://docs.sunoapi.org" target="_blank" rel="noopener">https://docs.sunoapi.org</a></li>
+  <li><b>サードパーティAPIドキュメント(sunoapi.org)</b><a href="https://docs.sunoapi.org" target="_blank" rel="noopener">https://docs.sunoapi.org</a></li>
+  <li><b>曲に画像を合わせて動画化するAPI(create-music-video)の実在ページ</b><a href="https://docs.sunoapi.org/suno-api/create-music-video" target="_blank" rel="noopener">https://docs.sunoapi.org/suno-api/create-music-video</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>曲をテキスト指示で生成</td><td class="yes">yes</td></tr>
-<tr><td>生成した曲の上に絵(画像)を当てて動画化</td><td class="yes">yes</td></tr>
-<tr><td>今すぐClaude Codeが無断で実行できるか</td><td class="no">no（Sunoアカウント取得・API契約はお金が動くため店主の明示的な許可が必要）</td></tr>
+<tr><td>曲をテキスト指示で生成できるか</td><td class="yes">yes</td></tr>
+<tr><td>生成した曲に絵(画像)を当てて動画化するAPIが実在するか(create-music-video)</td><td class="yes">yes</td></tr>
+<tr><td>今すぐClaude Codeが店主の許可なしに実行してよいか</td><td class="yes">no</td></tr>
 </table>
 
 <footer>
