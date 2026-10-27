@@ -1,0 +1,18 @@
+[
+  { "kind": "cold", "url": "/", "label": "①初回アクセス：トップ", "wait": 7000 },
+  { "kind": "click", "sel": "a[href^=\"/cover-guide\"]", "label": "③SPA：トップ→案内所" },
+  { "kind": "click", "sel": "a[href*=\"/cover-guide?artist=\"]", "label": "③SPA：案内所→曲" },
+  { "kind": "play", "sel": "[data-one-tap] button||button[aria-label*=\"再生\"]||[aria-label*=\"再生\"]||[data-one-tap]", "label": "⑤動画の埋め込み（曲ページ）", "wait": 6000 },
+  { "kind": "click", "sel": "main a[href*=\"/cover-guide?artist=\"]", "label": "③SPA：曲→関連の曲" },
+  { "kind": "click", "sel": "a[href^=\"/shelf/\"], a[href^=\"/world/\"]", "label": "③SPA：→棚", "fallbackUrl": "/shelves" },
+  { "kind": "back", "label": "④戻る1" },
+  { "kind": "back", "label": "④戻る2" },
+  { "kind": "reload", "label": "③フルリロード（曲ページ）", "wait": 6000 },
+  { "kind": "cold", "url": "/magazine/ikareru-01.html", "label": "①初回：マガジン（暗い）", "wait": 6000 },
+  { "kind": "click", "sel": "a[href*=\"/cover-guide?artist=\"]", "label": "⑦暗→明：マガジン→曲ページ（フル）" },
+  { "kind": "back", "label": "⑦明→暗：戻る" },
+  { "kind": "cold", "url": "/feature/citypop-sekai", "label": "①初回：特集", "wait": 6000 },
+  { "kind": "play", "sel": "[data-one-tap] button||button[aria-label*=\"再生\"]||[aria-label*=\"再生\"]", "label": "⑤動画の埋め込み（特集）", "wait": 6000 },
+  { "kind": "click", "sel": "a[href*=\"/cover-guide?artist=\"]", "label": "⑦特集→曲ページ" },
+  { "kind": "cold", "url": "/shelves", "label": "①初回：棚一覧（⑥画像の枠）", "wait": 6000 }
+]

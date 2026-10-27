@@ -11,7 +11,7 @@
  * 使い方: node tools/shirotobi_sokutei.mjs <出力フォルダ> [基点URL]
  */
 import { spawn } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -23,7 +23,9 @@ mkdirSync(OUT, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // 押す順番：トップ →（下タブ等のリンクで）案内所 → 曲ページ → 特集 → マガジン（別HTML）→ 戻る → 戻る
-const STEPS = [
+// 2026-10-27 全場面版：SHIRO_STEPS=<JSON> で押す順番を差し替える（tools/shirotobi_zenbamen.json）。
+//   kind: cold（キャッシュを消し、about:blank を目印の紫に塗ってから開く＝初回アクセス）／goto／reload／click／back／play（押すだけ・遷移は待たない）
+const STEPS = process.env.SHIRO_STEPS ? JSON.parse(readFileSync(process.env.SHIRO_STEPS, "utf-8")).map((s) => (s.url && s.url.startsWith("/") ? { ...s, url: BASE + s.url } : s)) : [
   { kind: "goto", url: BASE + "/" },
   { kind: "click", sel: 'a[href^="/cover-guide"]', label: "トップ→案内所" },
   { kind: "click", sel: 'a[href*="/cover-guide?artist="]', label: "案内所→曲ページ" },
@@ -89,9 +91,28 @@ try {
   await send("Page.startScreencast", { format: "jpeg", quality: 60, maxWidth: 390, maxHeight: 844, everyNthFrame: 1 });
 
   for (const s of STEPS) {
-    const at = now();
+    let at = now();
     let done = "";
     if (s.kind === "goto") { await send("Page.navigate", { url: s.url }); done = s.url; }
+    else if (s.kind === "cold") {
+      // 初回アクセス：キャッシュを消し、空のページを紫（#ff00ff）に塗る。以後に出る白は、すべて新しいページ側の白。
+      await send("Network.clearBrowserCache").catch(() => {});
+      await send("Page.navigate", { url: "about:blank" });
+      await sleep(400);
+      await ev("document.documentElement.style.background='#ff00ff';document.documentElement.style.minHeight='100%';1").catch(() => {});
+      await sleep(400);
+      at = now();
+      await send("Page.navigate", { url: s.url }); done = s.url;
+    }
+    else if (s.kind === "reload") { await send("Page.reload", { ignoreCache: false }); done = "reload"; }
+    else if (s.kind === "play") {
+      const hit = await ev(`(()=>{const sels=${JSON.stringify(s.sel)}.split("||");for(const q of sels){const a=[...document.querySelectorAll(q)].find(x=>{const r=x.getBoundingClientRect();return r.width>40&&r.height>40});if(a){a.scrollIntoView({block:"center"});setTimeout(()=>a.click(),300);return q}}return null})()`).catch(() => null);
+      done = hit ? "押した " + hit : "押す所なし";
+      events.push({ t: now(), label: s.label || "再生", target: done });
+      await sleep(s.wait || 6000);
+      events[events.length - 1].landed = await ev("location.href").catch(() => "?");
+      continue;
+    }
     else if (s.kind === "back") { done = String(await ev("history.back(),location.href")); }
     else {
       // 人が押すのは画面が動く状態になってから。マガジン（別のHTML）以外では、最初の描画が終わった印（__jrsHydrated）を最大20秒待つ。
@@ -106,7 +127,7 @@ try {
     }
     events.push({ t: at, label: s.label || "開く", target: done });
     // 着くまで待つ：進行バー（data-nav-progress）が消え、骨組み（data-route-skeleton）も無くなるまで（最大20秒）。そのあと1.5秒見る。
-    await sleep(s.kind === "goto" ? 8000 : 600);
+    await sleep(s.kind === "goto" || s.kind === "cold" || s.kind === "reload" ? (s.wait || 6000) : 600);
     const until = Date.now() + 20000;
     while (Date.now() < until) {
       const busy = await Promise.race([
