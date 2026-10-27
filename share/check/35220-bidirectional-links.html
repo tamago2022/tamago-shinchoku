@@ -57,22 +57,28 @@
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>7件→0件</b><span>壊れた接続（片道リンク、機械検査の実測）</span></div>
+  <div class="num"><b>7件→0件</b><span>壊れた接続（片道リンク、origin/main上でdetect-unlinked-nodes.mjs実測）</span></div>
   <div class="num"><b>5</b><span>修正した原曲アーティスト</span></div>
-  <div class="num"><b>7</b><span>解消したカバーとの片道リンク</span></div>
+  <div class="num"><b>5組/5組</b><span>ローカルdevサーバーで相互リンク表示を確認（成功）</span></div>
+  <div class="num" style="border-color:var(--aka);"><b>0組/5組</b><span>本番(Lovable)での反映確認（今回の追加実測・未反映）</span></div>
 </div>
 
-
+<div class="note" style="border-left:3px solid var(--aka);">
+<b>追記（2026-10-27・本番を直接curlで実測）：</b>mainのコードは正しく動くことをローカルdevサーバーで確認したが、本番(joy-relief-station.lovable.app)のHTMLを詳しく調べたところ、5アーティストのどのオブジェクトにも新しい<code>aiCovers</code>データが入っていない（<code>songs</code>配列の直後に直接<code>sources</code>が続く＝追加分が無い）ことが分かった。<code>status/lovable_publish_state.json</code>を見ると<code>mainUnpublished:true</code>・2026-10-25以降「CDP未開通」でLovableの「公開」ボタンが複数回押せていない。Chromeの起動・再起動はこのセッションでは憲法(1186号・たまごさんの画面に選択ダイアログが出る事故の再発防止)で禁止されているため、このセッション自身は公開を実行できなかった。公開作業は振り分け所(furiwake)へ依頼した：<code>fw-20261027195651-1eb88</code>。
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番：Bob Dylan「Knockin&#x27; on Heaven&#x27;s Door」（既存分・双方向を継続確認）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=bob-dylan&amp;song=knockin-on-heavens-door" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=bob-dylan&amp;song=knockin-on-heavens-door</a></li>
+  <li><b>本番：John Lennon（David Bowieのカバーはまだ出ない＝未反映の実例）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=john-lennon" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=john-lennon</a></li>
+  <li><b>本番：David Bowie（香港1983のImagineカバー自体は曲ページにあるが、John Lennon側からの戻りリンクはまだ無い）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=david-bowie" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=david-bowie</a></li>
+  <li><b>振り分け所（公開作業の依頼・進捗一覧）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html</a></li>
 </ul>
 
 
 
 <footer>
-この回で直したのは大沢誉志幸(Chara/Tokimeki Records/SHANTI)・John Lennon(David Bowie)・Sade(大橋トリオ)・Stevie Wonder(Intro)・松任谷由実(Rita Coolidge)の5アーティスト7本。mainへの反映は完了済みだが、Lovableの「公開」はこのセッションにブラウザ操作ツールが無く実行できなかった。本番(joy-relief-station.lovable.app)へは次に公開が押された時に反映される。壊れた接続の実測は before 7件 / after 0件。スクリーンショットは今回のセッションにブラウザ操作ツールが無いため取得できず、機械検査の件数を証拠とする。
+この回で直したのは大沢誉志幸(Chara/Tokimeki Records/SHANTI)・John Lennon(David Bowie)・Sade(大橋トリオ)・Stevie Wonder(Intro)・松任谷由実(Rita Coolidge)の5アーティスト7本。mainへの反映・ローカルでの動作確認は完了済み。壊れた接続の実測は before 7件 / after 0件（origin/main上）。しかし本番(joy-relief-station.lovable.app)を直接調べた結果、この5件はまだ本番データに反映されていない（0組/5組）。原因はLovableの「公開」ボタンが2026-10-25以降CDP未開通で押せていないこと。Chrome起動がこのセッションでは憲法上禁止のため自力で公開できず、振り分け所へ依頼済み(fw-20261027195651-1eb88)。スクリーンショットはブラウザ操作ツールが無いため取得できず、curlで取得したHTML実文字列の有無を証拠とする。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
