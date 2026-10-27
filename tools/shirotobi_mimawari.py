@@ -73,12 +73,20 @@ def matome(res):
 
 
 def sokutei(name):
-    p = subprocess.run(["bash", os.path.join(HERE, "shirotobi_zen.sh"), name, PROD], capture_output=True, text=True, timeout=3600)
-    j = os.path.join(ST, "shirotobi", name + ".json")
-    try:
-        return json.load(open(j, encoding="utf-8"))
-    except Exception:
-        return {"error": (p.stdout + p.stderr)[-400:]}
+    """場面表を2つに分けて測る（1本が長いと畳む係に止められるため・1本10分前後）→ 結果を1つにまとめる"""
+    allres = {"base": PROD, "場面": [], "真っ白コマ合計": 0, "白い箱コマ合計": 0}
+    for part in ("a", "b"):
+        nm = "%s-%s" % (name, part)
+        env = dict(os.environ, SHIRO_STEPS_FILE=os.path.join(HERE, "shirotobi_zenbamen_%s.json" % part), SHIRO_CPU="1", SHIRO_TIMEOUT="90000")
+        p = subprocess.run(["bash", os.path.join(HERE, "shirotobi_zen.sh"), nm, PROD], capture_output=True, text=True, timeout=3600, env=env)
+        try:
+            r = json.load(open(os.path.join(ST, "shirotobi", nm + ".json"), encoding="utf-8"))
+        except Exception:
+            return {"error": (p.stdout + p.stderr)[-400:]}
+        allres["場面"] += r.get("場面", [])
+        allres["真っ白コマ合計"] += r.get("真っ白コマ合計", 0)
+        allres["白い箱コマ合計"] += r.get("白い箱コマ合計", 0)
+    return allres
 
 
 def run(force=False):
@@ -100,14 +108,14 @@ def run(force=False):
         return 1
     n, line = matome(res)
     out = {"ts": now().isoformat(), "result": "PASS" if n == 0 else "FAIL", "shirokoma": n, "ichigyou": line,
-           "koma": "share/check/shirotobi/%s/" % name if n else None, "bamen": res.get("場面")}
+           "koma": "share/check/shirotobi/%s-a/ ・ %s-b/" % (name, name) if n else None, "bamen": res.get("場面")}
     _write(PUB, out)
     if n:
         _write(TOMERU, {"ts": now().isoformat(), "ichigyou": line, "made": (now() + datetime.timedelta(hours=48)).isoformat()})
         with open(OUTBOX, "a", encoding="utf-8") as f:
             f.write(json.dumps({"ts": now().isoformat(), "from": "shirotobi_mimawari", "type": "shirotobi",
                                 "title": "白飛びが本番に出ました（毎日の見張り）",
-                                "message": line + "\nコマ：share/check/shirotobi/%s/ ／ 測り方：tools/shirotobi_zen.sh" % name},
+                                "message": line + "\nコマ：share/check/shirotobi/%s-a/・%s-b/ ／ 測り方：tools/shirotobi_zen.sh" % (name, name)},
                                ensure_ascii=False) + "\n")
     else:
         try:
