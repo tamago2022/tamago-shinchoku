@@ -1,9 +1,9 @@
 {
- "at": "2026-10-27 23:48:58",
- "total": 146,
+ "at": "2026-10-28 00:51:54",
+ "total": 147,
  "kinds": {
   "心臓": 94,
-  "心臓の相乗り": 29,
+  "心臓の相乗り": 30,
   "launchd": 18,
   "Claudeの定期タスク（画面に通知が出る）": 1,
   "GitHub Actions": 4
@@ -828,6 +828,14 @@
    "tsukuru": "記録だけ（status/public/uwagaki_kanmon.json・status/.uwagaki_mimawari_at・outboxに1行）。push用の一時索引は tempfile で作り finally で消す",
    "okiba": "tamago-shinchoku/status",
    "kesu": "自分（一時フォルダは finally で削除）／記録は youryou_jougen"
+  },
+  {
+   "name": "shirotobi_mimawari.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "$TMPDIR/shirokoma-*（頭なしブラウザのコマ・一時プロフィール）／status/shirotobi/*.json／share/check/shirotobi/<日付>/（白いコマの写しだけ）",
+   "okiba": "$TMPDIR・tamago-shinchoku/status/shirotobi・share/check/shirotobi",
+   "kesu": "shirotobi_zen.sh が終わるときに $TMPDIR の作業場を消す（trap EXIT）＋shirotobi_mimawari.kataduke が share/check/shirotobi を7日で消す"
   },
   {
    "name": "toukou_mimawari.py",
