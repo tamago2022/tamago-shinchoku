@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35277 サティ×フェヴリエは本番で生きている／コンソールエラーは既知の全ページ共通バグ 確認ページ</title>
+<title>#35272 中身の確認（判定日赤） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,45 +47,37 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35277 サティ×フェヴリエは本番で生きている／コンソールエラーは既知の全ページ共通バグ</div>
-<h1>#35277 サティ×フェヴリエは本番で生きている／コンソールエラーは既知の全ページ共通バグ</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35272 中身の確認（判定日赤）</div>
+<h1>#35272 中身の確認（判定日赤）</h1>
 <div class="date">2026-10-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-サティのページ・フェヴリエのページは本番で200応答・本文あり・双方向リンクあり、クリック可能要素も全て反応する。前回差し戻された「コンソールエラー1件」は、このページ固有の不具合ではなく、cover-guide系・room系・world系の非常に多くのページで6件以上の独立セッションが確認済みの既存バグ（React error #418・ハイドレーション不一致）。同じURLを4回連続で検品すると、1回だけ出て3回は出ない間欠的な現象であることを今回新たに実測した。
+この番号の依頼文『ごパターン作ってさ、使い回してもいいと思うし。』は、2026-08-13の長い音声メモ（たまごさんのスマホ入力）が機械的に短く断片分割されたうちの1つで、AI作曲/生成サービスを月額契約し『5パターン』ほど作って使い回す、というたまごさんの思いつき・雑談の中核部分だけが独立チケットとして誤登録されたものと判明しました（同じバッチの#35265・#35266・#35269・#35270・#35271・#35273〜35278も同じ音声メモの断片）。どのサービス・どの用途を指すか特定できる情報が無く、直すべきコード・ページは存在しません。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>200</b><span>erik-satieページ HTTPステータス</span></div>
-  <div class="num"><b>200</b><span>jacques-fevrierページ HTTPステータス</span></div>
-  <div class="num"><b>1/4</b><span>同一URLを4回連続検品した時のコンソールエラー発生回数</span></div>
-  <div class="num"><b>0件</b><span>押しても無反応だった要素の件数（4回とも）</span></div>
+<div class="note">（数字なし）</div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>サティのページ（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=erik-satie&amp;song=gymnopedie-no-1" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=erik-satie&amp;song=gymnopedie-no-1</a></li>
-  <li><b>フェヴリエのページ（本番）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=jacques-fevrier&amp;song=iere-gymnopedie" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=jacques-fevrier&amp;song=iere-gymnopedie</a></li>
+  <li><b>この番号の元データ(queue.json該当箇所)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/queue_n35272_note.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/queue_n35272_note.md</a></li>
+  <li><b>#35271の先行調査メモ（同バッチの兄弟チケット）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/queue_n35271_note.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/queue_n35271_note.md</a></li>
+  <li><b>#35271の確認ページ（同じ扱いの前例）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35271-fragment-no-content.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35271-fragment-no-content.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>erik-satieページが200で返る</td><td class="yes">yes</td></tr>
-<tr><td>jacques-fevrierページが200で返る</td><td class="yes">yes</td></tr>
-<tr><td>サティ側にフェヴリエへの双方向リンクが入っている(collaborators)</td><td class="yes">yes</td></tr>
-<tr><td>1回目の検品：コンソールエラー</td><td class="yes">no</td></tr>
-<tr><td>2回目の検品：コンソールエラー</td><td class="yes">yes</td></tr>
-<tr><td>3回目の検品：コンソールエラー</td><td class="yes">no</td></tr>
-<tr><td>4回目の検品：コンソールエラー</td><td class="yes">no</td></tr>
-<tr><td>4回とも押しても無反応の要素</td><td class="yes">0件</td></tr>
+<tr><td>対応するコード変更</td><td class="no">存在しない（依頼文に実装対象の指定なし）</td></tr>
+<tr><td>同バッチの兄弟チケット(#35265/#35266/#35269/#35270/#35271)の扱い</td><td class="yes">同じく断片のため人の目での確認待ちへ送られている（前例）</td></tr>
 </table>
 
 <footer>
-React error #418は美空ひばりページ・cover-guide一覧ページ・/world系ページ等、無関係な多数のページでも同様に再現する全体共通の既存バグ（本番の過去セッションが6件以上独立に確認・原因候補と安全な直し方の申し送りあり）。トップページ(/)では再現しないため、cover-guide/room/world系ページに共通するコンポーネントが原因と見られ、個別ページのデータや新規実装の問題ではない。
+このページは #35272 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
