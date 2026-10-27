@@ -79,6 +79,11 @@
 <tr><td>本文に『サティ』『ジムノペディ』の文字列が入っている</td><td class="yes">yes</td></tr>
 </table>
 
+<h2>⑥ 触る検品(verify_click.mjs)で出たコンソールエラーについて（2026-10-28追記）</h2>
+<div class="note">
+サティのページを4回連続で検品したところ、4回とも<code>Minified React error #418</code>（hydration mismatch）が出た。押せるボタンは76件中テスト分すべて反応あり(無反応0件)で、ページ自体の動作・内容には問題なし。この#418は本ページ固有の不具合ではなく、<b>サイト全体で既に複数回報告・原因未特定のまま残っている既存バグ</b>（status/failures.jsonl: F-20260928101738-quick／F-20261004054833-quick／F-20261004203643-quick／F-20261021073655-quick／F-20261027181848-quick／F-20261027195651-quick）。過去に強制的な直し方を試したところSSR本文が消える副作用が出て revert 済み(F-20260928120927-quick)。このチケットの中で新たに無理な修正は行わず、既存の未解決バグとして扱う。
+</div>
+
 <footer>
 このページは #35277 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
