@@ -1,0 +1,822 @@
+{
+ "_": "同時に動く子どうしの上書きの見張り（tools/uwagaki_kanmon.py）",
+ "at": "2026-10-28 04:33:50",
+ "mita": 17,
+ "mitsuketa": {
+  "837cbb0f8": {
+   "subject": "fix: 直前の 648115b0 で消してしまった救急箱（9de7ab48）の5行を戻す",
+   "kieta": [
+    {
+     "file": "src/components/CoverGuidePageBody.tsx",
+     "tashita": "eac96e5b1",
+     "gyou": "{ key: \"x\", label: \"X\", url: official?.x },"
+    }
+   ]
+  },
+  "648115b03": {
+   "subject": "feat(search,related): 棚名・説明・裏タグで全棚を検索に効かせる（見出し撤去・棚は一覧の先頭に自然に）／あるある系と愛燦燦の版どうしの関連に愛燦燦を散らす（2026-10-25 たまごさん指定・棚は触らない）",
+   "kieta": [
+    {
+     "file": "src/components/CoverGuidePageBody.tsx",
+     "tashita": "9de7ab482",
+     "gyou": "import { KyuukyuuBako } from \"@/components/KyuukyuuBako\";"
+    },
+    {
+     "file": "src/components/CoverGuidePageBody.tsx",
+     "tashita": "9de7ab482",
+     "gyou": "{/* 救急箱（仮・2026-10-25 たまごさん）：「お急ぎですか？ とりあえず、これをどうぞ」。"
+    },
+    {
+     "file": "src/components/CoverGuidePageBody.tsx",
+     "tashita": "9de7ab482",
+     "gyou": "しおりは変わるので、すぐ効く定番を案内所の片隅にベタ付け。中身と文言は src/lib/kyuukyuuBako.ts の1か所（名指しのみ）。 */}"
+    },
+    {
+     "file": "src/components/CoverGuidePageBody.tsx",
+     "tashita": "9de7ab482",
+     "gyou": "{!artist && <KyuukyuuBako className=\"max-w-3xl mx-auto px-6 md:px-10 pt-4 pb-1\" />}"
+    }
+   ]
+  },
+  "9de7ab482": {
+   "subject": "fix: 救急箱を案内所（/cover-guide のトップ）の片隅へ移す（トップページからは外す）",
+   "kieta": [
+    {
+     "file": "src/routes/index.tsx",
+     "tashita": "50fc61820",
+     "gyou": "import { KyuukyuuBako } from \"@/components/KyuukyuuBako\";"
+    },
+    {
+     "file": "src/routes/index.tsx",
+     "tashita": "50fc61820",
+     "gyou": "{/* 救急箱（仮・2026-10-25 たまごさん）：しおりは変わるので、すぐ効く定番を片隅にベタ付け。中身と文言は src/lib/kyuukyuuBako.ts */}"
+    },
+    {
+     "file": "src/routes/index.tsx",
+     "tashita": "50fc61820",
+     "gyou": "<KyuukyuuBako />"
+    }
+   ]
+  },
+  "d71cfb5f0": {
+   "subject": "1192番: 日本語の曲名に海外向け表記（公式→検索→ローマ字）を付けた（10512曲）",
+   "kieta": [
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "\"「ベビーシッター、今日で最後かも…」\": {"
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "\"r\": \"'Baby Sitter, Kyo de Saigo kamo...'\","
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "\"src\": \"auto\""
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "\"また工事現場の作業員姿で「明日は仮病で休む…」\": {"
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "\"r\": \"Mata Koji Genba no Sagyoin Sugata de 'Ashita wa Karibyo de Yasumu...'\","
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "\"src\": \"auto\""
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "\"アボカドの裏ワザ動画に、目を見開くアダム\": {"
+    },
+    {
+     "file": "scripts/i18n/title_romaji.json",
+     "tashita": "8585934bf",
+     "gyou": "\"r\": \"Avocado no Ura Waza Douga ni Me o Mihiraku Adam\","
+    }
+   ]
+  },
+  "8db589f8c": {
+   "subject": "fix(build): ご機嫌ダブル枠の重複import削除",
+   "kieta": [
+    {
+     "file": "src/components/GokigenDoubleSection.tsx",
+     "tashita": "e9f0a9836",
+     "gyou": "import { oneTapEmbedUrl } from \"@/lib/oneTapVideo\";"
+    }
+   ]
+  },
+  "e9f0a9836": {
+   "subject": "fix(gokigen-double): 関所に合わせる（oneTapEmbedUrl・lc()）— 本番ビルドが止まっていたため",
+   "kieta": [
+    {
+     "file": "src/components/GokigenDoubleSection.tsx",
+     "tashita": "0eb15c10e",
+     "gyou": "const { i18n } = useTranslation();"
+    },
+    {
+     "file": "src/components/GokigenDoubleSection.tsx",
+     "tashita": "0eb15c10e",
+     "gyou": "const en = (i18n.language || \"\").startsWith(\"en\");"
+    }
+   ]
+  },
+  "3fcc7ae15": {
+   "subject": "関連カードの紹介文：残り193枠のうち174枠（161本）に店主目線の日英を追加（YouTube oEmbedで題名・チャンネル確認）。残り19枠は動画切れ・取り違え・ID不正",
+   "kieta": [
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"a-taste-of-honey|ip2U3w6b9rU\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"ac-dc|564u39PJfUI\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"aiko|9p7ZjxNKo0M\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"akiko-yano|Nv5jMLJQ9f4\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"akimoto-kaoru|DUplRExDlFM\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"al-green|DWHxYW_RYYM\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"alan-parsons-project|4o7R1dXGoD0\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"alex-north|BhqQFs7huwU\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"alicia-keys|8Ev-PpckVwQ\","
+    },
+    {
+     "file": "scripts/patrol/related-blurb-baseline.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"anri|Fjordutz06s\","
+    }
+   ]
+  },
+  "9c9aa0c19": {
+   "subject": "ハロウィン特集：スマホでヘッダーがはみ出すのを修正",
+   "kieta": [
+    {
+     "file": "src/routes/__root.tsx",
+     "tashita": "10f3441ee",
+     "gyou": "{/* 2026-10-25 店主指示「後々面倒になることは全部クリア」：全ページ下に規約・表記リンク */}"
+    },
+    {
+     "file": "src/routes/__root.tsx",
+     "tashita": "10f3441ee",
+     "gyou": "<LegalLinks className=\"py-4\" />"
+    }
+   ]
+  },
+  "b0464d972": {
+   "subject": "ハロウィン特集：ヘッダー画像・ローポリ透かし・まえがき・ほかの特集・雑誌風タイポ（曲ページも）",
+   "kieta": [
+    {
+     "file": "src/routes/feature.halloween-2026.tsx",
+     "tashita": "6eca205bb",
+     "gyou": "<Link to=\"/features\">ほかの特集を見る →</Link>"
+    }
+   ]
+  },
+  "4aaca13a2": {
+   "subject": "関連カード残り19枠：動画切れ・取り違えを公式等の正しい動画に差し替え／ラベル修正（クリープハイプのトリビュート、角野隼斗、大瀧詠一ほか）、店主目線の日英紹介文14本（出典つき）。残り1枠（高校生ジャズバンド）は正しい動画が特定できず",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"key\": \"king-gnu|IxLdATL9SR0\","
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"artist\": \"king-gnu\","
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"title\": \"飾りじゃないのよ 涙は — 井上陽水（作詞・作曲）\","
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"href\": \"/cover-guide?artist=inoue-yousui&song=kazarijanainoyo-namidawa\""
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"key\": \"akina|IxLdATL9SR0\","
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"artist\": \"akina\","
+    },
+    {
+     "file": "scripts/patrol/reports/related-blurbs-missing.json",
+     "tashita": "02b05a6f2",
+     "gyou": "\"title\": \"飾りじゃないのよ 涙は — 井上陽水（作詞・作曲）\","
+    }
+   ]
+  },
+  "b2bf8fcb5": {
+   "subject": "部屋ヘッダー：扉絵のある部屋（美・驚・和）に雑誌風の半透明背景、見出しは明朝体（Noto Serif JP 読み込み）",
+   "kieta": [
+    {
+     "file": "src/routes/hidden.$room.tsx",
+     "tashita": "56dfb4e72",
+     "gyou": "{/* TEST（2026-10-25）：美の部屋だけ、扉の絵を雑誌ヘッダー風に半透明で敷く */}"
+    }
+   ]
+  },
+  "da44f8b20": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"deadId\": \"JJHsfNaelkQ\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"artist\": \"矢沢永吉\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"song\": \"黒く塗りつぶせ\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"where\": \"棚には出ていない（案内所の曲データ）\""
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"status\": \"ok\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"statusLabel\": \"正常\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"videoTitle\": \"Enya - Only Time (Official 4K Music Video)\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"channel\": \"enyatv\","
+    }
+   ]
+  },
+  "1d7061c79": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"ikJfr8m8IyY\": \"UzRVEQDxiOo\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a94206b46",
+     "gyou": "\"KpE0PZkG89Y\": \"y0Fa0pSnGvw\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a94206b46",
+     "gyou": "\"M1P8S1E8qH8\": \"laMirMMTqpQ\""
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a94206b46",
+     "gyou": "\"deadId\": \"KpE0PZkG89Y\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a94206b46",
+     "gyou": "\"newId\": \"y0Fa0pSnGvw\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a94206b46",
+     "gyou": "\"artist\": \"森昌子\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a94206b46",
+     "gyou": "\"song\": \"越冬つばめ\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a94206b46",
+     "gyou": "\"replacedAt\": \"2026-10-25T17:37:39.720Z\","
+    }
+   ]
+  },
+  "a94206b46": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"deadId\": \"M1P8S1E8qH8\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"artist\": \"haruka nakamura\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"song\": \"nowhere\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "\"where\": \"棚には出ていない（案内所の曲データ）\""
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "89b13a946",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "89b13a946",
+     "gyou": "- **越冬つばめ**（森昌子）— 消えた動画 https://youtu.be/KpE0PZkG89Y ／ 置き場所：棚には出ていない（案内所の曲データ）"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "89b13a946",
+     "gyou": "- **nowhere**（haruka nakamura）— 消えた動画 https://youtu.be/M1P8S1E8qH8 ／ 置き場所：棚には出ていない（案内所の曲データ）"
+    },
+    {
+     "file": "src/lib/videoHealthReport.generated.ts",
+     "tashita": "89b13a946",
+     "gyou": "{"
+    },
+    {
+     "file": "src/lib/videoHealthReport.generated.ts",
+     "tashita": "89b13a946",
+     "gyou": "\"deadId\": \"M1P8S1E8qH8\","
+    }
+   ]
+  },
+  "586ebec20": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "\"cardId\": \"healing-music-01\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "\"title\": \"原田知世 - 蘇州夜曲\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "\"worldLabel\": \"扉カード（room/card）\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "\"shelfId\": \"癒しの音楽棚\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "\"shelfTitle\": \"癒しの音楽棚\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "\"to\": \"/room/card/healing-music-01\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "\"href\": \"\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "1d7061c79",
+     "gyou": "\"videoId\": \"9o4G9F2X3Ew\","
+    }
+   ]
+  },
+  "1a0be2a45": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "}"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "],"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "\"videoReplacements\": {"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "\"ikJfr8m8IyY\": \"UzRVEQDxiOo\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "\"Yc6G8B8_5gY\": \"tgEPIs9XKqA\""
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "\"replaced\": ["
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "\"deadId\": \"ikJfr8m8IyY\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "586ebec20",
+     "gyou": "\"newId\": \"UzRVEQDxiOo\","
+    }
+   ]
+  },
+  "a5e25c1e9": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "## ⚠️ 差し替えできませんでした（代わりが見つからない・1件）"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **中央フリーウェイ**（松任谷由実）— 消えた動画 https://youtu.be/Yc6G8B8_5gY ／ 置き場所：棚には出ていない（案内所の曲データ）"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Enya - Wild Child**（癒しの音楽棚）— 確認できなかった（通信エラー等） / /room/card/healing-music-09"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Enya - Watermark**（癒しの音楽棚）— 確認できなかった（通信エラー等） / /room/card/healing-music-10"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Enya - Anywhere Is**（癒しの音楽棚）— 確認できなかった（通信エラー等） / /room/card/healing-music-13"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **George Winston - Variations on the Kanon by Pachelbel**（癒しの音楽棚）— 確認できなかった（通信エラー等） / /room/card/h"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **George Winston - Tamarack Pines**（癒しの音楽棚）— 確認できなかった（通信エラー等） / /room/card/healing-music-22"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Chungking Express / California Dreamin'**（映画の棚）— 確認できなかった（通信エラー等） / /room/card/chungking-califor"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **ロバート秋山「クリエイターズ・ファイル」キヨちゃん先生**（コント・漫才の棚）— 確認できなかった（通信エラー等） / /room/card/akiyama-ice-world"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **種子島プロモーション**（キナサイミナサイ）— 確認できなかった（通信エラー等） / /room/card/tanegashima-promotion"
+    }
+   ]
+  },
+  "36dfee006": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **haruka nakamura - Lamp feat. Nujabes**（癒しの音楽棚）— 確認できなかった（通信エラー等） / /room/card/healing-music-24"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Ado - かわいくてごめん (カバー)**（カバーの棚）— 確認できなかった（通信エラー等） / /room/card/ado-kawaikute-gomen"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Sasquatch music festival 2009 - Guy starts dance party**（ストリートミュージックの棚）— 確認できなかった（通信エラー等） / /roo"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **藤井風「Close To You」(Carpenters カバー)**（カバーの棚）— 確認できなかった（通信エラー等） / /room/card/fujii-kaze-close-to-yo"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Pasta Grannies（パスタ・グラニーズ）**（世界の暮らし）— 確認できなかった（通信エラー等） / /room/card/living-italy-pasta-granny"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Uma Casa Portuguesa**（扉カード）— 確認できなかった（通信エラー等） / /room/card/home-uma-casa-portuguesa-amaliarodrig"
+    }
+   ]
+  },
+  "a8fc6239d": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Ahyeon「Monster」(BABYMONSTERリードボーカル・ソロカバー)**（カバーの棚）— 確認できなかった（通信エラー等） / /room/card/ahyeon-monster"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **陣内智則「テトリス」**（コント・漫才の棚）— 確認できなかった（通信エラー等） / /room/card/jinnai"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **The Jackson 5 - I Want You Back**（カバーの棚）— 確認できなかった（通信エラー等） / /room/card/jackson5-i-want-you-back"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Sheryl Crow「I Want You Back」(The Motown Sound: In Performance at the White House)**（カバーの棚）— 確認でき"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Kənd Həyatı（キャンド・ハヤトゥ）**（世界の暮らし）— 確認できなかった（通信エラー等） / /room/card/living-azerbaijan-kazan"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "1a0be2a45",
+     "gyou": "- **Mother The Mountain Farm（マザー・ザ・マウンテン・ファーム）**（世界の暮らし）— 確認できなかった（通信エラー等） / /room/card/living-austr"
+    }
+   ]
+  },
+  "0a7b18ce5": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "\"check-failed\": 1,"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "\"deadId\": \"14Mava1H8V8\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "\"artist\": \"The Zombies\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "\"song\": \"Summertime\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "\"where\": \"棚には出ていない（案内所の曲データ）\""
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "\"deadId\": \"clCnlYWjv9c\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "\"artist\": \"Bee Gees\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "a326a9ffb",
+     "gyou": "\"song\": \"More Than a Woman\","
+    }
+   ]
+  },
+  "69a5d1853": {
+   "subject": "白飛び：553c424c0 の package.json に混入した衝突の印を除去（prebuild の並びは c49914b75 のまま＋check-no-white-flash）",
+   "kieta": [
+    {
+     "file": "package.json",
+     "tashita": "553c424c0",
+     "gyou": "<<<<<<< Updated upstream"
+    },
+    {
+     "file": "package.json",
+     "tashita": "c49914b75",
+     "gyou": "\"prebuild\": \"node scripts/related/magazine-embed-cc-off.mjs && node scripts/related/gen-magazine-htm"
+    },
+    {
+     "file": "package.json",
+     "tashita": "553c424c0",
+     "gyou": "======="
+    },
+    {
+     "file": "package.json",
+     "tashita": "553c424c0",
+     "gyou": ">>>>>>> Stashed changes"
+    }
+   ]
+  },
+  "98f4e8f3b": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "0a7b18ce5",
+     "gyou": "- **White Christmas**（Bing Crosby）— 消えた動画 https://youtu.be/w9QLn7gM-hY → YouTube検索で発見した代わり https://y"
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "0a7b18ce5",
+     "gyou": "\"w9QLn7gM-hY\": \"C4oI7GXdDsM\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "a326a9ffb",
+     "gyou": "{"
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "0a7b18ce5",
+     "gyou": "\"deadId\": \"w9QLn7gM-hY\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "0a7b18ce5",
+     "gyou": "\"newId\": \"C4oI7GXdDsM\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "0a7b18ce5",
+     "gyou": "\"artist\": \"Bing Crosby\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "0a7b18ce5",
+     "gyou": "\"song\": \"White Christmas\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "0a7b18ce5",
+     "gyou": "\"replacedAt\": \"2026-10-27T15:41:19.741Z\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "a326a9ffb",
+     "gyou": "\"source\": \"search\""
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "a326a9ffb",
+     "gyou": "},"
+    }
+   ]
+  }
+ }
+}
