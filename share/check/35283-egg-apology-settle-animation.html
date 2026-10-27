@@ -52,7 +52,7 @@
 <div class="date">2026-10-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が2026-08-13に『やり直しわかる画面からスケール110パー位にしてじわじわ後ろに下がってぴたっと収まる』と発言した案件。404・リンク切れ時に出る卵コンシェルジュのカード(EggApology.tsx)に入場アニメーションを実装し、origin/mainへ合流済み。<b>本番Lovableへの『公開』ボタンはまだ押せていません</b>（下記の理由）。実測: ローカルdevサーバーの404ページHTML出力と配信CSSから直接コピーした実物のコード↓<pre>CSS: @keyframes scale-settle-in { 0% { opacity: 0; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }\n@utility animate-scale-settle-in { animation: scale-settle-in 0.6s var(--ease-soft) both; }\n\nHTML(404ページ実測): &lt;div class="relative z-10 w-full max-w-2xl rounded-3xl overflow-hidden bg-card shadow-lift animate-scale-settle-in"&gt;</pre>
+店主が2026-08-13に『やり直しわかる画面からスケール110パー位にしてじわじわ後ろに下がってぴたっと収まる』と発言した案件。404・リンク切れ時に出る卵コンシェルジュのカード(EggApology.tsx)に入場アニメーションを実装し、本体のコードへ反映済み。<b>本番Lovableへの『公開』ボタンはまだ押せていません</b>（下記の理由）。実測: ローカルdevサーバーの404ページHTML出力と配信CSSから直接コピーした実物のコード↓<pre>CSS: @keyframes scale-settle-in { 0% { opacity: 0; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }\n@utility animate-scale-settle-in { animation: scale-settle-in 0.6s var(--ease-soft) both; }\n\nHTML(404ページ実測): &lt;div class="relative z-10 w-full max-w-2xl rounded-3xl overflow-hidden bg-card shadow-lift animate-scale-settle-in"&gt;</pre>
 </div>
 
 <h2>② 数字</h2>
@@ -70,14 +70,14 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>コード実装・main合流</td><td class="yes">yes</td></tr>
+<tr><td>コード実装・本体へ反映</td><td class="yes">yes</td></tr>
 <tr><td>ローカルdevサーバーで404ページHTML出力に反映確認(実測)</td><td class="yes">yes</td></tr>
 <tr><td>ローカルdevサーバーでCSS出力にscale-settle-inキーフレーム確認(実測)</td><td class="yes">yes</td></tr>
 <tr><td>本番Lovableへの公開(反映)</td><td class="yes">no</td></tr>
 </table>
 
 <footer>
-公開が止まっている理由：このセッションも工場側の自動実行も、Lovable公開に必要な専用ブラウザ接続を開けない状態(1186号の安全策)。たまごさん本人が公開用の専用ブラウザを一度だけ開いてログインすれば、以後は自動公開スクリプトが押せるようになります。詳細はjoy-relief-station側 .claude/PENDING_DECISIONS.md の2026-10-28・案件#35283を参照してください。
+公開が止まっている理由：このセッションも工場側の自動実行も、Lovable公開に必要な専用ブラウザ接続を開けない状態(1186号の安全策)。たまごさん本人が公開用の専用ブラウザを一度だけ開いてログインすれば、以後は自動公開スクリプトが押せるようになります。詳細はjoy-relief-station側の判断メモ(2026-10-28・案件#35283)を参照してください。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
