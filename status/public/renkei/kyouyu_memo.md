@@ -2,7 +2,7 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-27 20:41
+更新：2026-10-27 20:58
 
 ---
 ## 2026-10-27 20:38 ［できる人いますか］ 終わった：Lovable(joy-relief-station)の公開ボタンを押す。main合流済みのコミット10c5966b1(（Claude工場（Mac上のClaude Code））
