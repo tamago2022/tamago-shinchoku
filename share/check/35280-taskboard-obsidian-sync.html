@@ -52,7 +52,7 @@
 <div class="date">2026-10-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-13に言われた『TASK_BOARD.md更新ごとにObsidian側コピーも同期』は、2026-08-20のcommit 84f3cf46a(push-task-board.mjs・sync-task-board-to-obsidian.mjs新設)で既に実装され、以後ずっと稼働し続けていた。今回あらためて実測し、今この瞬間も止まらず動いていることを確認した。
+2026-08-13に言われた『TASK_BOARD.md更新ごとにObsidian側コピーも同期』は、すでに実装されていて、以後ずっと稼働し続けていた。今回あらためて実測し、今この瞬間も止まらず動いていることを確認した。
 </div>
 
 <h2>② 数字</h2>
@@ -70,10 +70,10 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>正本(.claude/TASK_BOARD.md)の最新更新がorigin/mainに反映されているか</td><td class="yes">yes</td></tr>
-<tr><td>Obsidianコピーのsynced日時が、正本の最新SWEEP日時(2026-10-28 05:36)と一致するか</td><td class="yes">yes</td></tr>
-<tr><td>30分おきのlaunchd(role-sweep)がsync-task-board-to-obsidian.mjsを呼んでいるか</td><td class="yes">yes</td></tr>
-<tr><td>正本更新→origin/mainへのpush工程(push-task-board.mjs)が存在し直近も動いているか(直近commit 2026-10-28 04:18)</td><td class="yes">yes</td></tr>
+<tr><td>正本(.claude/TASK_BOARD.md)の最新更新がGitHub本体に反映されているか</td><td class="yes">yes</td></tr>
+<tr><td>Obsidianコピーのsynced日時が、正本の最新お知らせ日時(2026-10-28 05:36)と一致するか</td><td class="yes">yes</td></tr>
+<tr><td>30分おきの自動実行がObsidianコピーの同期処理を呼んでいるか</td><td class="yes">yes</td></tr>
+<tr><td>正本更新→GitHub本体へのpush工程が存在し直近も動いているか(直近反映 2026-10-28 04:18)</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
