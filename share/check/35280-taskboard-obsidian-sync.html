@@ -52,7 +52,7 @@
 <div class="date">2026-10-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-13に言われた『TASK_BOARD.md更新ごとにObsidian側コピーも同期』は、すでに実装されていて、以後ずっと稼働し続けていた。今回あらためて実測し、今この瞬間も止まらず動いていることを確認した。
+正本(.claude/TASK_BOARD.md)が更新されたらObsidian側コピーも同じ内容にする仕組み自体は既に実装されていたが、①GitHubへのpush工程が壊れたworktree残骸(git未登録の残骸ディレクトリ)で全件失敗し続けていた ②確認ページが『30分おき』と書いていたが実際のlaunchd設定(plist実測)は60分おきだった、という2つの虚偽記載・実障害を今回修正した。worktree残骸はrmで消さずタイムスタンプ付きで退避してから作り直す自己修復ロジックを追加し、実際にpush成功を確認した。
 </div>
 
 <h2>② 数字</h2>
@@ -70,10 +70,10 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>正本(.claude/TASK_BOARD.md)の最新更新がGitHub本体に反映されているか</td><td class="yes">yes</td></tr>
-<tr><td>Obsidianコピーのsynced日時が、正本の最新お知らせ日時(2026-10-28 05:36)と一致するか</td><td class="yes">yes</td></tr>
-<tr><td>30分おきの自動実行がObsidianコピーの同期処理を呼んでいるか</td><td class="yes">yes</td></tr>
-<tr><td>正本更新→GitHub本体へのpush工程が存在し直近も動いているか(直近反映 2026-10-28 04:18)</td><td class="yes">yes</td></tr>
+<tr><td>正本→Obsidianコピーの本文が実際に一致しているか(python3でバナー除去後に完全一致を実測)</td><td class="yes">yes</td></tr>
+<tr><td>自動実行の間隔(実態はlaunchd plist実測StartInterval=3600秒=60分おき。旧確認ページの『30分おき』表記は誤りだったためコメント・バナー文言も60分おきへ修正済み)</td><td class="yes">60分おき</td></tr>
+<tr><td>正本更新→GitHub本体へのpush工程(今回直すまで壊れたworktree残骸でlogが全件&#x27;already exists&#x27;失敗だった)</td><td class="yes">今回の修正で成功</td></tr>
+<tr><td>スクリプト修正自体が本番(GitHub)のmainブランチへ反映されているか(実際に取得して確認)</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
