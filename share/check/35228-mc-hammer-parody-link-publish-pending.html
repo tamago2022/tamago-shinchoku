@@ -80,8 +80,15 @@ N.W.A.・PSY・Rick Jamesの曲ページからM.C.ハマー本人ページへの
 <tr><td>リンク元→本人ページの機構(コード)</td><td class="yes">実装済み・コードレベルで動作確認</td></tr>
 <tr><td>本番ページが200で中身あり</td><td class="yes">yes</td></tr>
 <tr><td>本番でクリックしても無反応な要素(noResponseCount、mc-hammerページ4回実測)</td><td class="yes">yes(4/4・常に0件)</td></tr>
-<tr><td>既存バグ(#418)の時間帯限定説は実測で誤りと判明・訂正</td><td class="no">時刻と無関係な間欠バグ(発生率約25%・原因未特定・本件スコープ外)</td></tr>
+<tr><td>既存バグ(#418)の時間帯限定説は実測で誤りと判明・訂正</td><td class="no">時刻と無関係な間欠バグ(4回中1回=25%・原因未特定・本件スコープ外)</td></tr>
 </table>
+
+<h2>実測の生データ（node tools/verify_click.mjs の標準出力そのまま・4回連続実行）</h2>
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;">実測1(19:43 JST): {"totalClickable":76,"tested":9,"noResponseCount":0,"consoleErrorCount":1} → FAIL(React #418)
+実測2(19:51 JST): {"totalClickable":76,"tested":11,"noResponseCount":0,"consoleErrorCount":0} → PASS
+実測3(19:54 JST): {"totalClickable":76,"tested":12,"noResponseCount":0,"consoleErrorCount":0} → PASS
+実測4(19:56 JST): {"totalClickable":76,"tested":10,"noResponseCount":0,"consoleErrorCount":0} → PASS
+→ consoleErrorCount>0だった回数: 1/4（25%）。noResponseCountは4回とも0（押して無反応の要素は一度も無かった）。</pre>
 
 <footer>
 このページは #35228 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
