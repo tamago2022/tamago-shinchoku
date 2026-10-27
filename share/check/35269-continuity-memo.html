@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35269 35269号：継続メモ.mdを新規作成（念のための保険作業） 確認ページ</title>
+<title>#35269 継続メモ.md作成（念のための保険作業） 確認ページ</title>
 <style>
   :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
   *{box-sizing:border-box;}
@@ -47,27 +47,81 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35269 35269号：継続メモ.mdを新規作成（念のための保険作業）</div>
-<h1>#35269 35269号：継続メモ.mdを新規作成（念のための保険作業）</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35269 継続メモ.md作成（念のための保険作業）</div>
+<h1>#35269 継続メモ.md作成（念のための保険作業）</h1>
 <div class="date">2026-10-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-ごきげん補給所(joy-relief-station)のプロジェクトフォルダ直下に<code>継続メモ.md</code>を新規作成した。セッションが途切れた時の保険として、今の進捗・次にやること・重要な憲法方針（0条・第一条・第四条・棚への追加ルール・北極星）を1枚に要約し、詳細は既存の正本（CLAUDE.md / AGENTS.md / ai-brain/current-state.md / TASK_BOARD.md）へ誘導する形にした（内容は重複させない）。main直接pushのみ、UI変更なし。
+<p>店主指示（2026-08-13）の保険作業：ごきげん補給所（joy-relief-station）のプロジェクトフォルダ直下に<code>継続メモ.md</code>を新規作成し、mainへ合流済み（コミット <code>3e26d0f09</code>）。<strong>joy-relief-stationは非公開リポのため、たまごさんが開くと404になる。だからリンクではなく、継続メモ.mdの全文をこの確認ページにそのまま転記した。</strong></p><h2>② 継続メモ.md 全文（46行・joy-relief-station直下）</h2><pre style="white-space:pre-wrap;background:#f6f6f6;padding:12px;border-radius:8px;font-size:13px;line-height:1.6;"># 継続メモ（ごきげん補給所・保険用）
+
+最終更新：2026-10-28（JST）
+
+## これは何か
+
+セッションが途切れた時のための**保険メモ**（店主指示 2026-08-13「念のための保険作業」）。
+中身を重複させず要約だけを置く。詳しい正本は下記を先に見ること。
+
+- 恒久ルール（憲法・確認義務・報告形式）：`CLAUDE.md` / `AGENTS.md`
+- 今の状態（プロジェクト全体の現在地）：`ai-brain/current-state.md`
+- 案件ごとの進捗・本番反映状況：`.claude/TASK_BOARD.md`
+- 店主に聞かず進めた判断ログ：`.claude/PENDING_DECISIONS.md`
+- 既知の不具合・繰り返し報告されている症状：`.claude/KNOWN_ISSUES.md`
+- 担当別の現在地：`.claude/playbooks/*.md`（`npm run role -- &lt;担当名&gt;` で呼び出す）
+
+## 今の進捗（2026-10-28時点の要点）
+
+- 本番URL：https://joy-relief-station.lovable.app
+- 完了の定義は「①実装 → ②main合流 → ③Lovable「公開」を押す → ④本番URLを自分の目で確認 → ⑤報告」の5段階。**mainへのpushだけでは成果ゼロ**（店主が繰り返し強調している最重要ルール）。
+- 直近の走行状況・走行中の案件（最大3本同時）は`.claude/TASK_BOARD.md`冒頭の走行盤を見る。
+- 「判定日赤」バッチ（1ヶ月以上未着手のまま残っていた古い依頼の自動再投入）が進行中。本メモもその1件（#35269）として作成した。
+
+## 次にやること
+
+- `.claude/TASK_BOARD.md`の🔴未着手・🟠着手中の案件から優先度に沿って着手する。
+- 判定日赤になっている古い依頼は、店主に聞かずに完了条件（本番URL・自己申告でない検品）まで進める。
+- 仕入れ（新規ページ作成）は自律的に継続してよいが、既存の棚（キュレーション）への追加は店主の明示指示がある時だけ。
+
+## 重要な判断・方針（憲法サマリ・詳細は`CLAUDE.md`冒頭を見る）
+
+- **0条**：AI自身が判断し、店主の判断待ちを作らない（可逆・低リスク・既存ブランド内の実装/デザイン/文言はAI側で決裁）。
+- **第一条（自律走行）**：確認してよいのは、不可逆操作・外部公開（mainへpush→Lovable自動反映は除外・常に許可）・金銭・秘密情報・権限変更・法務・北極星変更の7つだけ。それ以外は聞かずに自分で決めて進める。
+- **第四条（完走がデフォルト）**：PR作成・main合流・Lovable「公開」まで指示なしで完走する。公開もAIが聞かずに押してよい（店主の恒久許可）。
+- **棚（キュレーション）への追加は店主の明示指示があるときだけ**（仕入れ＝自由、既存棚への追加＝店主判断。実例：カレーの棚への無断追加事故）。
+- **フォーマット・デザイン変更（特に複数ページ共有コンポーネント）は本番反映前に店主確認**（第一条の唯一のスコープ外）。
+- **個人アーティストのプロフィールに生年を書かない**（本人からの指摘で恒久ルール化）。
+- 北極星：「**生活の一部（常備薬）になる**」。毎日ちょっとだけ、切らすと不安になる、押し売りされない。
+
+## 止まっていること・判断待ち
+
+- 詳細・最新の一覧は`.claude/PENDING_DECISIONS.md`を見る。ここには重複して書かない。
+
+---
+
+この文書は日々の進捗メモではない。**大きな方針転換があった時だけ更新する**（毎回の作業ログは`.claude/TASK_BOARD.md`・各担当プレイブック側で管理する）。
+</pre>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+  <div class="num"><b>46行</b><span>継続メモ.mdの行数（実測 wc -l）</span></div>
+  <div class="num"><b>1件</b><span>mainへ合流済みコミット数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>追加した継続メモ.mdの内容</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/%E7%B6%99%E7%B6%9A%E3%83%A1%E3%83%A2.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/%E7%B6%99%E7%B6%9A%E3%83%A1%E3%83%A2.md</a></li>
+  <li><b>本番サイト（ごきげん補給所）</b><a href="https://joy-relief-station.lovable.app" target="_blank" rel="noopener">https://joy-relief-station.lovable.app</a></li>
+  <li><b>継続メモ.mdの生成元ツール（公開リポ・参考）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/make_check_page.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/make_check_page.py</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>継続メモ.mdがjoy-relief-station直下に存在するか</td><td class="yes">存在する（mainブランチ、コミント3e26d0f09）</td></tr>
+<tr><td>非公開リポへのリンクを貼っていないか</td><td class="yes">貼っていない。全文をこのページに転記</td></tr>
+<tr><td>本番サイトが開けるか</td><td class="yes">下記リンクから確認可能</td></tr>
+</table>
 
 <footer>
 このページは #35269 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
