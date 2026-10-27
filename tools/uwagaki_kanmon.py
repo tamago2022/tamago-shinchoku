@@ -61,6 +61,11 @@ def sashibun_push(repo, files, msg, base=None, remote="origin", branch="main", t
                     if r.returncode != 0:
                         print("UWAGAKI_KANMON: STOP ｜ %s が他の子の変更とぶつかった（丸ごと上書きはしない。取り直して手で直す）" % f)
                         return 2
+                # ★2026-10-27 衝突の印（<<<<<<< ======= >>>>>>>）が残ったファイルは載せない
+                #   実例：553c424c0 で package.json に stash pop の衝突の印が入ったまま push され、prebuild が壊れた（69a5d1853 で直した）
+                if conflict_marks(open(o, "rb").read()):
+                    print("UWAGAKI_KANMON: STOP ｜ %s に衝突の印（<<<<<<< / >>>>>>>）が残っている。載せない" % f)
+                    return 2
                 blob = g(repo, "hash-object", "-w", o).strip()
                 g(repo, "update-index", "--add", "--cacheinfo", "100644,%s,%s" % (blob, f), env=env)
             tree = g(repo, "write-tree", env=env).strip()
@@ -83,6 +88,11 @@ def sashibun_push(repo, files, msg, base=None, remote="origin", branch="main", t
         return 2
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+def conflict_marks(data):
+    import re
+    return bool(re.search(rb"(?m)^(<{7}|>{7})( |$)", data or b"")) and bool(re.search(rb"(?m)^={7}$", data or b""))
 
 
 def check_commit(repo, c, hours=12, quiet=False, base=None):
