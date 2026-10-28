@@ -1,4 +1,4 @@
-# いまの現在地（10-29 05:38 時点・自動生成・実質30分おき）
+# いまの現在地（10-29 06:11 時点・自動生成・実質30分おき）
 
 ⚠️ **今週見たいものを3つ教えてください**（`status/konshu_mitai.json`が空です）
 
@@ -9,15 +9,11 @@
 - 🔴 **メイン不在のカードが棚に出ています：22件（5棚）**
 - ✅ 本番に出した 7 件は全部 戻せます（戻れる点 anzen-20260924-1082）
 - 🔴 稼ぎ：直近6時間 走った0本（うち空回し0本）→ **取れた0本**
-  - 止めているもの：発車待ちは全部お金の確認待ち（直近6時間で368回）
-- ✅ 本番(Lovable)：0.0時間前に更新あり
+  - 止めているもの：発車待ちは全部お金の確認待ち（直近6時間で359回）
+- ✅ 本番(Lovable)：0.6時間前に更新あり
 - ✅ 心臓：-1分前に動いた
 - ✅ 着火：10分以内に動いている（空回しを含む。産んだ本数は上の「稼ぎ」を見る）
-- 🔴 **仕組み系タスク #925「憲法点検：公開リポジトリの1MB超ファイル」が813時間waitingのまま放置されています**
-- 🔴 **仕組み系タスク #937「憲法点検：公開リポジトリの1MB超ファイル」が992時間waitingのまま放置されています**
-- 🔴 **仕組み系タスク #1118「憲法点検：未報告の完了が溜まっていないか」が836時間waitingのまま放置されています**
-- 🔴 **⚙️発車（auto_launch） が動いていません（2つを別々に見る：①発車係の生死＝status/auto_launch.logのmtime（現在0.2分）②着火の間隔＝status/.last_launch_atのmtime（現在627.4分沈黙・genzaichi.launch_silence_min()を再利用）。②は空き枠がある時だけ異常とみなす（genzaichi._launch_has_room()を再利用。満員での見送りは正常）。判定：発車係は0.2分前に周回済み・空き枠もあるのに、着火が627.4分ありません。countTodayはauto_launch.logの本日分『🚀 自動発車』行数）**
-- 🔴 **⚙️完了報告の押し出し が動いていません（status/dispatch_outbox.jsonl（typeなし行）とstatus/dispatch_reported.jsonのns突き合わせ：未報告130件・最古311.2時間経過（3時間以内=alive／6時間以内=slow／それ超=dead））**
+- 🔴 **仕組みの生死表：実行に失敗しました(Command '['python3', '/Users/mac/tamago/tamago-shinchoku/tools/shikumi.py']' tim)**
 - 🔴 **stale_marker：実行に失敗しました(Command '['python3', '/Users/mac/tamago/tamago-shinchoku/tools/stale_marker.py'])**
 
 ## 数字
@@ -69,10 +65,10 @@
   https://joy-relief-station.lovable.app/cover-guide?artist=george-benson&song=give-me-the-night
 
 ## 未解決の失敗（924番・引き継ぎで見落とすな）
-- 未解決 **255件**（うち再発 **63件**）── `python3 tools/failures_ledger.py --list-open`
-- F-20261027-ame 飴玉ゼロ率：85.4%（89係中 76係が「走っているのに取れた0」）
-- F-20261027-uso 嘘の完了：8件（できもの未検証8件 ＋ 途中で固まった案件0件）
-- F-20261027-ochita 落ちた便：1本（24時間：本物40本／空回し280本）
+- 未解決 **260件**（うち再発 **63件**）── `python3 tools/failures_ledger.py --list-open`
+- F-20261029-ame 飴玉ゼロ率：85.4%（89係中 76係が「走っているのに取れた0」）
+- F-20261029-uso 嘘の完了：8件（できもの未検証8件 ＋ 途中で固まった案件0件）
+- F-20261029-ochita 落ちた便：1本（24時間：本物27本／空回し0本）
 
 ---
 *このファイルは tools/genzaichi.py が自動生成する。手で書き換えない。*
