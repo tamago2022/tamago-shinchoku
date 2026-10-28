@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-29 08:02:25・hash=708293d505d3 -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-29 08:53:07・hash=41495f2374d9 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -159,3 +159,4 @@
 - 2026-10-29 Grok通信：Grok Bot は Reason Network に居ない（who 264件＝claude 263・cursor 1）。これまでの『Grok宛て』は工場自身の窓口（madoguchi）宛てだった→宛先をID固定（status/grok_tsuushin/atesaki.json・今は空＝Reasonでは送らない）。本線は GitHub 共有メモ（#1040）。往復確認：01:28送信→02:25 Grok Bot返信（GRK-PING-202610290127）。即時化は Grok 側の webhook URL 待ち（grok-yobirin.yml は用意済み・skip中）。
 
 - 10-29 マガジン曲点検：全マガジン12号＋特集18本の曲281曲・動画304本を点検。リンク・関連4つ（カードB）・コピーとメモ・動画の生死すべて合格。関所＝joy-relief-station prebuild check-magazine-songs.mjs／見張り＝magazine_gate.py --daily（後退でDispatchへ）。
+- 2026-10-29 SNSに出した曲の曲ページ強化（d5e206848・本番 d2fa7400 で確認）：投稿済み118曲のうち落ちていた18曲に関連（同じ人の曲・カバーのoriginalRef）・出典つきメモを足し、God Only Knowsに公式動画、The Headhunters「If You've Got It, You'll Get It」を仕入れ（棚には置かない）。コピー78曲をボンジョビおじさん構文で（4言語訳つき・別の目で照合NG0）。マガジン曲12曲は並行の子の版を優先して触らず。残り：中島みゆき「糸」とLeon Russellの共有画像が弱い（動画サムネ由来）。工場の公開係 98403 は403で動かず（deploy_projectで公開）。
