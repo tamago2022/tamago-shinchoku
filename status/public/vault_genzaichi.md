@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-29 01:58:12・hash=9c544c6ba5fe -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-29 02:28:20・hash=b0c20800fd79 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -151,3 +151,4 @@
 - 10-18 マガジンの関所 tools/magazine/magazine_gate.py（即公開と同時＋心臓から1日1回）：全号の曲を動画IDで名簿と突き合わせ（名前の一致では結ばない）、曲ページ・本番で開くか・関連4曲・コピーとメモを見る。初回一巡：8号・曲132／ページ無し44（候補4）／関連4未満6／コピー・メモ不足48／取り違えの疑い3。号ごとの直す便を8本積んだ（122777・122781〜122787）。曲ではない動画は magazine_gate_jogai.json。
 - 10-18 22:55 シティポップ特集・月の特集：main 51b629e67・公開待ち（Dispatchが押す）。真夜中のドア／フライディ・チャイナタウンの原曲のすぐ下にMs.OOJAの聴き比べ。挿絵はGrokボット「記事採用」の cp_art_01〜07。月は番号の決めが見つからず、内容で選んだ7枚のまま。MISAMOは訂正でMs.OOJAだった。
 - 10-19 03:20 マガジン：出典は本文に出さず記事の最後に章ごと（shutten.py／特集は shutten_tsx.py＋ShuttenSources）。壊れた画像の検査 img_kenpin.py を magazine_gate に追加。シティポップの写真6枚の枠を消した。main 9d9d2fcf1・公開待ち。
+- 2026-10-29 Grok通信：Grok Bot は Reason Network に居ない（who 264件＝claude 263・cursor 1）。これまでの『Grok宛て』は工場自身の窓口（madoguchi）宛てだった→宛先をID固定（status/grok_tsuushin/atesaki.json・今は空＝Reasonでは送らない）。本線は GitHub 共有メモ（#1040）。往復確認：01:28送信→02:25 Grok Bot返信（GRK-PING-202610290127）。即時化は Grok 側の webhook URL 待ち（grok-yobirin.yml は用意済み・skip中）。
