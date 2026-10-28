@@ -2936,3 +2936,47 @@
 - **直し方**：`git reset <直前の親コミット> --mixed`で巻き込みコミットだけを取り消し（ワーキングツリーの他セッション分はunstagedのまま保持）、自分の変更だけ`git diff -- <ファイル>`で抽出・別worktreeで`origin/main`に適用して確認。結果的に巻き込みコミット自体は既にpush済みだったため、ローカルを`git merge --ff-only`/`merge`でorigin/mainへ追従させて収束。
 - **再発防止**：共有ディレクトリ（`/Users/mac/tamago/tamago-shinchoku`等、worktreeでない常駐リポジトリ）で1ファイルだけ直す時も、`git add <file>`の直後に必ず`git status --short`（全体）と`git diff --cached --stat`で「本当にそのファイルだけがstageされたか」を確認してからcommitする。1件でも想定外のファイルが混ざっていたら即`git reset`。
 - **日付**：2026-10-21
+
+
+---
+
+## 797番自動記録：発車が17分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が17分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
+- **日付**：2026-10-28 04:47
+
+
+---
+
+## 797番自動記録：発車が55分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が55分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
+- **日付**：2026-10-28 09:10
+
+
+---
+
+## 797番自動記録：発車が11分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が11分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
+- **日付**：2026-10-28 12:47
+
+
+---
+
+## 797番自動記録：発車が30分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が30分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
+- **日付**：2026-10-28 17:05
+
+## 35292号：git worktree間でuser.name/emailが共有されていてコミットのauthorが汚染された
+
+- **症状**：health-patrol-daemon worktree内で`git config user.name ...`を（`--worktree`無しで）実行したところ、`extensions.worktreeConfig`未設定のため共通の`.git/config`が書き換わり、同時刻に走っていたvideo-patrol-local.sh（別worktree）のコミット2件(`1c636a033`,`64bc93a56`)のauthor名が誤って`tamago-health-patrol-local[bot]`になった。
+- **さらに**：oneshot経由の復旧試行（cherry-pick→switch -c→`git stash pop`）が、tamago-shinchokuの共有stashスタック上の他セッションのstash entry（`1870e4bbf41...`「35038-kanban-fix-wip-79900」）を誤って`Drop`してしまった。
+- **対応**：①`git config user.name/email`を正しい値(`tamago-patrol-local[bot]`)へ復旧。②`extensions.worktreeConfig true`を有効化し、以後`health-patrol-local.sh`は`git config --worktree`で設定するよう修正。③消えたstashはオブジェクトがまだ残っていたため`git stash store`で復元済み。
+- **再発防止**：worktreeで`git config user.*`を設定するスクリプトは必ず`--worktree`を付ける。oneshot経由で`git stash pop`を含む複雑なgit操作は書かない（単純なworktree+patch方式に留める）。
+- **日付**：2026-10-28 17:00
