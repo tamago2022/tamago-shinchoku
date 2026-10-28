@@ -1,0 +1,31 @@
+{
+ "at": "2026-10-28T08:10:00+09:00",
+ "issue": "GitHub Actionsのcron系ワークフロー(AI Main Health Patrol / Tamago Manager / Tamago Branch Sweep等)が支払いエラーでジョブ起動2秒前に全滅",
+ "evidence": {
+  "checked_workflows": 42,
+  "example_failure": {
+   "name": "Tamago Manager (管理職AI)",
+   "created_at": "2026-10-28T03:52:15Z",
+   "completed_at": "2026-10-28T03:52:17Z",
+   "conclusion": "failure",
+   "note": "jobs起動前に2秒で失敗、ログblob自体が存在しない(課金拒否の典型パターン)"
+  },
+  "mitigation_insufficient": "tools/actions_waku.py(2026-10-11、使用量を間引く対策)は適用済みだが、支払いエラー自体は解消していないため依然失敗する"
+ },
+ "fix": {
+  "approach": "別の資格情報不要な方法(GitHub Actionsのランナーを使わずMac自身で実行)",
+  "new_file": "joy-relief-station: scripts/patrol/health-patrol-local.sh",
+  "hook": "tamago-shinchoku: tools/machine_status_push.sh の quick_tick() へ1日ゲート付きで追加",
+  "hook_commit": "9874f04207a",
+  "ai_main_health_patrol_commit_on_joy_relief_station": "ece475d9a→mainへ合流済み"
+ },
+ "verified_run": {
+  "ran_at": "2026-10-28T07:51:36.807Z",
+  "typescript_check": "FAILED(実際の既存main状態を検出)",
+  "world_inference_check": "OK",
+  "data_source_audit": "FAILED",
+  "github_issue_created": 1081,
+  "github_issue_created_via": "既存の無期限PAT(~/.tamago/gh_token)によるREST API直接呼び出し。GitHub Actions課金とは無関係"
+ },
+ "remaining_human_action": "GitHub Billing(tamago2022アカウント)の支払い方法確認・復旧は店主本人の操作が必要。AI側には実行手段が無い(確認義務③金銭)。ただしこの代替便がある限り、復旧を待たずに毎日の健康チェックとIssue起票は継続する"
+}
