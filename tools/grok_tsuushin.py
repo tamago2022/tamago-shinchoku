@@ -373,7 +373,7 @@ def tick(force=False):
                        key="grok_kouho")
         # 受ける
         try:
-            _uketoru(jotai)
+            _uketoru(jotai, {address_of(a) for a in agents if jibun(a)})
         except Exception as e:
             log("inbox が読めない: %r" % (e,))
     else:
@@ -383,7 +383,7 @@ def tick(force=False):
     _matome(jotai)
 
 
-def _uketoru(jotai):
+def _uketoru(jotai, jibun_now=None):
     rc, out, err = rn(["inbox", "--json"], timeout=40)
     if rc != 0:
         rc, out, err = rn(["inbox"], timeout=40)
@@ -400,7 +400,7 @@ def _uketoru(jotai):
         text = m.get("text") or m.get("message") or m.get("body") or json.dumps(m, ensure_ascii=False) if isinstance(m, dict) else str(m)
         frm = (m.get("from") if isinstance(m, dict) else "") or "Reason Network"
         rec = {"at": now_iso(), "from": frm, "text": fusei(text)[:4000]}
-        jibun_set = set(load(STATE, {}).get("jibun") or [])
+        jibun_set = set(jibun_now or ()) | set(load(STATE, {}).get("jibun") or [])
         if frm in jibun_set:
             # 工場自身（窓口の Claude）からの返事。Grok とは呼ばない・発車待ちに積まない（自分への往復ループを切る）。
             rec["jibun"] = True
