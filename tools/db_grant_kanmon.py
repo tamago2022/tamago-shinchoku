@@ -24,7 +24,8 @@
   python3 tools/db_grant_kanmon.py --mimawari [--daily]             本番の全テーブルが Data API で読めるかを見る（--daily は20時間に1回）
   python3 tools/db_grant_kanmon.py --self-test
 結果：status/public/db_grant_mimawari.json（鍵の値・行の中身は書かない）。赤があれば Dispatch へ1行。
-安全：本番DBへは SELECT（カタログ）と REST の HEAD だけ。データは読まない・変えない。課金0。
+安全：本番DBへは SELECT（カタログ・Lovable の鍵が生きている日だけ）と Data API の GET ?limit=0（行は読まない）だけ。データは読まない・変えない。課金0。
+表の一覧：カタログ ∪ joy-relief-station main の migration（create table）と .from()（~/tamago/jrs_fix で fetch＋git grep。作業場には触らない）。
 """
 import json
 import os
@@ -32,6 +33,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
@@ -117,15 +119,22 @@ from pg_class c join pg_namespace n on n.oid = c.relnamespace
 where n.nspname = 'public' and c.relkind in ('r','p','v','m') order by 1"""
 
 
-def _rest_head(url, key, table):
+def _rest(url, key, table):
+    """GET ?select=*&limit=0（行は1つも読まない）。返り値：ok／kyohi（GRANTが無い）／nai（本番に無い）／その他の文字。"""
     h = {"apikey": key, "Authorization": "Bearer " + key, "Accept": "application/json"}
-    q = urllib.request.Request("%s/rest/v1/%s?select=*&limit=1" % (url.rstrip("/"), urllib.request.quote(table)),
-                               method="HEAD", headers=h)
+    q = urllib.request.Request("%s/rest/v1/%s?select=*&limit=0" % (url.rstrip("/"), urllib.parse.quote(table)), headers=h)
     try:
         with urllib.request.urlopen(q, timeout=30) as r:
-            return r.status
+            return "ok" if r.status in (200, 206) else "HTTP %s" % r.status
     except urllib.error.HTTPError as e:
-        return e.code
+        body = e.read().decode("utf-8", "replace")[:400]
+        if "42501" in body or "permission denied" in body.lower():
+            return "kyohi"
+        if e.code == 404 or "PGRST205" in body or "42P01" in body:
+            return "nai"
+        if e.code in (401, 403):
+            return "kyohi"
+        return "HTTP %s" % e.code
     except Exception as e:  # noqa: BLE001
         return "ERR %s" % type(e).__name__
 
@@ -143,33 +152,70 @@ def _keys(diag):
 
 
 def _catalog():
+    """本番のカタログ（Lovable 公式MCP query_database の SELECT）。鍵が死んでいる日は例外。"""
     import importlib.util
     spec = importlib.util.spec_from_file_location("tn", os.path.join(HERE, "2210_tanaire.py"))
     tn = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(tn)
+    try:  # houou_sql と同じ：先に Lovable の鍵を巻き直す
+        import lovable_token_keeper as keeper
+        keeper.ensure_fresh()
+    except Exception:  # noqa: BLE001
+        pass
     rows = tn.DB().q(CATALOG_SQL)
     if not isinstance(rows, list):
         raise RuntimeError("カタログの返事が表でない：%s" % str(rows)[:160])
     return rows
 
 
-def hantei(rows, rest, kijun):
-    """rows=カタログ、rest={t:{svc:状態,anon:状態}}、kijun=前回までの {t:{anon,authd,svc}}。赤と黄の一覧を返す。"""
+JRS_CLONE = os.path.expanduser("~/tamago/jrs_fix")
+RE_REPO_CREATE = re.compile(r'create\s+table\s+(?:if\s+not\s+exists\s+)?(?:"?public"?\.)?"?([a-z_][a-z0-9_]*)"?', re.I)
+RE_REPO_DROP = re.compile(r'drop\s+table\s+(?:if\s+exists\s+)?(?:"?public"?\.)?"?([a-z_][a-z0-9_]*)"?', re.I)
+RE_REPO_FROM = re.compile(r'\.from\(\s*[\'"`]([a-z_][a-z0-9_]*)[\'"`]\s*\)')
+
+
+def _git(*a, timeout=90):
+    import subprocess
+    p = subprocess.run(["git", "-C", JRS_CLONE] + list(a), capture_output=True, text=True, timeout=timeout)
+    return p.stdout if p.returncode in (0, 1) else ""
+
+
+def repo_tables():
+    """joy-relief-station の main から「作ったテーブル（migration）」と「画面・関数が読むテーブル（.from）」を拾う。
+    作業場には触らない（fetch で印を進めて、origin/main の中身を git grep で読むだけ）。"""
+    _git("fetch", "-q", "origin", "main")
+    mig = _git("grep", "-h", "-i", "-E", "create table|drop table", "origin/main", "--", "supabase/migrations")
+    made = set(m.group(1).lower() for m in RE_REPO_CREATE.finditer(mig))
+    dropped = set(m.group(1).lower() for m in RE_REPO_DROP.finditer(mig))
+    code = _git("grep", "-h", "-E", r"\.from\(", "origin/main", "--", "src", "supabase/functions", "scripts")
+    used = set(RE_REPO_FROM.findall(code))
+    return made - (dropped - used), used
+
+
+def hantei(tables, kijun, first=False):
+    """tables={t:{svc_priv,anon_priv(カタログ・無ければNone), anon(REST), svc(REST), used}}、kijun={t:{anon,svc}}。赤と黄を返す。"""
     aka, ki = [], []
-    for r in rows:
-        t = r["t"]
+    for t, x in sorted(tables.items()):
         b = kijun.get(t)
-        if not r.get("svc"):
-            aka.append("%s：service_role で読めない（GRANT が無い）" % t)
-        if b and (b.get("anon") or b.get("authd")) and not (r.get("anon") or r.get("authd")):
-            aka.append("%s：前は公開鍵で読めたのに読めなくなった（後退）" % t)
-        if not b and not (r.get("anon") or r.get("authd")) and t not in HIKOUKAI:
-            ki.append("%s：新しいテーブルが公開鍵で読めない（意図して非公開なら HIKOUKAI へ）" % t)
-        x = rest.get(t) or {}
-        if r.get("svc") and x.get("svc") not in (None, 200, 206):
+        if x.get("svc_priv") is False:
+            aka.append("%s：service_role に GRANT が無い" % t)
+        if x.get("svc") not in (None, "ok", "nai"):
             aka.append("%s：Data API（service_role）が %s" % (t, x.get("svc")))
-        if (r.get("anon")) and x.get("anon") not in (None, 200, 206):
-            aka.append("%s：Data API（公開鍵）が %s" % (t, x.get("anon")))
+        a = x.get("anon")
+        if a is None:
+            continue
+        if b and b.get("anon") == "ok" and a != "ok":
+            aka.append("%s：前は公開鍵で読めたのに %s（後退）" % (t, a))
+        elif not b and a == "kyohi" and t not in HIKOUKAI:
+            msg = "%s：公開鍵で読めない（GRANT が無い）" % t
+            if first:
+                ki.append(msg + "・既存")
+            elif x.get("used"):
+                aka.append(msg + "・画面が .from() で読んでいる")
+            else:
+                ki.append(msg + "・意図して非公開なら HIKOUKAI へ")
+        elif not b and a == "nai" and x.get("used") and not first:
+            ki.append("%s：画面が読むのに本番に無い（migration 未適用）" % t)
     return aka, ki
 
 
@@ -182,50 +228,58 @@ def mimawari(daily=False):
             pass
     os.makedirs(os.path.dirname(STAMP), exist_ok=True)
     open(STAMP, "w").close()
-    doc = {"at": now(), "label": "全テーブルが Data API で読めるか（Supabase 10/30 仕様変更）", "aka": [], "ki": []}
-    try:
-        rows = _catalog()
+    doc = {"at": now(), "label": "全テーブルが Data API で読めるか（Supabase 10/30 仕様変更）", "kiroku": []}
+    tables = {}
+    try:  # ① 本番のカタログ（Lovable の鍵が生きている日だけ）
+        for r in _catalog():
+            tables[r["t"]] = {"svc_priv": bool(r.get("svc")), "anon_priv": bool(r.get("anon")), "rls": bool(r.get("rls"))}
+        doc["kiroku"].append("カタログ %d" % len(tables))
     except Exception as e:  # noqa: BLE001
-        doc["error"] = "カタログが読めない：%s" % str(e)[:200]
-        rows = []
-    diag = []
-    rest = {}
+        doc["kiroku"].append("カタログは読めなかった（%s）→ リポの一覧と Data API で見る" % str(e)[:120])
+    try:  # ② リポの migration と .from()
+        made, used = repo_tables()
+        for t in made | used:
+            tables.setdefault(t, {})["used"] = t in used
+        doc["kiroku"].append("リポ：作った %d・読む %d" % (len(made), len(used)))
+    except Exception as e:  # noqa: BLE001
+        doc["kiroku"].append("リポを読めなかった（%s）" % str(e)[:120])
     try:
-        url, svc, pub = _keys(diag)
+        url, svc, pub = _keys([])
     except Exception as e:  # noqa: BLE001
         url = svc = pub = None
-        doc["rest_error"] = str(e)[:160]
-    if url:
-        for r in rows:
-            t = r["t"]
-            rest[t] = {"svc": _rest_head(url, svc, t) if svc else None,
-                       "anon": _rest_head(url, pub, t) if (pub and r.get("anon")) else None}
+        doc["kiroku"].append("鍵が読めない（%s）" % str(e)[:80])
+    if url and (pub or svc):  # ③ 本番の Data API を1テーブルずつ（行は読まない）
+        for t, x in tables.items():
+            x["anon"] = _rest(url, pub, t) if pub else None
+            x["svc"] = _rest(url, svc, t) if svc else None
+    doc["rest_keys"] = {"anon": bool(url and pub), "service_role": bool(url and svc)}
     kijun = {}
     try:
         kijun = json.load(open(KIJUN, encoding="utf-8"))
     except Exception:
         pass
-    aka, ki = hantei(rows, rest, kijun)
-    doc.update({"tables": len(rows), "aka": aka, "ki": ki,
-                "rest_keys": {"service_role": bool(svc) if url else False, "anon": bool(pub) if url else False},
-                "rows": [dict(r, rest=rest.get(r["t"])) for r in rows]})
-    doc["ok"] = bool(rows) and not aka and "error" not in doc
+    first = not kijun
+    aka, ki = hantei(tables, kijun, first=first)
+    yometa = sum(1 for x in tables.values() if x.get("anon") == "ok")
+    doc.update({"tables": len(tables), "anon_ok": yometa, "aka": aka, "ki": ki, "first": first, "rows": tables})
+    sokutei = bool(tables) and doc["rest_keys"]["anon"]
+    doc["ok"] = sokutei and not aka
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    json.dump(doc, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    if rows:  # 基準は「読めた」ものを足していくだけ（読めなくなったものを基準から消さない＝後退を毎回赤にする）
-        for r in rows:
-            b = kijun.setdefault(r["t"], {})
-            for k in ("anon", "authd", "svc"):
-                b[k] = bool(b.get(k)) or bool(r.get(k))
+    json.dump(doc, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1, sort_keys=True)
+    if sokutei:  # 基準：一度「ok」になったものは ok のまま（読めなくなったら毎回赤にする）
+        for t, x in tables.items():
+            b = kijun.setdefault(t, {})
+            for k in ("anon", "svc"):
+                if x.get(k) is not None and b.get(k) != "ok":
+                    b[k] = x[k]
         os.makedirs(os.path.dirname(KIJUN), exist_ok=True)
         json.dump(kijun, open(KIJUN, "w", encoding="utf-8"), ensure_ascii=False, indent=1, sort_keys=True)
-    if aka or doc.get("error"):
+    if aka or not sokutei:
         line = {"ts": datetime.now(JST).isoformat(timespec="seconds"), "n": "db-grant-" + datetime.now(JST).strftime("%m%d"),
-                "type": "db_grant", "title": "Data API で読めないテーブル %d件" % len(aka),
-                "message": ("；".join(aka[:3]) or doc.get("error") or "") + "。詳しくは status/public/db_grant_mimawari.json"}
+                "type": "db_grant", "title": ("Data API で読めないテーブル %d件" % len(aka)) if aka else "DBの見張りが本番を測れなかった",
+                "message": ("；".join(aka[:3]) or "／".join(doc["kiroku"])) + "。詳しくは status/public/db_grant_mimawari.json"}
         open(os.path.join(ST, "dispatch_outbox.jsonl"), "a").write(json.dumps(line, ensure_ascii=False) + "\n")
-    print("DB_GRANT_MIMAWARI: テーブル %d・赤 %d・黄 %d%s" % (len(rows), len(aka), len(ki),
-                                                         ("・" + doc["error"]) if doc.get("error") else ""))
+    print("DB_GRANT_MIMAWARI: テーブル %d・公開鍵で読めた %d・赤 %d・黄 %d（%s）" % (len(tables), yometa, len(aka), len(ki), "／".join(doc["kiroku"])))
     return 0 if doc["ok"] else 2
 
 
@@ -258,12 +312,15 @@ def self_test():
     for s in ok_:
         if kensa(s):
             print("OK を止めた:", s, kensa(s)); good = False
-    rows = [{"t": "a", "anon": True, "authd": True, "svc": True}, {"t": "b", "anon": False, "authd": False, "svc": False},
-            {"t": "c", "anon": False, "authd": False, "svc": True}, {"t": "admin_runtime_secrets", "anon": False, "authd": False, "svc": True}]
-    aka, ki = hantei(rows, {"a": {"svc": 200, "anon": 401}}, {"c": {"anon": True}, "admin_runtime_secrets": {"svc": True}})
-    want_aka = {"b", "c", "a"}
-    if {x.split("：")[0] for x in aka} != want_aka or [x.split("：")[0] for x in ki] != ["b"]:
+    tb = {"a": {"anon": "kyohi"}, "b": {"svc_priv": False, "anon": "ok"}, "c": {"anon": "kyohi", "used": True},
+          "d": {"anon": "kyohi"}, "admin_runtime_secrets": {"anon": "kyohi", "used": True}, "e": {"anon": "nai", "used": True},
+          "f": {"anon": "ok"}}
+    aka, ki = hantei(tb, {"a": {"anon": "ok"}, "f": {"anon": "ok"}, "zz": {"anon": "ok"}})
+    if {x.split("：")[0] for x in aka} != {"a", "b", "c"} or sorted(x.split("：")[0] for x in ki) != ["d", "e"]:
         print("判定がずれた:", aka, ki); good = False
+    aka, ki = hantei({"c": {"anon": "kyohi", "used": True}}, {}, first=True)
+    if aka or len(ki) != 1:
+        print("初回の判定がずれた:", aka, ki); good = False
     print("DB_GRANT_SELFTEST:", "PASS" if good else "FAIL")
     return 0 if good else 1
 
