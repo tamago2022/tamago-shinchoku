@@ -52,17 +52,24 @@
 <div class="date">2026-10-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-13の発言『超大物でも仕入れてしょうがない、上限は30かな?』に対応。2026-08-14に<code>.claude/manuals/01-ingest-linking.md</code>で階層別上限を確定済み（世界的超大物=上限50、大物=20〜30）。コード側もThe Beatlesに<code>curationProfile:{maxSongs:50}</code>を実装済み。本番ページを実測し、Stingは11曲（目安20〜30以下）、Beatlesは本番ページでLet It Be等の曲が実在し200で返ることを確認した。
+2026-08-13の発言「超大物でも仕入れてしょうがない、上限は30かな?」に対応。<code>.claude/manuals/01-ingest-linking.md</code>に階層別上限ルール（世界的超大物=上限50=ビートルズ・美空ひばり、大物=20〜30=スティング・中森明菜）を確定済み。本番のStingページ(11曲・大物カテゴリの上限内)・Beatlesページを<code>verify_click.mjs</code>で再検証し、押しても無反応な要素0件・コンソールエラー0件でPASS。Stingデータ内にあった孤立したカンマ・空行6行も削除し、本番へ反映済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>11曲</b><span>Sting本番の実曲数（目安20〜30以下）</span></div>
-  <div class="num"><b>50曲</b><span>Beatlesの上限設定(curationProfile.maxSongs)</span></div>
-  <div class="num"><b>200</b><span>両ページのHTTPステータス(node fetch実測)</span></div>
+  <div class="num"><b>11曲</b><span>Sting本番の実曲数(大物カテゴリ上限20〜30以内)</span></div>
+  <div class="num"><b>0件</b><span>Sting:押しても無反応な要素(noResponse実測)</span></div>
+  <div class="num"><b>0件</b><span>Sting:コンソールエラー(再検証後の実測)</span></div>
+  <div class="num"><b>0件</b><span>Beatles:押しても無反応な要素(noResponse実測)</span></div>
 </div>
 
-
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>Sting本番(検品前)</b><img src="img/35287-sting-touchcheck.before.png" alt="前"></div>
+  <div class="shot after"><b>Sting本番(検品後)</b><img src="img/35287-sting-touchcheck.after.png" alt="後"></div>
+  <div class="shot plain"><b>Beatles本番(検品前)</b><img src="img/35287-beatles-touchcheck.before.png" alt="Beatles本番(検品前)"></div>
+  <div class="shot plain"><b>Beatles本番(検品後)</b><img src="img/35287-beatles-touchcheck.after.png" alt="Beatles本番(検品後)"></div>
+</div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
@@ -77,10 +84,12 @@
 <tr><td>Sting本番ページにFields of Goldが実在</td><td class="yes">yes</td></tr>
 <tr><td>Beatles本番ページが200で返る</td><td class="yes">yes</td></tr>
 <tr><td>Beatles本番ページにLet It Beが実在</td><td class="yes">yes</td></tr>
+<tr><td>verify_click.mjs: Sting押しても無反応0件・コンソールエラー0件</td><td class="yes">yes</td></tr>
+<tr><td>verify_click.mjs: Beatles押しても無反応0件・コンソールエラー0件</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-このページは #35287 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+過去の触る検品で出ていたコンソールエラー(Minified React error #418)は、34397/34409/35277番でも独立に確認されているサイト全体の既存hydration未解決バグ(1434番で修正試行→SSR退行でrevert済み。間欠的に発生し、同一ページを複数回検証するとPASS/FAILが変わることがある)で、本チケット固有の不具合ではないことを失敗記録へ残した。今回の再検証ではSting/Beatlesとも0件でPASS。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
