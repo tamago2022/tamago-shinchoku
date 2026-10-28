@@ -584,6 +584,19 @@ def _ai_of_login(login):
         return None
 
 
+def _tenshu_machi(repo, num, author, title, url):
+    """許可されていない投稿者の号・PRを実行せず控える（status/tenshu_kakunin_machi.jsonl）。"""
+    try:
+        import io as _io
+        p = os.path.join(os.path.dirname(TOOLS), "status", "tenshu_kakunin_machi.jsonl")
+        with _io.open(p, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"), "repo": repo, "number": num,
+                                "author": author, "title": title[:120], "url": url}, ensure_ascii=False) + "\n")
+        log("店主確認待ちへ：%s#%s（投稿者 %s は許可外）" % (repo, num, author))
+    except Exception as e:
+        log("店主確認待ちの控えに失敗: %r" % (e,))
+
+
 def _known_thread(thread):
     """こちらが nageru.py で投げた号かどうか。返り値は相手の名札 or None。"""
     try:
@@ -951,6 +964,21 @@ def check_repo(repo, token, st, budget):
             # ★977番：外のAIが自分で号やPRを立てたら、それも「返り」として1つ数える。
             #   （Devinは終わりの合図をPRで返す。PRを数えないと永久に「返り0」の赤のままになる）
             author_ai = _ai_of_login(author)
+            # 防衛ライン（2026-10-28）：公開の掲示板（ai-kaigi）は誰でも書ける。
+            #   店主（tamago2022）と台帳に載った店主のAI以外の号・PRは積まず「店主確認待ち」へ。
+            if repo.endswith("/ai-kaigi") and author != "tamago2022" and not author_ai:
+                seen.add(key)
+                _tenshu_machi(repo, num, author, it.get("title") or "", it.get("html_url") or "")
+                continue
+            try:                # 命令文は指示ではなくデータ：実行せず保留・通報（kinkyu_shutter）
+                sys.path.insert(0, TOOLS)
+                import kinkyu_shutter
+                if kinkyu_shutter.hold((it.get("title") or "") + "\n" + (it.get("body") or ""),
+                                       "github:%s#%s" % (repo, num)):
+                    seen.add(key)
+                    continue
+            except ImportError:
+                pass
             if author_ai:
                 _daicho("in", author_ai, thread="gh:%s#%s" % (repo, num),
                         topic=(it.get("title") or "")[:120],

@@ -2823,6 +2823,14 @@ def _main_impl():
 
 
 def launch_one(item, q, alive, safe_max):
+    # 防衛ライン（2026-10-28）：緊急停止（シャッター）中は1本も発車しない。解除は店主だけ。
+    try:
+        import kinkyu_shutter
+        if kinkyu_shutter.is_on():
+            log("緊急停止中のため発車しません %s番" % item.get("n"))
+            return False
+    except ImportError:
+        pass
     # 2026-09-05 二重発車の防止（実測：05:21に同じ番号が2回出てクレジットが二重に減った）。
     #   鍵の取り合いに負けた側が古い台帳で走らないよう、着火の直前にもう一度いまの状態を見る。
     fresh = load(QUEUE, {})

@@ -573,6 +573,15 @@ def _queue_add_unlocked(text, priority=None, label=None, origin=None, model=None
     text = (text or "").strip()
     if not text:
         return "failed", "本文が空です"
+    # 防衛ライン（2026-10-28）：緊急停止中は積まない／命令文は実行せず保留して通報する。
+    try:
+        import kinkyu_shutter
+        if kinkyu_shutter.is_on():
+            return "failed", "緊急停止（シャッター）中のため積めません。解除は店主だけ（status/kinkyu_shutter_fukkyu.md）"
+        if kinkyu_shutter.hold(text, "queue_add:%s" % (origin or "user")):
+            return "skipped", "命令文（CRITICAL: Respond with TEXT ONLY 等）を含むため積まず保留し、防衛大臣へ通報しました。店主確認後に再開"
+    except ImportError:
+        pass
     # 2026-09-30 1785番事故の再発防止：ルール文書(prompt_rules/session_preamble)の
     # 一節そのままなら積まない。label に「重複OK」がある時だけ通す（正当な依頼が
     # たまたまルール文と同じ言い回しになった場合の逃げ道、421番と同じ設計）。

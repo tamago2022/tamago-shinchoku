@@ -496,6 +496,13 @@ def _has_machine_marker(text):
     前置き注入で判定漏れが起きるため、_AUTO_LAUNCH_MARKERと同じ`in`判定に揃えた）。
     """
     t = text or ""
+    try:                       # 防衛ライン（2026-10-28）：命令文（CRITICAL: Respond with TEXT ONLY 等）は発言として台帳に入れない
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import kinkyu_shutter
+        if kinkyu_shutter.scan(t):
+            return True
+    except Exception:
+        pass
     if _AUTO_LAUNCH_MARKER in t:
         return True            # ★自動発車テンプレート（preamble+ルール文書）の丸ごと注入（1853号）
     if _AUTO_TASK_MARKER in t and _AUTO_TASK_DONE_MARKER in t:
