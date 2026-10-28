@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-29 05:41:01・hash=b0c20800fd79 -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-29 06:11:46・hash=ad084f7dc0c2 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -91,6 +91,11 @@
 - 全場面のコマ数え：`tools/shirotobi_zen.sh`（初回・SPA遷移・戻る・フルリロード・動画埋め込み・暗⇔明・画像の枠／一瞬だけ出る白を `tools/shirotobi_shirokoma.py` で数える）。見つかった白＝関連カードのサムネ枠（読み込み前がほぼ白）→ bg-muted に（553c424c0）。iPhone Air の起動画像が無かった→追加。
 - 関所：joy-relief-station prebuild `scripts/patrol/check-no-white-flash.mjs`（白飛びの元が入るとビルドが止まる）／毎日 `tools/shirotobi_mimawari.py --daily`（本番で白コマ1以上→Dispatch＋白飛びを直す公開以外を `koutai_kanmon --pre-publish` で48時間止める）／`koutai_kanmon --check --output` もローカルで白コマを数える。
 - 残り：iPhoneのホーム画面アプリは起動画像をホーム画面に追加した時に覚えるので、10/25より前に追加したアイコンは一度消して追加し直さないと起動の白は消えない（サーバー側からは変えられない）。本番の曲ページ・棚は初回応答が数秒かかる（その間の起動画面が長い）。
+
+## 2026-10-29 止まらない改善ループ（たまごさん「自動でどんどん良くなる。止まってるのはありえない」）
+- tools/kaizen_loop.py を心臓（top_status）に相乗り。毎時本番を採点→点の低い順（X・LINE・マガジン優先）に直し便→採点し直し・下がったら自動で戻す→同じ失敗2回で関所→30分止まり検知→毎日4つの見方で案（見た目が変わる案はA/Bで選ぶだけ）→日曜朝に週報3行。
+- 表：https://tamago2022.github.io/tamago-shinchoku/share/check/kaizen.html（進捗表の「改善ループ」1行から）。並行の子の受け持ちは status/kaizen/heikou.json（11-05まで）。
+- 10-29 05:30 時点：シャッター（04:55・誤検知＝判定日が同じ文を3回積み直し）で積めず、直し便は status/kaizen/machi.json に控え中。同じ文は数えないよう kinkyu_shutter を直した。Lovableの公開の鍵（kohyou_osu）は10-14から切れている→公開は Dispatch の deploy_project（koukai_machi で知らせる）。
 
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
