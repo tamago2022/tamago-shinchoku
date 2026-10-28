@@ -330,6 +330,7 @@ def feature_rows(w, lite):
         if st != 200 or 'data-yt-cover' not in h and 'cover-guide?artist=' not in h:
             continue
         h = h[h.find('<main'):] if '<main' in h else h
+        h = re.sub(r'<script\b.*?</script>', '', h, flags=re.S)   # 埋め込みの名簿データ（JSON）は特集のリンクではない
         rows, seen = [], set()
         for m in FEAT_LINK_RE.finditer(h):
             a, sid = unquote(H.unescape(m.group(1))), unquote(H.unescape(m.group(2)))
@@ -354,6 +355,9 @@ def feature_rows(w, lite):
             if hits and not (set(hits) & linked):
                 rows.append({'yt': yt, 'artist': '', 'title': '', 'link': None, 'key': None, 'state': 'no_page',
                              'memo': '曲ページ（%s）があるのに特集からリンクしていない' % '、'.join(hits[:2])})
+            elif not hits and yt not in {r['yt'] for r in rows}:
+                # 曲ページの無い動画（トーク・番組の場面など）も、生きているかだけは毎日確かめる
+                rows.append({'yt': yt, 'artist': '', 'title': '（特集の動画）', 'link': None, 'key': None, 'state': 'video', 'memo': ''})
         out['feature:' + n] = rows
     return out
 
