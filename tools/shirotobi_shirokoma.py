@@ -109,6 +109,14 @@ def kazoeru(d, koma_out=None):
                 dst = "%02d_%s" % (i + 1, f)
                 shutil.copy(os.path.join(d, f), os.path.join(koma_out, dst))
                 r["写し"].append(dst)
+        if koma_out and pxs and os.environ.get("SHIRO_MIHON", "1") != "0":
+            # 見本：場面ごとに「押した直後の最初のコマ」と「落ち着いた最後のコマ」を残す（白が無くても、何を見たかを貼れるように）
+            os.makedirs(koma_out, exist_ok=True)
+            r.setdefault("見本", [])
+            for tag, (f, _p) in (("hajime", pxs[0]), ("owari", pxs[-1])):
+                dst = "%02d_%s_%s" % (i + 1, tag, f["f"])
+                shutil.copy(os.path.join(d, f["f"]), os.path.join(koma_out, dst))
+                r["見本"].append(dst)
         res.append(r)
     return {"base": k.get("base"), "場面": res,
             "真っ白コマ合計": sum(r["真っ白コマ"] for r in res),

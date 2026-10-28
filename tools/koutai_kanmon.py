@@ -481,6 +481,8 @@ def shirokoma_local(base):
             return None
         sys.path.insert(0, HERE)
         import shirotobi_mimawari as sm
+        if any(not str(r.get("行き先") or "").startswith(base) for r in res["場面"]):
+            return None  # 着かなかった場面がある＝測れていない（合否を出さない）
         n, line = sm.matome(res)
         return {"n": n, "ichigyou": line}
     except Exception:

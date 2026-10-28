@@ -88,7 +88,14 @@ KEEP_SEC = 7 * 86400
 PATHS = [os.path.expanduser(p) for p in ("~/.local/bin", "~/.reason/bin", "~/bin", "~/.npm-global/bin")] + \
         ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"]
 ENV = dict(os.environ, PATH=":".join(PATHS + [os.environ.get("PATH", "")]))
-GROK_RX = re.compile(r"grok", re.I)
+# 宛先はIDで固定（2026-10-29）。文字の部分一致で選ばない。
+#   実測（10-29 01:22 reason network who --all --json）：264セッション＝claude-code 263・cursor 1。grok は0。
+#   旧方式（JSON全体に "grok" を含むもの）は、工場自身の窓口（cwd …/status/grok_tsuushin/madoguchi の claude-code）
+#   10体に当たっていた＝自分に送って自分の返事を「Grokから」と受けていた（uketori.jsonl 10-28 13:02 ほか）。
+# 正本：status/grok_tsuushin/atesaki.json {"grok_ids": ["person/session", …]}。空の間は Reason では送らない
+#   （本線は GitHub の共有メモ＝zen_ai_kyouyu。Grok Bot は約3時間ごとに読み、tamago2022 名義で「Grok Botより」と返す）。
+ATESAKI = os.path.join(D, "atesaki.json")
+GROK_AGENTS = {"grok", "grok-bot", "grokbot", "grok-cli"}   # who --json の agent 欄の完全一致だけ（候補として記録するだけ）
 _HIMITSU = [
     (re.compile(r"(gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_\-]{20,}|reason_[0-9a-f]{32,}|ara_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_\-]{30,})"), "［鍵は伏せた］"),
     (re.compile(r"(?i)(password|passwd|パスワード|暗証番号)\s*[:：=]\s*\S+"), r"\1: ［伏せた］"),
@@ -227,16 +234,45 @@ def address_of(a):
     return ""
 
 
-def grok_atesaki(agents):
-    """Grok の宛先。名前・アプリ・クライアントのどこかに grok が入っているもの全部（10体いるなら10体）。"""
+def jibun(a):
+    """工場自身のセッション（窓口 serve claude・その子）か。Grok と取り違えない。"""
+    if not isinstance(a, dict):
+        return False
+    cwd = (a.get("cwd") or "").replace("~", os.path.expanduser("~"))
+    if "status/grok_tsuushin/madoguchi" in cwd:
+        return True
+    return (a.get("agent") or "").lower() in ("claude-code", "claude")
+
+
+def grok_kouho(agents):
+    """Grok らしいセッションの候補（agent 欄の完全一致だけ・工場自身は除く）。記録するだけで、送り先にはしない。"""
     out = []
     for a in agents or []:
-        blob = json.dumps(a, ensure_ascii=False)
-        if GROK_RX.search(blob):
+        if not isinstance(a, dict) or jibun(a):
+            continue
+        if (a.get("agent") or "").lower() in GROK_AGENTS:
             ad = address_of(a)
             if ad and ad not in out:
                 out.append(ad)
     return out
+
+
+def kotei_ids():
+    d = load(ATESAKI, {})
+    ids = d.get("grok_ids") if isinstance(d, dict) else None
+    return [x for x in (ids or []) if isinstance(x, str) and "/" in x]
+
+
+def grok_atesaki(agents):
+    """Grok の宛先＝固定ID（atesaki.json）のうち、いまネットワークに居て、工場自身ではないものだけ。"""
+    ids = kotei_ids()
+    if not ids:
+        return []
+    by = {}
+    for a in agents or []:
+        if isinstance(a, dict):
+            by[address_of(a)] = a
+    return [i for i in ids if i in by and not jibun(by[i])]
 
 
 def send_one(to, text):
@@ -295,7 +331,12 @@ def tick(force=False):
         agents = who()
         jotai["network"] = "ok"
         jotai["grok"] = grok_atesaki(agents)
+        jotai["grok_kotei"] = kotei_ids()
+        jotai["grok_kouho"] = grok_kouho(agents)
+        jotai["honsen"] = "reason" if jotai["grok"] else "github（共有メモ・zen_ai_kyouyu。Grok Bot は Reason に居ない）"
         jotai["agents"] = len(agents)
+        st["jibun"] = sorted({address_of(a) for a in agents if jibun(a)})[:400]
+        save(STATE, st)
     except Exception as e:
         msg = str(e)
         jotai["network"] = "未サインイン／オフライン: " + msg[:160]
@@ -326,10 +367,10 @@ def tick(force=False):
             machi = keep
             write_jsonl(MACHI, machi)
         else:
-            if machi:
-                outbox("grok_tsuushin", "Grokボットが Reason Network にまだ居ません",
-                       "工場のMacはネットワークに入りました。Grokボットに MCP %s を足してもらう依頼を共有メモに出してあります（待ち %d 件はGrokが入った瞬間に送ります）。" % (MCP_URL, len(machi)),
-                       key="grok_inai")
+            if jotai["grok_kouho"]:
+                outbox("grok_tsuushin", "Reason に Grok らしいセッションが出ました（まだ送っていません）",
+                       "候補 %s。本物なら status/grok_tsuushin/atesaki.json の grok_ids に入れると、その宛先にだけ送ります。" % ", ".join(jotai["grok_kouho"][:5]),
+                       key="grok_kouho")
         # 受ける
         try:
             _uketoru(jotai)
@@ -359,16 +400,25 @@ def _uketoru(jotai):
         text = m.get("text") or m.get("message") or m.get("body") or json.dumps(m, ensure_ascii=False) if isinstance(m, dict) else str(m)
         frm = (m.get("from") if isinstance(m, dict) else "") or "Reason Network"
         rec = {"at": now_iso(), "from": frm, "text": fusei(text)[:4000]}
+        jibun_set = set(load(STATE, {}).get("jibun") or [])
+        if frm in jibun_set:
+            # 工場自身（窓口の Claude）からの返事。Grok とは呼ばない・発車待ちに積まない（自分への往復ループを切る）。
+            rec["jibun"] = True
+            append_jsonl(UKETORI, rec)
+            log("自分の窓口から（積まない） %s %s" % (frm, rec["text"][:60]))
+            continue
+        rec["grok"] = frm in kotei_ids()
         append_jsonl(UKETORI, rec)
+        who_label = "Grokボット" if rec["grok"] else "Reason Network の %s" % frm
         n = None
         try:
             import command_ingest
-            status, n = command_ingest.queue_add("【Grokボットから（Reason Network）】%s\n\n%s" % (frm, rec["text"]),
+            status, n = command_ingest.queue_add("【%sから（Reason Network）】%s\n\n%s" % (who_label, frm, rec["text"]),
                                                   priority=2, label="Grok通信", origin="grok_reason")
         except Exception as e:
             log("受付に積めない: %r" % (e,))
         append_jsonl(OUTBOX, {"ts": now_iso(), "n": "grok-tsuushin", "type": "grok_kara",
-                              "title": "Grokボットから届きました（%s）" % frm, "message": rec["text"][:300] + ("（受付 %s 番）" % n if n else "")})
+                              "title": "%sから届きました（%s）" % (who_label, frm), "message": rec["text"][:300] + ("（受付 %s 番）" % n if n else "")})
         log("受けた %s %s" % (frm, rec["text"][:60]))
     rows = jsonl(UKETORI)
     if len(rows) > 600:
@@ -396,14 +446,14 @@ def _mado(jotai):
         n = None
         try:
             import command_ingest
-            status, n = command_ingest.queue_add("【Reason Network の窓口から（Grokボット等）】\n%s" % text,
+            status, n = command_ingest.queue_add("【Reason Network の窓口から（頼んだ人は本文の『頼んだ人』）】\n%s" % text,
                                                   priority=2, label="Grok通信", origin="grok_reason")
         except Exception as e:
             log("窓口の頼みを受付に積めない: %r" % (e,))
             continue
         append_jsonl(UKETORI, {"at": now_iso(), "from": "madoguchi", "text": text[:1000], "n": n})
         append_jsonl(OUTBOX, {"ts": now_iso(), "n": "grok-tsuushin", "type": "grok_kara",
-                              "title": "Grokボットから頼みが届きました（窓口）", "message": text[:300] + ("（受付 %s 番）" % n if n else "")})
+                              "title": "Reason Network の窓口に頼みが届きました", "message": text[:300] + ("（受付 %s 番）" % n if n else "")})
         os.replace(fp, os.path.join(ud, "done", fn))
         n_ok += 1
     for fn in os.listdir(os.path.join(ud, "done")):
@@ -585,11 +635,26 @@ def setup(quiet=False):
 
 def self_test():
     ok = True
-    a = [{"person": "tamago", "agent": "grok-bot", "session": "sns"}, {"address": "tamago/claude"},
-         {"person": "tamago", "client": "Grok", "name": "jidouka"}]
-    g = grok_atesaki(a)
-    ok &= g == ["tamago/sns", "tamago/jidouka"] or len(g) == 2
-    ok &= "tamago/claude" not in g
+    # 10-29 の実物の形：工場の窓口（cwd に grok_tsuushin を含む claude-code）は Grok ではない
+    a = [{"address": "gokigen/tamago-shinchoku-claude-65", "agent": "claude-code",
+          "cwd": "~/tamago/tamago-shinchoku/status/grok_tsuushin/madoguchi"},
+         {"address": "gokigen/cursor", "agent": "cursor", "cwd": "~"},
+         {"address": "gokigen/grok", "agent": "grok", "cwd": "~"},
+         {"address": "gokigen/grok-niseno", "agent": "claude-code", "cwd": "~/grok"}]
+    kou = grok_kouho(a)
+    ok &= kou == ["gokigen/grok"]
+    global ATESAKI
+    _bak = ATESAKI
+    import tempfile
+    tmpd = tempfile.mkdtemp()
+    try:
+        ATESAKI = os.path.join(tmpd, "a.json")
+        ok &= grok_atesaki(a) == []                      # 固定IDが無ければ誰にも送らない
+        save(ATESAKI, {"grok_ids": ["gokigen/grok", "gokigen/tamago-shinchoku-claude-65", "gokigen/inai"]})
+        ok &= grok_atesaki(a) == ["gokigen/grok"]         # 固定IDでも自分の窓口・居ない宛先は外す
+    finally:
+        ATESAKI = _bak
+        shutil.rmtree(tmpd, ignore_errors=True)
     t = bunmen({"title": "テスト", "body": "鍵 ghp_" + "a" * 30, "url": "https://github.com/x/y/issues/1"})
     ok &= "［鍵は伏せた］" in t and "正本：https://github.com/x/y/issues/1" in t
     ok &= bool(KIKEN.search("sudo rm -rf /")) and not KIKEN.search("mkdir -p ~/.reason/bin && chmod +x reason") and not KIKEN.search("with passwordless sudo. If")

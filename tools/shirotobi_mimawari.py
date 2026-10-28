@@ -72,6 +72,16 @@ def matome(res):
     return n, "白コマ%d：" % n + "／".join("%s（真っ白%d・白い箱%d）" % (r["場面"], r["真っ白コマ"], r["白い箱コマ"]) for r in bad[:4])
 
 
+def tsukanai(res):
+    """本番に着かなかった場面（回線エラーの画面・行き先不明）"""
+    ng = []
+    for r in res.get("場面", []):
+        u = str(r.get("行き先") or "")
+        if not u.startswith(PROD):
+            ng.append("%s→%s" % (r.get("場面"), u[:40] or "?"))
+    return ng
+
+
 def sokutei(name):
     """場面表を2つに分けて測る（1本が長いと畳む係に止められるため・1本10分前後）→ 結果を1つにまとめる"""
     allres = {"base": PROD, "場面": [], "真っ白コマ合計": 0, "白い箱コマ合計": 0}
@@ -105,6 +115,16 @@ def run(force=False):
     res = sokutei(name)
     if "error" in res:
         _write(PUB, {"ts": now().isoformat(), "result": "測れず", "riyuu": res["error"]})
+        return 1
+    ng = tsukanai(res)
+    if ng:
+        # 2026-10-28 実例：回線エラー（chrome-error://）の画面を測って「白コマ0＝PASS」と出していた。着いていない場面があれば合否を出さない
+        _write(PUB, {"ts": now().isoformat(), "result": "測れず", "riyuu": "本番に着かなかった場面 %d 件（%s）" % (len(ng), "／".join(ng[:3])), "bamen": res.get("場面")})
+        try:
+            os.remove(STAMP)  # 次の回にもう一度測る
+        except Exception:
+            pass
+        print("SHIROTOBI_MIMAWARI: 測れず", ng[:3])
         return 1
     n, line = matome(res)
     out = {"ts": now().isoformat(), "result": "PASS" if n == 0 else "FAIL", "shirokoma": n, "ichigyou": line,
@@ -163,6 +183,7 @@ def self_test():
         except Exception:
             pass
         TOMERU = keep
+    ok &= len(tsukanai({"場面": [{"場面": "x", "行き先": "chrome-error://chromewebdata/"}, {"場面": "y", "行き先": PROD + "/"}]})) == 1
     print("self-test", "PASS" if ok else "FAIL")
     return 0 if ok else 1
 
