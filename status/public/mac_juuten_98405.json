@@ -1,0 +1,39 @@
+{
+ "measuredAt": "2026-10-20T00:42:23+0900",
+ "windowDays": 4,
+ "windowFrom": "2026-10-17T00:00:17+09:00",
+ "windowTo": "2026-10-20T00:39:02+09:00",
+ "loadRatioSamples": 401,
+ "loadRatioAvg": 1.14,
+ "loadRatioMedian": 0.85,
+ "loadRatioMax": 11.45,
+ "overRatio1_0_count": 149,
+ "overRatio1_0_pct": 37,
+ "overRatio2_0_count": 29,
+ "overRatio2_0_pct": 7,
+ "nowLoad1": 9.83,
+ "nowCores": 8,
+ "nowLoadRatio": 1.23,
+ "nowProcCount": 760,
+ "findings": [
+  {
+   "what": "chrome-headless-shellの回収漏れ（machine_health.pyのRULES）",
+   "detail": "ps結果のcmd文字列を300文字で切っていたため、Playwrightの長いフラグ列で--headless等が範囲外になり検出漏れしていた。実測：122702番の動画レンダリング用プロセス群(90030,90088,90092,95909)のうち90030だけが修正前ロジックで検出漏れ（90088/95909/90092は300文字以内に収まって検出できていた）。",
+   "fix": "実行ファイル名そのもの（chrome-headless-shell等）でもマッチするよう拡張。cmd保存も300→600文字に拡張。",
+   "evidence": "status/machine_health_reap.log（2026-10-19 22:50〜2026-10-20 00:22、同系プロセスを複数回KILLした記録あり）"
+  },
+  {
+   "what": "回収ロジックが正当な長時間処理まで誤killするリスク（実際に発生）",
+   "detail": "render.py（122702番のシティポップ動画レンダリング、1本あたり15〜22分かかる設計）がPlaywright経由で起動するchrome-headless-shellは、5分ルールの『放置』と見分けがつかず、2026-10-20 00:22:42に本番環境で実際にKILLされた。結果、render_A8.logに『Target crashed』が記録され、1フレームの撮影が失敗（render.py側のリトライ機構で復旧し、最終的にcitypop_A_neon_v6.mp4は完成した）。",
+   "fix": "pick_targets()で祖先プロセスを遡り、render.py・NEVER対象（ffmpeg等）にぶら下がっているchrome-headless-shellは回収対象から除外するよう変更。",
+   "evidence": "/private/tmp/122702_promo/render_A8.log 内の 'retry 231 0 Page.screenshot: Target crashed'"
+  },
+  {
+   "what": "factory_status.pyのswap単位バグ",
+   "detail": "sysctl vm.swapusageの'used = X M'（MB単位）を/1024せずに返していたため、status/machine.json・status/load_history.jsonlの swapGB が実際の1000倍の値のまま記録され続けていた（例：実測6.5GBのところ6660.75として記録）。",
+   "fix": "swap_trend()に/1024を追加。同時実行数の判定(safe_max)はswap_up(増減の真偽値)だけを見ているため、この桁違いの影響は受けていなかった。表示・記録の信頼性のために修正。",
+   "evidence": "修正前後の実行結果比較（6660.75 → 6.5）"
+  }
+ ],
+ "note": "ロード比そのものの主要因は、同時に走る複数のClaude Codeセッション自体の負荷（本調査時点で5〜8本が同時稼働）。個々の放置プロセスの削減だけでは依頼の数値目標（ratio<1.0）には届かない可能性が高いことを正直に記録する。"
+}
