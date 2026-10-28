@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-29 01:17:42・hash=4b4cc9ec14eb -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-29 01:38:07・hash=9c544c6ba5fe -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -85,6 +85,12 @@
 - 正本：joy-relief-station Issue #1060（海外6点＋日本7点。列＝Claude/Grok/ChatGPT/Genspark の判定と出典）。道具 tools/houmu_check.py（心臓10分おき：返事集め→食い違い🔴→たまごさんの1枚 share/check/houmu-1060.html＝本人判断・食い違いだけ）。
 - 依頼済み：ChatGPT（@codex）／Genspark（AI Drive /できる人いますか/1060.md）／Grok（共有メモ「法務チェック」＋Reason Network待ち行列。RNは未サインイン）。GrokBotの特商法の住所の調べ結果も #1060 に集める。法律の助言ではない。
 - Claudeの判定の要点：特商法は今は販売なし＝表示義務なし。売る時は個人でも「請求があれば遅滞なく開示」と書けば氏名・住所・電話を省略可（消費者庁Q&A A15/A17）。PPは要対応（メール取得＝利用目的の公表）。
+
+## 2026-10-27〜29 白飛び（たまごさん「白飛びが全然直らない」）
+- 本番は10/25の直し（生成りの起動ローダー・html背景・manifest）が入ったまま（巻き戻りなし）。
+- 全場面のコマ数え：`tools/shirotobi_zen.sh`（初回・SPA遷移・戻る・フルリロード・動画埋め込み・暗⇔明・画像の枠／一瞬だけ出る白を `tools/shirotobi_shirokoma.py` で数える）。見つかった白＝関連カードのサムネ枠（読み込み前がほぼ白）→ bg-muted に（553c424c0）。iPhone Air の起動画像が無かった→追加。
+- 関所：joy-relief-station prebuild `scripts/patrol/check-no-white-flash.mjs`（白飛びの元が入るとビルドが止まる）／毎日 `tools/shirotobi_mimawari.py --daily`（本番で白コマ1以上→Dispatch＋白飛びを直す公開以外を `koutai_kanmon --pre-publish` で48時間止める）／`koutai_kanmon --check --output` もローカルで白コマを数える。
+- 残り：iPhoneのホーム画面アプリは起動画像をホーム画面に追加した時に覚えるので、10/25より前に追加したアイコンは一度消して追加し直さないと起動の白は消えない（サーバー側からは変えられない）。本番の曲ページ・棚は初回応答が数秒かかる（その間の起動画面が長い）。
 
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
