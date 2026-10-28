@@ -592,6 +592,10 @@ if __name__ == "__main__":
     #   一瞬だけ出る白が1コマでもあれば Dispatch へ1行＋印（koutai_kanmon --pre-publish が白飛びを直す公開以外を止める）
     _okosu("shirotobi_mimawari.py", "--daily")
 
+    # 2026-10-29 Supabase 10/30 仕様変更（新しいテーブルは GRANT しないと Data API で読めない）。1日1回・中で20時間に間引く。
+    #   本番の全テーブルが service_role／公開鍵で読めるかを見て、赤なら Dispatch へ1行（tools/db_grant_kanmon.py）
+    _okosu("db_grant_kanmon.py", "--mimawari", "--daily")
+
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:

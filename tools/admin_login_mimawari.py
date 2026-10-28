@@ -74,7 +74,8 @@ def heal():
   name text primary key, value text not null, updated_at timestamptz not null default now());
 alter table public.admin_runtime_secrets enable row level security;
 revoke all on table public.admin_runtime_secrets from anon, authenticated;
-select 1 as ok""")
+grant all on table public.admin_runtime_secrets to service_role;
+select 1 as ok""")  # 10-29：GRANT は Supabase 10/30 仕様変更の型（tools/db_grant_kanmon.py）
     rows = db.q("select name, value from public.admin_runtime_secrets") or []
     have = {r["name"]: r["value"] for r in rows}
     did = []
