@@ -180,6 +180,8 @@ footer a{display:block; padding:5px 0}
 <a id="okaneLine" href="share/check/1051-okane.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">お金　読み込み中…</a>
 <!-- 2026-10-09 起こし役：止まった子セッション・Gensparkを自動で起こした回数。出どころ status/public/okoshi.json（tools/okoshi.py が5分おき） -->
 <div id="okoshiLine" style="font-size:15px;margin:0 0 10px">自動で起こした回数　読み込み中…</div>
+<!-- 2026-10-29 改善ループ：本番の採点・直して公開した件数・止まり。出どころ status/public/kaizen.json（tools/kaizen_loop.py が毎時） -->
+<a id="kaizenLine" href="status/public/kaizen.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">改善ループ　読み込み中…</a>
 <!-- 2026-10-11 案件ごとの家計簿：今月の外部API合計（円）。出どころ status/public/kakeibo.json（tools/kakeibo.py が20分おき） -->
 <a id="kakeiboLine" href="share/check/kakeibo.html" style="display:block;font-size:15px;margin:0 0 10px;color:inherit;text-decoration:none">家計簿　読み込み中…</a>
 <!-- 2026-10-25 SNS（先週）：X・TikTok・YouTube・LINE を同じ見え方で1行ずつ。出どころ status/public/sns_shuukei.json（tools/line_haishin.py が週1）。LINEの配信はGrokボット担当・記録は #1039 -->
@@ -413,6 +415,10 @@ var DISK_AKA_GB = 50;
     var c = (d && d.count) || {};
     okl.textContent = "自動で起こした回数　今日 " + (c.today||0) + "回・累計 " + (c.total||0) + "回（うち別経路 " + (c.betsu||0) + "・Genspark " + (c.genspark||0) + "）";
   }).catch(function(){ okl.textContent = "自動で起こした回数　0回"; });
+  var kzl = document.getElementById("kaizenLine");
+  if(kzl) getJson("status/public/kaizen.json").then(function(d){
+    kzl.textContent = (d && d.hitokoto ? d.hitokoto : "改善ループ　まだ採点していません") + " ›";
+  }).catch(function(){ kzl.textContent = "改善ループ　取れていません ›"; });
   if(ln) getJson("status/public/okane_ichimai.json").then(function(d){
     if(!d || typeof d.gokei !== "number"){ ln.textContent = "お金　取れていません"; return; }
     ln.textContent = "お金　今月 " + d.gokei.toLocaleString() + "円（カードから引かれた実額）・解約候補 " + (d.kouhoN||0) + "件 ›";

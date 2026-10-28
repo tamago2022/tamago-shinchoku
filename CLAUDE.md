@@ -1,6 +1,11 @@
 # tamago-shinchoku（公開リポ：鍵・個人情報は絶対に置かない）
 グローバル憲法は ~/.claude/CLAUDE.md を参照（そちらにも下記ルールあり）。
 
+## 止まらない改善ループ（憲法・2026-10-29・たまごさん「自動でどんどん良くなる。止まってるのはありえない」「俺が喜ぶ・お客さんが喜ぶ・便利・軽い、と気を利かせて」）
+- **測る→選ぶ→直す→確かめる→学ぶ→止まり検知→案出し→効き目→週報を、心臓が勝手に回す。** 毎時本番を採点（関連4つ以上・コピー・メモ/出典・死んだ動画・行き止まり・検索・白コマ・速さ・未設定表示・OGP）→ 点の低い順×（X・LINEに出した／マガジンの曲は重く）で1便15〜30分の直しを queue に積む（改善の待ちは常に3本・先頭に出すのは1本だけ＝判定日赤と半々）→ 終わったら採点し直し、2回続けて下がったら自動で戻す（worktree なし・Grok由来と棚のファイルは戻さない）→ 同じ種類の失敗2回で関所を足す便を1回 → 30分どの子も動かない・待ちが空なら理由を見分けて再点火 or Dispatch へ1行 → 毎日①店主②お客さん③便利④軽いで案（誰の・どんな手間が・どれだけ・見込みの数字つき、良い順）。見た目が変わらない案は作って公開、見た目が変わる案は非公開A/B（share/check/kaizen-ab-*.html）止まりで進捗表の確認待ちに「選ぶだけ」→ 型ごとに効いた/変わらず/下がったを数え、4回で25%未満の型はやめる → 日曜朝に「今週、勝手に良くなったこと」3行。
+- 週枠の線・同時2本・Macの負荷は auto_launcher（shuwaku_sen）が守る（ループは積むだけ）。棚・見た目・有料API・Lovableのチャット・ブラウザ・web_fetch は使わない。並行の子の受け持ちは `status/kaizen/heikou.json`（同じ仕事を積まない）。
+- **機械の裏付け：** `tools/kaizen_loop.py --tick`（top_status の相乗り・中で間引く。`--self-test`）。結果 `status/kaizen/score.json`・写し `status/public/kaizen.json`・進捗表の1行「改善ループ」→ `status/public/kaizen.html`。
+
 ## SNSに出した曲は、曲ページを5点そろえる（憲法・2026-10-17・たまごさん優先順位1位）
 - **5点：** ①検索（曲名・アーティスト名＋曲名・カタカナ⇔英語）で出る ②関連4本以上（理由の言えるもの）③メモと出典（src）④マガジンに載った曲はマガジンへの入口 ⑤動画が生きている。
 - **機械の裏付け：** `tools/toukou_mimawari.py`（投稿済み曲の見回り・心臓から1日1回）。台帳 `status/public/toukou_daicho.json`＝X（Bufferの控え dashita.jsonl が正本＋x_toukou＋`x_urls`）・YouTube @joy-relief-station（公開RSS＋一覧、曲は再生ページの「使っている曲」）・TikTok（公開埋め込み `tiktok.com/embed/@joyreliefstation`＋動画ページの「使った音」・oEmbed・`tiktok_urls`）。渡されたURL・1本で何曲も扱う告知（`post_song_keys`）は `status/toukou_daicho_config.json`。点検は joy-relief-station `scripts/patrol/check-posted-songs.mts` → `status/public/toukou_tenken.json`、落ちた曲があれば直す仕事を1日1件積む。**反応（再生数・いいね等）は出して30日以内の投稿を毎日 `status/sns_hannou.json`（写し `status/public/sns_hannou.json`）に記録。取れない数字は書かない。** 有料API・ブラウザなし。`--self-test`。
