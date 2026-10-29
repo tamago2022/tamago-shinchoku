@@ -18,6 +18,16 @@
 - **【10-22 追加】名指しは「その日」の言葉だけ有効（たまごさん「棚に置くのは本当に慎重にしたい。これからも慎重にいきたい」）。** 前日以前の言葉（判定日赤の積み直し・古いメモ・ChatGPT等のリサーチ結果）を根拠に棚を動かさない。今ある棚の中身は外さない・足さない。**機械の裏付け：** 発車の頭 `tools/tana_sekisho.py`（`auto_launcher.launch_one` から。棚を変える票は `tanaMeishi:{hi:今日,kyoku,tana,kotoba}` が無ければ hold。`--horyu`／`--ichiran`／`--self-test`）と、joy-relief-station `check-tana-shitei.mjs`（10-22以降の shitei は `said`＝言われた日が `date` と同じでないと公開が止まる）。保留の一覧 `share/check/tana-horyu.html`（進捗表から1クリック）。
 - 10-21：仕入れの5曲（wave to earth「bad」／ADOY「Lemon」／POLYCAT「เวลาเธอยิ้ม」／YONLAPA「Let Me Go」／Reality Club「Telenovia」）をアジアの風の棚から外した（曲ページ・関連・検索・裏タグは残す）。Labäda Bu「달리기」はたまごさん指定で残す。過去に指定なしで棚に入った分の一覧は `status/tana_shiire_kako.json`（外すかはたまごさんの判断待ち・数えただけ）。
 
+## マガジン曲点検：マガジン・特集で取り上げた曲は全部、正しい曲ページ・関連4つ・コピーとメモ・生きた動画（2026-10-29 たまごさん）
+- **たまごさん「マガジン周りの曲のリンクがちゃんと繋がっているか、マガジンで取り上げた曲のページにお勧めが4つ出ているか、どんどん精度を高めて」。**
+- 1曲ずつ：①リンク先が正しい曲の独立ページ（行き止まり・別の曲・未リンクはゼロ）②曲ページの「関連」の列（bridgeRelated・カードB）に生きている曲が4つ以上 ③コピー（ボンジョビおじさん構文・水道水禁止）とメモ（出典 src つき。src が無いと出典の関所で隠れる）④動画が生きている（消えたら hikkomi で引っ込め・差し替え）。棚には触らない。
+- **機械の裏付け：** 公開の関所＝joy-relief-station の prebuild `scripts/patrol/check-magazine-songs.mjs`（落ちたら公開が止まる・`--self-test`）。毎日の見張り＝`tools/magazine/magazine_gate.py --daily`（特集 /feature/* も本番HTMLから点検・取り違えの確認済みは `tools/magazine/magazine_gate_kakunin.json`・動画は oEmbed で確かめ `status/hikkomi/magazine_videos.json` を通して `tools/hikkomi.py` が毎日見回る・前回合格の曲が落ちたら Dispatch へ【後退】1行・直す便を積む）。特集の動画枠（VideoStage）は hikkomi に入った動画を枠ごと出さない。
+
+## 新しいテーブルは GRANT とセット（2026-10-29・Supabase の仕様変更）
+- Supabase 公式告知（changelog 45329）：**2026-10-30 以降に作ったテーブルは明示的に GRANT しないと Data API／GraphQL から読めない**（既存はそのまま）。新しいテーブルは同じSQLに `enable row level security`＋`grant select on <名前> to anon, authenticated`（画面から読む時）＋`grant all on <名前> to service_role` を入れる。型は joy-relief-station `docs/supabase-new-table.sql`。
+- **テーブルを作る道と関所：** ①joy-relief-station の migration（Lovable・手書き）→ prebuild `scripts/patrol/check-table-grant.mjs`（20261029000000 以降のファイルで GRANT の無い CREATE TABLE/VIEW があれば公開が止まる）②工場から直接流すSQL（query_database：2210_tanaire.DB／houou_sql／admin_login_mimawari）→ `kohyou_osu.Lovable._rpc` の頭で `tools/db_grant_kanmon.py` の `kensa()` が止める ③Supabase コネクタ（apply_migration 等）は工場では使っていない。
+- **毎日の見張り：** `tools/db_grant_kanmon.py --mimawari --daily`（top_status の相乗り）。カタログ（Lovable の鍵が生きている日）∪ main の migration・`.from()` の全テーブルを Data API（公開鍵・GET limit=0＝行は読まない）で確かめ、前は読めたのに読めない／画面が読む新しいテーブルが GRANT 無し、なら Dispatch へ1行。結果 `status/public/db_grant_mimawari.json`、基準 `status/db_grant/kijun.json`。`--self-test`。
+
 ## ごきげんの種（今週のごきげん一粒・LINE 週1回）（2026-10-21 たまごさん決定）
 - **目的はリスト取り。まずLINEだけ。** 毎週金曜20時、友だち全員へ1粒（案A＝一言だけ・3秒）：本当にいい曲1つ＋事実1行（へぇ）＋卵コンシェルジュの一言＋曲ページのリンク。導線は X＝毎日たくさん／LINE＝週に1粒。
 - **導線の設定は joy-relief-station `public/gokigen-tane.json` の `line_url` 1か所だけ。** 空の間はどのページにも出ない。入れて公開すると全ページ（React の `SnsAccounts`・静的マガジンの `share_bar.add_tane`）に出る。

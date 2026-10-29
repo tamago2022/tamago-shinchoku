@@ -10,6 +10,7 @@
 - 土台：Obsidian Vault の `AI出力/_ルール/進捗表.html`（2026-09-02 に移植）
 - 中身の正本：`data.js`（依頼一覧＋「いま動いているもの」＋TODAY）
 - 公開：GitHub Pages（このリポジトリの main をそのまま配信）
+- **Xメモ（2026-10-29）：** Dispatch に X の投稿URLだけ届いたら `python3 tools/x_memo.py <URL> [--tag 話題タグ]` を走らせ、1行目に出る `obsidian://` のリンクを返す（Vault直下に「タイトル.md」＝話題→発信者タグ・全文・URL。同じ投稿は作らない・上書きしない。タグの表記は `tools/x_memo_tags.json`）。
 
 ## 中身
 
