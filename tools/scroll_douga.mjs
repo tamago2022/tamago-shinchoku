@@ -69,6 +69,9 @@ if (!URL_ARG || !OUT_FILE) {
 const W = 390, H = 844, DPR = 3, PW = W * DPR, PH = H * DPR;
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const FFMPEG = [join(homedir(), ".local/bin/ffmpeg"), join(homedir(), "bin/ffmpeg"), "/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg"].find((p) => existsSync(p)) || "ffmpeg";
+// スマホの UA は Android の Chrome にする（iPhone の UA だと YouTube が iPhone 用の再生方式を返し、頭なし Chrome では
+// 読み込み中のまま再生が始まらなかった＝実測 10-30）。--user-agent で動画の iframe の中にも効かせる
+const MOBILE_UA = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (s) => console.error(`[${new Date().toTimeString().slice(0, 8)}] ${s}`);
 
@@ -94,10 +97,10 @@ function connect(wsUrl) {
     else if (msg.method && handlers.has(msg.method)) handlers.get(msg.method)(msg.params);
   });
   const ready = new Promise((res, rej) => { ws.addEventListener("open", res); ws.addEventListener("error", () => rej(new Error("CDP接続失敗"))); });
-  const send = (method, params = {}) => new Promise((ok, ng) => {
+  const send = (method, params = {}, sessionId) => new Promise((ok, ng) => {
     const myId = ++id;
     pending.set(myId, (m) => (m.error ? ng(new Error(JSON.stringify(m.error))) : ok(m.result)));
-    ws.send(JSON.stringify({ id: myId, method, params }));
+    ws.send(JSON.stringify(sessionId ? { id: myId, method, params, sessionId } : { id: myId, method, params }));
   });
   return { ready, send, on: (m, f) => handlers.set(m, f), close: () => ws.close() };
 }
@@ -129,7 +132,7 @@ async function main() {
   const port = 9300 + Math.floor(Math.random() * 500);
   const profile = mkdtempSync(resolve(tmpdir(), "scroll-douga-prof-"));
   const work = mkdtempSync(resolve(tmpdir(), "scroll-douga-frames-"));
-  const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run", "--mute-audio",
+  const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run", "--mute-audio", `--user-agent=${MOBILE_UA}`,
     "--autoplay-policy=no-user-gesture-required", `--window-size=${W},${H}`, "--disable-features=Translate,MediaRouter", "about:blank"], { stdio: "ignore" });
   const cleanup = () => { try { chrome.kill("SIGKILL"); } catch {} for (const d of [profile, work]) { try { rmSync(d, { recursive: true, force: true }); } catch {} } };
   for (const sig of ["SIGALRM", "SIGTERM", "SIGINT"]) process.on(sig, () => { cleanup(); process.exit(1); });
@@ -143,7 +146,7 @@ async function main() {
     await send("Runtime.enable");
     await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: DPR, mobile: true });
     await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 }).catch(() => {});
-    await send("Emulation.setUserAgentOverride", { userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" });
+    await send("Emulation.setUserAgentOverride", { userAgent: MOBILE_UA });
     await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: DARK ? "dark" : "light" }] });
     await send("Page.addScriptToEvaluateOnNewDocument", { source: `try{localStorage.setItem('gokigen-theme','${DARK ? "dark" : "light"}')}catch(e){}` });
     await send("Page.navigate", { url: URL_ARG });
@@ -191,7 +194,7 @@ async function main() {
 
     // 区間の長さ
     const stopY = vid ? Math.min(maxY, Math.max(0, vid.cy - Math.round(H * 0.45))) : maxY;
-    const scrollSec = Math.max(8, SEC - (vid ? PLAY : 0) - 1.6);
+    const scrollSec = Math.max(8, SEC - (vid ? PLAY + 2 : 0) - 1.6);
     const s1 = vid ? Math.max(1.2, maxY ? scrollSec * (stopY / maxY) : scrollSec / 2) : scrollSec;
     const s2 = vid ? Math.max(1.2, scrollSec - s1) : 0;
 
@@ -200,9 +203,10 @@ async function main() {
     const hdPng = join(work, "hd.png"), ftPng = join(work, "ft.png");
     if (bands.top > 0) ff(["-i", join(work, "top.png"), "-vf", `crop=${PW}:${tb}:0:0`, "-frames:v", "1", hdPng]);
     if (bands.bot > 0) ff(["-i", join(work, "top.png"), "-vf", `crop=${PW}:${bb}:0:${PH - bb}`, "-frames:v", "1", ftPng]);
+    let fullNow = full;
     const segScroll = (name, y0, y1, holdA, dur, holdB) => {
       const len = (holdA + dur + holdB).toFixed(3);
-      const ins = ["-i", full];
+      const ins = ["-i", fullNow];
       let fc = `[0:v]loop=loop=-1:size=1:start=0,setpts=N/${FPS}/TB,trim=duration=${len},crop=${PW}:${PH}:0:'${easeExpr(y0 * DPR, y1 * DPR, holdA, dur)}'[bg]`;
       let last = "bg", k = 1;
       if (bands.top > 0) { ins.push("-loop", "1", "-framerate", String(FPS), "-t", len, "-i", hdPng); fc += `;[${last}][${k++}:v]overlay=0:0:shortest=1[v1]`; last = "v1"; }
@@ -217,36 +221,69 @@ async function main() {
     segs.push(segScroll("a.mp4", 0, stopY, 0.8, s1, vid ? 0.3 : 0.8));
     let played = null;
     if (vid) {
-      // 本当に押して、再生の様子を画面の録画で撮る
+      // 本当に押して、再生の様子を画面の録画で撮る。動画の中（iframe）にもつないで、本当に再生が進んだかを測る
       await ev(send, `window.scrollTo(0, ${stopY})`);
       await sleep(800);
       const cyView = Math.round(await ev(send, `(()=>{const v=${FIND_VIDEO};return v?v.cy-scrollY:${vid.cy - stopY}})()`));
+      const frameSids = [];
+      c.on("Target.attachedToTarget", (p) => { if (p.targetInfo?.type === "iframe") { frameSids.push(p.sessionId); send("Runtime.runIfWaitingForDebugger", {}, p.sessionId).catch(() => {}); } });
+      await send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: false, flatten: true }).catch(() => {});
+      const videoTime = async () => {
+        let best = -1;
+        for (const sid of frameSids) {
+          const r = await send("Runtime.evaluate", { expression: "(()=>{const v=document.querySelector('video');return v?v.currentTime:-1})()", returnByValue: true }, sid).catch(() => null);
+          const v = r?.result?.value; if (typeof v === "number" && v > best) best = v;
+        }
+        return best;
+      };
       const frames = [];
-      c.on("Page.screencastFrame", (p) => { frames.push({ t: p.metadata?.timestamp || Date.now() / 1000, data: p.data }); send("Page.screencastFrameAck", { sessionId: p.sessionId }).catch(() => {}); });
+      c.on("Page.screencastFrame", (p) => { frames.push({ t: Date.now() / 1000, data: p.data }); send("Page.screencastFrameAck", { sessionId: p.sessionId }).catch(() => {}); });
       await send("Page.startScreencast", { format: "jpeg", quality: 85, maxWidth: PW, maxHeight: PH, everyNthFrame: 1 });
-      await sleep(500);
+      await sleep(400);
+      const tClick = Date.now() / 1000;
       for (const type of ["mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x: vid.cx, y: cyView, button: "left", clickCount: 1 });
-      const t0 = Date.now();
+      // 再生が始まるまで待つ（最大20秒。待った時間は動画の中では2秒に縮める）
+      let tPlay = null;
+      for (let i = 0; i < 40; i++) { await sleep(500); if ((await videoTime()) > 0.2) { tPlay = Date.now() / 1000; break; } }
       await sleep(PLAY * 1000);
-      // 最後の1コマは確実に撮る（画面が止まっていると録画のコマが来ないため）
-      const endShot = await send("Page.captureScreenshot", { format: "jpeg", quality: 85 }).catch(() => null);
+      const endT = await videoTime();
+      const endY = Math.round(await ev(send, "scrollY"));
+      const endShot = await send("Page.captureScreenshot", { format: "png" }).catch(() => null);
       await send("Page.stopScreencast").catch(() => {});
-      const tEnd = frames.length ? frames[0].t + (Date.now() - t0) / 1000 + 0.5 : 0;
-      if (endShot) frames.push({ t: tEnd, data: endShot.data });
-      played = await ev(send, `(()=>{const f=document.querySelector('iframe[src*="youtube"],iframe[src*="youtu"]');return f?{iframe:true,src:f.src.slice(0,90)}:{iframe:false}})()`);
+      const tEnd = Date.now() / 1000;
+      if (endShot) {
+        writeFileSync(join(work, "end.png"), Buffer.from(endShot.data, "base64"));
+        ff(["-i", join(work, "end.png"), "-q:v", "2", "-frames:v", "1", join(work, "end.jpg")]); // 録画のコマ（jpg）と形をそろえる
+        frames.push({ t: tEnd, png: join(work, "end.jpg") });
+      }
+      played = { started: tPlay !== null, waitSec: tPlay ? Number((tPlay - tClick).toFixed(1)) : null, videoCurrentTime: Number(endT.toFixed(1)), iframes: frameSids.length };
       log(`再生区間 ${frames.length}コマ ${JSON.stringify(played)}`);
-      if (frames.length) {
+      const tP = tPlay ?? tClick + 2;
+      const waitF = Math.min(1, 2 / Math.max(0.01, tP - tClick)); // 待ち時間を2秒に縮める
+      const shown = frames.filter((fr) => fr.t >= tClick - 0.4);
+      if (shown.length) {
         const lines = [];
-        frames.forEach((fr, i) => {
-          const f = join(work, `p${String(i).padStart(4, "0")}.jpg`); writeFileSync(f, Buffer.from(fr.data, "base64"));
-          const d = i < frames.length - 1 ? Math.max(0.03, frames[i + 1].t - fr.t) : 0.3;
+        shown.forEach((fr, i) => {
+          let f = fr.png;
+          if (!f) { f = join(work, `p${String(i).padStart(4, "0")}.jpg`); writeFileSync(f, Buffer.from(fr.data, "base64")); }
+          const next = i < shown.length - 1 ? shown[i + 1].t : fr.t + 0.5;
+          let d = Math.max(0.03, next - fr.t);
+          if (fr.t >= tClick && fr.t < tP) d *= waitF;
           lines.push(`file '${f}'\nduration ${d.toFixed(4)}`);
         });
-        const listF = join(work, "p.txt"); writeFileSync(listF, lines.join("\n") + `\nfile '${join(work, `p${String(frames.length - 1).padStart(4, "0")}.jpg`)}'\n`);
+        const listF = join(work, "p.txt"); writeFileSync(listF, lines.join("\n") + `\nfile '${shown[shown.length - 1].png || join(work, `p${String(shown.length - 1).padStart(4, "0")}.jpg`)}'\n`);
         const out = join(work, "p.mp4");
         ff(["-f", "concat", "-safe", "0", "-i", listF, "-vf", `scale=${PW}:${PH}:force_original_aspect_ratio=decrease:out_range=tv,pad=${PW}:${PH}:(ow-iw)/2:0,fps=${FPS},format=yuv420p`,
-          "-t", String(PLAY + 0.5), "-an", "-color_range", "tv", "-c:v", "libx264", "-preset", "veryfast", "-crf", "16", out]);
+          "-t", String(PLAY + 3), "-an", "-color_range", "tv", "-c:v", "libx264", "-preset", "veryfast", "-crf", "16", out]);
         segs.push(out);
+      }
+      // 再生後の画面を全体の絵に貼る（下りる続きの区間が、再生前の表紙に戻らないように）
+      if (endShot) {
+        const t0 = bands.top > 0 ? tb : 0;
+        const keepH = PH - (bands.bot > 0 ? bb : 0) - t0;
+        const full2 = join(work, "full2.png");
+        ff(["-i", full, "-i", join(work, "end.png"), "-filter_complex", `[1:v]crop=${PW}:${keepH}:0:${t0}[e];[0:v][e]overlay=0:${endY * DPR + t0}`, "-frames:v", "1", full2]);
+        fullNow = full2;
       }
       segs.push(segScroll("b.mp4", stopY, maxY, 0.3, s2, 0.8));
     }
@@ -265,7 +302,7 @@ async function main() {
     const FFPROBE = FFMPEG.replace(/ffmpeg$/, "ffprobe");
     const pr = spawnSync(existsSync(FFPROBE) ? FFPROBE : "ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=width,height,codec_name", "-of", "json", OUT_FILE], { encoding: "utf8" });
     let probe = null; try { probe = JSON.parse(pr.stdout); } catch {}
-    const planned = 0.8 + s1 + (vid ? 0.3 + 0.3 + PLAY + 0.5 + 0.3 + s2 : 0) + 0.8;
+    const planned = 0.8 + s1 + (vid ? 0.3 + 2.4 + PLAY + 0.3 + s2 : 0) + 0.8;
     const info = { url: URL_ARG, out: OUT_FILE, dark: DARK, darkClass: isDark, sec: Number((probe ? Number(probe.format?.duration) : planned).toFixed(1)),
       mb: Number((size / 1048576).toFixed(2)), enc: used, size: probe?.streams?.[0] ? `${probe.streams[0].width}x${probe.streams[0].height} ${probe.streams[0].codec_name}` : null,
       pageH: docH, bands, video: vid, played };

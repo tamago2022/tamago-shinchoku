@@ -10,6 +10,7 @@
 - 土台：Obsidian Vault の `AI出力/_ルール/進捗表.html`（2026-09-02 に移植）
 - 中身の正本：`data.js`（依頼一覧＋「いま動いているもの」＋TODAY）
 - 公開：GitHub Pages（このリポジトリの main をそのまま配信）
+- **ページの見せ方の型＝スクロール動画（2026-10-30）：** 本番ページを確認に出すときは `node tools/scroll_douga.mjs <URL> status/shots/<日付>/<名前>.mp4 [--dark]`（スマホ390×844・拡大率3・上から下へゆっくり＋途中で動画を押して再生・H.264・音なし・10MB以下・頭なしChromeで普段のブラウザには触らない）。細長い1枚スクショは確認用に使わない。
 - **Xメモ（2026-10-29）：** Dispatch に X の投稿URLだけ届いたら `python3 tools/x_memo.py <URL> [--tag 話題タグ]` を走らせ、1行目に出る `obsidian://` のリンクを返す（Vault直下に「タイトル.md」＝話題→発信者タグ・全文・URL。同じ投稿は作らない・上書きしない。タグの表記は `tools/x_memo_tags.json`）。
 
 ## 中身
