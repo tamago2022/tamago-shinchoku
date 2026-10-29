@@ -596,6 +596,10 @@ if __name__ == "__main__":
     #   本番の全テーブルが service_role／公開鍵で読めるかを見て、赤なら Dispatch へ1行（tools/db_grant_kanmon.py）
     _okosu("db_grant_kanmon.py", "--mimawari", "--daily")
 
+    # 2026-10-29 工場の変更が GitHub の main に上がっているかの見張り（1時間に1回・中で間引く）。
+    #   作業場が別の枝に乗ったまま・衝突で pull をやめ続ける・README/CLAUDE.md が記録されない、で main が1週間止まった件（tools/kojo_push_mihari.py）
+    _okosu("kojo_push_mihari.py", "--tick")
+
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:

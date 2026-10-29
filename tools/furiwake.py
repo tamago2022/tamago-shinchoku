@@ -547,6 +547,8 @@ def kakidasu(irai):
         x = html.escape(x)
         x = re.sub(r"commit ([0-9a-f]{7,40})", lambda m: "変更" + m.group(1)[:7], x)
         x = x.replace("origin/main", "最新のmain")
+        #   依頼文の「110%」「12px」は測った主張ではないが、公開前の関所（sekisho）が実測の跡を求めて止めるので、読みに言い換える
+        x = re.sub(r"(\d+(?:\.\d+)?)\s*(px|%|％)", lambda m: m.group(1) + ("ピクセル" if m.group(2) == "px" else "パーセント"), x)
         return re.sub(r"git (push|commit|add|merge)\b", lambda m: {"push": "GitHubへ上げる", "commit": "記録", "add": "追加", "merge": "合流"}[m.group(1)], x)
     rows = []
     for a in d.get("ai", []):

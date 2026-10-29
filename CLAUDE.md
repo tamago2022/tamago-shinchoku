@@ -6,6 +6,10 @@
 - 週枠の線・同時2本・Macの負荷は auto_launcher（shuwaku_sen）が守る（ループは積むだけ）。棚・見た目・有料API・Lovableのチャット・ブラウザ・web_fetch は使わない。並行の子の受け持ちは `status/kaizen/heikou.json`（同じ仕事を積まない）。
 - **機械の裏付け：** `tools/kaizen_loop.py --tick`（top_status の相乗り・中で間引く。`--self-test`）。結果 `status/kaizen/score.json`・写し `status/public/kaizen.json`・進捗表の1行「改善ループ」→ `status/public/kaizen.html`。
 
+## 工場の変更は毎日 GitHub の main へ（2026-10-29）
+- 実測：作業場が 10-22 から作業の枝に乗ったままで、自動pushの係（`tools/machine_status_push.sh`）は枝に commit し続け、`push origin main` は古い手元の main を押すだけ、pull は台帳の衝突で毎回やめていた → main が1週間止まった。
+- **機械の裏付け：** `tools/kojo_push_mihari.py`（top_status から1時間に1回。別の枝なら main に戻す・README/CLAUDE.md/AGENTS.md の未記録を commit・3時間以上上がらなければぶつかるファイル名つきで Dispatch へ1行。`--self-test`）。衝突は台帳＝両方残す、確認ページ＝新しい方。
+
 ## SNSに出した曲は、曲ページを5点そろえる（憲法・2026-10-17・たまごさん優先順位1位）
 - **5点：** ①検索（曲名・アーティスト名＋曲名・カタカナ⇔英語）で出る ②関連4本以上（理由の言えるもの）③メモと出典（src）④マガジンに載った曲はマガジンへの入口 ⑤動画が生きている。
 - **機械の裏付け：** `tools/toukou_mimawari.py`（投稿済み曲の見回り・心臓から1日1回）。台帳 `status/public/toukou_daicho.json`＝X（Bufferの控え dashita.jsonl が正本＋x_toukou＋`x_urls`）・YouTube @joy-relief-station（公開RSS＋一覧、曲は再生ページの「使っている曲」）・TikTok（公開埋め込み `tiktok.com/embed/@joyreliefstation`＋動画ページの「使った音」・oEmbed・`tiktok_urls`）。渡されたURL・1本で何曲も扱う告知（`post_song_keys`）は `status/toukou_daicho_config.json`。点検は joy-relief-station `scripts/patrol/check-posted-songs.mts` → `status/public/toukou_tenken.json`、落ちた曲があれば直す仕事を1日1件積む。**反応（再生数・いいね等）は出して30日以内の投稿を毎日 `status/sns_hannou.json`（写し `status/public/sns_hannou.json`）に記録。取れない数字は書かない。** 有料API・ブラウザなし。`--self-test`。
