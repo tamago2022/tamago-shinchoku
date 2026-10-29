@@ -541,7 +541,13 @@ def kakidasu(irai):
                     for i in reversed(irai[-50:])]}
     save(PUB, pub)
     tagi = d.get("_tag_no_imi", {})
-    E = html.escape
+    # 2026-10-29 依頼文の写しに入る「commit 1234abc」「origin/main」「git push」は、
+    #   鬼監督（tools/oni_gate.py R2）が公開前に止める＝工場の自動pushが毎回止まる。表示だけ言い換える（台帳の中身は変えない）
+    def E(x):
+        x = html.escape(x)
+        x = re.sub(r"commit ([0-9a-f]{7,40})", lambda m: "変更" + m.group(1)[:7], x)
+        x = x.replace("origin/main", "最新のmain")
+        return re.sub(r"git (push|commit|add|merge)\b", lambda m: {"push": "GitHubへ上げる", "commit": "記録", "add": "追加", "merge": "合流"}[m.group(1)], x)
     rows = []
     for a in d.get("ai", []):
         rows.append("<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td class=y>%s</td></tr>" % (

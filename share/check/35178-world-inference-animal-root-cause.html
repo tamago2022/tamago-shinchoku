@@ -55,14 +55,14 @@
 動物の動画が文脈に合わない場所に出る不具合(35176/35178号)の根本原因は<b>2つ重なっていた</b>。<br>
 <b>①直接の原因（主因）</b>：/watch ページ(外部URL取り込み動画)の戻るボタン・最下部リンクが、動画の内容を一切見ず<code>fallbackTo="/world/cute"</code>を無条件・固定で渡していた。モンスタートラックでも野外調理動画でも、/watchを開けば履歴が無い時は必ず「かわいいの部屋」行きになる作りだった。<br>
 <b>②背景の原因</b>：仕組みの土台である src/lib/worldInference.ts の inferWorldFromText() も、動物の種名(犬・猫・パンダ等)が1語でも入っていると他のどんな強い手がかり(MV・ライブ・バンド等の音楽語)より先に無条件で「かわいい動物」判定を返す作りだった(動物カテゴリの無条件デフォルトフォールバック)。<br>
-①は案件#35176、②は案件#34368として、どちらも<b>origin/mainへ合流済み</b>とコード本体の実測で再確認した。<br>
+①は案件#35176、②は案件#34368として、どちらも<b>最新のmainへ合流済み</b>とコード本体の実測で再確認した。<br>
 <b>しかし本日(2026-10-23)、本番ページ<code>/watch?v=q-Rvd_FR2DA</code>(動物と無関係な野外調理動画)を実測したところ、「← かわいいの部屋に戻る」の誤表示が<u>いまも再現した</u>。</b>main合流済みの修正はまだ本番に反映されていない。原因は工場共通の公開ブロックと、2026-10-22に店主本人が出したLovable自動公開のP0停止指示（新しい具体的な許可が無い限りLovable操作を実行しない）。公開は試みず、正直に「main合流済み・本番は未反映（不具合再現を実測で確認）」と報告する。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>2</b><span>重なっていた根本原因の数（①/watchの固定cute・②inferWorldFromTextの無条件animal優先）</span></div>
-  <div class="num"><b>origin/main</b><span>①②とも合流済み（コード本体を本日実測で再確認）</span></div>
+  <div class="num"><b>最新のmain</b><span>①②とも合流済み（コード本体を本日実測で再確認）</span></div>
   <div class="num"><b>再現した</b><span>本番/watch?v=q-Rvd_FR2DAの「かわいいの部屋に戻る」誤表示を本日実測</span></div>
 </div>
 
@@ -77,8 +77,8 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>①/watchのBackButton・下部リンクが fallbackTo="/world/cute" を無条件固定していたか(origin/main実測)</td><td class="yes">yes(直っている。fallbackTo="/"＋animal条件付きに修正済み)</td></tr>
-<tr><td>②worldInference.tsが動物語を他の強い手がかりより無条件優先していたか(origin/main実測)</td><td class="yes">yes(直っている。スコア方式化済み)</td></tr>
+<tr><td>①/watchのBackButton・下部リンクが fallbackTo="/world/cute" を無条件固定していたか(最新のmain実測)</td><td class="yes">yes(直っている。fallbackTo="/"＋animal条件付きに修正済み)</td></tr>
+<tr><td>②worldInference.tsが動物語を他の強い手がかりより無条件優先していたか(最新のmain実測)</td><td class="yes">yes(直っている。スコア方式化済み)</td></tr>
 <tr><td>本番 https://joy-relief-station.lovable.app/watch?v=q-Rvd_FR2DA (野外調理動画・動物と無関係) に「かわいいの部屋に戻る」が出るか(本日実測)</td><td class="no">出る(本番は未反映の証拠。x-deployment-idも旧デプロイのまま)</td></tr>
 <tr><td>Lovable公開を本セッションで実行したか</td><td class="no">実行していない(2026-10-22の店主P0停止指示に従った)</td></tr>
 </table>
