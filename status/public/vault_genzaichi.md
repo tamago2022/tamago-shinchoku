@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-30 03:58:21・hash=8730c795a17f -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-30 04:18:28・hash=8730c795a17f -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
