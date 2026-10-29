@@ -1,73 +1,8 @@
 {
  "_": "同時に動く子どうしの上書きの見張り（tools/uwagaki_kanmon.py）",
- "at": "2026-10-30 06:12:24",
- "mita": 40,
+ "at": "2026-10-30 07:12:39",
+ "mita": 35,
  "mitsuketa": {
-  "51bbfdffd": {
-   "subject": "chore(task-board): 見張り自動同期（60分おき）",
-   "kieta": [
-    {
-     "file": ".claude/TASK_BOARD.md",
-     "tashita": "dc557fe85",
-     "gyou": "- jules-2123314332259490-6351de66（**107日**そのまま／1件ぶんの作業）"
-    }
-   ]
-  },
-  "80bc634dd": {
-   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
-   "kieta": [
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "\"newlyReplaced\": [],"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "299a49a6e",
-     "gyou": "\"unreplaceable\": [],"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "},"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "{"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "\"cardId\": \"healing-music-01\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "\"title\": \"原田知世 - 蘇州夜曲\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "\"worldLabel\": \"扉カード（room/card）\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "\"shelfId\": \"癒しの音楽棚\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "\"shelfTitle\": \"癒しの音楽棚\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "64bc93a56",
-     "gyou": "\"to\": \"/room/card/healing-music-01\","
-    }
-   ]
-  },
   "282c162ea": {
    "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
    "kieta": [
@@ -2300,6 +2235,101 @@
      "file": ".claude/TASK_BOARD.md",
      "tashita": "2ff422a54",
      "gyou": "- fix-release-years-14692124615878586801（**108日**そのまま／2件ぶんの作業）"
+    }
+   ]
+  },
+  "b2a9be951": {
+   "subject": "chore(task-board): 見張り自動同期（60分おき）",
+   "kieta": [
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "3174e3123",
+     "gyou": "### 2026-10-29（Claude Code・第八条）曲ページの冷えたサーバー4〜10秒を、名簿を読まずに描く仕組みで直す（#1101 の控え棚が本番で効かない件の続き）"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "3174e3123",
+     "gyou": "- 依頼：/cover-guide 曲ページが冷えたサーバーで4〜10秒。#1101 の Cache API の控えは本番で x-jrs-cache が出ず効いていない。原因を調べ、冷えたサーバーでも"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "e97322e99",
+     "gyou": "- 原因：①#1101 の控え棚は、公開先で Cache API が使えず素通し（コードと名札はビルドに正しく入っていた）。②冷えた初回の約0.7秒（手元）が名簿9MBの読み込み・下ごしらえ。③最新m"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "60d537654",
+     "gyou": "- 実施：曲ページのサーバー軽量モード（ビルドの最後に答えを小分けで作り、冷えたサーバーは名簿を読まずに描く・足りなければ名簿で描き直す）。紹介文の表は最新 main（#1103）の5枚分割をそのまま"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "e97322e99",
+     "gyou": "- 結果（手元）：冷えた初回 約0.8〜1.1秒→約0.36〜0.48秒、メモリ約半分。全41,946ページで HTML 食い違い0件。ビルド合格（チャンク上限も回復）。本番で1秒以内に入るかは公開後"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "e97322e99",
+     "gyou": "- 報告：`ai-brain/reports/perf/2026-10-29-cover-guide-ssr-lite.md`"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "e97322e99",
+     "gyou": "- 状態：🟡ブランチpush済み・PR待ち（公開はしていない）"
+    }
+   ]
+  },
+  "a4d9fa962": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "{"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "\"deadId\": \"30lVYOuvg-g\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "\"newId\": \"DbYiHGfS8KA\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "\"artist\": \"The Brand New Heavies\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "\"song\": \"Never Stop\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "\"replacedAt\": \"2026-10-29T20:45:25.890Z\","
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "\"source\": \"search\""
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "},"
+    },
+    {
+     "file": "scripts/patrol/reports/latest.json",
+     "tashita": "523177682",
+     "gyou": "{"
     }
    ]
   }
