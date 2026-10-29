@@ -22,6 +22,11 @@
 - **【10-22 追加】名指しは「その日」の言葉だけ有効（たまごさん「棚に置くのは本当に慎重にしたい。これからも慎重にいきたい」）。** 前日以前の言葉（判定日赤の積み直し・古いメモ・ChatGPT等のリサーチ結果）を根拠に棚を動かさない。今ある棚の中身は外さない・足さない。**機械の裏付け：** 発車の頭 `tools/tana_sekisho.py`（`auto_launcher.launch_one` から。棚を変える票は `tanaMeishi:{hi:今日,kyoku,tana,kotoba}` が無ければ hold。`--horyu`／`--ichiran`／`--self-test`）と、joy-relief-station `check-tana-shitei.mjs`（10-22以降の shitei は `said`＝言われた日が `date` と同じでないと公開が止まる）。保留の一覧 `share/check/tana-horyu.html`（進捗表から1クリック）。
 - 10-21：仕入れの5曲（wave to earth「bad」／ADOY「Lemon」／POLYCAT「เวลาเธอยิ้ม」／YONLAPA「Let Me Go」／Reality Club「Telenovia」）をアジアの風の棚から外した（曲ページ・関連・検索・裏タグは残す）。Labäda Bu「달리기」はたまごさん指定で残す。過去に指定なしで棚に入った分の一覧は `status/tana_shiire_kako.json`（外すかはたまごさんの判断待ち・数えただけ）。
 
+## 曲ページの出典は「最大3つ・1つなら1行・2つ以上は押すと開く・サイト名」（2026-10-29 たまごさん赤入れ・Treasure）
+- **たまごさん「Wikipediaの記述が長すぎて美しくない。全部載せる必要ある？ せめてメモの中に出典として隠しておいて、押すと開くように」「capitalfm.com に飛ぶけど、これはWikipediaなの？」「Englishman in New Yorkみたいに1行ならいい」。**
+- 出典は強い順（Wikipedia＞大手の音楽メディア＞そのほか＞ラジオ局・DB・SNS）に最大3つだけ画面に出す。全部は coverGuide.ts の `src` に残す（事実の関所の記録）。1つなら今までの1行。2つ以上は小さく「出典」→押すと開く・1出典1行・サイト名（Wikipedia 以外に Wikipedia と書かない・URLの切れ端を見出しにしない・ファビコンは付けない）。「📝 メモ」がある曲は出典をメモの最後へ。
+- **機械の裏付け：** 部品 joy-relief-station `src/components/SongShutten.tsx`・芯 `src/lib/shuttenCore.ts`（`pickShutten`／`sourceLabel`）。公開の関所 prebuild `scripts/patrol/check-song-shutten.mjs`（`--self-test`）。毎日の見張り `tools/shutten_mihari.py --daily`（top_status の相乗り・SNSに出した曲＋手本2曲の本番HTML → `status/public/shutten_mihari.json`・NG は Dispatch へ1行・`--self-test`）。
+
 ## マガジン曲点検：マガジン・特集で取り上げた曲は全部、正しい曲ページ・関連4つ・コピーとメモ・生きた動画（2026-10-29 たまごさん）
 - **たまごさん「マガジン周りの曲のリンクがちゃんと繋がっているか、マガジンで取り上げた曲のページにお勧めが4つ出ているか、どんどん精度を高めて」。**
 - 1曲ずつ：①リンク先が正しい曲の独立ページ（行き止まり・別の曲・未リンクはゼロ）②曲ページの「関連」の列（bridgeRelated・カードB）に生きている曲が4つ以上 ③コピー（ボンジョビおじさん構文・水道水禁止）とメモ（出典 src つき。src が無いと出典の関所で隠れる）④動画が生きている（消えたら hikkomi で引っ込め・差し替え）。棚には触らない。
