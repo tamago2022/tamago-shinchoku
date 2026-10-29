@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-29 11:03:35・hash=d8ced07d196d -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-29 11:23:38・hash=2fb14d2c0212 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -161,3 +161,4 @@
 - 10-29 マガジン曲点検：全マガジン12号＋特集18本の曲281曲・動画304本を点検。リンク・関連4つ（カードB）・コピーとメモ・動画の生死すべて合格。関所＝joy-relief-station prebuild check-magazine-songs.mjs／見張り＝magazine_gate.py --daily（後退でDispatchへ）。
 - 2026-10-29 SNSに出した曲の曲ページ強化（d5e206848・本番 d2fa7400 で確認）：投稿済み118曲のうち落ちていた18曲に関連（同じ人の曲・カバーのoriginalRef）・出典つきメモを足し、God Only Knowsに公式動画、The Headhunters「If You've Got It, You'll Get It」を仕入れ（棚には置かない）。コピー78曲をボンジョビおじさん構文で（4言語訳つき・別の目で照合NG0）。マガジン曲12曲は並行の子の版を優先して触らず。残り：中島みゆき「糸」とLeon Russellの共有画像が弱い（動画サムネ由来）。工場の公開係 98403 は403で動かず（deploy_projectで公開）。
 - 2026-10-29 追記：SNSに出した118曲の曲ページ点検＝全曲合格（前 100/118 → 後 118/118）。続き 116e3642d・382665a38 を本番（b7814c40）で確認。手書きの関連が別の表（ダンス用）に入っていたのを正しい表へ移した。
+- 2026-10-29 追記：工場の main が 10-28 から止まっていた件を直した（作業場が別の枝のまま・衝突で pull をやめ続けていた）。今は main に戻り GitHub と同じ。見張り tools/kojo_push_mihari.py（1時間おき）を足した。／SNSに出した曲のシェア画像を同じ動画の見栄えのする1枚に（tools/sns_og_kaizen.py・本番 c5ac499c）。104曲中、弱い 28→3（残り：ビートルズ Blackbird はジャケット自体が白・Scarborough Fair は名簿が当たっていない・糸は数字上は暗いが歌う姿と名前が見える）。
