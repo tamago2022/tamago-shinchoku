@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-29 16:24:35・hash=2fb14d2c0212 -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-29 16:44:44・hash=6a4acc49c467 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -96,6 +96,11 @@
 - tools/kaizen_loop.py を心臓（top_status）に相乗り。毎時本番を採点→点の低い順（X・LINE・マガジン優先）に直し便→採点し直し・下がったら自動で戻す→同じ失敗2回で関所→30分止まり検知→毎日4つの見方で案（見た目が変わる案はA/Bで選ぶだけ）→日曜朝に週報3行。
 - 表：https://tamago2022.github.io/tamago-shinchoku/share/check/kaizen.html（進捗表の「改善ループ」1行から）。並行の子の受け持ちは status/kaizen/heikou.json（11-05まで）。
 - 10-29 05:30 時点：シャッター（04:55・誤検知＝判定日が同じ文を3回積み直し）で積めず、直し便は status/kaizen/machi.json に控え中。同じ文は数えないよう kinkyu_shutter を直した。Lovableの公開の鍵（kohyou_osu）は10-14から切れている→公開は Dispatch の deploy_project（koukai_machi で知らせる）。
+
+## 2026-10-29 曲ページの新しい型（Treasure・No Scrubs で試験中・OK待ち）
+- 本番に出した：①関連4つ（なぜこれかを必ず）②このアーティストが好きなら4組（系譜でつなぐ一行・両方向・出典つき）／「つぎの寄り道」の大きな1曲は外した。対象は joy-relief-station src/lib/songPageKata.ts の TWO_TIER_PILOT（Treasure・No Scrubs）だけ。OKが出たら TWO_TIER_ALL で全曲へ。
+- 同時に：竹内アンナ「No Scrubs」カバー（公式ch）／紹介文が無かった387アーティストに Wikipedia 冒頭（残り473件は動物・会社・映画・feat.名義など）／TLCの曲カードに旅の1行（lib/tabiCopy.ts）／ダークモード切替（ヘッダーの月・既定ライト）。
+- 好きならの手選びの理由は tamago-shinchoku status/public/sukinara_daicho.json。スクショ道具 tools/kyoku_shot.mjs（--w 390|1280 --dark）。
 
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html

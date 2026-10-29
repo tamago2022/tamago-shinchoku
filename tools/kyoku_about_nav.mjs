@@ -32,6 +32,8 @@ const MEMO = `(()=>{const s=[...document.querySelectorAll('details summary')].fi
 const port = 9800 + Math.floor(Math.random() * 150);
 const profile = mkdtempSync(resolve(tmpdir(), "kyoku-nav-"));
 const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run", "--mute-audio", "--window-size=390,844", "about:blank"], { stdio: "ignore" });
+// 途中で止められても（alarm・TERM）Chrome と一時プロフィールを必ず片付ける
+for (const sig of ["SIGALRM", "SIGTERM", "SIGINT"]) process.on(sig, () => { try { chrome.kill("SIGKILL"); } catch {} try { rmSync(profile, { recursive: true, force: true }); } catch {} process.exit(1); });
 try {
   const t = await findPage(port); const { ready, send, close } = connect(t.webSocketDebuggerUrl); await ready;
   await send("Page.enable"); await send("Runtime.enable");
@@ -47,4 +49,4 @@ try {
     console.log(JSON.stringify({ artist: a, song: s, direct, afterNav: nav, url }));
   }
   close();
-} finally { chrome.kill("SIGKILL"); try { rmSync(profile, { recursive: true, force: true }); } catch {} }
+} finally { chrome.kill("SIGKILL"); await sleep(800); try { rmSync(profile, { recursive: true, force: true }); } catch {} }
