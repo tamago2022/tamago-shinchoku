@@ -20,7 +20,11 @@
   python3 tools/x_memo.py <URL> --dry                      # 作らずに中身だけ見る
   python3 tools/x_memo.py --self-test
 サンドボックスから呼ぶと status/mac_jobs/pending/ に札を置き、Mac で走らせた結果を読む（ブラウザ・許可ポップアップなし）。
-読むのは tools/link_yomu.py（oEmbed＋FxTwitter）。一時ファイルは作らない。最後の行に JSON 1行（path・obsidian のURL）。
+読むのは tools/link_yomu.py（oEmbed＋FxTwitter）。一時ファイルは作らない。最後の行に JSON 1行（path・link・drive）。
+リンクは2本（2026-10-29 たまごさん「obsidian:// のリンクがスマホでは開けない」）：
+  link  ＝ https の中継ページ share/o.html?file=…（開くと obsidian:// へ飛ぶ。Dispatch のスマホでも押せる）
+  drive ＝ Googleドライブの写し（gdrive_md_mirror・5分おき）。写しのIDが取れればファイルの直リンク、まだならドライブの名前検索。
+  中継ページにも d=<ID> を渡すので、ページ内の「Obsidianで開けないときはこちら」も同じ写しへ行く。
 """
 from __future__ import print_function
 
@@ -39,6 +43,8 @@ VAULT_NAME = "tamago_brain"
 VAULT = os.path.expanduser("~/Library/Mobile Documents/iCloud~md~obsidian/Documents/" + VAULT_NAME)
 TABLE = os.path.join(REPO, "tools", "x_memo_tags.json")
 JOBS = os.path.join(REPO, "status", "mac_jobs")
+DRIVE_ROOT = os.path.expanduser("~/Library/CloudStorage/GoogleDrive-eggypop2010@gmail.com/マイドライブ/" + VAULT_NAME)
+RELAY = "https://tamago2022.github.io/tamago-shinchoku/share/o.html"
 NG = '\\/:*?"<>|#^[]'
 
 
@@ -147,6 +153,37 @@ def obsidian_url(rel):
     return "obsidian://open?vault=%s&file=%s" % (urllib.parse.quote(VAULT_NAME, safe=""), urllib.parse.quote(f, safe=""))
 
 
+def drive_id(rel):
+    """Drive for desktop がファイルに付ける ID（写しがまだ無い・上がっていなければ None）"""
+    import subprocess
+    p = os.path.join(DRIVE_ROOT, rel)
+    if not os.path.exists(p):
+        return None
+    try:
+        r = subprocess.run(["/usr/bin/xattr", "-p", "com.google.drivefs.item-id#S", p], capture_output=True, timeout=10)
+    except Exception:
+        return None
+    v = r.stdout.decode("utf-8", "replace").strip()
+    return v if r.returncode == 0 and re.match(r"^[A-Za-z0-9_-]{10,}$", v) and not v.startswith("local") else None
+
+
+def drive_url(rel, did=None):
+    if did:
+        return "https://drive.google.com/file/d/%s/view" % did
+    name = os.path.splitext(os.path.basename(rel))[0]
+    return "https://drive.google.com/drive/search?q=" + urllib.parse.quote('"%s"' % name, safe="")
+
+
+def relay_url(rel, did=None):
+    f = rel[:-3] if rel.endswith(".md") else rel
+    u = RELAY + "?file=" + urllib.parse.quote(f, safe="")
+    return u + ("&d=" + did if did else "")
+
+
+def links(rel, did=None):
+    return {"link": relay_url(rel, did), "drive": drive_url(rel, did), "obsidian": obsidian_url(rel)}
+
+
 def free_name(title, suffix=""):
     base = title + suffix
     n = 1
@@ -170,13 +207,13 @@ def run(url, extra, dry=False, test_suffix=""):
     res = {"ok": True, "url": url, "author": r.get("author"), "date": r.get("date"),
            "videos": r.get("videos", 0), "photos": r.get("photos", 0)}
     if dups and not test_suffix:
-        res.update(ok=True, made=False, why="同じ投稿のノートが既にある", path=dups[0], obsidian=obsidian_url(dups[0]))
+        res.update(ok=True, made=False, why="同じ投稿のノートが既にある", path=dups[0], **links(dups[0], drive_id(dups[0])))
         return res
     title = make_title(r["text"])
     tags = pick_tags(r["text"], user, extra, load_table(), vault_tags)
     body = build(r["text"], url, tags)
     rel = free_name(title, test_suffix)
-    res.update(title=title, tags=tags, path=rel, obsidian=obsidian_url(rel), body=body)
+    res.update(title=title, tags=tags, path=rel, body=body, **links(rel))
     if dry:
         res["made"] = False
         return res
@@ -219,6 +256,11 @@ def self_test():
     ok &= build("A\nB pic.twitter.com/3sJxAmpT0N", "https://x.com/a/status/1", ["t1", "t2"]) == "#t1\n#t2\n\nA B\n\nhttps://x.com/a/status/1"
     ok &= clean("本文 https://t.co/abc") == "本文" and clean("本文") == "本文"
     ok &= obsidian_url("あ い.md") == "obsidian://open?vault=tamago_brain&file=%E3%81%82%20%E3%81%84"
+    ok &= relay_url("あ い.md") == RELAY + "?file=%E3%81%82%20%E3%81%84"
+    ok &= relay_url("a/b.md", "17GQwsPv9nqUunFgcc5zG4VG4-AQkLU2R").endswith("?file=a%2Fb&d=17GQwsPv9nqUunFgcc5zG4VG4-AQkLU2R")
+    ok &= drive_url("x.md", "ABCDEFGHIJK") == "https://drive.google.com/file/d/ABCDEFGHIJK/view"
+    ok &= drive_url("あ.md") == "https://drive.google.com/drive/search?q=%22%E3%81%82%22"
+    ok &= drive_id("存在しないノート_selftest.md") is None
     tb = load_table()
     ok &= tb["hasshinsha"]["masahirochaen"]["tag"] == "チャエン"
     print("SELFTEST", "PASS" if ok else "FAIL")
@@ -253,7 +295,10 @@ def main():
             print("---- %s%s" % (r["path"], "" if r.get("made") else "（作っていない）"))
             print(r["body"])
             print("----")
-        print(json.dumps({k: v for k, v in r.items() if k != "body"}, ensure_ascii=False))
+        if r.get("link"):
+            print("スマホで開く：" + r["link"])
+            print("ドライブの写し：" + r["drive"])
+        print(json.dumps({k: v for k, v in r.items() if k not in ("body", "obsidian")}, ensure_ascii=False))
         rc = rc or (0 if r.get("ok") else 2)
     return rc
 

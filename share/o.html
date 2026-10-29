@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Obsidianで開く</title>
+<!-- 中継ページ（2026-10-29）：https のリンク → obsidian:// へ。
+     スマホの Dispatch など obsidian:// を押せない所から開くため。
+     ?file=<Vault内のパス（.mdなし可）> [&vault=tamago_brain] [&d=<Googleドライブの写しのファイルID>]
+     Obsidian 公式 URI：obsidian://open?vault=<名前>&file=<パス>（値は URI エンコード）https://help.obsidian.md/Extending+Obsidian/Obsidian+URI
+     作るのは tools/x_memo.py。ページは何も保存しない・外へ送らない。 -->
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;background:#faf8f5;color:#222}
+main{max-width:520px;margin:0 auto;padding:28px 20px}
+h1{font-size:17px;line-height:1.5;margin:0 0 22px;word-break:break-all}
+a.b{display:block;text-align:center;text-decoration:none;border-radius:12px;padding:16px;font-size:17px;font-weight:700;margin:0 0 14px}
+#ob{background:#7c3aed;color:#fff}
+#dr{background:#fff;color:#1a73e8;border:2px solid #1a73e8}
+p{font-size:13px;color:#666;line-height:1.6}
+.er{color:#b00020}
+</style>
+</head>
+<body>
+<main>
+<h1 id="t">ノートを開いています…</h1>
+<a class="b" id="ob" href="#">Obsidianで開く</a>
+<p id="n1">開かないときは、下のボタンでGoogleドライブの写しを読めます（5分おきに写しています）。</p>
+<a class="b" id="dr" href="#" target="_blank" rel="noopener">Obsidianで開けないときはこちら（Googleドライブの写し）</a>
+<p id="n2"></p>
+</main>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var file = (q.get("file") || "").replace(/\.md$/i, "");
+  var vault = q.get("vault") || "tamago_brain";
+  var d = q.get("d") || "";
+  var t = document.getElementById("t"), ob = document.getElementById("ob"), dr = document.getElementById("dr");
+  if (!file) {
+    t.textContent = "開くノートが指定されていません";
+    t.className = "er";
+    ob.style.display = dr.style.display = "none";
+    document.getElementById("n1").textContent = "リンクの最後に ?file=ノート名 が付いているか確かめてください。";
+    return;
+  }
+  var name = file.split("/").pop();
+  t.textContent = name;
+  document.title = name + "｜Obsidianで開く";
+  var uri = "obsidian://open?vault=" + encodeURIComponent(vault) + "&file=" + encodeURIComponent(file);
+  ob.href = uri;
+  if (/^[A-Za-z0-9_-]{10,}$/.test(d)) {
+    dr.href = "https://drive.google.com/file/d/" + d + "/view";
+  } else {
+    dr.href = "https://drive.google.com/drive/search?q=" + encodeURIComponent('"' + name + '"');
+    document.getElementById("n2").textContent = "写しのファイルがまだ決まっていないので、ドライブで名前を検索します。";
+  }
+  // 一度だけ自動で飛ぶ（アプリ内ブラウザで止められても、上のボタンで開ける）
+  setTimeout(function () { try { window.location.assign(uri); } catch (e) {} }, 300);
+})();
+</script>
+</body>
+</html>
