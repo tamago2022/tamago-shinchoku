@@ -190,12 +190,17 @@ def gate(name, gap):
     return True
 
 
+_LAST_URL = {"u": None}
+
+
 def fetch(url, timeout=20, want_body=True):
-    """GET 1本。(status, 秒, バイト, 本文)。失敗は status=0。"""
+    """GET 1本。(status, 秒, バイト, 本文)。失敗は status=0。転送された先は _LAST_URL["u"] に残す。"""
     t0 = time.time()
+    _LAST_URL["u"] = url
     try:
         req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "ja"})
         with urllib.request.urlopen(req, timeout=timeout) as r:
+            _LAST_URL["u"] = r.geturl()
             body = r.read(2500000) if want_body else b""
             return r.status, round(time.time() - t0, 2), len(body), body.decode("utf-8", "ignore")
     except urllib.error.HTTPError as e:
@@ -331,6 +336,13 @@ HAYASA_SEN = 1.5
 
 def probe_page(url):
     st, sec, size, body = fetch(url, timeout=25)
+    # 転送される道（例 /feature/aoi-sangosho-f → /feature/aoi-sangosho）は、転送の1往復ぶん遅く測れて
+    # 「遅い」の偽の直し便になる（2026-10-29 実測：2.50秒→転送先は0.45〜0.60秒）。読者が着く先で測り直す。
+    final = _LAST_URL["u"]
+    if st == 200 and final and final != url:
+        s2, t2, z2, b2 = fetch(final, timeout=25)
+        if s2 == 200:
+            st, sec, size, body = s2, t2, z2, b2
     # 速さは1回だけだと回線のゆれで外れる（2026-10-29 実測：同じ曲ページが 0.26秒／5.08秒／0.53秒）。
     # 線を超えたときだけ2回測り直し、3回の真ん中を使う。直し便で直せない「ゆれ」を積まないため。
     if st == 200 and sec > HAYASA_SEN:

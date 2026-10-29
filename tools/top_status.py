@@ -603,7 +603,14 @@ if __name__ == "__main__":
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:
-        if time.time() - _os.path.getmtime(_os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "status", ".toukou_mimawari_at")) > 20 * 3600:
+        _st = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "status")
+        _age = time.time() - _os.path.getmtime(_os.path.join(_st, ".toukou_mimawari_at"))
+        try:
+            _tk = time.time() - _os.path.getmtime(_os.path.join(_st, "public", "toukou_tenken.json"))
+        except OSError:
+            _tk = 1e9
+        # 2026-10-29：点検が途中で消えると印だけ残って20時間やり直さない → 結果が26時間以上古ければ2時間後にやり直す
+        if _age > 20 * 3600 or (_tk > 26 * 3600 and _age > 2 * 3600):
             _okosu("toukou_mimawari.py", "--daily")
     except OSError:
         _okosu("toukou_mimawari.py", "--daily")

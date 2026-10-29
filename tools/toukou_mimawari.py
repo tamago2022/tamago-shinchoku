@@ -615,7 +615,15 @@ def enqueue(res):
 def daily(force=False):
     if not force:
         try:
-            if time.time() - os.path.getmtime(STAMP) < GATE_HOURS * 3600:
+            age = time.time() - os.path.getmtime(STAMP)
+            # 2026-10-29：06:07 の点検が結果を出さずに消え（ログに「点検できず」も無い＝外から止められた）、
+            #   印だけ付いて20時間やり直さず、改善ループが10-27の古い点検で「関連が足りない」と採点し続けた。
+            #   点検の結果が26時間以上古いなら、印から2時間たった時点でやり直す。
+            try:
+                tk_age = time.time() - os.path.getmtime(TENKEN)
+            except OSError:
+                tk_age = 1e9
+            if age < GATE_HOURS * 3600 and not (tk_age > 26 * 3600 and age > 2 * 3600):
                 return "skip"
         except OSError:
             pass
