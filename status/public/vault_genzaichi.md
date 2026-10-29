@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-29 18:17:00・hash=6a4acc49c467 -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-29 18:37:01・hash=8730c795a17f -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -101,6 +101,13 @@
 - 本番に出した：①関連4つ（なぜこれかを必ず）②このアーティストが好きなら4組（系譜でつなぐ一行・両方向・出典つき）／「つぎの寄り道」の大きな1曲は外した。対象は joy-relief-station src/lib/songPageKata.ts の TWO_TIER_PILOT（Treasure・No Scrubs）だけ。OKが出たら TWO_TIER_ALL で全曲へ。
 - 同時に：竹内アンナ「No Scrubs」カバー（公式ch）／紹介文が無かった387アーティストに Wikipedia 冒頭（残り473件は動物・会社・映画・feat.名義など）／TLCの曲カードに旅の1行（lib/tabiCopy.ts）／ダークモード切替（ヘッダーの月・既定ライト）。
 - 好きならの手選びの理由は tamago-shinchoku status/public/sukinara_daicho.json。スクショ道具 tools/kyoku_shot.mjs（--w 390|1280 --dark）。
+
+## 2026-10-29 Silk Sonic 赤入れ（本番反映済み）
+- バンド⇔ソロ／ユニット⇔メンバーの相互リンクを76組追加（Silk Sonic⇔Bruno Mars・Anderson .Paak ほか。出典は各アーティストの紹介文の Wikipedia）。正本 joy-relief-station coverGuide.ts の RELATED_1029。
+- 共有ボタンは「タイトルの帯の下・動画の上」（曲ページ）／「見出しの下」（アーティストページ）。戻る矢印の上の案Aから変更。
+- 英語・途中切れの Wikipedia 抜き書きメモ 1,017件を日本語の短いメモに言い直し、言い直せない29件（国・動物の記事など別物）は外した。英語のメモは関所 check-about-nihongo で公開が止まる。
+- 同じ名前の棚を2回出さない（Treasure の踊る阿呆）。
+- 残り：英語以外の古い日本語の抜き書き（約1,250件）はそのまま写しの文。言い直しは未着手。
 
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
