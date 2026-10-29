@@ -70,6 +70,8 @@ async function main() {
   const profile = mkdtempSync(resolve(tmpdir(), "kyoku-shot-"));
   const H = MOBILE ? 844 : 900;
   const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run", "--mute-audio", `--window-size=${WIDTH},${H}`, "--disable-features=Translate,MediaRouter", "about:blank"], { stdio: "ignore" });
+  // 途中で止められても（alarm・TERM）Chrome と一時プロフィールを必ず片付ける
+  for (const sig of ["SIGALRM", "SIGTERM", "SIGINT"]) process.on(sig, () => { try { chrome.kill("SIGKILL"); } catch {} try { rmSync(profile, { recursive: true, force: true }); } catch {} process.exit(1); });
   try {
     const target = await findPage(port);
     const { ready, send, close } = connect(target.webSocketDebuggerUrl);
@@ -101,6 +103,7 @@ async function main() {
     close();
   } finally {
     chrome.kill("SIGKILL");
+    await sleep(800); // Chrome が書き終えるのを待ってから消す（消し残しの実例 2026-10-29）
     try { rmSync(profile, { recursive: true, force: true }); } catch {}
   }
 }
