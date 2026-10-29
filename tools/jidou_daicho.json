@@ -969,7 +969,7 @@
   "kari": true
  },
  "magazine/magazine_gate.py": {
-  "tsukuru": "記録（status/public/magazine_gate.json・status/magazine_gate.log・status/magazine_gate_state.json・status/magazine_gate_lite.ts 名簿の控え約4MB）＋見るときだけ joy-relief-station の一時の作業場（$TMPDIR/mgate_*・浅い複製・node_modulesは ~/tamago/jrs_fix へのリンク）",
+  "tsukuru": "記録（status/public/magazine_gate.json・status/magazine_gate.log・status/magazine_gate_state.json・status/magazine_gate_lite.ts 名簿の控え約4MB）＋見るときだけ joy-relief-station の一時の作業場（$TMPDIR/mgate_*・浅い複製・node_modulesは ~/tamago/jrs_fix へのリンク）＋status/hikkomi/magazine_videos.json（マガジン・特集の動画の表・毎日上書き・1ファイル）",
   "okiba": "tamago-shinchoku/status・$TMPDIR/mgate_*",
   "kesu": "自分（一巡の最後に rmtree）＋youryou_jougen（$TMPDIR 5GB・status/*.log 上限50MB）。log は400行で刈る"
  },
@@ -988,14 +988,142 @@
   "okiba": "tamago-shinchoku/status/gokigen_tane",
   "kesu": "md は claude_nouhin（--move）がその場で持っていく。json は号ごとに1つ（週1個・数KB）で残す＝配信の控え。ログは youryou_jougen（status/*.log 上限50MB）"
  },
+ "line_haishin.py": {
+  "tsukuru": "記録 status/line_haishin/{kiroku.json,state.json,log}・status/public/{line_haishin.json,sns_shuukei.json}・status/sns_hannou.json に platform=line を追記",
+  "okiba": "tamago-shinchoku/status/line_haishin・status/public",
+  "kesu": "log は自分で300行に刈る。kiroku は1配信1件（数KB）で残す＝配信の控え。一時ファイルは作らない（.tmp はその場で置き換え）"
+ },
  "zen_ai_kyouyu.py": {
   "tsukuru": "記録（status/zen_ai_kyouyu/{config.json,machi.jsonl,kaita.jsonl,state.json,log}）＋公開の写し status/public/renkei/kyouyu_memo.md。GitHubのIssueコメント。一時ファイル・ブラウザ・複製は作らない",
   "okiba": "tamago-shinchoku/status/zen_ai_kyouyu ／ status/public/renkei",
   "kesu": "自分で刈る（kaita.jsonl 500行・log 300行・machi は書けたら消す・20回失敗で捨てる）"
  },
+ "cloud_hassha.sh": {
+  "tsukuru": "status/cloud_credit/log/<便>.log（1便1本・数KB）。クラウド側はAnthropicの仮想マシンとPR",
+  "okiba": "status/cloud_credit/log・クラウド・GitHub",
+  "kesu": "同じ名前の便で上書き。11/5の期限後に cloud_credit/log ごと不要（cloud_credit_henji.py が11/5で止まるのと同時に人が判断）"
+ },
+ "cloud_login.sh": {
+  "tsukuru": "~/.tamago/claude_cloud（クラウド作成用のログイン・login.log・bin/open の空ダミー）、status/cloud_credit/login_url.txt・login_result.txt",
+  "okiba": "~/.tamago/claude_cloud",
+  "kesu": "11/5の期限後に ~/.tamago/claude_cloud ごと消す（ログインの置き場なので自動では消さない）"
+ },
+ "cloud_kaishuu.py": {
+  "tsukuru": "なし（cloud_ledger.json と dispatch_outbox.jsonl に追記だけ）",
+  "okiba": "status/",
+  "kesu": "不要"
+ },
+ "cloud_mainichi.py": {
+  "tsukuru": "status/cloud_credit/mainichi_state.json・done.txt・mainichi.log（数KB）。起動は cloud_hassha.sh",
+  "okiba": "status/cloud_credit",
+  "kesu": "11/1で自動停止。11/5の期限後に cloud_credit ごと人が判断"
+ },
+ "tenaoshi_chou.py": {
+  "tsukuru": "記録だけ（status/tenaoshi/daicho.jsonl・kimari.json・.at、status/public/tenaoshi.json）＋~/jrs-clone/ai-clone の手直し帳.md・文体の決まり.md・検品の決まり.json（毎回作り直す節だけ）",
+  "okiba": "tamago-shinchoku/status・~/jrs-clone/ai-clone",
+  "kesu": "自分（一時フォルダは self-test の中だけ・終わりに rmtree）。台帳は1行1回で小さい＋youryou_jougen（status 上限）"
+ },
+ "x_nijuu_kenpin.py": {
+  "tsukuru": "記録（status/x_nijuu/kekka.jsonl・src_cache/・naoshi_kekka.json、status/public/x_nijuu.json）＋check_style 用の一時フォルダ（$TMPDIR/x_nijuu_*）・codex の一時ファイル",
+  "okiba": "tamago-shinchoku/status・$TMPDIR",
+  "kesu": "自分（一時フォルダ・一時ファイルは使った直後に消す）＋youryou_jougen --tsukaisute（1時間）"
+ },
+ "link_yomu.py": {
+  "tsukuru": "読んだ結果 status/link_yomu/<日付>/<id>.md。サンドボックスから呼ばれた時だけ status/mac_jobs/pending/ly_*.sh（1回きり）。字幕はメモリで読み一時ファイルは作らない。yt-dlp 単体版 ~/.tamago/bin/yt-dlp（insta_get と共用）",
+  "okiba": "tamago-shinchoku/status/link_yomu ／ status/mac_jobs",
+  "kesu": "自分で刈る（30日より古い日付フォルダを呼ばれるたびに削除）。mac_jobs の札は心臓が done へ移す"
+ },
+ "furiwake.py": {
+  "tsukuru": "記録（status/furiwake/{dekiru_daicho.json,machi.jsonl,irai.json,state.json,log,kaeri/*.out}）＋公開 status/public/furiwake.json・share/check/furiwake.html。GitHubのIssue・コメント・ラベル、status/oneshot/pending/fw_*.sh（一発コマンド窓口が走らせてdone/へ移す）。ブラウザ・複製・一時フォルダは作らない",
+  "okiba": "tamago-shinchoku/status/furiwake ／ status/public ／ share/check",
+  "kesu": "自分で刈る（log 300行・irai は終わって30日・kaeri は7日・machi はIssue化したら消す・20回失敗で捨てる）"
+ },
  "com.tamago.gdrive-md-mirror": {
   "tsukuru": "Vault(tamago_brain)の.mdの写しをGoogleドライブ マイドライブ/tamago_brain へ差分コピー（一方向・消さない）。2026-10-25からgdrive_md_mirror.py：Dataviewの結果を写し側だけに書き足す・00_索引_AIはここから読む.md／00_索引_タグ別_全部.md を作る。一時ファイルは作らない（その場で上書き＝ドライブのURLが変わらない）",
   "okiba": "~/Library/CloudStorage/GoogleDrive-…/マイドライブ/tamago_brain ・ ~/.tamago-sync/{gdrive_md_mirror.sh,gdrive_md_mirror.py,mirror_state.json,gdrive_md_mirror.log}（正本は Vault AI出力/_ルール/gdrive_md_mirror/）",
   "kesu": "不要（写しは上書き更新のみ。log は200KBで500行に自分で刈る・mirror_state.json は本数ぶんで増えない）。187248番・2026-10-25登録／同日 Dataview対応に作り替え（35219番pushで別セッション分と重複登録・内容同一）"
+ },
+ "hikkomi.py": {
+  "tsukuru": "記録だけ（status/hikkomi/daicho.json・state.json・hikkomi.log〔300行で自分で刈る〕・status/public/hikkomi.json・share/check/hikkomi.html）＋joy-relief-station へのpushで一時のgit index 1個（tempfile・終わったら自分で消す）。作業場（worktree）・ブラウザは作らない",
+  "okiba": "tamago-shinchoku/status/hikkomi・share/check",
+  "kesu": "自分（log 300行・一時 index は finally で削除）"
+ },
+ "notion_utsushi.py": {
+  "tsukuru": "Notionのページを.mdにしてドライブ tamago_brain/notion/ へ（公式API・無料・NOTION_TOKEN があるときだけ）。status/notion_utsushi/{state.json,log}・status/public/notion_utsushi.json。ブラウザ・複製・一時フォルダは作らない（ドライブの写しはその場で上書き）",
+  "okiba": "マイドライブ/tamago_brain/notion ／ tamago-shinchoku/status/notion_utsushi",
+  "kesu": "自分で刈る（log 300行・写しは上書きのみ）"
+ },
+ "yomikuchi.py": {
+  "tsukuru": "各AIの読み口（Obsidian/ドライブ/GitHub/Notion の読む・書く）を できること台帳 に持たせ、週1で実測と各社公式ページの見直し。status/yomikuchi/{state.json,log,news/*.txt}・status/public/yomikuchi.json・ドライブ tamago_brain/00_AIの読み口台帳.md・share/check/furiwake.html の読み口の表",
+  "okiba": "tamago-shinchoku/status/yomikuchi ／ status/public ／ マイドライブ/tamago_brain",
+  "kesu": "自分で刈る（log 300行・news は5本を上書きのみ・候補は60件で刈る）"
+ },
+ "uwagaki_kanmon.py": {
+  "tsukuru": "記録だけ（status/public/uwagaki_kanmon.json・status/.uwagaki_mimawari_at・outboxに1行）。push用の一時索引は tempfile で作り finally で消す",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "自分（一時フォルダは finally で削除）／記録は youryou_jougen"
+ },
+ "grok_tsuushin.py": {
+  "tsukuru": "記録だけ（status/grok_tsuushin/{machi,okutta,uketori}.jsonl〔500行で自分で刈る・待ちは7日で捨てる〕・state.json・log〔300行〕・setup.out・serve.out・install.sh〔次のsetupで上書き〕）・status/public/grok_tsuushin.json。宛先の固定ID status/grok_tsuushin/atesaki.json（人が書く・1ファイル）・調査の控え status/grok_tsuushin/chousa_1029/（一度きり）。Reason CLI を ~/.local/bin に1回入れる（公式install.sh・networkの道＝CLIのみ）。常駐 reason network serve claude（作業場 status/grok_tsuushin/madoguchi・--full-accessなし）を1本。madoguchi/yomu は毎分写し直し、uketsuke/done は30日で消す。作業場・ブラウザは作らない。サインインが済むまで出し直し係（--renew-loop）を1本だけ常駐（期限の時刻まで眠り、切れた瞬間に新しいリンク→Dispatch。サインイン済みで自分で終わる）・signin_now.txt・renew.out",
+  "okiba": "tamago-shinchoku/status/grok_tsuushin・~/.local/bin/reason・~/.config/reason",
+  "kesu": "自分（jsonl 500行・log 300行・待ち7日）。serve は1本だけ（ps で確かめてから起こす）"
+ },
+ "houmu_check.py": {
+  "tsukuru": "記録（status/houmu_check/<回>/{kai.json,kaitou/*.md}・state.json・log・src/ の公式出典の写し）＋公開 status/public/houmu_check.json・share/check/houmu-<Issue番号>.html。GitHubのIssue・コメント・ラベル、Genspark AI Drive /できる人いますか/<番号>.md、grok_tsuushin・zen_ai_kyouyu の待ち行列へ1行。ブラウザ・複製・一時フォルダは作らない",
+  "okiba": "tamago-shinchoku/status/houmu_check ／ status/public ／ share/check",
+  "kesu": "自分で刈る（log 300行）。kai.json・ページは法務の記録として残す（1回1ファイル・数KB）。src/ は出典の写しで回ごとに上書き"
+ },
+ "db_grant_kanmon.py": {
+  "tsukuru": "記録だけ（status/public/db_grant_mimawari.json・status/db_grant/kijun.json・status/.db_grant_mimawari_at）。一時フォルダ・ブラウザ・複製は作らない",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "毎回上書き（1ファイルずつ・増えない）"
+ },
+ "shirotobi_mimawari.py": {
+  "tsukuru": "$TMPDIR/shirokoma-*（頭なしブラウザのコマ・一時プロフィール）／status/shirotobi/*.json／share/check/shirotobi/<日付>/（白いコマの写しだけ）",
+  "okiba": "$TMPDIR・tamago-shinchoku/status/shirotobi・share/check/shirotobi",
+  "kesu": "shirotobi_zen.sh が終わるときに $TMPDIR の作業場を消す（trap EXIT）＋shirotobi_mimawari.kataduke が share/check/shirotobi を7日で消す"
+ },
+ "kinkyu_shutter.py": {
+  "tsukuru": "status/KINKYU_SHUTTER（旗）・status/kinkyu_hold.jsonl・status/kinkyu_baseline.json。小さな追記のみ",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "旗は店主だけが消す。hold控えは増えたら店主が整理（自動では消さない）"
+ },
+ "kaizen_loop.py": {
+  "tsukuru": "記録だけ（status/kaizen/ の score.json・state.json・bin.json・manabu.json・kata.json・an.json・machi.json・analytics.json・rireki.jsonl・kaizen.log〔1.5MBで自分で刈る〕・status/public/kaizen.json・kaizen_shuukan.json・share/check/kaizen.html）＋自動で戻すときだけ joy-relief-station に一時の git index 1個（tempfile・finally で消す）。作業場（worktree）・ブラウザ・一時フォルダは作らない",
+  "okiba": "tamago-shinchoku/status/kaizen・status/public・share/check",
+  "kesu": "自分（log 1.5MB・一時 index は finally で削除・machi は30件・rireki は youryou_jougen の上限）"
+ },
+ "lovable_fukkyuu_mihari.py": {
+  "tsukuru": "記録だけ（status/lovable_fukkyuu.json・dispatch_outbox 1行）。一時ファイルなし",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "自分で止まる（鍵が戻って公開を確かめたら終了・72時間で終了）。記録は youryou_jougen（status 上限）"
+ },
+ "x_memo.py": {
+  "tsukuru": "Vault(tamago_brain)直下にXメモのノート1枚（たまごさんの持ち物・消さない）。サンドボックスから呼ぶと status/mac_jobs の札1枚",
+  "okiba": "Obsidian Vault 直下／tamago-shinchoku/status/mac_jobs",
+  "kesu": "一時ファイルは作らない。mac_jobs の札は mac_job_runner が done/ へ移し youryou_jougen が上限で片付ける"
+ },
+ "claude-teiki:jidou-kaizen-junkai": {
+  "tsukuru": "毎時17分にClaudeの定期タスクが1回だけ短いセッションを作る（作業はせず「巡回の時刻です」と書いて終わる呼び鈴。ファイルは作らない）",
+  "okiba": "Claude アプリのセッション（~/Library/Application Support/Claude/local-agent-mode-sessions）",
+  "kesu": "youryou_jougen（Claude の古いセッション outputs 15GB 上限）＋shimau（古いセッションの outputs を毎日片付け）",
+  "memo": "2026-10-29 工場のpushを直す便で棚卸しの未登録を見つけて登録（SKILL.md＝/Users/mac/Claude/Scheduled/jidou-kaizen-junkai/）"
+ },
+ "claude-teiki:atarashii-dekiru-catchup": {
+  "tsukuru": "毎朝7:40にClaudeの定期タスクが公式の新機能を調べる短いセッションを1回作る（結果は会話の中だけ。ファイルは作らない）",
+  "okiba": "Claude アプリのセッション（~/Library/Application Support/Claude/local-agent-mode-sessions）",
+  "kesu": "youryou_jougen（Claude の古いセッション outputs 15GB 上限）＋shimau（古いセッションの outputs を毎日片付け）",
+  "memo": "2026-10-29 工場のpushを直す便で棚卸しの未登録を見つけて登録（SKILL.md＝/Users/mac/Claude/Scheduled/atarashii-dekiru-catchup/）"
+ },
+ "kojo_push_mihari.py": {
+  "tsukuru": "記録だけ（status/public/kojo_push_mihari.json・status/.kojo_push_mihari_at・status/.kojo_push_mihari_tsuuchi＝毎回上書きの1ファイルずつ）。git の commit（決まりの文書）と、作業場が別の枝にいたときの main への戻し",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "不要（上書きのみで増えない。一時ファイルを作らない）",
+  "memo": "2026-10-29 登録"
+ },
+ "shutten_mihari.py": {
+  "tsukuru": "記録だけ（status/public/shutten_mihari.json・status/.shutten_mihari_at）。本番の公開ページを GET するだけ。一時フォルダ・ブラウザ・複製は作らない",
+  "okiba": "tamago-shinchoku/status",
+  "kesu": "毎回上書き（1ファイルずつ・増えない）"
  }
 }

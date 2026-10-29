@@ -596,6 +596,10 @@ if __name__ == "__main__":
     #   本番の全テーブルが service_role／公開鍵で読めるかを見て、赤なら Dispatch へ1行（tools/db_grant_kanmon.py）
     _okosu("db_grant_kanmon.py", "--mimawari", "--daily")
 
+    # 2026-10-29 曲ページの出典の見え方の見張り（1日1回・中で20時間に間引く）。たまごさん赤入れ（Treasure「長すぎて美しくない」「これは Wikipedia なの？」）。
+    #   出典は最大3つ・2つ以上は押すと開く・サイト名・ファビコンなし。NG なら Dispatch へ1行（tools/shutten_mihari.py）
+    _okosu("shutten_mihari.py", "--daily")
+
     # 2026-10-29 工場の変更が GitHub の main に上がっているかの見張り（1時間に1回・中で間引く）。
     #   作業場が別の枝に乗ったまま・衝突で pull をやめ続ける・README/CLAUDE.md が記録されない、で main が1週間止まった件（tools/kojo_push_mihari.py）
     _okosu("kojo_push_mihari.py", "--tick")
