@@ -77,6 +77,18 @@ def page_url(key):
     return "%s/cover-guide?artist=%s&song=%s" % (SITE, urllib.parse.quote(a, safe=""), urllib.parse.quote(s, safe=""))
 
 
+def hon_key(html):
+    """本番のページが名乗る正式な曲のキー（canonical の artist/song）。別名のID（例 simon-garfunkel → simon-and-garfunkel）で
+    名簿に書くと、ページは正式なIDで名簿を引くので絵が使われない（2026-10-29 Scarborough Fair で実測）。"""
+    m = re.search(r'<link[^>]+rel="canonical"[^>]+href="([^"]+)"', html) or re.search(
+        r'<meta[^>]+property="og:url"[^>]+content="([^"]+)"', html)
+    if not m:
+        return None
+    q = urllib.parse.parse_qs(urllib.parse.urlparse(m.group(1).replace("&amp;", "&")).query)
+    a, s = (q.get("artist") or [None])[0], (q.get("song") or [None])[0]
+    return "%s/%s" % (a, s) if a and s else None
+
+
 def meta(html, prop):
     m = re.search(r'<meta[^>]+(?:property|name)="%s"[^>]+content="([^"]*)"' % re.escape(prop), html)
     return m.group(1).replace("&amp;", "&") if m else None
@@ -240,6 +252,9 @@ def mite(key):
         return r
     img = meta(html, "og:image")
     r["og_image"] = img
+    hk = hon_key(html)
+    if hk and hk != key:
+        r["key_hon"] = hk
     r["og_wh"] = [meta(html, "og:image:width"), meta(html, "og:image:height")]
     m = re.search(r"/share-image/([A-Za-z0-9_-]{11})", img or "")
     v = re.search(r'"embedUrl":"https://www\.youtube\.com/embed/([A-Za-z0-9_-]{11})', html)
@@ -276,10 +291,11 @@ def naosu(rows, jrs):
     os.makedirs(od, exist_ok=True)
     meibo = {}
     gen = os.path.join(jrs, "src", "lib", "snsOg.generated.ts")
-    try:  # 前回の名簿は残す（今回直さなかった曲を落とさない）
+    hon = {r["key"]: r["key_hon"] for r in rows if r.get("key_hon")}
+    try:  # 前回の名簿は残す（今回直さなかった曲を落とさない）。別名のキーは正式なキーへ直す
         for k, f in re.findall(r'\["([^"]+)", "([^"]+)"\]', io.open(gen, encoding="utf-8").read()):
             if os.path.exists(os.path.join(od, f)):
-                meibo[k] = f
+                meibo[hon.get(k, k)] = f
     except OSError:
         pass
     for r in rows:
@@ -298,12 +314,12 @@ def naosu(rows, jrs):
             r["ato"] = {"kekka": "前より良い絵が無い（今のまま）", "kouho": best[0], "sokutei": am, "yowai": hantei(am)}
             if os.path.exists(os.path.join(od, fn)):
                 os.remove(os.path.join(od, fn))
-            meibo.pop(r["key"], None)
+            meibo.pop(r.get("key_hon") or r["key"], None)
             continue
         io.open(os.path.join(od, fn), "wb").write(out)
         r["ato"] = {"kouho": best[0], "moto": best[2], "file": "/og-sns/" + fn, "sokutei": am, "yowai": hantei(am),
                     "kouho_kazu": len(ks)}
-        meibo[r["key"]] = fn
+        meibo[r.get("key_hon") or r["key"]] = fn
     lines = ["// SNSに出した曲の、シェア用の画像（OGP）の名簿。tools/sns_og_kaizen.py（tamago-shinchoku）が自動で書く。手で書かない。",
              "// 載っている曲だけ og:image が /og-sns/<ファイル> を指す（同じ動画の、いちばん見栄えのするサムネイルを 1200×630 にしたもの）。",
              "// ★戻し方（1行）：下の配列を [] にして push すれば、全曲が前の状態（/api/public/share-image/<動画ID>）に戻る。",
@@ -336,6 +352,9 @@ def self_test():
         assert kuroobi_nuku(im).size[1] < 300
     except ImportError:
         pass
+    assert hon_key('<link rel="canonical" href="https://x/cover-guide?artist=simon-and-garfunkel&amp;song=scarborough-fair"/>') \
+        == "simon-and-garfunkel/scarborough-fair"
+    assert hon_key("<html></html>") is None
     print("sns_og_kaizen self-test OK")
     return 0
 
