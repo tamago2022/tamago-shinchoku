@@ -1,118 +1,8 @@
 {
  "_": "同時に動く子どうしの上書きの見張り（tools/uwagaki_kanmon.py）",
- "at": "2026-10-29 18:05:17",
- "mita": 59,
+ "at": "2026-10-29 19:09:15",
+ "mita": 56,
  "mitsuketa": {
-  "586ebec20": {
-   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
-   "kieta": [
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "},"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "{"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "\"cardId\": \"healing-music-01\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "\"title\": \"原田知世 - 蘇州夜曲\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "\"worldLabel\": \"扉カード（room/card）\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "\"shelfId\": \"癒しの音楽棚\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "\"shelfTitle\": \"癒しの音楽棚\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "\"to\": \"/room/card/healing-music-01\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "\"href\": \"\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "1d7061c79",
-     "gyou": "\"videoId\": \"9o4G9F2X3Ew\","
-    }
-   ]
-  },
-  "1a0be2a45": {
-   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
-   "kieta": [
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "}"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "],"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "\"videoReplacements\": {"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "\"ikJfr8m8IyY\": \"UzRVEQDxiOo\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "\"Yc6G8B8_5gY\": \"tgEPIs9XKqA\""
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "},"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "\"replaced\": ["
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "{"
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "\"deadId\": \"ikJfr8m8IyY\","
-    },
-    {
-     "file": "scripts/patrol/reports/latest.json",
-     "tashita": "586ebec20",
-     "gyou": "\"newId\": \"UzRVEQDxiOo\","
-    }
-   ]
-  },
   "a5e25c1e9": {
    "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
    "kieta": [
@@ -2330,6 +2220,101 @@
      "file": "scripts/patrol/reports/latest.json",
      "tashita": "027e5a002",
      "gyou": "{"
+    }
+   ]
+  },
+  "5a9835f87": {
+   "subject": "chore(task-board): 見張り自動同期（60分おき）",
+   "kieta": [
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "6a56abdc6",
+     "gyou": "### 2026-10-29（Claude Code・第八条）曲ページの本番応答が0.4秒と5秒で揺れる件：サーバ冷えた初回の軽量化"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "6a56abdc6",
+     "gyou": "- 依頼：cover-guide曲ページ（jamiroquai/god-make-me-funky、bruno-mars/treasure）の応答の揺れを特定し、どの回でも1秒以内へ。ブランチ`cla"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "6a56abdc6",
+     "gyou": "- 原因：冷えたWorkerに当たった回だけ、名簿8MBのJS読み込み＋読み込み時の全件計算（似ている人の並べ直しが線形検索で約270ms等）＋紹介文JSONの直列取り寄せが乗る。温まった回は約0.0"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "6a56abdc6",
+     "gyou": "- 実施：全件計算の線形検索を表引きへ、曲名整え・出典関所・再生不可判定の重複を削減、紹介文JSONの取り寄せを名簿評価と並行化。HTML15ページ・名簿全体スナップショットが変更前後で一致。独立検品"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "6a56abdc6",
+     "gyou": "- 結果（ローカル）：冷えた初回 中央値 約1.77秒→約1.42秒（約20%減）。1秒以内には未達：残りは名簿8MBのコンパイル自体。次の一手（曲ページSSRをバケツ読みにする）を報告に記載。"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "6a56abdc6",
+     "gyou": "- 報告：`ai-brain/reports/perf/2026-10-29-cover-guide-cold-ssr.md`"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "6a56abdc6",
+     "gyou": "- 状態：🟡ブランチpush済み・PR待ち（目標の1秒は構造変更が必要）"
+    }
+   ]
+  },
+  "4386b504a": {
+   "subject": "Silk Sonic赤入れ(2026-10-29たまごさん): ①Silk Sonic⇔Bruno Mars・Anderson .Paakほかバンド⇔ソロ/ユニット⇔メンバー76組を相互リンク(各アーティストの出典Wikipediaにある関",
+   "kieta": [
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "\"lily-nmixx\": {"
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "\"text\": \"Lily, formerly Callalily, is a Filipino pop rock band formed in 2005. The band is currently"
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "\"url\": \"https://en.wikipedia.org/wiki/Lily_(band)\""
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "},"
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "\"julia-mazda\": {"
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "\"text\": \"松任谷 由実（まつとうや ゆみ、1954年〈昭和29年〉1月19日 - ）は、日本のシンガーソングライター。本名同じ。所属レコード会社はユニバーサルミュージック（旧：EMIミュージッ"
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "\"url\": \"https://ja.wikipedia.org/wiki/%E6%9D%BE%E4%BB%BB%E8%B0%B7%E7%94%B1%E5%AE%9F\""
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "},"
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "\"marina-takeuchi-live\": {"
+    },
+    {
+     "file": "src/lib/wikiAbouts.generated.ts",
+     "tashita": "cc206976d",
+     "gyou": "\"text\": \"竹内 まりや（たけうち まりや、1955年〈昭和30年〉3月20日 - ）は、日本のシンガーソングライター、作詞家、作曲家、音楽プロデューサー。出生名同じ。結婚後の本名、山下 まりや"
     }
    ]
   }
