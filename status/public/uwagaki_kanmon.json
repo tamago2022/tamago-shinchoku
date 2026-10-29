@@ -1,53 +1,8 @@
 {
  "_": "同時に動く子どうしの上書きの見張り（tools/uwagaki_kanmon.py）",
- "at": "2026-10-29 10:59:01",
- "mita": 50,
+ "at": "2026-10-29 12:00:59",
+ "mita": 54,
  "mitsuketa": {
-  "648115b03": {
-   "subject": "feat(search,related): 棚名・説明・裏タグで全棚を検索に効かせる（見出し撤去・棚は一覧の先頭に自然に）／あるある系と愛燦燦の版どうしの関連に愛燦燦を散らす（2026-10-25 たまごさん指定・棚は触らない）",
-   "kieta": [
-    {
-     "file": "src/components/CoverGuidePageBody.tsx",
-     "tashita": "9de7ab482",
-     "gyou": "import { KyuukyuuBako } from \"@/components/KyuukyuuBako\";"
-    },
-    {
-     "file": "src/components/CoverGuidePageBody.tsx",
-     "tashita": "9de7ab482",
-     "gyou": "{/* 救急箱（仮・2026-10-25 たまごさん）：「お急ぎですか？ とりあえず、これをどうぞ」。"
-    },
-    {
-     "file": "src/components/CoverGuidePageBody.tsx",
-     "tashita": "9de7ab482",
-     "gyou": "しおりは変わるので、すぐ効く定番を案内所の片隅にベタ付け。中身と文言は src/lib/kyuukyuuBako.ts の1か所（名指しのみ）。 */}"
-    },
-    {
-     "file": "src/components/CoverGuidePageBody.tsx",
-     "tashita": "9de7ab482",
-     "gyou": "{!artist && <KyuukyuuBako className=\"max-w-3xl mx-auto px-6 md:px-10 pt-4 pb-1\" />}"
-    }
-   ]
-  },
-  "9de7ab482": {
-   "subject": "fix: 救急箱を案内所（/cover-guide のトップ）の片隅へ移す（トップページからは外す）",
-   "kieta": [
-    {
-     "file": "src/routes/index.tsx",
-     "tashita": "50fc61820",
-     "gyou": "import { KyuukyuuBako } from \"@/components/KyuukyuuBako\";"
-    },
-    {
-     "file": "src/routes/index.tsx",
-     "tashita": "50fc61820",
-     "gyou": "{/* 救急箱（仮・2026-10-25 たまごさん）：しおりは変わるので、すぐ効く定番を片隅にベタ付け。中身と文言は src/lib/kyuukyuuBako.ts */}"
-    },
-    {
-     "file": "src/routes/index.tsx",
-     "tashita": "50fc61820",
-     "gyou": "<KyuukyuuBako />"
-    }
-   ]
-  },
   "d71cfb5f0": {
    "subject": "1192番: 日本語の曲名に海外向け表記（公式→検索→ローマ字）を付けた（10512曲）",
    "kieta": [
@@ -2155,6 +2110,111 @@
      "file": "scripts/patrol/reports/latest.md",
      "tashita": "194b53681",
      "gyou": "- **Enya - May It Be**（癒しの音楽棚）— 確認できなかった（通信エラー等） / /room/card/healing-music-12"
+    }
+   ]
+  },
+  "051914daa": {
+   "subject": "chore(task-board): 見張り自動同期（60分おき）",
+   "kieta": [
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "c9ef8fdbc",
+     "gyou": "## 2026-10-29 追記（tamago-orchestrator・第八条・トップTTFB）"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "c9ef8fdbc",
+     "gyou": "- 依頼：トップ（/）の本番TTFB 4〜5秒を1秒以内へ。他ページは不変。ビルドを通す。公開操作はしない。ブランチ push まで（PRは店主側）。"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "c9ef8fdbc",
+     "gyou": "- 対応：vite.config.ts で「/」だけをビルド時プリレンダー。根拠は `ai-brain/reports/perf/2026-10-29-top-ttfb-prerender.md`。"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "c9ef8fdbc",
+     "gyou": "- 状態：ブランチ `claude/friendly-wright-gut71s` へ push。main未合流・公開未操作。本番の前後計測は公開後の perf-watch で確認。"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "5fbfe6450",
+     "gyou": "### 2026-10-29 ページ切り替えをサクサクに（店主直接指示・ブランチ `claude/dazzling-franklin-x33fdu`）"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "5fbfe6450",
+     "gyou": "- 依頼：サイト内リンクにマウスが乗った時・画面に入った時に次のページのJSとデータを先読み。切り替え中は前の画面を保ち、白い画面・白い下地を一瞬も出さない。最新main（#1085 白飛び対策）を確"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "5fbfe6450",
+     "gyou": "- 最新mainの現状：ホバー先読み（`defaultPreload: \"intent\"`）と「前の画面を保つ」（`defaultPendingMs: 30000`）は既にあり。**画面に入った時の先"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "5fbfe6450",
+     "gyou": "- 対応：`src/lib/smoothNav.ts`（画面に入ったリンクの先読み・素の a もルーター遷移に）、`src/router.tsx`（staleTime 30秒・呼び出し）、曲ページ「原"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "5fbfe6450",
+     "gyou": "- 状態：🟡ブランチpush済み・PR作成は店主側・本番未操作"
+    },
+    {
+     "file": ".claude/TASK_BOARD.md",
+     "tashita": "5c9ee3d93",
+     "gyou": "## 2026-10-29 追記（第八条・フォントとCSSの軽量化）"
+    }
+   ]
+  },
+  "b66dfeff4": {
+   "subject": "15分見回り（ローカル代替便）：棚の変化を反映しました",
+   "kieta": [
+    {
+     "file": "scripts/patrol/reports/latest.md",
+     "tashita": "8c803da9e",
+     "gyou": "- 🆕 **黒く塗りつぶせ**（矢沢永吉）— 消えた動画 https://youtu.be/JJHsfNaelkQ → 差し替え先 https://youtu.be/LKbSe7LWR14"
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "8c803da9e",
+     "gyou": "},"
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "8c803da9e",
+     "gyou": "{"
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "8c803da9e",
+     "gyou": "\"deadId\": \"JJHsfNaelkQ\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "8c803da9e",
+     "gyou": "\"newId\": \"LKbSe7LWR14\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "8c803da9e",
+     "gyou": "\"artist\": \"矢沢永吉\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "8c803da9e",
+     "gyou": "\"song\": \"黒く塗りつぶせ\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "8c803da9e",
+     "gyou": "\"replacedAt\": \"2026-10-29T01:21:16.997Z\","
+    },
+    {
+     "file": "src/lib/videoReplacements.generated.ts",
+     "tashita": "8c803da9e",
+     "gyou": "\"source\": \"search\""
     }
    ]
   }
