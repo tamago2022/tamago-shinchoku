@@ -1,4 +1,7 @@
 # tamago-shinchoku（公開リポ：鍵・個人情報は絶対に置かない）
+
+> **🚨 店主を動かさない（最上位ルール、2026-10-29）：自分一人でできないからといって、すぐ店主にお願いしない。店主に頼む前に、必ず次の全部をやる。①隣のAI・他の部（Grok Botの各ボット、iMacのClaude Code、ChatGPT、Codex、Geminiなど）に聞く・頼む。店主のMacの中のこと（拡張機能、画面、設定）は、Mac上のAIが自分で調べて、スクショも自分で撮る。②世界中の事例を調べる。③運営（サービスのサポート）に問い合わせる。それでも店主にしかできないこと（支払い、パスキー、本人確認など）だけを、まとめて一度に頼む。店主は、いろんな部屋のAIからお願いが来て忙しくなるのをなくすためにAIを使っている。**
+
 グローバル憲法は ~/.claude/CLAUDE.md を参照（そちらにも下記ルールあり）。
 
 ## 止まらない改善ループ（憲法・2026-10-29・たまごさん「自動でどんどん良くなる。止まってるのはありえない」「俺が喜ぶ・お客さんが喜ぶ・便利・軽い、と気を利かせて」）
@@ -21,6 +24,11 @@
 - **機械の裏付け：** joy-relief-station の prebuild `scripts/patrol/check-tana-shitei.mjs`（台帳の kijun＝10-22時点の棚・shitei＝指定・hazushita＝外した曲のどれにも無いカードが棚にあれば公開が止まる。`--self-test`）。公開前の `tools/koukai_kakunin.py --kanmon` も prebuild を1本ずつ走らせるので同じ関所を通る。方針の正本 `status/shiire_houshin/README.md`。
 - **【10-22 追加】名指しは「その日」の言葉だけ有効（たまごさん「棚に置くのは本当に慎重にしたい。これからも慎重にいきたい」）。** 前日以前の言葉（判定日赤の積み直し・古いメモ・ChatGPT等のリサーチ結果）を根拠に棚を動かさない。今ある棚の中身は外さない・足さない。**機械の裏付け：** 発車の頭 `tools/tana_sekisho.py`（`auto_launcher.launch_one` から。棚を変える票は `tanaMeishi:{hi:今日,kyoku,tana,kotoba}` が無ければ hold。`--horyu`／`--ichiran`／`--self-test`）と、joy-relief-station `check-tana-shitei.mjs`（10-22以降の shitei は `said`＝言われた日が `date` と同じでないと公開が止まる）。保留の一覧 `share/check/tana-horyu.html`（進捗表から1クリック）。
 - 10-21：仕入れの5曲（wave to earth「bad」／ADOY「Lemon」／POLYCAT「เวลาเธอยิ้ม」／YONLAPA「Let Me Go」／Reality Club「Telenovia」）をアジアの風の棚から外した（曲ページ・関連・検索・裏タグは残す）。Labäda Bu「달리기」はたまごさん指定で残す。過去に指定なしで棚に入った分の一覧は `status/tana_shiire_kako.json`（外すかはたまごさんの判断待ち・数えただけ）。
+
+## 曲ページの出典は「最大3つ・1つなら1行・2つ以上は押すと開く・サイト名」（2026-10-29 たまごさん赤入れ・Treasure）
+- **たまごさん「Wikipediaの記述が長すぎて美しくない。全部載せる必要ある？ せめてメモの中に出典として隠しておいて、押すと開くように」「capitalfm.com に飛ぶけど、これはWikipediaなの？」「Englishman in New Yorkみたいに1行ならいい」。**
+- 出典は強い順（Wikipedia＞大手の音楽メディア＞そのほか＞ラジオ局・DB・SNS）に最大3つだけ画面に出す。全部は coverGuide.ts の `src` に残す（事実の関所の記録）。1つなら今までの1行。2つ以上は小さく「出典」→押すと開く・1出典1行・サイト名（Wikipedia 以外に Wikipedia と書かない・URLの切れ端を見出しにしない・ファビコンは付けない）。「📝 メモ」がある曲は出典をメモの最後へ。
+- **機械の裏付け：** 部品 joy-relief-station `src/components/SongShutten.tsx`・芯 `src/lib/shuttenCore.ts`（`pickShutten`／`sourceLabel`）。公開の関所 prebuild `scripts/patrol/check-song-shutten.mjs`（`--self-test`）。毎日の見張り `tools/shutten_mihari.py --daily`（top_status の相乗り・SNSに出した曲＋手本2曲の本番HTML → `status/public/shutten_mihari.json`・NG は Dispatch へ1行・`--self-test`）。
 
 ## マガジン曲点検：マガジン・特集で取り上げた曲は全部、正しい曲ページ・関連4つ・コピーとメモ・生きた動画（2026-10-29 たまごさん）
 - **たまごさん「マガジン周りの曲のリンクがちゃんと繋がっているか、マガジンで取り上げた曲のページにお勧めが4つ出ているか、どんどん精度を高めて」。**
