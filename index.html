@@ -222,7 +222,22 @@ footer a{display:block; padding:5px 0}
   <div class="kijun">並び順は、①差し戻し・急ぎ　②見える画面が変わるもの　③裏の仕組み。</div>
 </section>
 
-<!-- ④ 後回し・止めた仕事（1371番：09-17の軽量化で消えていたので復活） -->
+<!-- ④ 俺の確認待ち（35219番：2026-08-13「日付・何時に完了で俺が見て確認します、
+     まだなのか、俺の確認待ちなのか全部わかるようにして」への対応。
+     machine が終えて、たまごさんが見るだけで閉じられる状態＝status:"awaiting_check"。
+     「次に発車」「後回し」は全部『まだ』側で、ここが唯一の『確認待ち』側。） -->
+<section class="card" id="acCard" style="display:none">
+  <h2 id="acHead">俺の確認待ち</h2>
+  <ul class="q" id="acList" style="list-style:none;margin:0;padding:0"></ul>
+</section>
+
+<!-- ④.5 最近完了（日付・何時つき。recentDoneは以前から計算済みだったが未表示だった） -->
+<section class="card" id="doneCard" style="display:none">
+  <h2 id="doneHead">最近完了</h2>
+  <ul class="q" id="doneList" style="list-style:none;margin:0;padding:0"></ul>
+</section>
+
+<!-- ⑤ 後回し・止めた仕事（1371番：09-17の軽量化で消えていたので復活） -->
 <details class="fold" id="holdSec" style="display:none">
   <summary><span id="holdSummary">後回し・止めた仕事</span></summary>
   <div class="body"><ul id="holdList" style="list-style:none;margin:0;padding:0"></ul></div>
@@ -795,6 +810,48 @@ function renderHold(h){
   if(h.total > rows.length) rows.push('<li class="note" style="padding:9px 0">残り ' + (h.total - rows.length) + ' 件はここでは省略</li>');
   $("holdList").innerHTML = rows.join("");
 }
+/* 35219番：日付・何時（ISO文字列）を「M/D HH:MM」の1行に。取れなければ空文字（偽装しない） */
+function fmtAt(s){
+  if(!s) return "";
+  var t = Date.parse(String(s));
+  if(isNaN(t)) return "";
+  var d = new Date(t);
+  function p2(n){ return (n < 10 ? "0" : "") + n; }
+  return (d.getMonth()+1) + "/" + d.getDate() + " " + p2(d.getHours()) + ":" + p2(d.getMinutes());
+}
+/* ④ 俺の確認待ち（status:"awaiting_check"）。「まだ」(走っている/次に発車/後回し)とは別枠。
+   日付・何時＝機械が終えた時刻を必ず1件ごとに出す（35219番）。 */
+function renderAwaitingCheck(h){
+  var card = $("acCard");
+  if(!card) return;
+  if(!h || !h.total){ card.style.display = "none"; return; }
+  card.style.display = "";
+  $("acHead").textContent = "俺の確認待ち（" + h.total + "件）";
+  var rows = (h.items || []).map(function(x){
+    var at = fmtAt(x.at);
+    var atHtml = at ? '<span class="note">' + esc(at) + '　機械が終えた時刻</span>　' : '<span class="note">時刻不明</span>　';
+    var link = x.url ? '　<a href="' + esc(x.url) + '">確認する</a>' : "";
+    return '<li style="padding:9px 0;border-top:1px solid #eee7dc">'
+      + atHtml + midashiHtml(x) + link + '</li>';
+  });
+  if(h.total > rows.length) rows.push('<li class="note" style="padding:9px 0">残り ' + (h.total - rows.length) + ' 件はここでは省略</li>');
+  $("acList").innerHTML = rows.join("");
+}
+/* ④.5 最近完了（recentDoneは以前から計算済みだったが、画面に一度も出していなかった分） */
+function renderRecentDone(list){
+  var card = $("doneCard");
+  if(!card) return;
+  if(!list || !list.length){ card.style.display = "none"; return; }
+  card.style.display = "";
+  $("doneHead").textContent = "最近完了（" + list.length + "件）";
+  var rows = list.map(function(x){
+    var at = fmtAt(x.ts);
+    var atHtml = at ? '<span class="note">' + esc(at) + '　完了した時刻</span>　' : "";
+    return '<li style="padding:9px 0;border-top:1px solid #eee7dc">'
+      + atHtml + '<a href="' + esc(x.url || "#") + '">' + esc(x.title || "") + '</a></li>';
+  });
+  $("doneList").innerHTML = rows.join("");
+}
 function loadQueue(fallback){
   getJson("status/public/queue_next.json", 12000).then(function(q){
     var w = ((q && q.items) || []).filter(function(x){ return x.status === "waiting"; });
@@ -839,6 +896,8 @@ function render(d){
   renderRunning(d);
   renderOmosa(d);
   renderPace(d.pace);
+  renderAwaitingCheck(d.awaitingCheck);
+  renderRecentDone(d.recentDone);
   renderHold(d.hold);
   $("next").innerHTML = '<li class="note">読み込み中…</li>';
   loadQueue(d.nextUp || []);

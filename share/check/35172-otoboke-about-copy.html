@@ -49,21 +49,27 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35172 Otoboke Beaverのaboutコピーを書き直し（怒りが伝わる文へ）</div>
 <h1>#35172 Otoboke Beaverのaboutコピーを書き直し（怒りが伝わる文へ）</h1>
-<div class="date">2026-10-23 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-10-23 実装・main合流・本番(Lovable)反映まで実測確認（更新：前回「公開停止中のため未反映」から、本番を再実測した結果を反映）</div>
 
 <div class="fix">
-退屈なAI自動生成の紹介文を、Otoboke Beaverの怒りが伝わる手書きコピーへ書き換え。元の店主発言(2026-08-12)の本来の対象は別案件35169番(曲コピー)で、そちらは既に本番反映確認済み。今回のaboutは追加の改善としてmainへ合流済み(commit ffd19427b)。Lovable公開は2026-10-22付の店主指示(P0停止)により、本セッションからは押していない。
+退屈なAI自動生成の紹介文を、Otoboke Beaverの怒りが伝わる手書きコピーへ書き換え。元の店主発言(2026-08-12)の本来の対象は別案件35169番(曲コピー)で、そちらは既に本番反映確認済み。今回のaboutは追加の改善としてmainへ合流済み。本番(Lovable)を今回あらためてcurl/fetchで実測したところ、既にこのaboutコピーが反映されていることを確認した（自分でLovableの公開操作を行ったわけではない。既存の反映経路で届いていた）。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+<div class="num"><b>200</b><span>本番ページのHTTPステータス</span></div>
+<div class="num"><b>76,004文字</b><span>本番ページの実測バイト数（空ではない）</span></div>
 </div>
 
-
+実測コマンドと結果（そのまま貼り付け）：
+<pre style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.82rem;overflow-x:auto;">HTTP: 200
+LEN: 76004
+HAS_ABOUT_TEXT(週6勤務はつらい): true
+HAS_HANKO(脱・ハンコ): true</pre>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
+  <li><b>本番ページ（Otoboke Beaver・直接確認用）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=otoboke-beaver" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=otoboke-beaver</a></li>
   <li><b>35169番の確認ページ(元の依頼の本番反映確認)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35169-otoboke-copy-update.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35169-otoboke-copy-update.html</a></li>
 </ul>
 
@@ -71,7 +77,7 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>mainへの合流</td><td class="yes">yes</td></tr>
-<tr><td>本番(Lovable)への反映</td><td class="yes">no（公開停止中のため）</td></tr>
+<tr><td>本番(Lovable)への反映</td><td class="yes">yes（2026-10-23再実測で確認。HTTP200・該当文言あり）</td></tr>
 <tr><td>元の依頼(35169番・曲コピー)の本番反映</td><td class="yes">yes</td></tr>
 </table>
 

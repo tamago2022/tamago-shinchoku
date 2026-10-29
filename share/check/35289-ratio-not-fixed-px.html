@@ -63,7 +63,7 @@
 
 <h2>③ 追記(2026-10-28・AI検品1回目FAILへの対応)</h2>
 <div class="fix">
-比率指定自体はOKだが、独立検品が本番ページ(cover-guide?artist=akiko)でReact hydrationエラー(#418)を検出しFAILと判定した。原因は<code>src/components/NextRecommendations.tsx</code>のuseMemo内(SSRでも実行される)でバッジ候補のシャッフルに生のMath.random()を使っていたこと(サーバーとクライアント初回描画の並びが食い違っていた)。既存の決定論的シード(seededShuffle+hashString)に置き換え、commit <code>4c946a7f9</code>としてGitHub mainへpush済み(mainにこのコミットが含まれることを git merge-base --is-ancestor で確認済み)。<br><br>
+比率指定自体はOKだが、独立検品が本番ページ(cover-guide?artist=akiko)でReact hydrationエラー(#418)を検出しFAILと判定した。原因は、おすすめカードのバッジ候補を並び替える処理が毎回ランダムな結果になっていたため、サーバー側で描いた画面とブラウザ側で描いた画面の最初の並びが食い違っていたこと。毎回同じ並びになる仕組みに直し、ソースコード側(GitHub)への反映まで完了済み。<br><br>
 <b>Lovable本番への反映は未完了。</b>2026-10-22付のP0方針(全AI共通でLovable公開操作は店主の新規明示指示が無い限り禁止)により、AI側から公開操作を実行していない。また公開自動化便(launchd 30分おき)自体も2026-09-14(案件820)に無効化されたまま停止中。店主がLovable画面で「公開」を押すか、新しい直接指示が出れば本番へ反映される。
 </div>
 

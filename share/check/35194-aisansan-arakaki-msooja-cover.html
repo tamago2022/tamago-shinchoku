@@ -52,7 +52,7 @@
 <div class="date">2026-10-25 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-「この曲だけ追加で仕入れてコミットしておいてください」(2026-08-12 19:09・35193号「新垣勉さんの愛燦燦カバー」発言の約1時間40分後)は、同じ愛燦燦クラスタの続きの指示と判断。新垣勉さん・Ms.OOJAさんの愛燦燦カバー2件は2026-08-13 01:00のコミット(81700d1de)で既に仕入れ・コミット済みで、origin/mainにも合流済み。本番URL2本とも200・原曲(美空ひばり)との双方向リンクも実測確認済み。
+「この曲だけ追加で仕入れてコミットしておいてください」(2026-08-12 19:09・直前に話していた「新垣勉さんの愛燦燦カバー」の続きの発言)は、同じ愛燦燦の件の続きの指示と判断。新垣勉さん・Ms.OOJAさんの愛燦燦カバー2件は翌日未明にはもう仕入れ済みで、本番にも反映済み。本番URL2本とも200・原曲(美空ひばり)との双方向リンクも実測確認済み。
 </div>
 
 <h2>② 数字</h2>
@@ -74,7 +74,7 @@
 
 
 <footer>
-触る検品(verify_click.mjs)で美空ひばりページのReact #418(hydration)コンソールエラー1件を3回連続で実測。押しても反応しない要素は0件(機能的実害なし)。原因調査の結果、CardBadgesのuseSongOverrides取得がSSR時はprefetchされずCSR時のみ実行される設計(src/router.tsx 178行目のtypeof window===undefinedガード)が有力な仮説だが、本番ソースマップが非公開のため完全な確定はできず。サイト全体の構造に関わる問題のため、この案件(愛燦燦の仕入れ)のスコープを超えると判断し、別件として記録して引き継ぐ。
+押す検品で、美空ひばりページの読み込み時に出る小さな表示エラーを3回連続で確認した。押しても反応しないボタン等は0件（実際に押して困ることは無い）。この表示エラーはサイト全体に関わる作りの問題である可能性が高く、「愛燦燦の仕入れ」という今回の範囲を超えるため、別の件として記録して引き継ぐ。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

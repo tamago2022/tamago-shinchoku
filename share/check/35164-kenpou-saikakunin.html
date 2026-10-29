@@ -52,14 +52,14 @@
 <div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-35164号のAI検品が『35160号のcommit 2c4eeb497がmain未マージ』と指摘したが、今この瞬間に<code>git fetch origin main</code>をやり直して確かめたところ、2c4eeb497は既にorigin/mainの祖先であり、該当3ファイル（SOP本体・機械検品・役割台帳）は実在し、機械検品を最新HEADで再実行しても35160号と同じ『壊れ0・要確認6』が出た。既存資産(35160号の実装)を新しく作り直す必要は無く、反映済みであることを再証明した。
+35164号のAI検品が『35160号の変更が運用中のコードに反映されていない』と指摘したが、今この瞬間に運用中のコードを取り直して確かめたところ、35160号の変更（SOP本体・機械検品・役割台帳の3点）は実在し、機械検品を最新のコードで再実行しても35160号と同じ『壊れ0・要確認6』が出た。既存資産(35160号の実装)を新しく作り直す必要は無く、反映済みであることを再証明した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>2acc8fbd9</b><span>origin/main 最新HEAD(再fetch時点)</span></div>
-  <div class="num"><b>YES</b><span>2c4eeb497がorigin/mainの祖先か(merge-base --is-ancestor)</span></div>
   <div class="num"><b>0 / 6</b><span>機械検品の壊れ件数 / 要確認件数(35160号と完全一致)</span></div>
+  <div class="num"><b>7206バイト</b><span>SOP本体(08-constitution-keeper.md)の実測サイズ</span></div>
+  <div class="num"><b>6684バイト</b><span>機械検品(check-constitution.mjs)の実測サイズ</span></div>
 </div>
 
 
@@ -73,16 +73,16 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>origin/main に 2c4eeb497 が含まれるか(2026-10-22 23:17 JSTに再fetchして確認)</td><td class="yes">yes</td></tr>
-<tr><td>.claude/manuals/08-constitution-keeper.md がorigin/main上に実在(7206バイト)</td><td class="yes">yes</td></tr>
-<tr><td>scripts/roles/check-constitution.mjs がorigin/main上に実在(6684バイト)</td><td class="yes">yes</td></tr>
-<tr><td>.claude/playbooks/roles.json に constitution-keeper のエントリが実在</td><td class="yes">yes</td></tr>
-<tr><td>AGENTS.md/CLAUDE.mdへのポインタ追記がorigin/main上に実在</td><td class="yes">yes</td></tr>
-<tr><td>package.jsonのnpm run role:check-constitutionがorigin/main上に実在</td><td class="yes">yes</td></tr>
+<tr><td>35160号の変更が運用中のコードに反映されているか(2026-10-22 23時17分に取り直して確認)</td><td class="yes">yes</td></tr>
+<tr><td>08-constitution-keeper.md が実在(7206バイト)</td><td class="yes">yes</td></tr>
+<tr><td>check-constitution.mjs が実在(6684バイト)</td><td class="yes">yes</td></tr>
+<tr><td>役割台帳に constitution-keeper のエントリが実在</td><td class="yes">yes</td></tr>
+<tr><td>AGENTS.md/CLAUDE.mdへのポインタ追記が実在</td><td class="yes">yes</td></tr>
+<tr><td>npm run role:check-constitutionが実在</td><td class="yes">yes</td></tr>
 </table>
 
 <footer>
-35164号は35160号と同じ2026-08-12の元指示(憲法担当という7つ目の役割)を指す重複案件。AI検品1回目(10-22 20:19)は『未マージ』と指摘したが、別の時点のgit状態を見ていた可能性が高い。本ページは2026-10-22 23:17 JSTに<code>git fetch origin main</code>を実行し直した直後の実測であり、35160号で実装済みの既存資産が本番(origin/main)に反映済みであることを数字・ファイルサイズ・機械検品ログの3方向から再確認した。新規実装は行っていない(既存資産の発見・復旧=再証明)。
+35164号は35160号と同じ2026-08-12の元指示(憲法担当という7つ目の役割)を指す重複案件。AI検品1回目(10-22 20:19)は『反映されていない』と指摘したが、別の時点のコード状態を見ていた可能性が高い。本ページは2026-10-22 23時17分にコードを取り直した直後の実測であり、35160号で実装済みの既存資産が本番に反映済みであることを数字・ファイルサイズ・機械検品ログの3方向から再確認した。新規実装は行っていない(既存資産の発見・復旧=再証明)。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
