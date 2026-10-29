@@ -151,8 +151,19 @@ def put_all(name, key):
     ad = os.path.join(PROD, 'assets', key)
     if os.path.isdir(ad):
         files += [(os.path.join(ad, f), 'public/magazine/assets/%s/%s' % (key, f)) for f in sorted(os.listdir(ad))]
+    # 【2026-10-30】控えが本番より古いと止まる関所（backnumber などを古い控えで戻さない）
+    sys.path.insert(0, HERE)
+    import honban_soroe as hs
+    ng = hs.kensa([loc for loc, _ in files])
+    if ng:
+        for loc, why in ng:
+            print('HONBAN_SOROE: STOP ｜ %s ｜ %s' % (os.path.basename(loc), why))
+        return False
     for loc, dst in files:
-        ok &= gh_put(loc, dst, '即公開（叩き・60点で出して直す）：%s' % dst)
+        r = gh_put(loc, dst, '即公開（叩き・60点で出して直す）：%s' % dst)
+        if r:
+            hs.kiroku([loc])
+        ok &= r
     return ok
 
 
