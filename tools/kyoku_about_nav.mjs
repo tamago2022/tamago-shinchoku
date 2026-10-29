@@ -7,7 +7,7 @@
  * 使い方: node tools/kyoku_about_nav.mjs <base> <artistId> <songId> [<artistId> <songId> ...]
  */
 import { spawn } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 const [base, ...pairs] = process.argv.slice(2);
@@ -49,4 +49,4 @@ try {
     console.log(JSON.stringify({ artist: a, song: s, direct, afterNav: nav, url }));
   }
   close();
-} finally { chrome.kill("SIGKILL"); await sleep(800); try { rmSync(profile, { recursive: true, force: true }); } catch {} }
+} finally { chrome.kill("SIGKILL"); for (let i = 0; i < 6 && existsSync(profile); i++) { await sleep(600); try { rmSync(profile, { recursive: true, force: true }); } catch {} } }
