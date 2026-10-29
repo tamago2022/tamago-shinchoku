@@ -103,8 +103,8 @@ async function main() {
     close();
   } finally {
     chrome.kill("SIGKILL");
-    await sleep(800); // Chrome が書き終えるのを待ってから消す（消し残しの実例 2026-10-29）
-    try { rmSync(profile, { recursive: true, force: true }); } catch {}
+    // Chrome が書き終えるのを待ってから消す（1回では消し残る実例 2026-10-29：20個）
+    for (let i = 0; i < 6 && existsSync(profile); i++) { await sleep(600); try { rmSync(profile, { recursive: true, force: true }); } catch {} }
   }
 }
 main().catch((e) => { console.error("失敗:", e.message); process.exitCode = 1; });
