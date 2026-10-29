@@ -312,13 +312,34 @@ def collect_targets():
     for mag, rows in (mg.get("mags") or {}).items():
         link_ng[mag] = sum(1 for r in rows if r.get("state") in ("no_page", "link_wrong", "link_dead"))
     for mag in sorted((mg.get("mags") or {}).keys()):
-        statics.append({"key": "mag:" + mag, "url": "%s/magazine/%s" % (SITE, mag), "label": "マガジン " + mag,
-                        "imgNg": img_ng.get("/magazine/" + mag, 0), "linkNg": link_ng.get(mag, 0)})
+        path = mag_path(mag)
+        statics.append({"key": "mag:" + mag, "url": SITE + path, "label": "マガジン " + mag,
+                        "imgNg": img_ng.get(path, 0), "linkNg": link_ng.get(mag, 0)})
     return songs, statics
+
+
+def mag_path(mag):
+    """magazine_gate の名前 → 本番の道。特集（React）は "feature:<名前>" で来るが本番は /feature/<名前>。
+    2026-10-29：/magazine/feature:<名前> を測って 404→14点の偽の直し便を18本作っていたのを直した。"""
+    if mag.startswith("feature:"):
+        return "/feature/" + mag.split(":", 1)[1]
+    return "/magazine/" + mag
+
+
+HAYASA_SEN = 1.5
 
 
 def probe_page(url):
     st, sec, size, body = fetch(url, timeout=25)
+    # 速さは1回だけだと回線のゆれで外れる（2026-10-29 実測：同じ曲ページが 0.26秒／5.08秒／0.53秒）。
+    # 線を超えたときだけ2回測り直し、3回の真ん中を使う。直し便で直せない「ゆれ」を積まないため。
+    if st == 200 and sec > HAYASA_SEN:
+        secs = [sec]
+        for _ in range(2):
+            s2, t2, _, _ = fetch(url, timeout=25, want_body=False)
+            if s2 == 200:
+                secs.append(t2)
+        sec = sorted(secs)[len(secs) // 2]
     ogp = {k: bool(re.search(r'<meta[^>]+property="%s"[^>]+content="[^"]+' % k, body)) for k in ("og:title", "og:description", "og:image")}
     m = re.search(r'share-image/([A-Za-z0-9_-]{11})', body) or re.search(r'(?:youtube\.com/(?:embed|watch\?v=)|youtu\.be/|i\.ytimg\.com/vi/)([A-Za-z0-9_-]{11})', body)
     return {"at": ts(), "status": st, "sec": sec, "bytes": size, "ogp": ogp,
@@ -347,7 +368,7 @@ def score_checks(kind, info, probe, shiro_bad=False, dead_yt=None):
         add("ikidomari", http_ok and "ikidomari" not in fails and not info.get("linkNg"),
             "" if http_ok else "HTTP %s" % p.get("status"))
         s = p.get("sec") or 99
-        add("hayasa", http_ok and s <= 1.5, "%.2f秒" % s)
+        add("hayasa", http_ok and s <= HAYASA_SEN, "%.2f秒" % s)
         add("misettei", http_ok and not p.get("misettei") and not info.get("imgNg"),
             ("壊れた画像%d" % info.get("imgNg")) if info.get("imgNg") else "")
         og = p.get("ogp") or {}
@@ -1256,6 +1277,18 @@ def self_test():
         assert s2 < 70 and not [c for c in ch if c["k"] == "ogp"][0]["ok"], s2
         s3, _ = score_checks("song", {"related": 6, "fails": []}, pr_ok, dead_yt=False)
         assert s3 < 100
+        # 特集は /feature/<名前>（/magazine/feature:… は404の偽の直し便になる）
+        assert mag_path("feature:funky") == "/feature/funky" and mag_path("ikareru-01.html") == "/magazine/ikareru-01.html"
+        # 速さ：1回目が遅くても、測り直しの真ん中が速ければ合格（回線のゆれで直し便を積まない）
+        global fetch
+        _f, seq = fetch, iter([(200, 5.0, 10, "<html></html>"), (200, 0.4, 0, ""), (200, 0.6, 0, "")])
+        fetch = lambda *a, **k: next(seq)
+        try:
+            assert probe_page("u")["sec"] == 0.6
+            seq = iter([(200, 3.0, 10, ""), (200, 2.8, 0, ""), (200, 0.5, 0, "")])
+            assert probe_page("u")["sec"] == 2.8  # 3回中2回遅い＝本当に遅い
+        finally:
+            fetch = _f
         assert kind_of_fail("関連が2本（4本以上必要）") == "kanren" and kind_of_fail("コピーなし／メモなし") == "copy"
         assert MISETTEI_RX.search("<span>未設定</span>") and not MISETTEI_RX.search("<p>未設定の曲は</p>")
         # 選ぶ：外に出した曲が、同じ点のただの曲より先／並行の子の範囲は外れる
