@@ -581,17 +581,43 @@ if __name__ == "__main__":
     # 2026-10-16 自動処理の棚卸し（1時間に1回・中で間引く）。台帳に無いものがあれば Dispatch に1行
     _okosu("jidou_tanaoroshi.py", "--hourly")
 
+    # 2026-10-25 同時に動く子どうしの上書きの見張り（救急箱・Xボタンが上書きで消えた件）。中で1時間に1回に間引く
+    _okosu("uwagaki_kanmon.py", "--mimawari")
+
     # 2026-10-18 マガジンの関所（1日1回・中で20時間の間引き）：全マガジンの曲が全部「曲ページ・正しいリンク・関連4曲以上・コピーとメモ」か。
     #   リンクを貼れる所は貼り、足りない所は直す便を積み、Dispatch へ1行（tools/magazine/magazine_gate.py）
     _okosu("magazine/magazine_gate.py", "--daily")
 
+    # 2026-10-27 白飛びの見張り（1日1回・中で20時間に間引く・Macが混んでいたら次の回）：本番を全場面コマ撮りし、
+    #   一瞬だけ出る白が1コマでもあれば Dispatch へ1行＋印（koutai_kanmon --pre-publish が白飛びを直す公開以外を止める）
+    _okosu("shirotobi_mimawari.py", "--daily")
+
+    # 2026-10-29 Supabase 10/30 仕様変更（新しいテーブルは GRANT しないと Data API で読めない）。1日1回・中で20時間に間引く。
+    #   本番の全テーブルが service_role／公開鍵で読めるかを見て、赤なら Dispatch へ1行（tools/db_grant_kanmon.py）
+    _okosu("db_grant_kanmon.py", "--mimawari", "--daily")
+
+    # 2026-10-29 工場の変更が GitHub の main に上がっているかの見張り（1時間に1回・中で間引く）。
+    #   作業場が別の枝に乗ったまま・衝突で pull をやめ続ける・README/CLAUDE.md が記録されない、で main が1週間止まった件（tools/kojo_push_mihari.py）
+    _okosu("kojo_push_mihari.py", "--tick")
+
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:
-        if time.time() - _os.path.getmtime(_os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "status", ".toukou_mimawari_at")) > 20 * 3600:
+        _st = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "status")
+        _age = time.time() - _os.path.getmtime(_os.path.join(_st, ".toukou_mimawari_at"))
+        try:
+            _tk = time.time() - _os.path.getmtime(_os.path.join(_st, "public", "toukou_tenken.json"))
+        except OSError:
+            _tk = 1e9
+        # 2026-10-29：点検が途中で消えると印だけ残って20時間やり直さない → 結果が26時間以上古ければ2時間後にやり直す
+        if _age > 20 * 3600 or (_tk > 26 * 3600 and _age > 2 * 3600):
             _okosu("toukou_mimawari.py", "--daily")
     except OSError:
         _okosu("toukou_mimawari.py", "--daily")
+
+    # 2026-10-24 手直し帳（1日1回・中で20時間に間引く）。たまごさんの赤入れ（種・共有メモ#1040・Bufferで直した文）を
+    #   流し込み、同じ直しが2回出たら決まりに足す（~/jrs-clone/ai-clone・status/tenaoshi/kimari.json）。0円・AIなし。
+    _okosu("tenaoshi_chou.py", "--daily")
 
     # 2026-10-01 鬼監督（Codex）の返事を拾う係。返事待ちが0なら gh も叩かず即戻る。
     #   合格/差し戻しを status/gaibu/soto_hantei.json と status/oni_codex/hantei.jsonl に戻し、
@@ -710,3 +736,31 @@ if __name__ == "__main__":
     # 2026-10-22 全AIへの共有メモ係（たまごさん「この水汲みを俺がまだやらなきゃいけないのがしんどい」・#1037）。
     #   待ち行列(status/zen_ai_kyouyu/machi.jsonl)をラベル「店主の指示メモ」のIssueへ書く＋3時間ごとに工場が受けた指示をまとめる。中で5分に間引く。
     _okosu("zen_ai_kyouyu.py", "--tick")
+
+    # 2026-10-25 振り分け所（たまごさん「『これできる人いますか』と調べて、できる人に仕事を回して。俺を楽させるのが皆様方の仕事」）。
+    #   status/furiwake/machi.jsonl → ラベル「できる人いますか」のIssue → できること台帳で担当を選んで依頼 → 返事を見張る。中で2分に間引く。
+    _okosu("furiwake.py", "--tick")
+
+    # 2026-10-25 同じ部屋（たまごさん「NotionもObsidianも全AIが読めるように。一方通行は嫌。パーティションを取りたい」）。
+    #   Notion→ドライブ tamago_brain/notion/（鍵 NOTION_TOKEN がある時だけ・中で6時間／書き出し途中は10分に間引く）
+    #   各AIの読み口台帳（できること台帳に統合・赤＝片道/未接続・週1で実測＋各社公式ページの見直し）
+    _okosu("notion_utsushi.py", "--tick")
+    _okosu("yomikuchi.py", "--tick")
+
+    # 2026-10-25 引っ込み係（たまごさん「『見つかりません』のままは嫌。自動で引っ込んで。今月引っ込んだリストが欲しい。Grokにも探させて」）。
+    #   棚の X 投稿・YouTube 動画を毎日1回確かめ、消えたものを joy-relief-station の hikkomi.generated.ts に書いて自動で隠す。
+    #   一覧 share/check/hikkomi.html。差し替え候補が無いものは毎週 振り分け所→Grok。中で10分に間引く（見回り20時間・Grok 6.5日）。
+    _okosu("hikkomi.py", "--tick")
+
+    # 2026-10-25 Grokボットとのリアルタイム通信（たまごさん「GitHubに書いても3時間おきにしか見ない。Bot同士みたいにリアルタイムに。全部仕組みで」）。
+    #   共有メモに書いた瞬間の呼び鈴を Reason Network で Grok へ送る／Grok からの文を受付へ／serve claude の常駐を守る。中で50秒に間引く。
+    _okosu("grok_tsuushin.py", "--tick")
+
+    # 2026-10-25 法務チェックの型（たまごさん「1人がチェックしただけだと漏れる。2人、3人、4人でクアドラプルチェックで」）。
+    #   Claude・Grok・ChatGPT・Genspark の判定を Issue のコメント等から集め、食い違いに🔴→たまごさんの1枚 share/check/houmu-<番号>.html。中で10分に間引く。
+    _okosu("houmu_check.py", "--tick")
+
+    # 2026-10-29 止まらない改善ループ（たまごさん「自動化でどんどんサイトが強く良くなるように。止まってるのはありえない」）。
+    #   毎時本番を採点→点の低い順（X・LINE・マガジン優先）に直し便を積む→直ったら採点し直し、下がったら自動で戻す→同じ失敗2回で関所を足す
+    #   →30分止まりを検知して再点火→毎日4つの見方で案→日曜朝に週報。中で間引く（採点55分・積む10分・止まり5分・案20時間）。
+    _okosu("kaizen_loop.py", "--tick")
