@@ -102,12 +102,9 @@ def kuroobi_nuku(im):
     w, h = g.size
     px = g.load()
 
-    # 帯＝暗くて、しかも平らな（ばらつきの無い）行・列。暗い舞台の絵は暗くても模様があるので帯と取り違えない
+    # 帯＝ほぼ真っ黒な画素が9割以上の行・列（帯の上の小さなロゴは許す）
     def obi(vals):
-        n = len(vals)
-        m = sum(vals) / n
-        sd = (sum((v - m) ** 2 for v in vals) / n) ** 0.5
-        return m < 34 and sd < 7
+        return sum(1 for v in vals if v < 22) >= 0.9 * len(vals)
 
     def row_dark(y):
         return obi([px[x, y] for x in range(0, w, max(1, w // 96))])
@@ -127,8 +124,19 @@ def kuroobi_nuku(im):
     b = h - 1 - haba(h, lambda i: row_dark(h - 1 - i))
     l = haba(w, col_dark)
     r = w - 1 - haba(w, lambda i: col_dark(w - 1 - i))
-    if (b - t) < h // 2 or (r - l) < w // 2:
+    # 本物の帯は左右（上下）が同じ幅。片側だけ暗いのは暗い舞台など絵の一部なので切らない（糸の頭を切った反省）
+    if abs(l - (w - 1 - r)) > 0.04 * w:
+        l, r = 0, w - 1
+    if abs(t - (h - 1 - b)) > 0.04 * h:
+        t, b = 0, h - 1
+    if (b - t) < h // 2 or (r - l) < w // 3:
         return im
+    if (l, t, r, b) != (0, 0, w - 1, h - 1):
+        # 残った中身が、帯の付き方の決まった形（正方形のジャケット・4:3・16:9・映画の横長）のときだけ切る。
+        # それ以外の形＝暗い舞台の暗がりを帯と取り違えている（糸の maxres1 は 428×720 になった）
+        asp = (r - l + 1) / float(b - t + 1)
+        if not any(abs(asp - k) / k < 0.04 for k in (1.0, 4 / 3.0, 16 / 9.0, 1.85, 2.39)):
+            return im
     return im.crop((l, t, r + 1, b + 1))
 
 
@@ -187,8 +195,17 @@ def oembed_title(vid):
 def tsukuru(data, m):
     """選んだ1枚 → 黒帯を落として 1200×630 に（真ん中で切る）。暗すぎる絵だけ少し明るく。"""
     from PIL import Image, ImageOps, ImageEnhance
+    from PIL import ImageFilter
     im = kuroobi_nuku(Image.open(io.BytesIO(data)).convert("RGB"))
-    im = ImageOps.fit(im, (W, H), method=Image.LANCZOS, centering=(0.5, 0.42))
+    if im.width / im.height < 1.5:
+        # 正方形のジャケット・縦長の絵：切り落とさず真ん中に置き、左右は同じ絵をぼかして暗くして埋める（文字や枠は足さない）
+        bg = ImageOps.fit(im, (W, H), method=Image.LANCZOS).filter(ImageFilter.GaussianBlur(28))
+        bg = ImageEnhance.Brightness(bg).enhance(0.45)
+        fg = im.resize((max(1, round(im.width * H / im.height)), H), Image.LANCZOS)
+        bg.paste(fg, ((W - fg.width) // 2, 0))
+        im = bg
+    else:
+        im = ImageOps.fit(im, (W, H), method=Image.LANCZOS, centering=(0.5, 0.42))
     if m["mean"] < 60:
         import math
         im = ImageOps.autocontrast(im, cutoff=0.5)
