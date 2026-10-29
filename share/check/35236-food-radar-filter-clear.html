@@ -52,7 +52,7 @@
 <div class="date">2026-10-27 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主報告(2026-08-13 01:52)「シェフを選んだ後に別ジャンルを選ぶと、前の選択が残ったままANDになり件数が激減する」不具合は、同日のうちに『押した1つだけが効く(排他)』方式に修正済み。本番の配信用コード(food-radar-*.js)を直接取得し、同じロジック・同じUI文言(「絞り込み：」チップ・aria-pressed等)が現在も入っていることを確認した。あわせて、この号の前回の確認ページにあった数値(シェフ130件・ジャンル55件)は実データ(全60件)を超えており誤りだったため、実データから計算した正しい数値へ訂正した。
+店主報告(2026-08-13 01:52)「シェフを選んだ後に別ジャンルを選ぶと、前の選択が残ったままANDになり件数が激減する」不具合は、同日の変更で『押した1つだけが効く(排他)』方式に修正済み。本番の配信用JSチャンク(food-radar-*.js)を直接取得し、同じロジック・同じUI文言(「絞り込み：」チップ・aria-pressed等)が現在も入っていることを確認した。あわせて、この号の前回の確認ページにあった数値(シェフ130件・ジャンル55件)は実データ(全60件)を超えており誤りだったため、実データから計算した正しい数値へ訂正した。
 </div>
 
 <h2>② 数字</h2>
@@ -65,13 +65,13 @@
 
 <h2>③ 実データでのスクリーンショット</h2>
 <div class="shots">
-  <div class="shot plain"><b>実データ集計グラフ(全件→シェフ絞り込み→別軸切替)</b><img src="img/35236-filters.png" alt="実データ集計グラフ(全件→シェフ絞り込み→別軸切替)"><span class="meta">ブラウザの実写ではなく、本番と同じ実データをこのセッションが再集計したグラフ(Chrome本体の起動が禁止のため)</span></div>
+  <div class="shot plain"><b>実データ集計グラフ(全件→シェフ絞り込み→別軸切替)</b><img src="img/35236-filters.png" alt="実データ集計グラフ(全件→シェフ絞り込み→別軸切替)"><span class="meta">ブラウザの実写ではなく、本番と同じ実データをこのセッションが再集計したグラフ(1186号の関所でChrome本体の起動が禁止のため)</span></div>
 </div>
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>本番 ごきげんフード＆レシピレーダー</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
-  <li><b>本番の配信コードにaria-pressed等の排他ロジック文言が存在する実測</b><a href="https://joy-relief-station.lovable.app/assets/food-radar-DraLH-rV.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/food-radar-DraLH-rV.js</a></li>
+  <li><b>本番の配信コード(food-radarチャンク)にaria-pressed等の排他ロジック文言が存在する実測</b><a href="https://joy-relief-station.lovable.app/assets/food-radar-DraLH-rV.js" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/assets/food-radar-DraLH-rV.js</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -84,7 +84,7 @@
 </table>
 
 <footer>
-数値は本番と同じ実データを同じ条件で集計(Python再実装)。本番の配信コードを実際に取得し同一ロジック・同一文言の存在を確認済み。ブラウザでの実クリックは本体起動の関所により本セッションでは実施できていない(正直な範囲の開示)。
+数値は src/data/foodRadarData.ts の実データをfilterRecipes/setSoleFilterと同じ条件で集計(Python再実装)。本番の配信コード(food-radar-*.js)を実際に取得し同一ロジック・同一文言の存在を確認済み。ブラウザでの実クリックは1186号の関所(Chrome本体起動の全面禁止)により本セッションでは実施できていない(正直な範囲の開示)。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>

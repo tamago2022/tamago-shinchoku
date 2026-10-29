@@ -1,17 +1,14 @@
 {
- "at": "2026-10-29 09:24:56",
- "total": 151,
+ "at": "2026-10-29 10:25:47",
+ "total": 152,
  "kinds": {
   "心臓": 94,
-  "心臓の相乗り": 32,
+  "心臓の相乗り": 33,
   "launchd": 18,
   "Claudeの定期タスク（画面に通知が出る）": 3,
   "GitHub Actions": 4
  },
- "mitouroku": [
-  "claude-teiki:jidou-kaizen-junkai",
-  "claude-teiki:atarashii-dekiru-catchup"
- ],
+ "mitouroku": [],
  "kari": 110,
  "zure": [
   {
@@ -853,6 +850,14 @@
    "kesu": "毎回上書き（1ファイルずつ・増えない）"
   },
   {
+   "name": "kojo_push_mihari.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "記録だけ（status/public/kojo_push_mihari.json・status/.kojo_push_mihari_at・status/.kojo_push_mihari_tsuuchi＝毎回上書きの1ファイルずつ）。git の commit（決まりの文書）と、作業場が別の枝にいたときの main への戻し",
+   "okiba": "tamago-shinchoku/status",
+   "kesu": "不要（上書きのみで増えない。一時ファイルを作らない）"
+  },
+  {
    "name": "toukou_mimawari.py",
    "kind": "心臓の相乗り",
    "freq": "毎周（15秒・中で間引くものあり）",
@@ -1090,7 +1095,7 @@
    "freq": "5分おき",
    "tsukuru": "Vault(tamago_brain)の.mdの写しをGoogleドライブ マイドライブ/tamago_brain へ差分コピー（一方向・消さない）。2026-10-25からgdrive_md_mirror.py：Dataviewの結果を写し側だけに書き足す・00_索引_AIはここから読む.md／00_索引_タグ別_全部.md を作る。一時ファイルは作らない（その場で上書き＝ドライブのURLが変わらない）",
    "okiba": "~/Library/CloudStorage/GoogleDrive-…/マイドライブ/tamago_brain ・ ~/.tamago-sync/{gdrive_md_mirror.sh,gdrive_md_mirror.py,mirror_state.json,gdrive_md_mirror.log}（正本は Vault AI出力/_ルール/gdrive_md_mirror/）",
-   "kesu": "不要（写しは上書き更新のみ。log は200KBで500行に自分で刈る・mirror_state.json は本数ぶんで増えない）。187248番・2026-10-25登録／同日 Dataview対応に作り替え"
+   "kesu": "不要（写しは上書き更新のみ。log は200KBで500行に自分で刈る・mirror_state.json は本数ぶんで増えない）。187248番・2026-10-25登録／同日 Dataview対応に作り替え（35219番pushで別セッション分と重複登録・内容同一）"
   },
   {
    "name": "com.tamago.genzaichi-sync",
@@ -1208,17 +1213,17 @@
    "name": "claude-teiki:jidou-kaizen-junkai",
    "kind": "Claudeの定期タスク（画面に通知が出る）",
    "freq": "17 * * * *",
-   "tsukuru": null,
-   "okiba": null,
-   "kesu": null
+   "tsukuru": "毎時17分にClaudeの定期タスクが1回だけ短いセッションを作る（作業はせず「巡回の時刻です」と書いて終わる呼び鈴。ファイルは作らない）",
+   "okiba": "Claude アプリのセッション（~/Library/Application Support/Claude/local-agent-mode-sessions）",
+   "kesu": "youryou_jougen（Claude の古いセッション outputs 15GB 上限）＋shimau（古いセッションの outputs を毎日片付け）"
   },
   {
    "name": "claude-teiki:atarashii-dekiru-catchup",
    "kind": "Claudeの定期タスク（画面に通知が出る）",
    "freq": "40 7 * * *",
-   "tsukuru": null,
-   "okiba": null,
-   "kesu": null
+   "tsukuru": "毎朝7:40にClaudeの定期タスクが公式の新機能を調べる短いセッションを1回作る（結果は会話の中だけ。ファイルは作らない）",
+   "okiba": "Claude アプリのセッション（~/Library/Application Support/Claude/local-agent-mode-sessions）",
+   "kesu": "youryou_jougen（Claude の古いセッション outputs 15GB 上限）＋shimau（古いセッションの outputs を毎日片付け）"
   },
   {
    "name": "claude-teiki:rusuban-mimawari-30min",

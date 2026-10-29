@@ -1,6 +1,15 @@
 # tamago-shinchoku（公開リポ：鍵・個人情報は絶対に置かない）
 グローバル憲法は ~/.claude/CLAUDE.md を参照（そちらにも下記ルールあり）。
 
+## 止まらない改善ループ（憲法・2026-10-29・たまごさん「自動でどんどん良くなる。止まってるのはありえない」「俺が喜ぶ・お客さんが喜ぶ・便利・軽い、と気を利かせて」）
+- **測る→選ぶ→直す→確かめる→学ぶ→止まり検知→案出し→効き目→週報を、心臓が勝手に回す。** 毎時本番を採点（関連4つ以上・コピー・メモ/出典・死んだ動画・行き止まり・検索・白コマ・速さ・未設定表示・OGP）→ 点の低い順×（X・LINEに出した／マガジンの曲は重く）で1便15〜30分の直しを queue に積む（改善の待ちは常に3本・先頭に出すのは1本だけ＝判定日赤と半々）→ 終わったら採点し直し、2回続けて下がったら自動で戻す（worktree なし・Grok由来と棚のファイルは戻さない）→ 同じ種類の失敗2回で関所を足す便を1回 → 30分どの子も動かない・待ちが空なら理由を見分けて再点火 or Dispatch へ1行 → 毎日①店主②お客さん③便利④軽いで案（誰の・どんな手間が・どれだけ・見込みの数字つき、良い順）。見た目が変わらない案は作って公開、見た目が変わる案は非公開A/B（share/check/kaizen-ab-*.html）止まりで進捗表の確認待ちに「選ぶだけ」→ 型ごとに効いた/変わらず/下がったを数え、4回で25%未満の型はやめる → 日曜朝に「今週、勝手に良くなったこと」3行。
+- 週枠の線・同時2本・Macの負荷は auto_launcher（shuwaku_sen）が守る（ループは積むだけ）。棚・見た目・有料API・Lovableのチャット・ブラウザ・web_fetch は使わない。並行の子の受け持ちは `status/kaizen/heikou.json`（同じ仕事を積まない）。
+- **機械の裏付け：** `tools/kaizen_loop.py --tick`（top_status の相乗り・中で間引く。`--self-test`）。結果 `status/kaizen/score.json`・写し `status/public/kaizen.json`・進捗表の1行「改善ループ」→ `status/public/kaizen.html`。
+
+## 工場の変更は毎日 GitHub の main へ（2026-10-29）
+- 実測：作業場が 10-22 から作業の枝に乗ったままで、自動pushの係（`tools/machine_status_push.sh`）は枝に commit し続け、`push origin main` は古い手元の main を押すだけ、pull は台帳の衝突で毎回やめていた → main が1週間止まった。
+- **機械の裏付け：** `tools/kojo_push_mihari.py`（top_status から1時間に1回。別の枝なら main に戻す・README/CLAUDE.md/AGENTS.md の未記録を commit・3時間以上上がらなければぶつかるファイル名つきで Dispatch へ1行。`--self-test`）。衝突は台帳＝両方残す、確認ページ＝新しい方。
+
 ## SNSに出した曲は、曲ページを5点そろえる（憲法・2026-10-17・たまごさん優先順位1位）
 - **5点：** ①検索（曲名・アーティスト名＋曲名・カタカナ⇔英語）で出る ②関連4本以上（理由の言えるもの）③メモと出典（src）④マガジンに載った曲はマガジンへの入口 ⑤動画が生きている。
 - **機械の裏付け：** `tools/toukou_mimawari.py`（投稿済み曲の見回り・心臓から1日1回）。台帳 `status/public/toukou_daicho.json`＝X（Bufferの控え dashita.jsonl が正本＋x_toukou＋`x_urls`）・YouTube @joy-relief-station（公開RSS＋一覧、曲は再生ページの「使っている曲」）・TikTok（公開埋め込み `tiktok.com/embed/@joyreliefstation`＋動画ページの「使った音」・oEmbed・`tiktok_urls`）。渡されたURL・1本で何曲も扱う告知（`post_song_keys`）は `status/toukou_daicho_config.json`。点検は joy-relief-station `scripts/patrol/check-posted-songs.mts` → `status/public/toukou_tenken.json`、落ちた曲があれば直す仕事を1日1件積む。**反応（再生数・いいね等）は出して30日以内の投稿を毎日 `status/sns_hannou.json`（写し `status/public/sns_hannou.json`）に記録。取れない数字は書かない。** 有料API・ブラウザなし。`--self-test`。
@@ -12,6 +21,16 @@
 - **機械の裏付け：** joy-relief-station の prebuild `scripts/patrol/check-tana-shitei.mjs`（台帳の kijun＝10-22時点の棚・shitei＝指定・hazushita＝外した曲のどれにも無いカードが棚にあれば公開が止まる。`--self-test`）。公開前の `tools/koukai_kakunin.py --kanmon` も prebuild を1本ずつ走らせるので同じ関所を通る。方針の正本 `status/shiire_houshin/README.md`。
 - **【10-22 追加】名指しは「その日」の言葉だけ有効（たまごさん「棚に置くのは本当に慎重にしたい。これからも慎重にいきたい」）。** 前日以前の言葉（判定日赤の積み直し・古いメモ・ChatGPT等のリサーチ結果）を根拠に棚を動かさない。今ある棚の中身は外さない・足さない。**機械の裏付け：** 発車の頭 `tools/tana_sekisho.py`（`auto_launcher.launch_one` から。棚を変える票は `tanaMeishi:{hi:今日,kyoku,tana,kotoba}` が無ければ hold。`--horyu`／`--ichiran`／`--self-test`）と、joy-relief-station `check-tana-shitei.mjs`（10-22以降の shitei は `said`＝言われた日が `date` と同じでないと公開が止まる）。保留の一覧 `share/check/tana-horyu.html`（進捗表から1クリック）。
 - 10-21：仕入れの5曲（wave to earth「bad」／ADOY「Lemon」／POLYCAT「เวลาเธอยิ้ม」／YONLAPA「Let Me Go」／Reality Club「Telenovia」）をアジアの風の棚から外した（曲ページ・関連・検索・裏タグは残す）。Labäda Bu「달리기」はたまごさん指定で残す。過去に指定なしで棚に入った分の一覧は `status/tana_shiire_kako.json`（外すかはたまごさんの判断待ち・数えただけ）。
+
+## マガジン曲点検：マガジン・特集で取り上げた曲は全部、正しい曲ページ・関連4つ・コピーとメモ・生きた動画（2026-10-29 たまごさん）
+- **たまごさん「マガジン周りの曲のリンクがちゃんと繋がっているか、マガジンで取り上げた曲のページにお勧めが4つ出ているか、どんどん精度を高めて」。**
+- 1曲ずつ：①リンク先が正しい曲の独立ページ（行き止まり・別の曲・未リンクはゼロ）②曲ページの「関連」の列（bridgeRelated・カードB）に生きている曲が4つ以上 ③コピー（ボンジョビおじさん構文・水道水禁止）とメモ（出典 src つき。src が無いと出典の関所で隠れる）④動画が生きている（消えたら hikkomi で引っ込め・差し替え）。棚には触らない。
+- **機械の裏付け：** 公開の関所＝joy-relief-station の prebuild `scripts/patrol/check-magazine-songs.mjs`（落ちたら公開が止まる・`--self-test`）。毎日の見張り＝`tools/magazine/magazine_gate.py --daily`（特集 /feature/* も本番HTMLから点検・取り違えの確認済みは `tools/magazine/magazine_gate_kakunin.json`・動画は oEmbed で確かめ `status/hikkomi/magazine_videos.json` を通して `tools/hikkomi.py` が毎日見回る・前回合格の曲が落ちたら Dispatch へ【後退】1行・直す便を積む）。特集の動画枠（VideoStage）は hikkomi に入った動画を枠ごと出さない。
+
+## 新しいテーブルは GRANT とセット（2026-10-29・Supabase の仕様変更）
+- Supabase 公式告知（changelog 45329）：**2026-10-30 以降に作ったテーブルは明示的に GRANT しないと Data API／GraphQL から読めない**（既存はそのまま）。新しいテーブルは同じSQLに `enable row level security`＋`grant select on <名前> to anon, authenticated`（画面から読む時）＋`grant all on <名前> to service_role` を入れる。型は joy-relief-station `docs/supabase-new-table.sql`。
+- **テーブルを作る道と関所：** ①joy-relief-station の migration（Lovable・手書き）→ prebuild `scripts/patrol/check-table-grant.mjs`（20261029000000 以降のファイルで GRANT の無い CREATE TABLE/VIEW があれば公開が止まる）②工場から直接流すSQL（query_database：2210_tanaire.DB／houou_sql／admin_login_mimawari）→ `kohyou_osu.Lovable._rpc` の頭で `tools/db_grant_kanmon.py` の `kensa()` が止める ③Supabase コネクタ（apply_migration 等）は工場では使っていない。
+- **毎日の見張り：** `tools/db_grant_kanmon.py --mimawari --daily`（top_status の相乗り）。カタログ（Lovable の鍵が生きている日）∪ main の migration・`.from()` の全テーブルを Data API（公開鍵・GET limit=0＝行は読まない）で確かめ、前は読めたのに読めない／画面が読む新しいテーブルが GRANT 無し、なら Dispatch へ1行。結果 `status/public/db_grant_mimawari.json`、基準 `status/db_grant/kijun.json`。`--self-test`。
 
 ## ごきげんの種（今週のごきげん一粒・LINE 週1回）（2026-10-21 たまごさん決定）
 - **目的はリスト取り。まずLINEだけ。** 毎週金曜20時、友だち全員へ1粒（案A＝一言だけ・3秒）：本当にいい曲1つ＋事実1行（へぇ）＋卵コンシェルジュの一言＋曲ページのリンク。導線は X＝毎日たくさん／LINE＝週に1粒。
