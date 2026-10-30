@@ -604,6 +604,10 @@ if __name__ == "__main__":
     #   作業場が別の枝に乗ったまま・衝突で pull をやめ続ける・README/CLAUDE.md が記録されない、で main が1週間止まった件（tools/kojo_push_mihari.py）
     _okosu("kojo_push_mihari.py", "--tick")
 
+    # 2026-10-31 Suno MCP（ベータ）のサインイン見張り。つながるまで承認URLを出し続け、押されたら残高確認まで自動で続ける。
+    #   つながって確認が済めば何もしない（tools/suno_mcp.py・結果 status/suno_mcp/jotai.json）
+    _okosu("suno_mcp.py", "--tick")
+
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:
