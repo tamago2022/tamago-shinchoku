@@ -7,7 +7,7 @@
   サインインは Suno の OAuth（APIキーなし）。曲を作るとSunoのクレジットを使う。
 
 この係がやること（Mac の上で。ブラウザは開かせない＝BROWSER と open を握りつぶす）：
-  --signin  : `claude mcp login suno` を端末付きで回し、出てきた承認URLを status/suno_mcp/jotai.json に書く。
+  --signin  : （予備・負荷の軽い日用）`claude mcp login suno` を端末付きで回し、出てきた承認URLを status/suno_mcp/jotai.json に書く。
               たまごさんが押すまで待つ。期限切れで終わったら新しいURLを出し直す（最長 SIGNIN_HOURS 時間）。
               つながったら続けて --kakunin を走らせて終わる。二重に立たない（ロック）。
   --kakunin : つながったか（claude mcp get suno）を見て、claude -p に「読むだけの道具」で
@@ -98,7 +98,7 @@ def tsunagatta():
     """claude mcp get suno の Status で判定（✓ Connected なら True）。"""
     try:
         p = subprocess.run([CLAUDE, "mcp", "get", NAME], capture_output=True, text=True,
-                           timeout=60, cwd=REPO)
+                           timeout=900, cwd=REPO)  # 10-31 実測：負荷で claude の起動に6分半
         out = (p.stdout or "") + (p.stderr or "")
     except Exception as e:
         return None, "mcp get 失敗 %r" % (e,)
@@ -262,7 +262,7 @@ def hook(yurusu):
 def _claude_p(prompt, yurusu, allowed):
     return subprocess.run([CLAUDE, "-p", prompt, "--output-format", "text",
                            "--settings", _hook_settings(yurusu), "--allowedTools", allowed],
-                          capture_output=True, text=True, timeout=170, cwd=REPO)
+                          capture_output=True, text=True, timeout=1500, cwd=REPO)
 
 
 def kakunin():
@@ -303,17 +303,36 @@ def kakunin():
 
 
 def tick():
-    """心臓の相乗り：つながっていなくて係もいなければ、--signin を切り離して起こす。"""
+    """心臓の相乗り：つながって確認済みなら何もしない。そうでなければ suno_oauth.py --signin を切り離して起こす。
+    （10-31 公式の `claude mcp login` は負荷で承認URLを出せなかったため、承認は工場の Python で回す）"""
     d = yomu()
     if d.get("jotai") == "つながった" and d.get("kakunin"):
         return 0
-    if os.path.exists(LOCK):
+    # 公式の login が承認URLを出したあと終わった（＝押された／期限切れ）のに、古い係が残っていたら入れ替える
+    sl = d.get("saigo_login") or {}
+    if d.get("url_deta") and sl.get("at", "") > d["url_deta"] and os.path.exists(LOCK):
         try:
-            os.kill(int(io.open(LOCK).read().split()[0]), 0)
+            os.kill(int(io.open(LOCK).read().split()[0]), signal.SIGTERM)
+        except Exception:
+            pass
+        try:
+            os.remove(LOCK)
+        except Exception:
+            pass
+        kaku(url="", url_deta="", jotai="承認URLの後始末（つながったか確かめる）")
+        subprocess.Popen([sys.executable, os.path.abspath(__file__), "--signin"],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         cwd=REPO, start_new_session=True)
+        return 0
+    for lk in (LOCK, os.path.join(ST, "oauth.lock")):  # 公式の login が走っている間は二重に出さない
+        if not os.path.exists(lk):
+            continue
+        try:
+            os.kill(int(io.open(lk).read().split()[0]), 0)
             return 0
         except Exception:
             pass
-    subprocess.Popen([sys.executable, os.path.abspath(__file__), "--signin"],
+    subprocess.Popen([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "suno_oauth.py"), "--signin"],
                      stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                      cwd=REPO, start_new_session=True)
     return 0
