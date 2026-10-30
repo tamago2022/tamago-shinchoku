@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-10-29T09:10:23+09:00",
+ "checkedAt": "2026-10-30T09:10:49+09:00",
  "overallColor": "red",
- "redCount": 4,
+ "redCount": 5,
  "items": [
   {
    "key": "ctx_1m",
@@ -22,9 +22,9 @@
   {
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
-   "color": "green",
+   "color": "red",
    "count": 1,
-   "detail": "最終記録から約8.9時間経過（2026-10-29T00:17:49+09:00）／直近24時間の完了8件中、鬼監督の記録が付いているのは7件"
+   "detail": "最終記録から約32.9時間経過（2026-10-29T00:17:49+09:00）／直近24時間に完了した仕事なし（カバー率は計測できず）（24時間ルールに抵触）"
   },
   {
    "key": "done_missing_url",
@@ -38,21 +38,21 @@
    "label": "工場が止まったまま放置されていないか",
    "color": "red",
    "count": 5007,
-   "detail": "最終発車から14.0時間・発車待ち5007件・空き1枠あり"
+   "detail": "最終発車から38.0時間・発車待ち5007件・空き1枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回202178番 → 今回204008番（減少なし）"
+   "detail": "前回204008番 → 今回204008番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
-   "count": 69,
-   "detail": "share/done/index.html(34.5MB)、status/public/dispatch_outbox.jsonl(24.8MB)、status/public/done_archive.json.gz(11.9MB)、share/zunda/28f2b09c.mp3(11.7MB)、share/zunda/5fde44ee.mp3(11.4MB)"
+   "count": 71,
+   "detail": "status/public/verify_log.jsonl(49.4MB)、share/done/index.html(35.0MB)、status/public/dispatch_outbox.jsonl(24.9MB)、status/public/done_archive.json.gz(12.1MB)、share/zunda/28f2b09c.mp3(11.7MB)"
   },
   {
    "key": "check_page_404",
@@ -80,14 +80,18 @@
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 51644,
-   "detail": "未報告の完了が51644件たまっている（最古は約843.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 51673,
+   "detail": "未報告の完了が51673件たまっている（最古は約867.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
    "key": "ctx_1m",
    "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
+   "key": "oni_kantoku_alive",
+   "skipped": "既存の684番と同じ内容のためスキップ"
   },
   {
    "key": "factory_stalled",
