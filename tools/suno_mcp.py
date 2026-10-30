@@ -172,6 +172,12 @@ def login_ikkai(cap):
                 dispatch("Suno のサインイン（押すだけ）：%s" % url)
             elif u != url_kouho:
                 url_kouho, url_at = u, t
+        # 30分たってもURLが出ない（claude の起動だけで6分半かかった日がある）（実測 10-31 05:10〜05:49：負荷で claude が何も出さず固まった）→ 打ち切って出し直す
+        if not url and t - t0 > 1800:
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except Exception:
+                pass
         try:
             wp, _ = os.waitpid(pid, os.WNOHANG)
         except ChildProcessError:
@@ -217,12 +223,13 @@ def signin():
         kaku(jotai="期限切れ（%d時間押されず）" % SIGNIN_HOURS, url="")
         return 1
     finally:
-        for p in (LOCK, SCREEN, os.path.join(ST, "open_capture.txt")):
+        for p in (LOCK, SCREEN, os.path.join(ST, "open_capture.txt"), os.path.join(ST, "mi07.txt")):
             try:
                 os.remove(p)
             except Exception:
                 pass
         shutil.rmtree(SHIM, ignore_errors=True)
+        shutil.rmtree(os.path.join(ST, "shindan"), ignore_errors=True)
 
 
 KAKUNIN_PROMPT = """Suno MCP（mcp__suno__* の道具）で、読むだけの確認をしてください。曲・音声は絶対に作らないでください。
@@ -233,42 +240,65 @@ KAKUNIN_PROMPT = """Suno MCP（mcp__suno__* の道具）で、読むだけの確
 SUNO_KAKUNIN {"tools":[...],"plan":"...","credits":数字かnull,"per_song":"文言か不明","source":"どの道具の返り値か"}"""
 
 
+def _hook_settings(yurusu):
+    """PreToolUse の関所：mcp__suno__ の道具は yurusu に入っているものだけ通す（作る道具は必ず止まる）。"""
+    cmd = "%s %s --hook %s" % (sys.executable, os.path.abspath(__file__), ",".join(yurusu) or "-")
+    return json.dumps({"hooks": {"PreToolUse": [{"matcher": "mcp__suno__.*",
+                                                  "hooks": [{"type": "command", "command": cmd}]}]}})
+
+
+def hook(yurusu):
+    try:
+        d = json.load(sys.stdin)
+    except Exception:
+        d = {}
+    nm = d.get("tool_name", "")
+    if nm.startswith("mcp__suno__") and nm not in yurusu.split(","):
+        sys.stderr.write("Suno の作る道具は止めています（たまごさんのOK待ち）: %s\n" % nm)
+        return 2
+    return 0
+
+
+def _claude_p(prompt, yurusu, allowed):
+    return subprocess.run([CLAUDE, "-p", prompt, "--output-format", "text",
+                           "--settings", _hook_settings(yurusu), "--allowedTools", allowed],
+                          capture_output=True, text=True, timeout=170, cwd=REPO)
+
+
 def kakunin():
     ok, st = tsunagatta()
     if not ok:
         kaku(kakunin={"at": now(), "kekka": "まだつながっていない", "status": st})
         return 1
-    # 作る系を通さないため、読むだけの道具名だけ許す。まず道具名を知る（道具は全部拒否で1回）
-    env = dict(os.environ)
+    kekka = {"at": now()}
     try:
-        p = subprocess.run([CLAUDE, "-p", "使える mcp__suno__ で始まる道具の名前だけを、1行1つで書いて。道具は呼ばないで。",
-                            "--output-format", "text", "--disallowedTools", "mcp__suno"],
-                           capture_output=True, text=True, timeout=170, cwd=REPO, env=env)
+        # 1回目：道具は1つも通さない（関所が全部止める）。名前だけ書かせる
+        p = _claude_p("使える mcp__suno__ で始まる道具の名前を全部、1行1つで書いて。道具は呼ばないで。", [], "Read")
         names = sorted(set(re.findall(r"mcp__suno__[A-Za-z0-9_\-]+", p.stdout or "")))
     except Exception as e:
         names = []
-        kaku(kakunin={"at": now(), "kekka": "道具名の取得に失敗 %r" % (e,)})
-    yomu_dake = [n for n in names if re.search(r"credit|balance|plan|account|profile|me$|whoami|usage|billing|limit|info", n, re.I)
-                 and not re.search(r"create|generate|make|song|cover|extend|remix|mashup|upload|speech|write|add|delete", n, re.I)]
-    kekka = {"at": now(), "tools": names, "yurushita": yomu_dake}
+        kekka["err"] = "道具名の取得に失敗 %r" % (e,)
+    yomu_dake = [n for n in names if re.search(r"credit|balance|plan|account|profile|whoami|usage|billing|limit|me$", n, re.I)
+                 and not re.search(r"create|generate|make|cover|extend|remix|mashup|upload|speech|write|add|delete|playlist", n, re.I)]
+    kekka.update(tools=names, yurushita=yomu_dake)
     if yomu_dake:
         try:
-            p = subprocess.run([CLAUDE, "-p", KAKUNIN_PROMPT, "--output-format", "text",
-                                "--allowedTools", ",".join(yomu_dake),
-                                "--disallowedTools", ",".join(n for n in names if n not in yomu_dake) or "Bash"],
-                               capture_output=True, text=True, timeout=170, cwd=REPO, env=env)
+            p = _claude_p(KAKUNIN_PROMPT, yomu_dake, ",".join(yomu_dake))
             out = p.stdout or ""
             m = re.search(r"SUNO_KAKUNIN\s*(\{.*\})", out)
-            kekka["kotae"] = json.loads(m.group(1)) if m else None
+            try:
+                kekka["kotae"] = json.loads(m.group(1)) if m else None
+            except Exception:
+                kekka["kotae"] = None
             kekka["text"] = out[-1500:]
         except Exception as e:
             kekka["err"] = repr(e)
-    else:
+    elif names:
         kekka["err"] = "残高を見る道具が名前で見分けられなかった（作る道具を呼ばないため止めた）"
     kaku(kakunin=kekka)
     k = kekka.get("kotae") or {}
-    dispatch("Suno MCP 確認：プラン %s／残り %s クレジット／1曲 %s" % (
-        k.get("plan", "?"), k.get("credits", "?"), k.get("per_song", "不明")))
+    dispatch("Suno MCP 確認：プラン %s／残り %s クレジット／1曲 %s（道具 %d 本）" % (
+        k.get("plan", "?"), k.get("credits", "?"), k.get("per_song", "不明"), len(names)))
     return 0
 
 
@@ -297,10 +327,20 @@ def self_test():
     ok &= u.startswith("https://studio-api-prod.suno.com/") and "client_id=abc" in u and u.endswith("callback")
     ok &= hirou_url("no url here") == ""
     ok &= strip_ansi("\x1b[32mhi\x1b[0m") == "hi"
+    import contextlib
+    for nm, yur, want in (("mcp__suno__create_song", "mcp__suno__get_credits", 2),
+                          ("mcp__suno__get_credits", "mcp__suno__get_credits", 0),
+                          ("mcp__suno__generate", "-", 2), ("Read", "-", 0)):
+        sys.stdin = io.StringIO(json.dumps({"tool_name": nm}))
+        with contextlib.redirect_stderr(io.StringIO()):
+            ok &= hook(yur) == want
+    sys.stdin = sys.__stdin__
     print("SELFTEST", "PASS" if ok else "FAIL")
     return 0 if ok else 1
 
 
 if __name__ == "__main__":
     a = sys.argv[1] if len(sys.argv) > 1 else "--tick"
+    if a == "--hook":
+        sys.exit(hook(sys.argv[2] if len(sys.argv) > 2 else "-"))
     sys.exit({"--signin": signin, "--kakunin": kakunin, "--tick": tick, "--self-test": self_test}.get(a, tick)())
