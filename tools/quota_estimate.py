@@ -105,6 +105,21 @@ def real_usage(now):
             "windowStart": window_start, "fhAtWindowStart": fh_at_start}
 
 
+def latest_app_sample(since):
+    """今週（since 以降）のアプリ記録の最新1件 {t, sd}。無ければ None（古さは問わない＝目盛り用）。"""
+    try:
+        d = json.load(open(PLAN_USAGE, encoding="utf-8"))
+    except Exception:
+        return None
+    best = None
+    for s in d.get("samples") or []:
+        t = (s.get("t") or 0) / 1000.0
+        sd = (s.get("u") or {}).get("sd")
+        if t >= since and isinstance(sd, (int, float)) and (best is None or t > best["t"]):
+            best = {"t": t, "sd": float(sd)}
+    return best
+
+
 def last_reset(now=None):
     now = now or time.time()
     lt = time.localtime(now)
@@ -246,6 +261,15 @@ def main():
                "source": "plan-usage-history.json", "asOf": real["asOf"], "ageMin": real["ageMin"]}
     else:
         anchor = load(ANCHOR, {})
+        # 2026-11-01：アプリの本物の記録（plan-usage-history.json）が60分より古くても、今週の中で
+        #   手書きのアンカーより新しいなら、そちらを目盛りに使う。
+        #   実測：10/30 13:10 のアプリ記録は sd=25 なのに、10/31 23:32 に指示文の言い回しから入れた
+        #   アンカー 84% だけで推定し続け、「84%使用」と出して発車を止めていた（たまごさんの画面は25%）。
+        _app = latest_app_sample(since)
+        if _app and _app["t"] > (ts_epoch(anchor.get("t", "")) or 0) and _app["t"] <= now:
+            anchor = {"t": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(_app["t"])),
+                      "fablePct": float(anchor.get("fablePct") or 0.0), "allPct": _app["sd"],
+                      "src": "plan-usage-history.json（Claudeアプリの記録）"}
         est = {"method": "推定（実測ファイルが読めないためフォールバック：会話ログのトークン量×アンカー実測で目盛り合わせ）", "anchor": anchor}
         a_t = ts_epoch(anchor.get("t", "")) if anchor else None
         if a_t and a_t >= since:
