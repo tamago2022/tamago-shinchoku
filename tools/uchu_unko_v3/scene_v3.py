@@ -101,9 +101,9 @@ def V(a): return Vector(a)
 # =====================================================================
 stage("unko")
 parts = []
-for c, r in (((0, 0, 0.215), (0.56, 0.54, 0.235)), ((0.0, 0, 0.495), (0.43, 0.42, 0.19)), ((0.01, 0, 0.735), (0.30, 0.30, 0.16))):
+for c, r in (((0, 0, 0.225), (0.56, 0.54, 0.25)), ((0.0, 0, 0.50), (0.44, 0.43, 0.215)), ((0.01, 0, 0.735), (0.31, 0.31, 0.18))):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=1, location=c); o = bpy.context.object; o.scale = r; parts.append(o)
-for c, r in (((0.03, 0, 0.85), 0.155), ((0.085, 0, 0.94), 0.11), ((0.15, 0, 1.005), 0.078), ((0.21, 0, 1.05), 0.05), ((0.255, 0, 1.075), 0.03)):
+for c, r in (((0.03, 0, 0.85), 0.165), ((0.075, 0, 0.93), 0.125), ((0.13, 0, 0.995), 0.09), ((0.185, 0, 1.04), 0.065), ((0.235, 0, 1.07), 0.045), ((0.27, 0, 1.085), 0.03)):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=r, location=c); parts.append(bpy.context.object)
 bpy.ops.object.select_all(action='DESELECT')
 for o in parts: o.select_set(True)
@@ -113,7 +113,7 @@ for v in unko.data.vertices:          # 底を平らに（板の上にぺたっ�
     if v.co.z < 0.05: v.co.z = 0.05
 rm = unko.modifiers.new("r", 'REMESH'); rm.mode = 'VOXEL'; rm.voxel_size = 0.011
 bpy.ops.object.modifier_apply(modifier="r")
-sm = unko.modifiers.new("s", 'SMOOTH'); sm.iterations = 6; sm.factor = 0.6
+sm = unko.modifiers.new("s", 'SMOOTH'); sm.iterations = 14; sm.factor = 0.6
 bpy.ops.object.modifier_apply(modifier="s")
 zmin = min(v.co.z for v in unko.data.vertices)
 for v in unko.data.vertices: v.co.z -= zmin
@@ -121,6 +121,9 @@ hgt = max(v.co.z for v in unko.data.vertices)
 S0 = H_UNKO / hgt
 for v in unko.data.vertices: v.co *= S0
 bpy.ops.object.shade_smooth()
+import bmesh
+bm_ = bmesh.new(); bm_.from_mesh(unko.data)
+print("UNKO_MESH verts", len(bm_.verts), "non_manifold_edges", sum(1 for e in bm_.edges if not e.is_manifold), "loose_parts_check", flush=True); bm_.free()
 # 段の境目（くびれ）を、半径の一番細いところで決める
 bins = {}
 for v in unko.data.vertices:
@@ -158,8 +161,8 @@ def gummy(name, img):
     link(nt, bright.outputs[0], I(p, "Base Color"))
     try: link(nt, hsv.outputs[0], I(p, "Subsurface Color"))
     except Exception: pass
-    pin(p, "Subsurface Weight", 0.12); pin(p, "Subsurface Radius", (1.0, 0.6, 0.85))
-    pin(p, "Roughness", 0.13); pin(p, "Coat Weight", 1.0); pin(p, "Coat Roughness", 0.03); pin(p, "Specular IOR Level", 0.7)
+    pin(p, "Subsurface Weight", 0.16); pin(p, "Subsurface Radius", (1.0, 0.6, 0.85))
+    pin(p, "Roughness", 0.1); pin(p, "Coat Weight", 1.0); pin(p, "Coat Roughness", 0.03); pin(p, "Specular IOR Level", 0.7)
     pin(p, "Transmission Weight", 0.07); pin(p, "IOR", 1.42)
     # 中の小さな星（ちらちら光る）
     tc = node(nt, "ShaderNodeTexCoord"); vor = node(nt, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 38
@@ -182,12 +185,12 @@ def key(name, fn):
     for i, v in enumerate(me.vertices): kb.data[i].co = fn(v.co.copy())
     return kb
 def tsubure(c):
-    h = c.z / H_UNKO; bul = 1 + 0.10 * math.sin(math.pi * min(1, h * 1.6))
-    k = 1.27 * bul; return V((c.x * k, c.y * k, c.z * 0.62))
-def nobi(c): return V((c.x * 0.9, c.y * 0.9, c.z * 1.22))
+    h = c.z / H_UNKO
+    k = 1.118 * (1 + 0.06 * math.sin(math.pi * min(1, h * 1.6))); return V((c.x * k, c.y * k, c.z * 0.80))
+def nobi(c): return V((c.x * 0.945, c.y * 0.945, c.z * 1.12))
 def yure(axis):
     def f(c):
-        h = c.z / H_UNKO; d = 0.42 * H_UNKO * h * h
+        h = c.z / H_UNKO; d = 0.30 * H_UNKO * h * h
         return V((c.x + d, c.y, c.z)) if axis == 0 else V((c.x, c.y + d, c.z))
     return f
 KB = {"tsubure": key("tsubure", tsubure), "nobi": key("nobi", nobi), "yureX": key("yureX", yure(0)), "yureY": key("yureY", yure(1))}
@@ -198,7 +201,7 @@ for f, fr in enumerate(FRM, start=1):
     unko.location = fr["u"]; unko.keyframe_insert("location", frame=f)
     unko.rotation_euler = fr["rot"]; unko.keyframe_insert("rotation_euler", frame=f)
     s = fr["sq"]; yaw = fr["rot"][2]
-    KB["tsubure"].value = max(0.0, s) / 0.38; KB["nobi"].value = max(0.0, -s) / 0.22
+    KB["tsubure"].value = max(0.0, s) / 0.20; KB["nobi"].value = max(0.0, -s) / 0.12
     lx = (fr["wx"] * math.cos(yaw) + fr["wy"] * math.sin(yaw)) / 0.35
     ly = (-fr["wx"] * math.sin(yaw) + fr["wy"] * math.cos(yaw)) / 0.35
     KB["yureX"].value = max(-1, min(1, lx)); KB["yureY"].value = max(-1, min(1, ly))
@@ -501,106 +504,100 @@ def leaf_cards(name, base, n, img, size, outward, droop=0.0, seed=0):
 # =====================================================================
 # 舞台A：森の滝（段々の岩に置かれた鉄琴を、滝の前で下っていく）
 # =====================================================================
+def ring_mesh(name, cen, r_of, phi0, phi1, z0, z1, nphi, nz, mat, inward=True):
+    """円筒の一部の面（φ0→φ1、z0→z1）。r_of(φ, v) で半径を決める（v=0 下〜1 上）"""
+    verts = []; faces = []; uvs = []
+    for j in range(nz + 1):
+        v = j / nz; z = z0 + (z1 - z0) * v
+        for i in range(nphi + 1):
+            u = i / nphi; ph = phi0 + (phi1 - phi0) * u; r = r_of(ph, v)
+            verts.append((cen[0] + r * math.cos(ph), cen[1] + r * math.sin(ph), z)); uvs.append((u, v))
+    for j in range(nz):
+        for i in range(nphi):
+            a_ = j * (nphi + 1) + i
+            faces.append((a_, a_ + nphi + 1, a_ + nphi + 2, a_ + 1) if inward else (a_, a_ + 1, a_ + nphi + 2, a_ + nphi + 1))
+    o = obj_from_mesh(name, verts, faces, mat)
+    uvl_ = o.data.uv_layers.new(name="UV")
+    for li, lp in enumerate(o.data.loops): uvl_.data[li].uv = uvs[lp.vertex_index]
+    return o
+
 def build_mori_no_taki():
-    A = SC["A"]; cx = A["cx"]; zt, zb = A["ztop"], A["zbot"]; ymax = A["ymax"]; ymin = A["ymin"]
-    wl, wr = A["wall_x"]; cy_ = A["curtain_y"]; pz = A["pool_z"]
-    rockA = mat_rock("rockA", moss=0.75, wet=0.7); rockW = mat_rock("rockW", moss=0.25, wet=1.0, dark=0.8)
-    # 滝（奥の大きな滝・その奥のうすい層・右の細い滝）
+    """円い滝つぼ（セノーテ）：まわり全部が岩の壁と滝。上に丸い空。真ん中をらせん階段の鉄琴が下りていく"""
+    A = SC["A"]; cen = A["center"]; RW = A["R_wall"]; zt = A["ztop"]; pz = A["pool_z"]
+    rockA = mat_rock("rockA", moss=0.75, wet=0.7); rockW = mat_rock("rockW", moss=0.35, wet=1.0, dark=0.85)
+    # 壁（内向き・すき間なし・凹凸 ±0.6m）
+    w_ = ring_mesh("kabe", cen, lambda ph, v: RW + 0.7, 0, 2 * math.pi, pz - 2, zt + 9, 260, 170, rockA)
+    t1 = bpy.data.textures.new("kabe1", 'CLOUDS'); t1.noise_scale = 2.0; t1.noise_depth = 4
+    d1 = w_.modifiers.new("d1", 'DISPLACE'); d1.texture = t1; d1.strength = 1.1; d1.mid_level = 0.5; d1.texture_coords = 'GLOBAL'
+    t2 = bpy.data.textures.new("kabe2", 'VORONOI'); t2.noise_scale = 0.8
+    d2 = w_.modifiers.new("d2", 'DISPLACE'); d2.texture = t2; d2.strength = 0.25; d2.mid_level = 0.5; d2.texture_coords = 'GLOBAL'
+    bpy.context.view_layer.objects.active = w_; w_.select_set(True); bpy.ops.object.shade_smooth()
+    # 上の縁の岩（丸い空の輪郭）
+    for k in range(26):
+        ph = 2 * math.pi * k / 26 + rnd.uniform(-0.08, 0.08); rr = RW + rnd.uniform(1.4, 2.2)
+        rock("fuchi%02d" % k, (cen[0] + rr * math.cos(ph), cen[1] + rr * math.sin(ph), zt + 9 + rnd.uniform(-0.6, 0.8)),
+             (rnd.uniform(1.4, 2.4), rnd.uniform(1.4, 2.4), rnd.uniform(0.9, 1.6)), rockA, ph, 0.45, 4)
+    # 滝：大きな滝1本＋細い滝5本（どの角度を向いても滝が見える）
     wA = mat_water("waterA", (0.88, 0.96, 1.0), 4.5, 1.15, 0.75)
-    curtain("takiA_main", wl - 0.5, wr + 0.5, cy_, zt + 3, pz - 0.5, wA, 1.2)
     wA2 = mat_water("waterA2", (0.70, 0.86, 0.92), 3.0, 0.6, 0.45)
-    curtain("takiA_back", wl - 2.5, wr + 2.5, cy_ + 0.8, zt + 3, pz - 0.5, wA2, 0.8)
-    curtain("takiA_side", wr + 0.6, wr + 1.6, cy_ - 1.2, zt - 1, pz - 0.5, wA, 0.15, 10, 0.3)
-    # 滝の上の縁（白く盛り上がって落ち始める水）
     lip = mat_water("lipA", (1.0, 1.0, 1.0), 1.5, 1.3, 0.9)
-    curtain("taki_fuchi", wl - 0.5, wr + 0.5, cy_ - 0.75, zt + 3.3, zt + 2.2, lip, 1.2, 48, 0.2)
-    # 谷の壁（左右と手前）：すき間のない岩の壁。カメラの通り道から 0.8m 以上はなす（凹凸は ±0.6m）
-    fy = A["front_y"]
-    def wall(name, o, ua, va, su, sv, nrm, mat, nu=140, nv=170):
-        verts = []; faces = []
-        for j in range(nv + 1):
-            for i in range(nu + 1):
-                pnt = V(o) + V(ua) * (su * (i / nu - 0.5)) + V(va) * (sv * (j / nv - 0.5)); verts.append(tuple(pnt))
-        for j in range(nv):
-            for i in range(nu):
-                a_ = j * (nu + 1) + i; faces.append((a_, a_ + 1, a_ + nu + 2, a_ + nu + 1))
-        w_ = obj_from_mesh(name, verts, faces, mat)
-        vg = w_.vertex_groups.new(name="all"); vg.add(list(range(len(verts))), 1.0, 'REPLACE')
-        t1 = bpy.data.textures.new(name + "1", 'CLOUDS'); t1.noise_scale = 2.2; t1.noise_depth = 4
-        d1 = w_.modifiers.new("d1", 'DISPLACE'); d1.texture = t1; d1.strength = 1.1; d1.mid_level = 0.5; d1.texture_coords = 'GLOBAL'; d1.direction = 'CUSTOM_NORMAL' if False else 'NORMAL'
-        t2 = bpy.data.textures.new(name + "2", 'VORONOI'); t2.noise_scale = 0.9
-        d2 = w_.modifiers.new("d2", 'DISPLACE'); d2.texture = t2; d2.strength = 0.25; d2.mid_level = 0.5; d2.texture_coords = 'GLOBAL'
-        bpy.context.view_layer.objects.active = w_; w_.select_set(True); bpy.ops.object.shade_smooth()
-        # 面の向き（谷の内側を向く）
-        if (V(ua).cross(V(va))).dot(V(nrm)) < 0:
-            bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.mesh.flip_normals(); bpy.ops.object.mode_set(mode='OBJECT')
-        return w_
-    zc, zh = (zt + 8 + pz - 2) / 2, (zt + 8) - (pz - 2)
-    yc, yl = (fy + cy_ + 4) / 2, (cy_ + 4) - fy
-    wall("kabe_L", (wl - 0.7, yc, zc), (0, 1, 0), (0, 0, 1), yl, zh, (1, 0, 0), rockA)
-    wall("kabe_R", (wr + 0.7, yc, zc), (0, 1, 0), (0, 0, 1), yl, zh, (-1, 0, 0), rockA)
-    wall("kabe_mae", ((wl + wr) / 2, fy - 0.7, zc), (1, 0, 0), (0, 0, 1), wr - wl + 4, zh, (0, 1, 0), rockA, 60, 170)
-    box("cliff_back", (cx, cy_ + 3.5, (zt + pz) / 2), (30, 1.5, zt - pz + 14), rockW)
-    # 上の縁から張り出す岩（空との境目の形）
-    for k in range(18):
-        sgn = rnd.choice((-1, 1)); xw = wl - 1.6 if sgn < 0 else wr + 1.6
-        rock("fuchi%02d" % k, (xw, rnd.uniform(fy, cy_ + 1), zt + 8 + rnd.uniform(-1, 1)), (rnd.uniform(1.5, 2.6), rnd.uniform(1.5, 2.5), rnd.uniform(1.0, 1.8)), rockA, rnd.uniform(0, 6.28), 0.45, 4)
-    # 左右と手前の壁を流れ落ちる細い滝（どちらを向いても滝が見える）
-    wS = mat_water("waterS", (0.86, 0.95, 1.0), 4.0, 0.9, 0.7)
-    for k, (xx, yy, wd) in enumerate(((wl - 0.15, ymin + 2.0, 2.2), (wl - 0.15, ymin + 11.0, 1.4), (wr + 0.15, ymin + 5.5, 2.6), (wr + 0.15, ymin + 14.0, 1.6))):
-        verts = []; faces = []; NZ = 40; NS = 12
-        for j in range(NZ + 1):
-            z = zt + 7.5 + (pz - zt - 7.5) * j / NZ
-            for i in range(NS + 1):
-                u = i / NS; verts.append((xx + (0.25 if xx < cx else -0.25) * (1 - j / NZ) ** 8, yy + (u - 0.5) * wd, z))
-        for j in range(NZ):
-            for i in range(NS):
-                a_ = j * (NS + 1) + i; faces.append((a_, a_ + 1, a_ + NS + 2, a_ + NS + 1))
-        obj_from_mesh("taki_yoko%d" % k, verts, faces, wS)
-    for k, (xx, wd) in enumerate((((wl + wr) / 2 - 2.2, 1.8), ((wl + wr) / 2 + 2.6, 2.4))):
-        curtain("taki_mae%d" % k, xx - wd / 2, xx + wd / 2, fy - 0.15, zt + 7.5, pz - 0.5, wS, -0.05, 10, -0.25)
-    # 滝つぼ（水面・泡・しぶき・霧）
+    FALLS = [(math.radians(90), math.radians(62)), (math.radians(200), math.radians(16)), (math.radians(250), math.radians(10)),
+             (math.radians(310), math.radians(22)), (math.radians(15), math.radians(12)), (math.radians(150), math.radians(9))]
+    for k, (ph0, wd) in enumerate(FALLS):
+        lipf = lambda ph, v: RW - 0.1 - 0.35 * v ** 8
+        ring_mesh("taki%d" % k, cen, lipf, ph0 - wd / 2, ph0 + wd / 2, pz - 0.5, zt + 8.5, max(8, int(wd * 60)), 50, wA)
+        if k == 0:
+            ring_mesh("taki_oku", cen, lambda ph, v: RW + 0.25, ph0 - wd / 2 - 0.05, ph0 + wd / 2 + 0.05, pz - 0.5, zt + 8.5, 50, 40, wA2)
+        ring_mesh("fuchi_mizu%d" % k, cen, lambda ph, v: RW - 0.2 - 0.3 * v, ph0 - wd / 2, ph0 + wd / 2, zt + 7.6, zt + 8.7, max(6, int(wd * 50)), 6, lip)
+    # 板の下の岩（当たり判定の楕円体と同じ大きさ・へこませるだけ）
+    for b in BARS:
+        if b["stage"] != "A": continue
+        p0 = V(b["p"]); L, W = b["L"], b["W"]
+        rock("ledge%02d" % b["i"], p0 + V((0, 0, -0.40)), (L * 0.40, W * 0.70, 0.22), rockA, b["yaw"], 0.10, 4, safe=True)
+    # 滝つぼ（水面・しぶき・霧）
     mw, ntw_, pw_ = newmat("pool"); pin(pw_, "Base Color", (0.015, 0.06, 0.055, 1)); pin(pw_, "Roughness", 0.04)
     tcw = node(ntw_, "ShaderNodeTexCoord"); mpw = node(ntw_, "ShaderNodeMapping"); link(ntw_, tcw.outputs["Object"], I(mpw, "Vector"))
     lw_ = I(mpw, "Location"); lw_.default_value = (0, 0, 0); lw_.keyframe_insert("default_value", frame=1); lw_.default_value = (0, -6, 2); lw_.keyframe_insert("default_value", frame=NF)
     nzw_ = node(ntw_, "ShaderNodeTexNoise"); I(nzw_, "Scale").default_value = 3.5; link(ntw_, mpw.outputs[0], I(nzw_, "Vector"))
     bmw = node(ntw_, "ShaderNodeBump"); I(bmw, "Strength").default_value = 0.25; link(ntw_, O(nzw_, "Fac"), I(bmw, "Height")); link(ntw_, bmw.outputs[0], I(pw_, "Normal"))
     anim_lin(ntw_)
-    bpy.ops.mesh.primitive_plane_add(size=60, location=(cx, cy_ - 10, pz)); bpy.context.object.data.materials.append(mw)
-    foam = mat_water("awa", (1.0, 1.0, 1.0), 0.6, 1.0, 0.85)
+    bpy.ops.mesh.primitive_circle_add(vertices=96, radius=RW + 1.2, fill_type='NGON', location=(cen[0], cen[1], pz)); bpy.context.object.data.materials.append(mw)
     drop = mat_drop("shibuki")
-    spray("shibuki_a", (cx, cy_ - 0.7, pz + 0.05), (wr - wl + 1, 0.8), 900, (-0.6, -2.6, 2.0), (0.6, -0.6, 5.2), 1.1, 0.028, drop, 1)
-    spray("shibuki_b", (cx, cy_ - 1.2, pz + 0.05), (wr - wl + 1, 1.2), 500, (-1.0, -3.2, 1.0), (1.0, -1.2, 3.0), 0.9, 0.05, drop, 2)
-    # 板の岩に流れ落ちる水が当たる細かな粒（滝の前の空中を漂う）
+    for k, (ph0, wd) in enumerate(FALLS):
+        n = max(1, int(wd / math.radians(14)))
+        for j in range(n):
+            ph = ph0 - wd / 2 + wd * (j + 0.5) / n; rr = RW - 0.6
+            loc = (cen[0] + rr * math.cos(ph), cen[1] + rr * math.sin(ph), pz + 0.05)
+            vin = (-math.cos(ph), -math.sin(ph))
+            spray("shibuki%d_%d" % (k, j), loc, (1.6, 1.6), 260, (vin[0] * 0.6 - 0.6, vin[1] * 0.6 - 0.6, 2.0), (vin[0] * 2.6 + 0.6, vin[1] * 2.6 + 0.6, 5.0), 1.1, 0.028, drop, 10 * k + j)
     mote = mat_drop("kiri_tsubu", (1.0, 0.95, 0.85), 1.4, 0.55)
-    spray("tadayou", (cx, (ymin + cy_) / 2, (zt + pz) / 2), (wr - wl + 2, cy_ - ymin + 3), 260, (-0.15, -0.1, -0.05), (0.15, 0.1, 0.15), 6.0, 0.012, mote, 3, 0.0, False)
-    box("kiri_soko", (cx, cy_ - 2.5, pz + 1.6), (wr - wl + 8, 9, 4.0), mat_volume("kiriA_soko", 1.2, (0.92, 0.96, 0.97), 0.3, (0.9, (0.6, 0, 0.9), 0.0, 1.0)))
-    box("kiri_zentai", (cx, (ymin + cy_) / 2, (zt + pz) / 2), (wr - wl + 14, cy_ - ymin + 16, zt - pz + 12),
-        mat_volume("kiriA", 0.03, (0.95, 0.93, 0.82), 0.7))
-    # 光：上の奥から差し込む金色の光（霧に光の筋）、手前から青みの柔らかい光
+    spray("tadayou", (cen[0], cen[1], (zt + pz) / 2), (RW * 1.6, RW * 1.6), 320, (-0.15, -0.15, -0.05), (0.15, 0.15, 0.15), 6.0, 0.012, mote, 3, 0.0, False)
+    bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=4.5, location=(cen[0], cen[1], pz + 1.8)); ks = bpy.context.object; ks.name = "kiri_soko"
+    ks.data.materials.append(mat_volume("kiriA_soko", 1.1, (0.92, 0.96, 0.97), 0.3, (0.9, (0.6, 0, 0.9), 0.0, 1.0)))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=zt - pz + 12, location=(cen[0], cen[1], (zt + pz) / 2 + 2)); kz = bpy.context.object; kz.name = "kiri_zentai"
+    kz.data.materials.append(mat_volume("kiriA", 0.03, (0.95, 0.93, 0.82), 0.7))
+    # 光：上の丸い空から差し込む金色の光（霧に光の筋）、滝の白い照り返し、下からの青い柔らかい光
     ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 10.0; ld.color = (1.0, 0.86, 0.62); ld.angle = math.radians(2.5)
     lo = bpy.data.objects.new("sunA", ld); bpy.context.collection.objects.link(lo)
-    lo.rotation_euler = (math.radians(-38), math.radians(22), math.radians(165))
-    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 480; ld2.size = 8; ld2.color = (0.70, 0.86, 1.0)
+    lo.rotation_euler = (math.radians(-22), math.radians(18), math.radians(160))
+    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 900; ld2.size = 10; ld2.color = (0.70, 0.86, 1.0)
     lo2 = bpy.data.objects.new("fillA", ld2); bpy.context.collection.objects.link(lo2)
-    lo2.location = (cx - 2, ymin - 9, (zt + pz) / 2 + 4); lo2.rotation_euler = (math.radians(70), 0, math.radians(-8))
-    ld3 = bpy.data.lights.new("takiA_glow", 'AREA'); ld3.energy = 400; ld3.size = 10; ld3.color = (0.85, 0.95, 1.0)
+    lo2.location = (cen[0], cen[1], zt + 6); lo2.rotation_euler = (0, 0, 0)
+    ld3 = bpy.data.lights.new("takiA_glow", 'AREA'); ld3.energy = 600; ld3.size = 10; ld3.color = (0.85, 0.95, 1.0)
     lo3 = bpy.data.objects.new("takiA_glow", ld3); bpy.context.collection.objects.link(lo3)
-    lo3.location = (cx, cy_ - 1.0, (zt + pz) / 2); lo3.rotation_euler = (math.radians(90), 0, math.radians(180))
-    # 植物：崖のシダ・垂れる葉・水辺の大きな葉（道の中には置かない）
-    for k in range(80):
-        sgn = rnd.choice((-1, 1)); xw = wl if sgn < 0 else wr
-        base = (xw + sgn * rnd.uniform(0.15, 0.45), rnd.uniform(A["front_y"] + 0.5, cy_ - 0.3), rnd.uniform(pz + 0.5, zt + 6))
+    lo3.location = (cen[0], cen[1] + RW - 1.5, (zt + pz) / 2); lo3.rotation_euler = (math.radians(90), 0, math.radians(180))
+    # 植物：壁のシダ・垂れる葉・水辺の大きな葉（らせんの中には置かない）
+    for k in range(110):
+        ph = rnd.uniform(0, 2 * math.pi); rr = RW + rnd.uniform(0.1, 0.4)
+        base = (cen[0] + rr * math.cos(ph), cen[1] + rr * math.sin(ph), rnd.uniform(pz + 0.5, zt + 8))
         leaf_cards("shida%02d" % k, base, rnd.randint(4, 7), rnd.choice(("shida_a.png", "shida_b.png")), rnd.uniform(0.6, 1.2),
-                   (-sgn, rnd.uniform(-0.3, 0.3), 0), rnd.choice((0.0, 0.0, 0.6, 1.2)), k)
-    for k in range(14):
-        sgn = rnd.choice((-1, 1)); xw = wl if sgn < 0 else wr
-        base = (xw + sgn * rnd.uniform(0.0, 0.4), rnd.uniform(A["front_y"] + 1, cy_ - 2.5), pz + 0.05)
-        leaf_cards("ha%02d" % k, base, rnd.randint(3, 5), "ha_ooki.png", rnd.uniform(0.9, 1.6), (-sgn, -0.4, 0), 0.0, 100 + k)
-    for k in range(18):   # 上から垂れるつる（シダを下向きに）
-        x = rnd.uniform(wl - 0.3, wr + 0.3); base = (x, cy_ - rnd.uniform(0.9, 2.0), zt + rnd.uniform(1.5, 3.5))
-        if wl + 0.8 < x < wr - 0.8 and base[1] < A["ymax"] + 1.2: continue
-        leaf_cards("tsuru%02d" % k, base, 3, "shida_b.png", rnd.uniform(1.2, 2.0), (0, -1, 0), 1.6, 200 + k)
+                   (-math.cos(ph), -math.sin(ph), 0), rnd.choice((0.0, 0.0, 0.6, 1.2)), k)
+    for k in range(16):
+        ph = rnd.uniform(0, 2 * math.pi); rr = RW - 0.2
+        leaf_cards("ha%02d" % k, (cen[0] + rr * math.cos(ph), cen[1] + rr * math.sin(ph), pz + 0.05), rnd.randint(3, 5), "ha_ooki.png", rnd.uniform(0.9, 1.6), (-math.cos(ph), -math.sin(ph), 0), 0.0, 100 + k)
+    for k in range(22):
+        ph = rnd.uniform(0, 2 * math.pi); rr = RW + 0.2
+        leaf_cards("tsuru%02d" % k, (cen[0] + rr * math.cos(ph), cen[1] + rr * math.sin(ph), zt + rnd.uniform(6.5, 8.8)), 3, "shida_b.png", rnd.uniform(1.2, 2.2), (-math.cos(ph), -math.sin(ph), 0), 1.6, 200 + k)
     return [lo, lo2, lo3]
 
 # =====================================================================
@@ -656,7 +653,7 @@ def build_kumo_no_yoru():
     lo3.location = (cx, cy - 12, ct + 8); lo3.rotation_euler = (math.radians(65), 0, 0)
     ld4 = bpy.data.lights.new("yama_sun", 'SUN'); ld4.energy = 1.8; ld4.color = (0.55, 0.62, 0.95); ld4.angle = math.radians(4)
     lo4 = bpy.data.objects.new("yama_sun", ld4); bpy.context.collection.objects.link(lo4)
-    lo4.rotation_euler = (LOGO - V(FRM[-1]["cam"])).normalized().to_track_quat('-Z', 'Y').to_euler()
+    lo4.rotation_euler = (LOGO - V(M["c_close"])).normalized().to_track_quat('-Z', 'Y').to_euler()
     # 星の滝（空から雲海へ落ちる、すみれ色の光の滝）
     wB = mat_water("hoshinotaki", (0.78, 0.64, 1.0), 2.0, 3.2, 0.5)
     curtain("hoshi_taki", PE.x + 34, PE.x + 40, cy + 40, ct + 46, ct - 2, wB, 0.8, 20, 0.0)
@@ -690,8 +687,16 @@ def build_kumo_no_yoru():
         if b["stage"] != "B": continue
         p0 = V(b["p"]); L, W = b["L"], b["W"]
         rock("shima%02d" % b["i"], p0 + V((0, 0, -0.40)), (L * 0.40, W * 0.70, 0.22), shima, b["yaw"], 0.10, 4, safe=True)
-        bpy.ops.mesh.primitive_cone_add(radius1=0.16, radius2=0.01, depth=1.0, location=p0 + V((0, 0, -0.95)))
+        bpy.ops.mesh.primitive_cone_add(radius1=0.15, radius2=0.01, depth=0.5, location=p0 + V((0, 0, -0.75)))
         o = bpy.context.object; o.rotation_euler = (math.pi, 0, 0); o.data.materials.append(shima)
+    # らせん階段の真ん中の岩の塔（苔がうすく光る）
+    tc_ = SC["B"]["center"]; t_top = SC["B"]["tou_top"]; t_bot = ct - 3
+    bpy.ops.mesh.primitive_cone_add(vertices=64, radius1=1.45, radius2=0.75, depth=t_top - t_bot, location=(tc_[0], tc_[1], (t_top + t_bot) / 2))
+    tou = bpy.context.object; tou.name = "tou"
+    bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.subdivide(number_cuts=10); bpy.ops.object.mode_set(mode='OBJECT')
+    tt = bpy.data.textures.new("tou_t", 'CLOUDS'); tt.noise_scale = 0.6; tt.noise_depth = 3
+    dt_ = tou.modifiers.new("d", 'DISPLACE'); dt_.texture = tt; dt_.strength = 0.3; dt_.mid_level = 1.0; dt_.texture_coords = 'GLOBAL'
+    bpy.ops.object.shade_smooth(); tou.data.materials.append(mat_rock("tou_m", moss=0.6, wet=0.3, dark=0.7, glow=(0.3, 0.22, 0.7)))
     # 遠くの山並み（シルエット）と、ロゴの山
     mtn, ntm_, pmt = newmat("yama")
     tcm = node(ntm_, "ShaderNodeTexCoord"); nzm_ = node(ntm_, "ShaderNodeTexNoise"); I(nzm_, "Scale").default_value = 0.08; I(nzm_, "Detail").default_value = 8
@@ -708,13 +713,13 @@ def build_kumo_no_yoru():
         bpy.ops.object.shade_smooth(); o.data.materials.append(mtn); return o
     for k, (dx, dy, r_, h_) in enumerate(((-90, 210, 70, 55), (95, 230, 80, 62), (-30, 300, 90, 70), (160, 180, 60, 40), (-160, 170, 60, 38))):
         yama("toi_yama%d" % k, (PE.x + dx, PE.y + dy, ct - 6), r_, h_, k)
-    ym = yama("logo_yama", (MOUNT.x, MOUNT.y, ct - 6), 75, 70, 9, 7, 0.07)
+    ym = yama("logo_yama", (MOUNT.x, MOUNT.y, ct - 6), 92, 98, 9, 7, 0.06)
     bpy.context.view_layer.update()
     # 壁画：山の斜面に沿わせた網（カメラの終わりの位置から斜面へ光線を当てて、斜面の 0.35m 手前に置く）
     dg = bpy.context.evaluated_depsgraph_get(); ym_eval = ym.evaluated_get(dg)
-    camE = V(FRM[-1]["cam"]); fwd = (LOGO - camE).normalized()
+    camE = V(M["c_close"]); fwd = (LOGO - camE).normalized()
     right = fwd.cross(V((0, 0, 1))).normalized(); up = right.cross(fwd).normalized()
-    WL, HL = 40.0, 40.0 * 2600 / 2048; NX, NY = 64, 80
+    WL, HL = 54.0, 54.0 * 2600 / 2048; NX, NY = 72, 90
     verts = []; uvs = []; faces = []
     inv = ym_eval.matrix_world.inverted()
     for j in range(NY + 1):
@@ -833,10 +838,54 @@ if os.environ.get("UU_SAVE"): bpy.ops.wm.save_as_mainfile(filepath=os.path.join(
 stage("ready")
 os.makedirs(OUT, exist_ok=True)
 if FR == "none": print("DONE build-only", flush=True); sys.exit(0)
+
+def kensa():
+    """Blender の中で、本物の形どうしで当たりを確かめる（うんこの変形後のメッシュ × 板・横木・紐・岩・塔）。
+    1コマを4つに割って、三角形どうしが交わる組があるかを BVH で調べる。着地して板の上にいる間の、その板だけは「接している」ので除く。"""
+    import bmesh
+    from mathutils.bvhtree import BVHTree
+    dg = bpy.context.evaluated_depsgraph_get()
+    names = [o.name for o in bpy.data.objects if o.type == 'MESH' and (o.name.startswith(("bar", "ledge", "shima", "tou")) or o.name.startswith("Cube") or o.name.startswith("Cylinder") or o.name.startswith("Cone"))]
+    names = [n for n in names if n != "unko"]
+    def bvh_of(o):
+        ev = o.evaluated_get(dg); me_ = ev.to_mesh(); bm = bmesh.new(); bm.from_mesh(me_); bm.transform(ev.matrix_world)
+        t = BVHTree.FromBMesh(bm); c = sum((v.co for v in bm.verts), Vector()) / max(1, len(bm.verts)); r = max(((v.co - c).length for v in bm.verts), default=0)
+        bm.free(); ev.to_mesh_clear(); return t, c, r
+    own = {}
+    for b in BARS: own[b["i"]] = {"bar%02d" % b["i"]}
+    bad = []; n_check = 0; t0 = time.time()
+    for f in range(1, NF + 1):
+        for sub in (0.0, 0.25, 0.5, 0.75):
+            sc.frame_set(f, subframe=sub); dg = bpy.context.evaluated_depsgraph_get()
+            fr = FRM[f - 1]; vis = [n for n in names if not bpy.data.objects[n].hide_render]
+            tu, cu, ru = bvh_of(unko)
+            for n in vis:
+                o = bpy.data.objects[n]
+                if (o.matrix_world.translation - cu).length > ru + 6: continue
+                to, co, ro = bvh_of(o)
+                if (co - cu).length > ru + ro: continue
+                n_check += 1
+                if tu.overlap(to):
+                    st = fr["st"]
+                    near_bar = n.startswith("bar") and abs(o.matrix_world.translation.z + BARS[0]["T"] / 2 - fr["u"][2]) < 0.06
+                    if n.startswith("bar") and (st in ("contact", "rest") or sub == 0.0) and near_bar: continue   # 着地して接している板
+                    if n.startswith(("Cube", "Cylinder")) and st in ("contact", "rest"):
+                        continue
+                    bad.append({"f": f, "sub": sub, "obj": n, "st": st})
+        if f % 100 == 0: print("KENSA", f, len(bad), round(time.time() - t0), flush=True)
+    res = {"koma": NF, "kizami": 4, "shirabeta_kumi": n_check, "meri_komi": len(bad), "rei": bad[:30]}
+    json.dump(res, open(os.path.join(OUT, "kensa.json"), "w"), ensure_ascii=False, indent=1)
+    print("KENSA_DONE", json.dumps({k: v for k, v in res.items() if k != "rei"}), flush=True)
+
 STEP = int(os.environ.get("UU_STEP", "1"))
 if FR == "all": frames = range(1, NF + 1, STEP)
-elif "-" in FR: a_, b_ = FR.split("-"); frames = range(int(a_), int(b_) + 1, STEP)
-else: frames = [int(x) for x in FR.split(",")]
+elif "-" in FR and "," not in FR: a_, b_ = FR.split("-"); frames = range(int(a_), int(b_) + 1, STEP)
+else:
+    items = FR.split(",")
+    if "kensa" in items:
+        os.makedirs(OUT, exist_ok=True); kensa(); items = [x for x in items if x != "kensa"]
+        open(os.path.join(OUT, "f0000.jpg"), "w").close()
+    frames = [int(x) for x in items if x]
 for f in frames:
     path = os.path.join(OUT, "f%04d.jpg" % f)
     if os.path.exists(path): continue
