@@ -621,7 +621,7 @@ for k, f_ in enumerate(M["far"]):
     box("far%d" % k, (f_["x"] - f_["w"] / 2, f_["y"], 0), (f_["x"] + f_["w"] / 2, f_["y"] + f_["d"], f_["h"]), M_FAR)
 # 港の水（塔の裏・月を映す）
 mw_, ntw, pw = newmat("water")
-pin(pw, "Base Color", (0.003, 0.005, 0.010, 1)); pin(pw, "Roughness", 0.03); pin(pw, "Specular IOR Level", 0.6); pin(pw, "Metallic", 0.0)
+pin(pw, "Base Color", (0.003, 0.005, 0.010, 1)); pin(pw, "Roughness", 0.08); pin(pw, "Specular IOR Level", 0.25); pin(pw, "Metallic", 0.0)
 nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 2.5; I(nzw, "Detail").default_value = 6
 mpw2 = node(ntw, "ShaderNodeMapping"); tcw2 = node(ntw, "ShaderNodeTexCoord"); link(ntw, tcw2.outputs["Object"], I(mpw2, "Vector")); link(ntw, mpw2.outputs[0], I(nzw, "Vector"))
 low_ = I(mpw2, "Location"); low_.default_value = (0, 0, 0); low_.keyframe_insert("default_value", frame=1); low_.default_value = (0, 3.0, 1.5); low_.keyframe_insert("default_value", frame=NF)
