@@ -41,11 +41,11 @@ print("ENGINE", sc.render.engine, bpy.app.version_string, flush=True)
 EV = sc.eevee
 tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom=True, bloom_intensity=0.06,
        bloom_threshold=0.9, bloom_radius=6.0, bloom_knee=0.5, use_gtao=True, gtao_distance=0.6, gtao_factor=1.0,
-       use_ssr=True, use_ssr_refraction=True, use_ssr_halfres=False, ssr_quality=0.6, ssr_thickness=0.2, ssr_max_roughness=0.6,
+       use_ssr=True, use_ssr_refraction=False, use_ssr_halfres=True, ssr_quality=0.5, ssr_thickness=0.2, ssr_max_roughness=0.5,
        use_soft_shadows=True, use_volumetric_shadows=True, use_volumetric_lights=True,
-       volumetric_tile_size='8', volumetric_samples=48, volumetric_start=0.5, volumetric_end=160.0, volumetric_light_clamp=4.0,
+       volumetric_tile_size='16', volumetric_samples=32, volumetric_start=0.5, volumetric_end=120.0, volumetric_light_clamp=4.0,
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.3, motion_blur_steps=1,
-       shadow_cube_size='1024', shadow_cascade_size='2048', use_shadow_high_bitdepth=True, sss_samples=5)
+       shadow_cube_size='512', shadow_cascade_size='1024', use_shadow_high_bitdepth=False, sss_samples=4)
 sc.render.use_persistent_data = True
 sc.render.resolution_x, sc.render.resolution_y = 720, 1280
 sc.render.resolution_percentage = int(os.environ.get("UU_PCT", "100"))
@@ -83,20 +83,33 @@ def anim_lin(owner):
         for fc in ad.action.fcurves:
             for kp in fc.keyframe_points: kp.interpolation = 'LINEAR'
 def V(a): return Vector(a)
+_CUBE_V = [(-0.5, -0.5, -0.5), (0.5, -0.5, -0.5), (0.5, 0.5, -0.5), (-0.5, 0.5, -0.5), (-0.5, -0.5, 0.5), (0.5, -0.5, 0.5), (0.5, 0.5, 0.5), (-0.5, 0.5, 0.5)]
+_CUBE_F = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+def mesh_obj(name, verts, faces, mat, smooth=False):
+    me_ = bpy.data.meshes.new(name); me_.from_pydata(verts, [], faces); me_.update()
+    if smooth:
+        for pg in me_.polygons: pg.use_smooth = True
+    o = bpy.data.objects.new(name, me_); bpy.context.collection.objects.link(o)
+    if mat: me_.materials.append(mat)
+    return o
 def box(name, lo, hi, mat, coll=True):
     c = [(lo[i] + hi[i]) / 2 for i in range(3)]; s = [max(0.001, hi[i] - lo[i]) for i in range(3)]
-    bpy.ops.mesh.primitive_cube_add(size=1, location=c); o = bpy.context.object; o.name = name; o.scale = s
-    if mat: o.data.materials.append(mat)
+    o = mesh_obj(name, _CUBE_V, _CUBE_F, mat); o.location = c; o.scale = s
     return o
 def cyl(name, p0, p1, r, mat, verts=12):
     p0, p1 = V(p0), V(p1); d = p1 - p0; L = d.length
-    bpy.ops.mesh.primitive_cylinder_add(vertices=verts, radius=r, depth=L, location=(p0 + p1) / 2); o = bpy.context.object; o.name = name
+    vs = []; fs = []
+    for k in range(verts):
+        a = 2 * math.pi * k / verts; vs.append((r * math.cos(a), r * math.sin(a), -L / 2)); vs.append((r * math.cos(a), r * math.sin(a), L / 2))
+    for k in range(verts):
+        a0, a1 = 2 * k, 2 * ((k + 1) % verts); fs.append((a0, a0 + 1, a1 + 1, a1))
+    fs.append(tuple(2 * k for k in range(verts))[::-1]); fs.append(tuple(2 * k + 1 for k in range(verts)))
+    o = mesh_obj(name, vs, fs, mat, smooth=verts >= 10); o.location = (p0 + p1) / 2
     o.rotation_euler = d.to_track_quat('Z', 'Y').to_euler()
-    if mat: o.data.materials.append(mat)
     return o
 def plane(name, center, sx, sy, mat, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_plane_add(size=1, location=center); o = bpy.context.object; o.name = name; o.scale = (sx, sy, 1); o.rotation_euler = rot
-    if mat: o.data.materials.append(mat)
+    o = mesh_obj(name, [(-0.5, -0.5, 0), (0.5, -0.5, 0), (0.5, 0.5, 0), (-0.5, 0.5, 0)], [(0, 1, 2, 3)], mat)
+    o.location = center; o.scale = (sx, sy, 1); o.rotation_euler = rot
     return o
 def noise_tex(nt, scale, detail=3.0, rough=0.5, coord=None, mapping=None):
     tc = coord or node(nt, "ShaderNodeTexCoord")
@@ -770,12 +783,6 @@ for name, (strength, ons, r) in ROOM_ON.items():
     ev.append((NF, cur))
     for ff, vv in ev:
         strength.default_value = vv; strength.keyframe_insert("default_value", frame=ff)
-    # 部屋の中の明かり（影なし）が壁の外へ少しこぼれる
-    lt = bpy.data.lights.new(name + "_lt", 'POINT'); lt.color = (1.0, 0.7, 0.42); lt.use_shadow = False; lt.shadow_soft_size = 0.6; lt.energy = 0.0
-    lo = bpy.data.objects.new(name + "_lt", lt); bpy.context.collection.objects.link(lo); lo.location = (r["c"][0], 1.4, r["c"][2] + 0.3)
-    for ff, vv in ev:
-        lt.energy = vv * 70; lt.keyframe_insert("energy", frame=ff)
-    anim_lin(lt)
 # 着水のしぶき（最後）
 def spray(name, center, size, count, vmin, vmax, life, rad, mat, seed=0, grav=9.8):
     bpy.ops.mesh.primitive_plane_add(size=1, location=center); o = bpy.context.object; o.name = name; o.scale = (size[0], size[1], 1)
@@ -862,12 +869,30 @@ amb_d = bpy.data.lights.new("amb", 'SUN'); amb_d.energy = 0.12; amb_d.color = (1
 amb = bpy.data.objects.new("amb", amb_d); bpy.context.collection.objects.link(amb); amb.rotation_euler = (math.radians(60), 0, math.radians(180))
 # 漂う埃（小さな光る粒・ゆっくり）
 M_DUST, _ = mat_emit("dust", (1.0, 0.95, 0.85), 2.0); blend(M_DUST, 'BLEND'); pin(M_DUST.node_tree.nodes["Principled BSDF"], "Alpha", 0.6)
-for k in range(260):
+for k in range(140):
     x = rnd.uniform(-3.3, 3.3); y = rnd.uniform(-6.5, -0.3); z = rnd.uniform(0.2, TOP + 6)
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=rnd.uniform(0.006, 0.012), location=(x, y, z)); d = bpy.context.object; d.name = "dust%d" % k; d.data.materials.append(M_DUST)
     for ff in (1, NF):
         t = (ff - 1) / FPS; d.location = (x + 0.25 * math.sin(k + t * 0.3), y + 0.15 * math.cos(k * 0.7 + t * 0.25), z - 0.12 * t + 0.1 * math.sin(k + t * 0.5)); d.keyframe_insert("location", frame=ff)
     anim_lin(d)
+
+# =====================================================================
+# 動かないものは材質ごとに1つにまとめる（描画の呼び出しを減らす。当たり検査は static_* をまとめて見る）
+# =====================================================================
+stage("merge")
+groups = {}
+for o in list(bpy.data.objects):
+    if o.type != 'MESH' or o.animation_data is not None or o.parent is not None: continue
+    if o.name in ("unko", "ground") or o.name.startswith(("ring", "spark", "splash", "dust", "ledge")): continue
+    key_ = o.data.materials[0].name if o.data.materials else "none"
+    groups.setdefault(key_, []).append(o)
+for key_, objs in groups.items():
+    if len(objs) < 2: continue
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in objs: o.select_set(True)
+    bpy.context.view_layer.objects.active = objs[0]; bpy.ops.object.join()
+    bpy.context.object.name = "static_" + key_
+print("MERGED", len(groups), "groups ->", len([o for o in bpy.data.objects if o.type == 'MESH']), "meshes", flush=True)
 
 # =====================================================================
 # カメラ（michi.json の位置・見る先・レンズ）
@@ -897,7 +922,7 @@ def kensa():
     import bmesh
     from mathutils.bvhtree import BVHTree
     dg = bpy.context.evaluated_depsgraph_get()
-    pre = ("ledge", "deco", "sign", "pipe", "pier", "band", "slab", "tower", "side_", "shutter", "cable", "parapet", "ground", "bag", "swf", "w")
+    pre = ("ledge", "deco", "sign", "pipe", "pier", "band", "slab", "tower", "side_", "shutter", "cable", "parapet", "ground", "bag", "swf", "w", "static_")
     names = [o.name for o in bpy.data.objects if o.type == 'MESH' and o.name.startswith(pre) and o.name != "unko" and not o.name.startswith(("ring", "spark", "splash", "dust"))]
     def bvh_of(o):
         ev = o.evaluated_get(dg); me_ = ev.to_mesh(); bm = bmesh.new(); bm.from_mesh(me_); bm.transform(ev.matrix_world)
@@ -906,10 +931,11 @@ def kensa():
     own = {}
     for L in M["ledges"]: own[L["i"]] = L
     bad = []; n_check = 0; t0 = time.time()
-    bs = {}
+    bs = {}; cache = {}
     for n in names:
         o = bpy.data.objects[n]; pts = [o.matrix_world @ Vector(c) for c in o.bound_box]
         c = sum(pts, Vector()) / 8; bs[n] = (c, max((p - c).length for p in pts) + 0.1)
+        if o.animation_data is None: cache[n] = bvh_of(o)
     for f in range(1, NF + 1):
         fr = FRM[f - 1]
         for sub in (0.0, 0.25, 0.5, 0.75):
@@ -918,7 +944,7 @@ def kensa():
             near = [n for n in names if (bs[n][0] - cu_).length < ru + bs[n][1] and not bpy.data.objects[n].hide_render]
             for n in near:
                 o = bpy.data.objects[n]
-                to, co, ro = bvh_of(o)
+                to, co, ro = cache[n] if n in cache else bvh_of(o)
                 n_check += 1
                 mine = None
                 for L in M["ledges"]:

@@ -683,12 +683,12 @@ def build_haikyo_hall():
     bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=3.5, location=(cen[0], cen[1], pz + 1.4)); ks = bpy.context.object; ks.name = "kiri_soko"
     ks.data.materials.append(mat_volume("kiriA_soko", 0.7, (0.90, 0.93, 0.95), 0.3, (0.9, (0.6, 0, 0.9), 0.0, 1.0)))
     bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=ZTOP - pz + 6, location=(cen[0], cen[1], (ZTOP + pz) / 2)); kz = bpy.context.object; kz.name = "kiri_zentai"
-    kz.data.materials.append(mat_volume("kiriA", 0.10, (0.95, 0.93, 0.85), 0.8))
+    kz.data.materials.append(mat_volume("kiriA", 0.055, (0.95, 0.93, 0.85), 0.8))
     # 光：割れた天井から差す太陽（低め・光の筋）、空の青い回り込み、水面の照り返し
     ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 40.0; ld.color = (1.0, 0.86, 0.64); ld.angle = math.radians(1.0)
     lo = bpy.data.objects.new("sunA", ld); bpy.context.collection.objects.link(lo)
     lo.rotation_euler = (math.radians(-46), math.radians(14), math.radians(150))
-    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 260; ld2.size = 12; ld2.color = (0.72, 0.84, 1.0)
+    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 420; ld2.size = 14; ld2.color = (0.95, 0.88, 0.76)
     lo2 = bpy.data.objects.new("fillA", ld2); bpy.context.collection.objects.link(lo2)
     lo2.location = (cen[0], cen[1], ZTOP + 4); lo2.rotation_euler = (0, 0, 0)
     ld3 = bpy.data.lights.new("mizu_glow", 'AREA'); ld3.energy = 220; ld3.size = 14; ld3.color = (0.6, 0.8, 0.9)
@@ -859,6 +859,23 @@ if kg:
     fB = BARS[M["split"] + 1]["fr"]
     kg.hide_render = True; kg.keyframe_insert("hide_render", frame=fB - 6)
     kg.hide_viewport = True; kg.keyframe_insert("hide_viewport", frame=fB - 6)
+
+# =====================================================================
+# 間接光（v3.1）：舞台Aの吹き抜けに EEVEE の Irradiance Volume を置いて焼く（跳ね返りの光＝のっぺり対策。失敗しても描画は続ける）
+# =====================================================================
+stage("bake")
+if os.environ.get("UU_BAKE", "1") == "1" and not LITE:
+    try:
+        A_ = SC["A"]; cenA = A_["center"]; RWA = A_["R_wall"]; ztA = A_["ztop"] + 8.6; pzA = A_["pool_z"]
+        bpy.ops.object.lightprobe_add(type='GRID', location=(cenA[0], cenA[1], (ztA + pzA) / 2))
+        pr = bpy.context.object; pr.name = "irrA"; pr.scale = (RWA + 3.0, RWA + 3.0, (ztA - pzA) / 2 + 1.0)
+        tryset(pr.data, grid_resolution_x=8, grid_resolution_y=8, grid_resolution_z=12, intensity=1.0, clip_start=0.2, clip_end=80.0, falloff=0.3)
+        tryset(EV, gi_diffuse_bounces=2, gi_cubemap_resolution='256', gi_visibility_resolution='16', gi_irradiance_smoothing=0.25, gi_auto_bake=False)
+        sc.frame_set(1); tb = time.time()
+        bpy.ops.scene.light_cache_bake()
+        print("BAKE ok", round(time.time() - tb, 1), flush=True)
+    except Exception as ex:
+        print("BAKE fail", ex, flush=True)
 
 # =====================================================================
 # カメラ（michi.json の位置・見る先・傾き・レンズ）
