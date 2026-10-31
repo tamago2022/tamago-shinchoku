@@ -46,7 +46,7 @@ tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom
        use_ssr=True, use_ssr_refraction=True, use_ssr_halfres=True, ssr_quality=0.5, ssr_thickness=0.1,
        use_soft_shadows=True, use_volumetric_shadows=True, use_volumetric_lights=True,
        volumetric_tile_size='16' if not LITE else '16', volumetric_samples=40 if not LITE else 24,
-       volumetric_start=0.3, volumetric_end=90.0, volumetric_light_clamp=6.0,
+       volumetric_start=0.3, volumetric_end=90.0, volumetric_light_clamp=12.0,
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.25, motion_blur_steps=1,
        shadow_cube_size='1024', shadow_cascade_size='2048', use_shadow_high_bitdepth=True, sss_samples=5)
 sc.render.use_persistent_data = True
@@ -683,11 +683,11 @@ def build_haikyo_hall():
     bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=3.5, location=(cen[0], cen[1], pz + 1.4)); ks = bpy.context.object; ks.name = "kiri_soko"
     ks.data.materials.append(mat_volume("kiriA_soko", 0.7, (0.90, 0.93, 0.95), 0.3, (0.9, (0.6, 0, 0.9), 0.0, 1.0)))
     bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=ZTOP - pz + 6, location=(cen[0], cen[1], (ZTOP + pz) / 2)); kz = bpy.context.object; kz.name = "kiri_zentai"
-    kz.data.materials.append(mat_volume("kiriA", 0.07, (0.95, 0.93, 0.85), 0.8))
+    kz.data.materials.append(mat_volume("kiriA", 0.10, (0.95, 0.93, 0.85), 0.8))
     # 光：割れた天井から差す太陽（低め・光の筋）、空の青い回り込み、水面の照り返し
-    ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 26.0; ld.color = (1.0, 0.88, 0.68); ld.angle = math.radians(1.2)
+    ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 40.0; ld.color = (1.0, 0.86, 0.64); ld.angle = math.radians(1.0)
     lo = bpy.data.objects.new("sunA", ld); bpy.context.collection.objects.link(lo)
-    lo.rotation_euler = (math.radians(-28), math.radians(20), math.radians(150))
+    lo.rotation_euler = (math.radians(-46), math.radians(14), math.radians(150))
     ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 260; ld2.size = 12; ld2.color = (0.72, 0.84, 1.0)
     lo2 = bpy.data.objects.new("fillA", ld2); bpy.context.collection.objects.link(lo2)
     lo2.location = (cen[0], cen[1], ZTOP + 4); lo2.rotation_euler = (0, 0, 0)
