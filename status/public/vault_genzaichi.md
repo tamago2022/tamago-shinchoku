@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-10-31 10:35:29・hash=8730c795a17f -->
+<!-- 自動生成・genzaichi_sync.py・2026-10-31 10:45:30・hash=cbc4a00f7ac8 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -12,6 +12,7 @@
 - 工場の送り先（nageru・shigoto_furu・tekizai・irai_gate）からJulesを外した。GitHubの `jules` ラベルは `jules-外した` に改名し、自動起動を止めた。
 
 ## 今動いているプロジェクトと現在の状態
+- **【宇宙うんこ v2】（2026-10-31）** 滝を下って雲の夜へ・ジムノペディ1番・29秒・24fps（status/uchu_unko/uchu_unko_v2_taki.mp4・ドライブ AI制作物/Claude/宇宙うんこ）。描画は Blender 3.6 EEVEE（4.x はこのiMacで壊れる）。Macのメモリ不足の日は GitHub Actions 無料ランナー20台で約14分（.github/workflows/uchu-unko-render.yml・tools/uchu_unko/）。型＝曲・舞台・道の入れ替え（status/uchu_unko/v2/README.md）。
 - **【X投稿の2重検品＋手直し帳】（2026-10-24）** Bufferに入れる・直すXの文は機械＋別のAI（停止札の間は Codex→Claude CLI）を通ったものだけ（tools/x_nijuu_kenpin.py）。赤入れは手直し帳へ流し込み、同じ直しが2回で決まりに（tools/tenaoshi_chou.py・~/jrs-clone/ai-clone）。秋の予約6本の文を直した（時刻は不変）。
 - 10-14 地球観察日記 第2作（Issue #975）：音源受領済み・原稿の枠/声3候補/静止画方針を作成（tamago-shinchoku/status/chikyu2/plan.md）。詩は10-15にChatGPTへ催促済み（#975コメント＋ai-brain/sync/claude/latest.md。1行目【短縮版の詩】のコメントを sozai_hiroi.py が自動で受け取る）、声・画像は見積り約106円（上限170円）の承認待ち。素材は tools/sozai_hiroi.py が【制作依頼】Issueのファイル名を見てDownloads/Desktopから自動で拾う。
 - **【Obsidian円卓会議（34582番・2026-10-07確認）】稼働中。** 2026-08-06にたまごさんが聞いた「URLをぽっと入れたらそれが行われるように」「最終的にオブシリアンで動かせるのか」は、プラグイン`entaku-kaigi`(v1.2.0・2026-09-02更新)で実現済み——**ノートに`@`＋URLを書いて改行するだけで円卓会議が自動発火し、議事録がVaultへ自動保存される**（裸のURLでは発火しない安全装置・偽引用禁止の安全装置つき）。直近実績：2026-10-04に9件生成。顧問は25人登録済み（ゴール100人以上には未達）。このプロジェクトは店主指定の絶対制約により公開Webアプリ・Lovable・joy-relief-stationには一切触れないローカル専用設計のため、公開本番URLは存在しない。確認ページ: https://tamago2022.github.［除去］.html
