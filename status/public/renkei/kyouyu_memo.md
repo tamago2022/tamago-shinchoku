@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-10-31 19:14
+更新：2026-10-31 19:52
+
+---
+## 2026-10-31 19:22 ［できる人いますか］ Grokボットさんへ：消えたX投稿・動画の『同じ場面』の別の投稿を探す（25件）
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6542275599
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1120
+
+完了条件：Issue に1行1件で『キー URL 一言』を返す（例：x:2093171499125616764 https://x.com/xxx/status/123 同じ生放送の場面）。同じ場面（同じ人・同じ番組・同じ瞬間）だけ。見つからないキーは『キー なし』。取り違え禁止。
+締め切り：2026-11-03
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-10-29 06:38  
@@ -1682,24 +1693,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-638949
 https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6389493628
 
 全体像の表『ごきげんの種（公式LINE）』を更新：LINE公式 ＠759fytwa はたまごさんが作成済み（友だち追加 https://lin.ee/O2tpTS2 ＝サイトの line_url に入り済み）。配信・運営はGrokボット担当（10/25 04時台に1通目が届いている）。工場は送らない（gokigen_tane.py は送信停止・下書きはネタ帳）。記録はGrokボットが #1039 に【LINE配信記録】で1件ずつ→工場の tools/line_haishin.py が週1でまとめて進捗表『SNS（先週）』にX・TikTok・YouTubeと並べる。決まり『13. 勝手に配信しない。LINE配信は工場の仕組みだけ』は『LINE配信はGrokボットだけ（工場は送らない）』に読み替える。決まり『週1・金曜20時』とずれる配信は週まとめに出す。詳細 #1039。
-
----
-## 2026-10-25 05:58 ［ごきげん補給所 公式LINE（ごきげんの種）］ 2026-10-25 方針確定：配信・運営はGrokボット／工場は送らず記録と見える化だけ
-https://github.com/tamago2022/joy-relief-station/issues/1039#issuecomment-6389493159
-
-■ たまごさん方針（2026-10-25・Dispatch経由）：LINEの配信・運営はGrokボットが担当。工場は配信を作らない。代わりに『何が配信され、どんな反応が返ったか』を見えるようにする（SNSと同じく改善に使う）。マガジンのネタも差し込んでいく予定。
-■ 実際：10/25 04時台に ＠759fytwa から Stevie Wonder「Overjoyed」の曲ページ＋『毎日のネタはXでも → x.com/oasisjoyrelief』が届いている（たまごさんのスクショ）。工場の gokigen_tane.py は鍵が無く一度も送っていない（ログ：10/25 は全部『送る時間ではない』）＝送り主はGrokボット側。
-■ 工場がやったこと
-・二重配信の止め：tools/gokigen_tane.py は送らない（HAISHIN_TANTOU=grok）。下書き（10/30・11/6）はネタ帳として残すだけ。Messaging APIの鍵（LINE_CHANNEL_ACCESS_TOKEN）は工場では要らない＝GitHub Secretsへの登録依頼もしない。
-・記録係 tools/line_haishin.py：このIssueに書かれた【LINE配信記録】を6時間おきに拾い、status/sns_hannou.json（platform=line）と週まとめ status/public/sns_shuukei.json へ。進捗表の『SNS（先週）』に X・TikTok・YouTube・LINE が1行ずつ並ぶ。
-・決まり（週1・金曜20時）とずれた配信は週まとめの zure に出す。10/25 04時台（日曜）の回はずれ。
-■ Grokボットへのお願い（振り分け所にも出した）：配信1回ごとにこのIssueへ次の形で1件。
-【LINE配信記録】
-日時: 2026-10-25 04:12
-本文: （届いた文）
-リンク: https://…
-既読: 数字（取れたときだけ）
-クリック: 数字
-友だち: 数字
-■ サイトの入口：public/gokigen-tane.json の line_url は https://lin.ee/O2tpTS2（Lovable実装担当が10/25に入れた）。line.me/R/ti/p/＠759fytwa と同じアカウント。工場は変えない。
 
