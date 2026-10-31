@@ -42,8 +42,8 @@ EV = sc.eevee
 tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom=True, bloom_intensity=0.06,
        bloom_threshold=0.9, bloom_radius=6.0, bloom_knee=0.5, use_gtao=True, gtao_distance=0.6, gtao_factor=1.0,
        use_ssr=True, use_ssr_refraction=False, use_ssr_halfres=True, ssr_quality=0.5, ssr_thickness=0.2, ssr_max_roughness=0.5,
-       use_soft_shadows=True, use_volumetric_shadows=True, use_volumetric_lights=True,
-       volumetric_tile_size='16', volumetric_samples=32, volumetric_start=0.5, volumetric_end=120.0, volumetric_light_clamp=4.0,
+       use_soft_shadows=False, use_volumetric_shadows=True, use_volumetric_lights=True,
+       volumetric_tile_size='16', volumetric_samples=24, volumetric_start=0.5, volumetric_end=120.0, volumetric_light_clamp=4.0,
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.3, motion_blur_steps=1,
        shadow_cube_size='512', shadow_cascade_size='1024', use_shadow_high_bitdepth=False, sss_samples=4)
 sc.render.use_persistent_data = True
@@ -230,7 +230,12 @@ def mat_street(name, pond):
     rp.color_ramp.elements[1].position = 0.8; rp.color_ramp.elements[1].color = (0.11, 0.105, 0.10, 1)
     link(nt, O(fine, "Fac"), I(rp, "Fac"))
     mx = node(nt, "ShaderNodeMixRGB"); link(nt, mask, mx.inputs[0]); link(nt, rp.outputs["Color"], mx.inputs[1]); mx.inputs[2].default_value = (0.01, 0.012, 0.016, 1)
-    link(nt, mx.outputs[0], I(p, "Base Color"))
+    # ひび割れ（ボロノイの縁）と、補修の継ぎはぎ
+    vcr = node(nt, "ShaderNodeTexVoronoi"); vcr.feature = 'DISTANCE_TO_EDGE'; I(vcr, "Scale").default_value = 0.9; link(nt, tc.outputs["Object"], I(vcr, "Vector"))
+    crack = math_(nt, 'GREATER_THAN', O(vcr, "Distance"), vb=0.012)
+    crk = node(nt, "ShaderNodeMixRGB"); crk.blend_type = 'MULTIPLY'; crk.inputs[0].default_value = 0.85
+    link(nt, mx.outputs[0], crk.inputs[1]); link(nt, crack, crk.inputs[2])
+    link(nt, crk.outputs[0], I(p, "Base Color"))
     rg = node(nt, "ShaderNodeMixRGB"); link(nt, mask, rg.inputs[0]); rg.inputs[1].default_value = (0.42, 0.42, 0.42, 1); rg.inputs[2].default_value = (0.03, 0.03, 0.03, 1)
     link(nt, rg.outputs[0], I(p, "Roughness")); pin(p, "Specular IOR Level", 0.8)
     # 波紋：着水から広がる輪（sin）× 減衰。t はコマで動かす
@@ -262,7 +267,7 @@ M_GLASS = mat_glass("glass"); M_SIL = mat_sil()
 M_FRAME = mat_metal("frame", (0.35, 0.34, 0.32), 0.3, 0.5)
 M_STREET = mat_street("street", M["pond"])
 M_CLOTH = [mat_cloth("cloth%d" % k, "cloth%d.png" % k) for k in range(6)]
-M_DIM, _ = mat_emit("dim", (1.0, 0.75, 0.45), 0.22)
+M_DIM, _ = mat_emit("dim", (1.0, 0.68, 0.38), 0.25)
 M_TV, TV_STR = mat_emit("tv", (0.55, 0.7, 1.0), 0.6)
 for ff in range(1, NF + 1, 7):   # テレビのちらつき
     TV_STR.default_value = rnd.uniform(0.25, 0.9); TV_STR.keyframe_insert("default_value", frame=ff)
@@ -308,7 +313,7 @@ def window(side, bay, fl, kind):
     box(name + "_fL", (cx - WIN_W / 2 - t, 0.0, z0 - t), (cx - WIN_W / 2, 0.30, z0 + WIN_H + t), M_FRAME)
     box(name + "_fR", (cx + WIN_W / 2, 0.0, z0 - t), (cx + WIN_W / 2 + t, 0.30, z0 + WIN_H + t), M_FRAME)
     box(name + "_fT", (cx - WIN_W / 2, 0.0, z0 + WIN_H), (cx + WIN_W / 2, 0.30, z0 + WIN_H + t), M_FRAME)
-    box(name + "_sill", (cx - WIN_W / 2 - 0.08, -0.08, z0 - 0.06), (cx + WIN_W / 2 + 0.08, 0.30, z0), M_CONC)
+    box(name + "_sill", (cx - WIN_W / 2 - 0.08, -0.05, z0 - 0.06), (cx + WIN_W / 2 + 0.08, 0.30, z0), M_CONC)
     # 中桟
     box(name + "_mul", (cx - 0.02, 0.12, z0), (cx + 0.02, 0.16, z0 + WIN_H), M_FRAME)
     # ガラス
@@ -316,8 +321,8 @@ def window(side, bay, fl, kind):
     # 部屋（奥行き 2.4）：奥の壁・床・天井・横の壁
     d = 2.4; rw = WIN_W + 0.5; rh = WIN_H + 0.7; zr = z0 - 0.35
     if kind in ("lit", "dim", "tv"):
-        col = (1.0, 0.72, 0.45) if kind != "tv" else (0.5, 0.6, 0.9)
-        m, strength = mat_room(name + "_rm", col if kind == "lit" else (1.0, 0.70, 0.42))
+        col = (1.0, 0.62, 0.32) if kind != "tv" else (0.5, 0.6, 0.9)
+        m, strength = mat_room(name + "_rm", col if kind == "lit" else (1.0, 0.66, 0.36))
         ROOM_MATS[name] = strength
     else:
         m = M_CONC_D; ROOM_MATS[name] = None
@@ -515,7 +520,7 @@ def build_ledge(L):
             for ff in range(1, NF + 1, 3):
                 st.default_value = 6.0 if rnd.random() > 0.15 else 1.0; st.keyframe_insert("default_value", frame=ff)
         for sg in (-1, 1):
-            objs.append(cyl("ledge%02d_arm%d" % (i, sg), (x + sg * 0.4, -0.02, b["hi"][2] + 0.3), (x + sg * 0.4, b["lo"][1] + 0.1, b["hi"][2]), 0.015, M_PIPE))
+            objs.append(cyl("ledge%02d_arm%d" % (i, sg), (x + sg * 0.5, -0.02, b["hi"][2] + 0.35), (x + sg * 0.5, b["hi"][1] - 0.03, b["hi"][2] - 0.02), 0.015, M_PIPE))
         lt = bpy.data.lights.new("ledge%02d_lt" % i, 'POINT'); lt.energy = 25; lt.color = (1.0, 0.5, 0.6); lt.use_shadow = False; lt.shadow_soft_size = 0.4
         lo = bpy.data.objects.new("ledge%02d_lt" % i, lt); bpy.context.collection.objects.link(lo); lo.location = (x, b["lo"][1] - 0.3, (b["lo"][2] + b["hi"][2]) / 2)
     elif typ == "balcony":
@@ -605,18 +610,18 @@ for k, c in enumerate(M["cables"]):
 M_FAR, _ = mat_emit("far", (1, 1, 1), 1.0)
 ntf = M_FAR.node_tree; pf = ntf.nodes["Principled BSDF"]
 texf = node(ntf, "ShaderNodeTexImage"); texf.image = load_img("far_windows.png"); texf.extension = 'REPEAT'
-tcf = node(ntf, "ShaderNodeTexCoord"); mpf = node(ntf, "ShaderNodeMapping"); I(mpf, "Scale").default_value = (0.35, 0.35, 0.35)
+tcf = node(ntf, "ShaderNodeTexCoord"); mpf = node(ntf, "ShaderNodeMapping"); I(mpf, "Scale").default_value = (1.2, 1.2, 1.2)
 link(ntf, tcf.outputs["Object"], I(mpf, "Vector")); link(ntf, mpf.outputs[0], I(texf, "Vector")); link(ntf, texf.outputs["Color"], I(pf, "Emission Color"))
-pin(pf, "Emission Strength", 1.2); pin(pf, "Base Color", (0.02, 0.02, 0.03, 1))
+pin(pf, "Emission Strength", 0.9); pin(pf, "Base Color", (0.06, 0.07, 0.10, 1))
 for k, f_ in enumerate(M["far"]):
     box("far%d" % k, (f_["x"] - f_["w"] / 2, f_["y"], 0), (f_["x"] + f_["w"] / 2, f_["y"] + f_["d"], f_["h"]), M_FAR)
 # 港の水（塔の裏・月を映す）
 mw_, ntw, pw = newmat("water")
-pin(pw, "Base Color", (0.004, 0.006, 0.012, 1)); pin(pw, "Roughness", 0.06); pin(pw, "Specular IOR Level", 1.0); pin(pw, "Metallic", 0.2)
-nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 0.8; I(nzw, "Detail").default_value = 5
+pin(pw, "Base Color", (0.003, 0.005, 0.010, 1)); pin(pw, "Roughness", 0.03); pin(pw, "Specular IOR Level", 0.6); pin(pw, "Metallic", 0.0)
+nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 2.5; I(nzw, "Detail").default_value = 6
 mpw2 = node(ntw, "ShaderNodeMapping"); tcw2 = node(ntw, "ShaderNodeTexCoord"); link(ntw, tcw2.outputs["Object"], I(mpw2, "Vector")); link(ntw, mpw2.outputs[0], I(nzw, "Vector"))
 low_ = I(mpw2, "Location"); low_.default_value = (0, 0, 0); low_.keyframe_insert("default_value", frame=1); low_.default_value = (0, 3.0, 1.5); low_.keyframe_insert("default_value", frame=NF)
-bpw = node(ntw, "ShaderNodeBump"); I(bpw, "Strength").default_value = 0.12; link(ntw, O(nzw, "Fac"), I(bpw, "Height")); link(ntw, bpw.outputs[0], I(pw, "Normal"))
+bpw = node(ntw, "ShaderNodeBump"); I(bpw, "Strength").default_value = 0.35; link(ntw, O(nzw, "Fac"), I(bpw, "Height")); link(ntw, bpw.outputs[0], I(pw, "Normal"))
 anim_lin(ntw)
 plane("water", (0, 300, -0.15), 800, 600, mw_)
 box("quay", (-8, 6.35, -0.2), (8, 7.0, 0.05), M_CONC_D)
@@ -854,7 +859,7 @@ I(disc, "To Min").default_value = 1.0; I(disc, "To Max").default_value = 0.0; li
 nzm = node(wn, "ShaderNodeTexNoise"); I(nzm, "Scale").default_value = 9.0; I(nzm, "Detail").default_value = 6; link(wn, tcw.outputs["Generated"], I(nzm, "Vector"))
 mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.42; I(mare, "From Max").default_value = 0.6; I(mare, "To Min").default_value = 0.55; I(mare, "To Max").default_value = 1.0
 link(wn, O(nzm, "Fac"), I(mare, "Value"))
-moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=14.0)
+moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=7.0)
 halo = math_(wn, 'MULTIPLY', math_(wn, 'EXPONENT', math_(wn, 'MULTIPLY', math_(wn, 'POWER', math_(wn, 'DIVIDE', ang, vb=math.radians(16.0)), vb=1.6), vb=-1.0)), vb=0.35)
 # 空：下ほど街明かりで少し明るい紺、上は黒に近い
 zmap = node(wn, "ShaderNodeMath"); zmap.operation = 'MULTIPLY_ADD'; zmap.inputs[1].default_value = 0.5; zmap.inputs[2].default_value = 0.5; link(wn, sepw.outputs["Z"], zmap.inputs[0])
@@ -880,7 +885,7 @@ sun.rotation_euler = (-V(md)).to_track_quat('-Z', 'Y').to_euler()
 amb_d = bpy.data.lights.new("amb", 'SUN'); amb_d.energy = 0.10; amb_d.color = (1.0, 0.75, 0.6); amb_d.angle = math.radians(40); amb_d.use_shadow = False
 amb = bpy.data.objects.new("amb", amb_d); bpy.context.collection.objects.link(amb); amb.rotation_euler = (math.radians(60), 0, math.radians(180))
 # 街明かりの照り返し（カメラ側の斜め上から・青灰色・影あり＝台の影が壁に落ちる）
-key_d = bpy.data.lights.new("city_key", 'SUN'); key_d.energy = 0.55; key_d.color = (0.62, 0.70, 0.95); key_d.angle = math.radians(6)
+key_d = bpy.data.lights.new("city_key", 'SUN'); key_d.energy = 0.45; key_d.color = (0.72, 0.78, 0.95); key_d.angle = math.radians(6)
 keyo = bpy.data.objects.new("city_key", key_d); bpy.context.collection.objects.link(keyo)
 kd = V((math.sin(math.radians(-35)) * math.cos(math.radians(28)), math.cos(math.radians(-35)) * math.cos(math.radians(28)), -math.sin(math.radians(28))))   # 光の進む向き（カメラ側から壁へ）
 keyo.rotation_euler = kd.to_track_quat('-Z', 'Y').to_euler()
@@ -969,7 +974,12 @@ def kensa():
                 if n == "ground" and f >= FINAL: mine = {"z": M["pond"][2] - 0.06}
                 if mine is not None:
                     # 乗っている台：上面より 1cm 以上沈んでいたら、めり込み
-                    top = mine["z"] + (mine.get("dz", {}).get(str(f), 0.0) if "dz" in mine else 0.0)
+                    if "dz" in mine:
+                        a0 = mine["dz"].get(str(f), 0.0); a1 = mine["dz"].get(str(f + 1), a0 if str(f) in mine["dz"] else 0.0)
+                        ks_ = sorted(int(k) for k in mine["dz"])
+                        if not (ks_[0] <= f <= ks_[-1]): a0 = a1 = 0.0
+                        top = mine["z"] + a0 + (a1 - a0) * sub
+                    else: top = mine["z"]
                     ev = unko.evaluated_get(dg); me_ = ev.to_mesh(); mw = ev.matrix_world
                     pen = max((top - (mw @ v.co).z) for v in me_.vertices); ev.to_mesh_clear()
                     if pen > 0.012: bad.append({"f": f, "sub": sub, "obj": n, "st": fr["st"], "shizumi_m": round(pen, 4)})
