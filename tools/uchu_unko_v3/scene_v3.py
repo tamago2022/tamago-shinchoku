@@ -538,7 +538,7 @@ def build_mori_no_taki():
         rock("fuchi%02d" % k, (cen[0] + rr * math.cos(ph), cen[1] + rr * math.sin(ph), zt + 9 + rnd.uniform(-0.6, 0.8)),
              (rnd.uniform(1.4, 2.4), rnd.uniform(1.4, 2.4), rnd.uniform(0.9, 1.6)), rockA, ph, 0.45, 4)
     # 滝：大きな滝1本＋細い滝5本（どの角度を向いても滝が見える）
-    wA = mat_water("waterA", (0.88, 0.96, 1.0), 4.5, 1.15, 0.75)
+    wA = mat_water("waterA", (0.86, 0.95, 1.0), 4.5, 0.7, 0.62)
     wA2 = mat_water("waterA2", (0.70, 0.86, 0.92), 3.0, 0.6, 0.45)
     lip = mat_water("lipA", (1.0, 1.0, 1.0), 1.5, 1.3, 0.9)
     FALLS = [(math.radians(90), math.radians(62)), (math.radians(200), math.radians(16)), (math.radians(250), math.radians(10)),
@@ -715,38 +715,38 @@ def build_kumo_no_yoru():
         yama("toi_yama%d" % k, (PE.x + dx, PE.y + dy, ct - 6), r_, h_, k)
     ym = yama("logo_yama", (MOUNT.x, MOUNT.y, ct - 6), 92, 98, 9, 7, 0.06)
     bpy.context.view_layer.update()
-    # 壁画：山の斜面に沿わせた網（カメラの終わりの位置から斜面へ光線を当てて、斜面の 0.35m 手前に置く）
-    dg = bpy.context.evaluated_depsgraph_get(); ym_eval = ym.evaluated_get(dg)
+    # 壁画：山の肌そのものに描く（終わりのカメラの方向から投影。浮いた板にしない＝どの角度でも山に貼りつく）
     camE = V(M["c_close"]); fwd = (LOGO - camE).normalized()
     right = fwd.cross(V((0, 0, 1))).normalized(); up = right.cross(fwd).normalized()
-    WL, HL = 54.0, 54.0 * 2600 / 2048; NX, NY = 72, 90
-    verts = []; uvs = []; faces = []
-    inv = ym_eval.matrix_world.inverted()
-    for j in range(NY + 1):
-        for i in range(NX + 1):
-            u, v = i / NX, j / NY
-            pt = LOGO + right * ((u - 0.5) * WL) + up * ((v - 0.5) * HL)
-            d_ = (pt - camE).normalized()
-            ok, loc, nrm, idx = ym_eval.ray_cast(inv @ camE, (inv.to_3x3() @ d_).normalized())
-            hit = ym_eval.matrix_world @ loc if ok else pt
-            verts.append(tuple(hit - d_ * 0.35)); uvs.append((u, v))
-    for j in range(NY):
-        for i in range(NX):
-            a = j * (NX + 1) + i; faces.append((a, a + 1, a + NX + 2, a + NX + 1))
-    mlogo, ntl, pl = newmat("hekiga"); blend(mlogo, 'BLEND')
+    WL, HL = 54.0, 54.0 * 2600 / 2048
+    ml, ntl, pl = newmat("yama_hekiga")
+    geo = node(ntl, "ShaderNodeNewGeometry")
+    rel = node(ntl, "ShaderNodeVectorMath"); rel.operation = 'SUBTRACT'; link(ntl, geo.outputs["Position"], rel.inputs[0]); rel.inputs[1].default_value = LOGO
+    def dotv(vec, scale):
+        d_ = node(ntl, "ShaderNodeVectorMath"); d_.operation = 'DOT_PRODUCT'; link(ntl, rel.outputs[0], d_.inputs[0]); d_.inputs[1].default_value = vec
+        return math_(ntl, 'ADD', math_(ntl, 'DIVIDE', O(d_, "Value") if "Value" in d_.outputs else d_.outputs[1], vb=scale), vb=0.5)
+    cu = node(ntl, "ShaderNodeCombineXYZ"); link(ntl, dotv(right, WL), cu.inputs[0]); link(ntl, dotv(up, HL), cu.inputs[1])
     txl = node(ntl, "ShaderNodeTexImage"); txl.image = load_img("hekiga_logo.png"); txl.extension = 'CLIP'
-    link(ntl, txl.outputs["Color"], I(pl, "Base Color")); link(ntl, txl.outputs["Color"], I(pl, "Emission Color"))
-    nzl = node(ntl, "ShaderNodeTexNoise"); I(nzl, "Scale").default_value = 9; I(nzl, "Detail").default_value = 4
-    bml = node(ntl, "ShaderNodeBump"); I(bml, "Strength").default_value = 0.5; link(ntl, O(nzl, "Fac"), I(bml, "Height")); link(ntl, bml.outputs[0], I(pl, "Normal"))
-    wr_ = node(ntl, "ShaderNodeMapRange"); I(wr_, "From Min").default_value = 0.2; I(wr_, "From Max").default_value = 0.6; I(wr_, "To Min").default_value = 0.82; link(ntl, O(nzl, "Fac"), I(wr_, "Value"))
-    link(ntl, math_(ntl, 'MULTIPLY', txl.outputs["Alpha"], wr_.outputs[0]), I(pl, "Alpha")); pin(pl, "Roughness", 0.9)
+    link(ntl, cu.outputs[0], I(txl, "Vector"))
+    # 山の肌（月明かりの青灰）
+    tcm = node(ntl, "ShaderNodeTexCoord"); nzm_ = node(ntl, "ShaderNodeTexNoise"); I(nzm_, "Scale").default_value = 0.08; I(nzm_, "Detail").default_value = 8
+    link(ntl, tcm.outputs["Object"], I(nzm_, "Vector"))
+    rmt = node(ntl, "ShaderNodeValToRGB"); rmt.color_ramp.elements[0].color = (0.05, 0.06, 0.10, 1); rmt.color_ramp.elements[1].color = (0.20, 0.22, 0.30, 1)
+    link(ntl, O(nzm_, "Fac"), I(rmt, "Fac"))
+    nzl = node(ntl, "ShaderNodeTexNoise"); I(nzl, "Scale").default_value = 0.6; I(nzl, "Detail").default_value = 4; link(ntl, tcm.outputs["Object"], I(nzl, "Vector"))
+    wr_ = node(ntl, "ShaderNodeMapRange"); I(wr_, "From Min").default_value = 0.2; I(wr_, "From Max").default_value = 0.6; I(wr_, "To Min").default_value = 0.8; link(ntl, O(nzl, "Fac"), I(wr_, "Value"))
+    aa = math_(ntl, 'MULTIPLY', txl.outputs["Alpha"], wr_.outputs[0])
+    mixc = node(ntl, "ShaderNodeMixRGB"); link(ntl, aa, mixc.inputs[0]); link(ntl, rmt.outputs[0], mixc.inputs[1]); link(ntl, txl.outputs["Color"], mixc.inputs[2])
+    link(ntl, mixc.outputs[0], I(pl, "Base Color")); pin(pl, "Roughness", 0.92)
+    emc = node(ntl, "ShaderNodeMixRGB"); emc.blend_type = 'MULTIPLY'; emc.inputs[0].default_value = 1.0
+    link(ntl, txl.outputs["Color"], emc.inputs[1]); link(ntl, aa, emc.inputs[2]); link(ntl, emc.outputs[0], I(pl, "Emission Color"))
+    bmm = node(ntl, "ShaderNodeBump"); I(bmm, "Strength").default_value = 0.5; link(ntl, O(nzm_, "Fac"), I(bmm, "Height")); link(ntl, bmm.outputs[0], I(pl, "Normal"))
     el_ = I(pl, "Emission Strength")
     f_rise0 = M["rise"][0]
-    for ff, vv in ((1, 0.2), (f_rise0 + 30, 0.2), (f_rise0 + 70, 0.85), (NF, 0.95)):   # 見えてくるときに、ふわっと灯る
+    for ff, vv in ((1, 0.2), (f_rise0 + 30, 0.2), (f_rise0 + 70, 0.9), (NF, 1.0)):   # 見えてくるときに、ふわっと灯る
         el_.default_value = vv; el_.keyframe_insert("default_value", frame=ff)
-    lg = obj_from_mesh("hekiga", verts, faces, mlogo)
-    uvl_ = lg.data.uv_layers.new(name="UV")
-    for li, lp in enumerate(lg.data.loops): uvl_.data[li].uv = uvs[lp.vertex_index]
+    ym.data.materials.clear(); ym.data.materials.append(ml)
+    lg = ym
     # 山の上の小さな灯り（ロゴのまわりにぽつぽつ）
     lamp = mat_drop("hotaru", (1.0, 0.8, 0.5), 6.0, 1.0)
     spray("hotaru", tuple(LOGO + V((0, 0, 0)) - fwd * 1.0), (WL * 1.3, HL * 1.1), 70, (-0.05, -0.05, -0.05), (0.05, 0.05, 0.08), 8.0, 0.12, lamp, 5, 0.0, False,
@@ -865,13 +865,20 @@ def kensa():
                 to, co, ro = bvh_of(o)
                 if (co - cu).length > ru + ro: continue
                 n_check += 1
+                if n.startswith("bar") and int(n[3:5]) in (fr.get("bi"), (fr.get("bi") or 0) + 1) and n == ("bar%02d" % int(n[3:5])):
+                    # 乗っている板・次に乗る板：三角が触れているだけ（＝着地）は当たり前。板の上面より下に沈んでいたら、めり込み
+                    ev = unko.evaluated_get(dg); me_ = ev.to_mesh(); mw = ev.matrix_world
+                    top = o.matrix_world.translation.z + BARS[0]["T"] / 2
+                    inv = o.matrix_world.inverted(); hx = o.dimensions.x / 2; hy = o.dimensions.y / 2
+                    pen = 0.0
+                    for v in me_.vertices:
+                        w = mw @ v.co; lv = inv @ w
+                        if abs(lv.x) < hx - 0.03 and abs(lv.y) < hy - 0.03: pen = max(pen, top - w.z)
+                    ev.to_mesh_clear()
+                    if pen > 0.005: bad.append({"f": f, "sub": sub, "obj": n, "st": fr["st"], "shizumi_m": round(pen, 4)})
+                    continue
                 if tu.overlap(to):
-                    st = fr["st"]
-                    near_bar = n.startswith("bar") and abs(o.matrix_world.translation.z + BARS[0]["T"] / 2 - fr["u"][2]) < 0.06
-                    if n.startswith("bar") and (st in ("contact", "rest") or sub == 0.0) and near_bar: continue   # 着地して接している板
-                    if n.startswith(("Cube", "Cylinder")) and st in ("contact", "rest"):
-                        continue
-                    bad.append({"f": f, "sub": sub, "obj": n, "st": st})
+                    bad.append({"f": f, "sub": sub, "obj": n, "st": fr["st"]})
         if f % 100 == 0: print("KENSA", f, len(bad), round(time.time() - t0), flush=True)
     res = {"koma": NF, "kizami": 4, "shirabeta_kumi": n_check, "meri_komi": len(bad), "rei": bad[:30]}
     json.dump(res, open(os.path.join(OUT, "kensa.json"), "w"), ensure_ascii=False, indent=1)
