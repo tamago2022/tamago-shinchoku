@@ -502,24 +502,51 @@ def build_mori_no_taki():
     # 滝の上の縁（白く盛り上がって落ち始める水）
     lip = mat_water("lipA", (1.0, 1.0, 1.0), 1.5, 1.3, 0.9)
     curtain("taki_fuchi", wl - 0.5, wr + 0.5, cy_ - 0.75, zt + 3.3, zt + 2.2, lip, 1.2, 48, 0.2)
-    # 崖（左右）：中は空けて、道から十分はなす
-    for k in range(13):
-        z = zt + 2 - (zt - pz + 2) * k / 12
-        for sgn, xw in ((-1, wl), (1, wr)):
-            for j in range(2):
-                yy = rnd.uniform(ymin - 4, cy_ + 0.5)
-                rx = rnd.uniform(1.4, 2.3)
-                rock("cliff%d%d%d" % (k, sgn, j), (xw + sgn * (rx + 0.1), yy, z + rnd.uniform(-0.8, 0.8)),
-                     (rx, rnd.uniform(1.5, 2.6), rnd.uniform(1.6, 2.4)), rockA, rnd.uniform(0, 6.28), 0.45, 4)
+    # 谷の壁（左右と手前）：すき間のない岩の壁。カメラの通り道から 0.8m 以上はなす（凹凸は ±0.6m）
+    fy = A["front_y"]
+    def wall(name, o, ua, va, su, sv, nrm, mat, nu=140, nv=170):
+        verts = []; faces = []
+        for j in range(nv + 1):
+            for i in range(nu + 1):
+                pnt = V(o) + V(ua) * (su * (i / nu - 0.5)) + V(va) * (sv * (j / nv - 0.5)); verts.append(tuple(pnt))
+        for j in range(nv):
+            for i in range(nu):
+                a_ = j * (nu + 1) + i; faces.append((a_, a_ + 1, a_ + nu + 2, a_ + nu + 1))
+        w_ = obj_from_mesh(name, verts, faces, mat)
+        vg = w_.vertex_groups.new(name="all"); vg.add(list(range(len(verts))), 1.0, 'REPLACE')
+        t1 = bpy.data.textures.new(name + "1", 'CLOUDS'); t1.noise_scale = 2.2; t1.noise_depth = 4
+        d1 = w_.modifiers.new("d1", 'DISPLACE'); d1.texture = t1; d1.strength = 1.1; d1.mid_level = 0.5; d1.texture_coords = 'GLOBAL'; d1.direction = 'CUSTOM_NORMAL' if False else 'NORMAL'
+        t2 = bpy.data.textures.new(name + "2", 'VORONOI'); t2.noise_scale = 0.9
+        d2 = w_.modifiers.new("d2", 'DISPLACE'); d2.texture = t2; d2.strength = 0.25; d2.mid_level = 0.5; d2.texture_coords = 'GLOBAL'
+        bpy.context.view_layer.objects.active = w_; w_.select_set(True); bpy.ops.object.shade_smooth()
+        # 面の向き（谷の内側を向く）
+        if (V(ua).cross(V(va))).dot(V(nrm)) < 0:
+            bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.mesh.flip_normals(); bpy.ops.object.mode_set(mode='OBJECT')
+        return w_
+    zc, zh = (zt + 8 + pz - 2) / 2, (zt + 8) - (pz - 2)
+    yc, yl = (fy + cy_ + 4) / 2, (cy_ + 4) - fy
+    wall("kabe_L", (wl - 0.7, yc, zc), (0, 1, 0), (0, 0, 1), yl, zh, (1, 0, 0), rockA)
+    wall("kabe_R", (wr + 0.7, yc, zc), (0, 1, 0), (0, 0, 1), yl, zh, (-1, 0, 0), rockA)
+    wall("kabe_mae", ((wl + wr) / 2, fy - 0.7, zc), (1, 0, 0), (0, 0, 1), wr - wl + 4, zh, (0, 1, 0), rockA, 60, 170)
     box("cliff_back", (cx, cy_ + 3.5, (zt + pz) / 2), (30, 1.5, zt - pz + 14), rockW)
-    # 板の下の岩（当たり判定の楕円体と同じ大きさ・へこませるだけ）
-    for b in BARS:
-        if b["stage"] != "A": continue
-        p0 = V(b["p"]); L, W = b["L"], b["W"]
-        rock("ledge%02d" % b["i"], p0 + V((0, 0, -0.40)), (L * 0.40, W * 0.70, 0.22), rockA, b["yaw"], 0.10, 4, safe=True)
-        # 岩の下から崖へ伸びる根（細い柱）
-        bpy.ops.mesh.primitive_cone_add(radius1=0.10, radius2=0.03, depth=2.4, location=p0 + V((0, 0, -1.7)))
-        bpy.context.object.data.materials.append(rockA)
+    # 上の縁から張り出す岩（空との境目の形）
+    for k in range(18):
+        sgn = rnd.choice((-1, 1)); xw = wl - 1.6 if sgn < 0 else wr + 1.6
+        rock("fuchi%02d" % k, (xw, rnd.uniform(fy, cy_ + 1), zt + 8 + rnd.uniform(-1, 1)), (rnd.uniform(1.5, 2.6), rnd.uniform(1.5, 2.5), rnd.uniform(1.0, 1.8)), rockA, rnd.uniform(0, 6.28), 0.45, 4)
+    # 左右と手前の壁を流れ落ちる細い滝（どちらを向いても滝が見える）
+    wS = mat_water("waterS", (0.86, 0.95, 1.0), 4.0, 0.9, 0.7)
+    for k, (xx, yy, wd) in enumerate(((wl - 0.15, ymin + 2.0, 2.2), (wl - 0.15, ymin + 11.0, 1.4), (wr + 0.15, ymin + 5.5, 2.6), (wr + 0.15, ymin + 14.0, 1.6))):
+        verts = []; faces = []; NZ = 40; NS = 12
+        for j in range(NZ + 1):
+            z = zt + 7.5 + (pz - zt - 7.5) * j / NZ
+            for i in range(NS + 1):
+                u = i / NS; verts.append((xx + (0.25 if xx < cx else -0.25) * (1 - j / NZ) ** 8, yy + (u - 0.5) * wd, z))
+        for j in range(NZ):
+            for i in range(NS):
+                a_ = j * (NS + 1) + i; faces.append((a_, a_ + 1, a_ + NS + 2, a_ + NS + 1))
+        obj_from_mesh("taki_yoko%d" % k, verts, faces, wS)
+    for k, (xx, wd) in enumerate((((wl + wr) / 2 - 2.2, 1.8), ((wl + wr) / 2 + 2.6, 2.4))):
+        curtain("taki_mae%d" % k, xx - wd / 2, xx + wd / 2, fy - 0.15, zt + 7.5, pz - 0.5, wS, -0.05, 10, -0.25)
     # 滝つぼ（水面・泡・しぶき・霧）
     mw, ntw_, pw_ = newmat("pool"); pin(pw_, "Base Color", (0.015, 0.06, 0.055, 1)); pin(pw_, "Roughness", 0.04)
     tcw = node(ntw_, "ShaderNodeTexCoord"); mpw = node(ntw_, "ShaderNodeMapping"); link(ntw_, tcw.outputs["Object"], I(mpw, "Vector"))
@@ -553,12 +580,12 @@ def build_mori_no_taki():
     # 植物：崖のシダ・垂れる葉・水辺の大きな葉（道の中には置かない）
     for k in range(80):
         sgn = rnd.choice((-1, 1)); xw = wl if sgn < 0 else wr
-        base = (xw + sgn * rnd.uniform(0.1, 0.6), rnd.uniform(ymin - 2, cy_ - 0.3), rnd.uniform(pz + 0.5, zt + 2))
+        base = (xw + sgn * rnd.uniform(0.15, 0.45), rnd.uniform(A["front_y"] + 0.5, cy_ - 0.3), rnd.uniform(pz + 0.5, zt + 6))
         leaf_cards("shida%02d" % k, base, rnd.randint(4, 7), rnd.choice(("shida_a.png", "shida_b.png")), rnd.uniform(0.6, 1.2),
                    (-sgn, rnd.uniform(-0.3, 0.3), 0), rnd.choice((0.0, 0.0, 0.6, 1.2)), k)
     for k in range(14):
         sgn = rnd.choice((-1, 1)); xw = wl if sgn < 0 else wr
-        base = (xw + sgn * rnd.uniform(-0.2, 0.4), rnd.uniform(ymin - 4, cy_ - 2.5), pz + 0.05)
+        base = (xw + sgn * rnd.uniform(0.0, 0.4), rnd.uniform(A["front_y"] + 1, cy_ - 2.5), pz + 0.05)
         leaf_cards("ha%02d" % k, base, rnd.randint(3, 5), "ha_ooki.png", rnd.uniform(0.9, 1.6), (-sgn, -0.4, 0), 0.0, 100 + k)
     for k in range(18):   # 上から垂れるつる（シダを下向きに）
         x = rnd.uniform(wl - 0.3, wr + 0.3); base = (x, cy_ - rnd.uniform(0.9, 2.0), zt + rnd.uniform(1.5, 3.5))
