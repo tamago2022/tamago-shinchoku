@@ -42,7 +42,7 @@ if sc.render.engine == "CYCLES":
 print("ENGINE", sc.render.engine, bpy.app.version_string, flush=True)
 EV = sc.eevee
 tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom=True, bloom_intensity=0.045,
-       bloom_threshold=0.85, bloom_radius=6.5, bloom_knee=0.6, use_gtao=True, gtao_distance=0.5, gtao_factor=1.1,
+       bloom_threshold=0.85, bloom_radius=6.5, bloom_knee=0.6, use_gtao=True, gtao_distance=1.2, gtao_factor=1.6,
        use_ssr=True, use_ssr_refraction=True, use_ssr_halfres=True, ssr_quality=0.5, ssr_thickness=0.1,
        use_soft_shadows=True, use_volumetric_shadows=True, use_volumetric_lights=True,
        volumetric_tile_size='16' if not LITE else '16', volumetric_samples=40 if not LITE else 24,
@@ -498,13 +498,13 @@ def mat_concrete(name, moss=0.5, grime=1.0, wet_z=None, tone=1.0, rust=0.5):
     st_amt = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', streak, wallness), vb=0.55 * grime)
     # 色：生コン灰（むら）→ 汚れで暗く
     col = node(nt, "ShaderNodeValToRGB"); el = col.color_ramp.elements
-    el[0].position = 0.3; el[0].color = (0.16 * tone, 0.155 * tone, 0.145 * tone, 1); el[1].position = 0.75; el[1].color = (0.36 * tone, 0.35 * tone, 0.33 * tone, 1)
+    el[0].position = 0.3; el[0].color = (0.085 * tone, 0.082 * tone, 0.078 * tone, 1); el[1].position = 0.75; el[1].color = (0.26 * tone, 0.25 * tone, 0.235 * tone, 1)
     mixbg = math_(nt, 'ADD', math_(nt, 'MULTIPLY', big, vb=0.6), math_(nt, 'MULTIPLY', grain, vb=0.4)); link(nt, mixbg, I(col, "Fac"))
-    dark = node(nt, "ShaderNodeMixRGB"); dark.blend_type = 'MULTIPLY'; link(nt, st_amt, dark.inputs[0]); link(nt, col.outputs[0], dark.inputs[1]); dark.inputs[2].default_value = (0.28, 0.27, 0.26, 1)
+    dark = node(nt, "ShaderNodeMixRGB"); dark.blend_type = 'MULTIPLY'; link(nt, st_amt, dark.inputs[0]); link(nt, col.outputs[0], dark.inputs[1]); dark.inputs[2].default_value = (0.22, 0.21, 0.20, 1)
     # ひび：ボロノイの縁
-    vor = node(nt, "ShaderNodeTexVoronoi"); vor.feature = 'DISTANCE_TO_EDGE'; I(vor, "Scale").default_value = 0.9; link(nt, geo.outputs["Position"], I(vor, "Vector"))
-    crack = math_(nt, 'LESS_THAN', O(vor, "Distance"), vb=0.012)
-    crk = math_(nt, 'MULTIPLY', crack, math_(nt, 'GREATER_THAN', big, vb=0.52))   # ひびは一部の面だけ
+    vor = node(nt, "ShaderNodeTexVoronoi"); vor.feature = 'DISTANCE_TO_EDGE'; I(vor, "Scale").default_value = 2.6; link(nt, geo.outputs["Position"], I(vor, "Vector"))
+    crack = math_(nt, 'LESS_THAN', O(vor, "Distance"), vb=0.006)
+    crk = math_(nt, 'MULTIPLY', crack, math_(nt, 'GREATER_THAN', big, vb=0.56))   # ひびは一部の面だけ（細く・まばらに）
     dark2 = node(nt, "ShaderNodeMixRGB"); dark2.blend_type = 'MULTIPLY'; link(nt, crk, dark2.inputs[0]); link(nt, dark.outputs[0], dark2.inputs[1]); dark2.inputs[2].default_value = (0.25, 0.25, 0.25, 1)
     # 錆のしみ（鉄筋から流れる赤茶）
     rv = node(nt, "ShaderNodeTexVoronoi"); I(rv, "Scale").default_value = 0.5; link(nt, mp.outputs[0], I(rv, "Vector"))
@@ -512,10 +512,10 @@ def mat_concrete(name, moss=0.5, grime=1.0, wet_z=None, tone=1.0, rust=0.5):
     rustc = node(nt, "ShaderNodeMixRGB"); link(nt, math_(nt, 'MULTIPLY', rspot, vb=1.6), rustc.inputs[0]); link(nt, dark2.outputs[0], rustc.inputs[1]); rustc.inputs[2].default_value = (0.30, 0.10, 0.04, 1)
     # 苔：上向きの面と、低い所（湿気）に、まだらに
     upness = node(nt, "ShaderNodeMapRange"); I(upness, "From Min").default_value = 0.55; I(upness, "From Max").default_value = 0.95; link(nt, sepn.outputs["Z"], I(upness, "Value"))
-    mossn = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', nz(2.2, 5, 0.6), vb=0.5 - 0.1 * moss), upness.outputs[0])
+    mossn = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', nz(2.2, 5, 0.6), vb=0.60 - 0.1 * moss), upness.outputs[0])
     if wet_z is not None:
         lowz = node(nt, "ShaderNodeMapRange"); I(lowz, "From Min").default_value = wet_z + 2.5; I(lowz, "From Max").default_value = wet_z + 0.2; link(nt, sepp.outputs["Z"], I(lowz, "Value"))
-        mossn = math_(nt, 'MAXIMUM', mossn, math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', nz(3.0, 5, 0.6), vb=0.42), math_(nt, 'MULTIPLY', lowz.outputs[0], vb=0.9 * moss)))
+        mossn = math_(nt, 'MAXIMUM', mossn, math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', nz(3.0, 5, 0.6), vb=0.50), math_(nt, 'MULTIPLY', lowz.outputs[0], vb=0.8 * moss)))
     mossc = node(nt, "ShaderNodeValToRGB"); mossc.color_ramp.elements[0].color = (0.03, 0.06, 0.015, 1); mossc.color_ramp.elements[1].color = (0.10, 0.17, 0.04, 1)
     link(nt, grain, I(mossc, "Fac"))
     fin = node(nt, "ShaderNodeMixRGB"); link(nt, math_(nt, 'MULTIPLY', mossn, vb=moss), fin.inputs[0]); link(nt, rustc.outputs[0], fin.inputs[1]); link(nt, mossc.outputs[0], fin.inputs[2])
@@ -592,8 +592,8 @@ def ring_mesh(name, cen, r_of, phi0, phi1, z0, z1, nphi, nz, mat, inward=True):
 # =====================================================================
 def build_haikyo_hall():
     A = SC["A"]; cen = A["center"]; RW = A["R_wall"]; zt = A["ztop"]; pz = A["pool_z"]
-    conc = mat_concrete("concA", moss=0.7, grime=1.0, wet_z=pz, tone=1.0, rust=0.6)
-    concD = mat_concrete("concA_dark", moss=0.3, grime=1.2, wet_z=pz, tone=0.55, rust=0.3)
+    conc = mat_concrete("concA", moss=0.4, grime=1.1, wet_z=pz, tone=1.0, rust=0.6)
+    concD = mat_concrete("concA_dark", moss=0.15, grime=1.2, wet_z=pz, tone=0.4, rust=0.3)
     rust = mat_rust("rustA"); glass = mat_glass("glassA")
     ZTOP = zt + 8.6; NSEG = 36; DR = 3.2; TH = 0.36
     # 外の皮（いちばん奥の壁・暗い）
@@ -683,12 +683,12 @@ def build_haikyo_hall():
     bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=3.5, location=(cen[0], cen[1], pz + 1.4)); ks = bpy.context.object; ks.name = "kiri_soko"
     ks.data.materials.append(mat_volume("kiriA_soko", 0.7, (0.90, 0.93, 0.95), 0.3, (0.9, (0.6, 0, 0.9), 0.0, 1.0)))
     bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=ZTOP - pz + 6, location=(cen[0], cen[1], (ZTOP + pz) / 2)); kz = bpy.context.object; kz.name = "kiri_zentai"
-    kz.data.materials.append(mat_volume("kiriA", 0.035, (0.95, 0.93, 0.85), 0.75))
+    kz.data.materials.append(mat_volume("kiriA", 0.07, (0.95, 0.93, 0.85), 0.8))
     # 光：割れた天井から差す太陽（低め・光の筋）、空の青い回り込み、水面の照り返し
-    ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 14.0; ld.color = (1.0, 0.90, 0.72); ld.angle = math.radians(1.5)
+    ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 26.0; ld.color = (1.0, 0.88, 0.68); ld.angle = math.radians(1.2)
     lo = bpy.data.objects.new("sunA", ld); bpy.context.collection.objects.link(lo)
     lo.rotation_euler = (math.radians(-28), math.radians(20), math.radians(150))
-    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 700; ld2.size = 12; ld2.color = (0.72, 0.84, 1.0)
+    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 260; ld2.size = 12; ld2.color = (0.72, 0.84, 1.0)
     lo2 = bpy.data.objects.new("fillA", ld2); bpy.context.collection.objects.link(lo2)
     lo2.location = (cen[0], cen[1], ZTOP + 4); lo2.rotation_euler = (0, 0, 0)
     ld3 = bpy.data.lights.new("mizu_glow", 'AREA'); ld3.energy = 220; ld3.size = 14; ld3.color = (0.6, 0.8, 0.9)
@@ -717,6 +717,20 @@ def build_haikyo_yoru():
     WZ = ct - 0.35
     conc = mat_concrete("concB", moss=0.6, grime=1.0, wet_z=WZ, tone=0.8, rust=0.6)
     concF = mat_concrete("concB_far", moss=0.0, grime=0.6, wet_z=None, tone=0.5, rust=0.0)
+    # 遠くのビル：窓の格子（へこんだ暗い窓・ところどころ灯りが残る）
+    ntF = concF.node_tree; pF = ntF.nodes["Principled BSDF"]
+    geoF = node(ntF, "ShaderNodeNewGeometry"); sepF = node(ntF, "ShaderNodeSeparateXYZ"); link(ntF, geoF.outputs["Position"], sepF.inputs[0])
+    sepN = node(ntF, "ShaderNodeSeparateXYZ"); link(ntF, geoF.outputs["Normal"], sepN.inputs[0])
+    def grid(src, period, fill):
+        return math_(ntF, 'LESS_THAN', math_(ntF, 'FRACT', math_(ntF, 'DIVIDE', src, vb=period)), vb=fill)
+    horiz = math_(ntF, 'ADD', math_(ntF, 'MULTIPLY', sepF.outputs["X"], math_(ntF, 'ABSOLUTE', sepN.outputs["Y"])), math_(ntF, 'MULTIPLY', sepF.outputs["Y"], math_(ntF, 'ABSOLUTE', sepN.outputs["X"])))
+    win = math_(ntF, 'MULTIPLY', math_(ntF, 'MULTIPLY', grid(horiz, 2.6, 0.55), grid(sepF.outputs["Z"], 3.4, 0.5)), math_(ntF, 'SUBTRACT', va=1.0, b=math_(ntF, 'ABSOLUTE', sepN.outputs["Z"])))
+    vw = node(ntF, "ShaderNodeTexVoronoi"); I(vw, "Scale").default_value = 0.45; link(ntF, geoF.outputs["Position"], I(vw, "Vector"))
+    lit = math_(ntF, 'MULTIPLY', win, math_(ntF, 'LESS_THAN', O(vw, "Distance"), vb=0.16))
+    basein = I(pF, "Base Color").links[0].from_socket
+    mixw = node(ntF, "ShaderNodeMixRGB"); link(ntF, win, mixw.inputs[0]); link(ntF, basein, mixw.inputs[1]); mixw.inputs[2].default_value = (0.012, 0.014, 0.02, 1)
+    link(ntF, mixw.outputs[0], I(pF, "Base Color"))
+    pin(pF, "Emission Color", (1.0, 0.72, 0.42, 1)); link(ntF, math_(ntF, 'MULTIPLY', lit, vb=3.0), I(pF, "Emission Strength"))
     rust = mat_rust("rustB")
     # 水面（広く）：月と街の映り込み
     bpy.ops.mesh.primitive_plane_add(size=900, location=(cx, cy + 150, WZ)); wp = bpy.context.object; wp.name = "mizu_men"
@@ -733,7 +747,7 @@ def build_haikyo_yoru():
     rm2 = node(ntm, "ShaderNodeValToRGB"); rm2.color_ramp.elements[0].color = (0.78, 0.74, 0.66, 1); rm2.color_ramp.elements[1].color = (1.0, 0.96, 0.86, 1)
     link(ntm, O(nzm, "Fac"), I(rm2, "Fac")); link(ntm, rm2.outputs[0], I(pm, "Base Color")); link(ntm, rm2.outputs[0], I(pm, "Emission Color"))
     pin(pm, "Emission Strength", 4.5); mo.data.materials.append(mm)
-    ld = bpy.data.lights.new("moonB", 'SUN'); ld.energy = 2.6; ld.color = (0.74, 0.80, 1.0); ld.angle = math.radians(1.5)
+    ld = bpy.data.lights.new("moonB", 'SUN'); ld.energy = 3.6; ld.color = (0.74, 0.80, 1.0); ld.angle = math.radians(1.5)
     lo = bpy.data.objects.new("moonB", ld); bpy.context.collection.objects.link(lo)
     dirm = (MOON - PE).normalized(); lo.rotation_euler = (-dirm).to_track_quat('-Z', 'Y').to_euler()
     ld2 = bpy.data.lights.new("rimB", 'AREA'); ld2.energy = 300; ld2.size = 10; ld2.color = (0.85, 0.6, 1.0)
@@ -772,7 +786,7 @@ def build_haikyo_yoru():
         if kind < 0.45:   # 壁の残り
             h = rnd.uniform(1.5, 7); cube("kabeB%02d" % k, (x, y, WZ - 0.6 + h / 2), (rnd.uniform(3, 9), 0.5, h), conc, rnd.uniform(0, math.pi), 0.05)
         elif kind < 0.75:  # 傾いた板
-            cube("itaB%02d" % k, (x, y, WZ + rnd.uniform(0.2, 1.5)), (rnd.uniform(3, 7), rnd.uniform(2, 4), 0.35), conc, 0.0, 0.04, rot=(rnd.uniform(0.2, 0.6) * rnd.choice((-1, 1)), rnd.uniform(-0.3, 0.3), rnd.uniform(0, math.pi)))
+            cube("itaB%02d" % k, (x, y, WZ + rnd.uniform(-0.4, 0.5)), (rnd.uniform(3, 7), rnd.uniform(2, 4), 0.35), conc, 0.0, 0.04, rot=(rnd.uniform(0.2, 0.6) * rnd.choice((-1, 1)), rnd.uniform(-0.3, 0.3), rnd.uniform(0, math.pi)))
         else:              # 柱
             h = rnd.uniform(2, 9); cube("hashiraB%02d" % k, (x, y, WZ - 0.6 + h / 2), (0.7, 0.7, h), conc, rnd.uniform(0, 3), 0.03)
             for j in range(3):
@@ -785,7 +799,8 @@ def build_haikyo_yoru():
         w_, d_, h_ = rnd.uniform(10, 30), rnd.uniform(10, 30), rnd.uniform(10, 85)
         kuzure = rnd.random() < 0.3
         if kuzure: h_ *= 0.6
-        cube("machi%02d" % k, (x, y, WZ - 2 + h_ / 2), (w_, d_, h_), concF, rnd.uniform(0, 3), 0.0)
+        yw = rnd.uniform(0, 3); cube("machi%02d" % k, (x, y, WZ - 2 + h_ / 2), (w_, d_, h_), concF, yw, 0.0)
+        if rnd.random() < 0.5: cube("machi_ue%02d" % k, (x + rnd.uniform(-w_ / 4, w_ / 4), y + rnd.uniform(-d_ / 4, d_ / 4), WZ - 2 + h_ + 2.5), (w_ * 0.35, d_ * 0.35, 5), concF, yw, 0.0)
         if kuzure:   # 上が崩れている
             rock("machi_kuzure%02d" % k, (x, y, WZ - 2 + h_), (w_ * 0.6, d_ * 0.6, h_ * 0.3), concF, 0.0, 0.5, 2)
         for j in range(rnd.randint(0, 3)):
@@ -803,8 +818,8 @@ tcw = node(wn, "ShaderNodeTexCoord"); sepw = node(wn, "ShaderNodeSeparateXYZ"); 
 zmap = node(wn, "ShaderNodeMath"); zmap.operation = 'MULTIPLY_ADD'; zmap.inputs[1].default_value = 0.5; zmap.inputs[2].default_value = 0.5
 link(wn, sepw.outputs["Z"], zmap.inputs[0])
 rampA = node(wn, "ShaderNodeValToRGB")
-rampA.color_ramp.elements[0].position = 0.40; rampA.color_ramp.elements[0].color = (0.10, 0.11, 0.12, 1)
-rampA.color_ramp.elements[1].position = 0.85; rampA.color_ramp.elements[1].color = (1.4, 1.36, 1.25, 1)
+rampA.color_ramp.elements[0].position = 0.40; rampA.color_ramp.elements[0].color = (0.035, 0.038, 0.042, 1)
+rampA.color_ramp.elements[1].position = 0.85; rampA.color_ramp.elements[1].color = (0.75, 0.74, 0.70, 1)
 link(wn, zmap.outputs[0], I(rampA, "Fac"))
 vor = node(wn, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 220
 stp = math_(wn, 'LESS_THAN', O(vor, "Distance"), vb=0.05)
@@ -813,8 +828,8 @@ vor2 = node(wn, "ShaderNodeTexVoronoi"); I(vor2, "Scale").default_value = 70; li
 stp2 = math_(wn, 'LESS_THAN', O(vor2, "Distance"), vb=0.035)
 stars = math_(wn, 'ADD', math_(wn, 'MULTIPLY', stp, vb=2.5), math_(wn, 'MULTIPLY', stp2, vb=6.0))
 rampB = node(wn, "ShaderNodeValToRGB")
-rampB.color_ramp.elements[0].position = 0.45; rampB.color_ramp.elements[0].color = (0.030, 0.026, 0.075, 1)
-rampB.color_ramp.elements[1].position = 0.9; rampB.color_ramp.elements[1].color = (0.002, 0.003, 0.016, 1)
+rampB.color_ramp.elements[0].position = 0.45; rampB.color_ramp.elements[0].color = (0.045, 0.040, 0.10, 1)
+rampB.color_ramp.elements[1].position = 0.9; rampB.color_ramp.elements[1].color = (0.004, 0.005, 0.022, 1)
 link(wn, zmap.outputs[0], I(rampB, "Fac"))
 addst = node(wn, "ShaderNodeMixRGB"); addst.blend_type = 'ADD'; addst.inputs[0].default_value = 1.0
 link(wn, rampB.outputs["Color"], addst.inputs[1]); link(wn, stars, addst.inputs[2])
