@@ -1,0 +1,44 @@
+# 宇宙うんこ：Blender 3.6 EEVEE（画面なし＝xvfb＋Mesa）で連番を分けて描く。成果物は2日で消える。
+name: uchu-unko-render
+on:
+  workflow_dispatch:
+  push:
+    paths: ["tools/uchu_unko/render_go.txt"]
+concurrency: { group: uchu-unko-render, cancel-in-progress: true }
+jobs:
+  render:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix: { chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/uchu_unko
+            wae_autopost/images/12_紫の両手と丸い惑星_黒背景.jpg
+          sparse-checkout-cone-mode: false
+      - name: deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglu1-mesa libxi6 libxxf86vm1 libxfixes3 libxrender1 libsm6 libxkbcommon0 libegl1 >/dev/null
+          curl -sSL --retry 5 -o b.tar.xz https://mirrors.ocf.berkeley.edu/blender/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz \
+            || curl -sSL --retry 5 -o b.tar.xz https://download.blender.org/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz
+          mkdir bl && tar -xf b.tar.xz -C bl --strip-components=1 && rm b.tar.xz
+      - name: render
+        env: { UU_PCT: "75", UU_SAMPLES: "10" }
+        run: |
+          W=$PWD/tools/uchu_unko; OUT=$PWD/out; mkdir -p $OUT
+          export UU_PAINT="$PWD/wae_autopost/images/12_紫の両手と丸い惑星_黒背景.jpg"
+          NF=$(python3 -c "import json;print(json.load(open('$W/hits.json'))['nf'])")
+          N=20; C=${{ matrix.chunk }}; A=$(( C*NF/N + 1 )); B=$(( (C+1)*NF/N ))
+          echo "frames $A-$B of $NF"
+          UU_ENGINE=EEVEE xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v2.py -- $W $OUT "$A-$B" 2>&1 | grep -E "ENGINE|STAGE|^FRAME|Error|DONE" || true
+          if [ $(ls $OUT/*.jpg 2>/dev/null | wc -l) -lt $(( B-A+1 )) ]; then
+            echo "EEVEE が足りない → Cycles（軽い版）で残りを描く"
+            UU_ENGINE=CYCLES UU_LITE=1 UU_SAMPLES=24 ./bl/blender -b -P $W/scene_v2.py -- $W $OUT "$A-$B" 2>&1 | grep -E "ENGINE|^FRAME|Error|DONE" || true
+          fi
+          ls $OUT | wc -l
+      - uses: actions/upload-artifact@v4
+        with: { name: "frames-${{ matrix.chunk }}", path: out/, retention-days: 2 }
