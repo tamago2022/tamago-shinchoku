@@ -286,6 +286,7 @@ for i, b in enumerate(BARS):
 def spray(name, center, size, count, vmin, vmax, life, rad, mat, seed=0, grav=9.8, shrink=True, rot=(0, 0, 0)):
     bpy.ops.mesh.primitive_plane_add(size=1, location=center); o = bpy.context.object; o.name = name; o.scale = (size[0], size[1], 1)
     o.rotation_euler = rot
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)   # 速さ・粒の大きさを世界の単位のままにする
     ng = bpy.data.node_groups.new(name, 'GeometryNodeTree')
     try:
         ng.inputs.new('NodeSocketGeometry', 'Geometry'); ng.outputs.new('NodeSocketGeometry', 'Geometry')
@@ -376,12 +377,13 @@ def mat_rock(name, moss=0.6, wet=0.0, dark=1.0, glow=None):
         pin(p, "Emission Color", glow + (1,)); link(nt, mr.outputs[0], I(p, "Emission Strength"))
     return m
 
-def rock(name, loc, scale, mat, yaw=0.0, inward=0.18, sub=4, seed=0):
+def rock(name, loc, scale, mat, yaw=0.0, inward=0.18, sub=4, seed=0, safe=False):
     """形を外へは膨らませない岩（へこませるだけ）→ 当たり判定の楕円体からはみ出さない"""
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=sub, radius=1, location=loc)
     o = bpy.context.object; o.name = name; o.scale = scale; o.rotation_euler = (0, 0, yaw)
-    tx = bpy.data.textures.new(name + "t", 'VORONOI'); tx.noise_scale = 0.55; tx.distance_metric = 'DISTANCE'
-    dm = o.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = inward; dm.mid_level = 1.0; dm.texture_coords = 'LOCAL'
+    if not safe:
+        tx = bpy.data.textures.new(name + "t", 'VORONOI'); tx.noise_scale = 0.55; tx.distance_metric = 'DISTANCE'
+        dm = o.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = inward; dm.mid_level = 1.0; dm.texture_coords = 'LOCAL'
     tx2 = bpy.data.textures.new(name + "c", 'CLOUDS'); tx2.noise_scale = 0.3; tx2.noise_depth = 3
     dm2 = o.modifiers.new("d2", 'DISPLACE'); dm2.texture = tx2; dm2.strength = inward * 0.7; dm2.mid_level = 1.0; dm2.texture_coords = 'LOCAL'
     bpy.ops.object.shade_smooth(); o.data.materials.append(mat); return o
@@ -514,7 +516,7 @@ def build_mori_no_taki():
     for b in BARS:
         if b["stage"] != "A": continue
         p0 = V(b["p"]); L, W = b["L"], b["W"]
-        rock("ledge%02d" % b["i"], p0 + V((0, 0, -0.40)), (L * 0.40, W * 0.70, 0.22), rockA, b["yaw"], 0.06, 4)
+        rock("ledge%02d" % b["i"], p0 + V((0, 0, -0.40)), (L * 0.40, W * 0.70, 0.22), rockA, b["yaw"], 0.10, 4, safe=True)
         # 岩の下から崖へ伸びる根（細い柱）
         bpy.ops.mesh.primitive_cone_add(radius1=0.10, radius2=0.03, depth=2.4, location=p0 + V((0, 0, -1.7)))
         bpy.context.object.data.materials.append(rockA)
@@ -645,7 +647,7 @@ def build_kumo_no_yoru():
     for b in BARS:
         if b["stage"] != "B": continue
         p0 = V(b["p"]); L, W = b["L"], b["W"]
-        rock("shima%02d" % b["i"], p0 + V((0, 0, -0.40)), (L * 0.40, W * 0.70, 0.22), shima, b["yaw"], 0.06, 4)
+        rock("shima%02d" % b["i"], p0 + V((0, 0, -0.40)), (L * 0.40, W * 0.70, 0.22), shima, b["yaw"], 0.10, 4, safe=True)
         bpy.ops.mesh.primitive_cone_add(radius1=0.16, radius2=0.01, depth=1.0, location=p0 + V((0, 0, -0.95)))
         o = bpy.context.object; o.rotation_euler = (math.pi, 0, 0); o.data.materials.append(shima)
     # 遠くの山並み（シルエット）と、ロゴの山
@@ -659,7 +661,7 @@ def build_kumo_no_yoru():
         bpy.ops.object.shade_smooth(); o.data.materials.append(mtn); return o
     for k, (dx, dy, r_, h_) in enumerate(((-90, 210, 70, 55), (95, 230, 80, 62), (-30, 300, 90, 70), (160, 180, 60, 40), (-160, 170, 60, 38))):
         yama("toi_yama%d" % k, (PE.x + dx, PE.y + dy, ct - 6), r_, h_, k)
-    ym = yama("logo_yama", (MOUNT.x, MOUNT.y, ct - 6), 66, 82, 9, 7, 0.05)
+    ym = yama("logo_yama", (MOUNT.x, MOUNT.y, ct - 6), 75, 70, 9, 7, 0.05)
     bpy.context.view_layer.update()
     # 壁画：山の斜面に沿わせた網（カメラの終わりの位置から斜面へ光線を当てて、斜面の 0.35m 手前に置く）
     dg = bpy.context.evaluated_depsgraph_get(); ym_eval = ym.evaluated_get(dg)
@@ -760,7 +762,7 @@ prevq = None
 for f, fr in enumerate(FRM, start=1):
     c = V(fr["cam"]); l = V(fr["look"])
     fwd = (l - c).normalized()
-    q = fwd.to_track_quat('-Z', 'Z')
+    q = fwd.to_track_quat('-Z', 'Y')
     q = q @ Quaternion((0, 0, 1), fr["roll"])
     if prevq is not None and prevq.dot(q) < 0: q.negate()
     prevq = q
