@@ -2976,6 +2976,12 @@ def launch_one(item, q, alive, safe_max):
     #   worktree1本の発車失敗が丸ごと15分の空白になっていた（882/883/884/874番で実際に発生）。
     #   ここで長く粘っても次の周回でどのみち再挑戦するだけなので、短く見切って次へ回す方が損が小さい。
     WT_ADD_TIMEOUT = 90
+    # 2026-11-01 たまごさん「決まりでは worktree は禁止。発車係が今後 worktree を作らないよう直して」
+    #   実測：204009番（音ハメFable版）で、負荷の中 git worktree add が90秒×3回切れたあと作業場が残り、
+    #   その上で発車した。→ 新しい作業場は作らず、リポジトリ本体（repo）で走らせる。
+    #   item["worktree"] に既にある場所を明示した時だけ、その場所を使う（作り足しはしない）。
+    if not (item.get("worktree") and os.path.isdir(wt)):
+        wt = repo
     if not os.path.isdir(wt):
         try:
             subprocess.run(["git", "-C", repo, "worktree", "add", wt,
