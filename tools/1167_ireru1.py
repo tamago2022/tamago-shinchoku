@@ -63,6 +63,14 @@ query($o: OrganizationId!, $c: [ChannelId!]) {
 
 
 def gql(tok, q, v=None):
+    # ★2026-10-24【投稿前の2重検品】書く口(createPost/editPost)は機械＋別のAIを通ってから（tools/x_nijuu_kenpin.py）
+    try:
+        import x_nijuu_kenpin as _xn
+        _t = _xn.mon_gql(q, v)
+    except Exception as _e:
+        _t = {"errors": [{"message": "2重検品の道具が読めない：%s" % str(_e)[:100]}]} if ("createPost" in q or "editPost" in q) else None
+    if _t is not None:
+        return _t
     b = {"query": q}
     if v:
         b["variables"] = v

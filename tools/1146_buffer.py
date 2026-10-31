@@ -51,6 +51,14 @@ def get_key() -> str:
 
 
 def gql(query: str, variables=None, dry=False):
+    # ★2026-10-24【投稿前の2重検品】書く口(createPost/editPost)は機械＋別のAIを通ってから（tools/x_nijuu_kenpin.py）
+    try:
+        import x_nijuu_kenpin as _xn
+        _t = _xn.mon_gql(query, variables)
+    except Exception as _e:
+        _t = {"errors": [{"message": "2重検品の道具が読めない：%s" % str(_e)[:100]}]} if ("createPost" in query or "editPost" in query) else None
+    if _t is not None:
+        return _t
     body = {"query": query, "variables": variables or {}}
     if dry:
         print("POST " + API)

@@ -387,6 +387,14 @@ def do_check(target, base, runs, kijun_only=False, force=False, dist_label=None,
             h["riyuu"].append("確かめ直しに失敗: %s" % str(e)[:120])
     if not time_ok:
         h["riyuu"].append("Macが混雑（負荷%.1f/CPU%d）のため時間は参考値・判定から外した" % (load1, ncpu))
+    # ★2026-10-27 白飛びの関所：ローカルのビルドを、初回・SPA遷移・フルリロードでコマ撮りし「一瞬だけ出る白」が1コマでもあれば止める
+    if target == "local" and os.environ.get("KOUTAI_SHIRO", "1") != "0":
+        shiro = shirokoma_local(base)
+        if shiro is not None:
+            h["shirokoma"] = shiro
+            if shiro.get("n"):
+                h["tooru"] = False
+                h["riyuu"].append("白飛び：" + shiro.get("ichigyou", ""))
     rec = {"ts": now(), "target": target, "base": base, "result": "PASS" if h["tooru"] else "FAIL", "riyuu": h["riyuu"],
            "nani_fueta": h["nani_fueta"], "joyMainSha": _joy_sha(), "kijunSetAt": t.get("setAt"), "load1": load1, "timeJudged": time_ok,
            "pages": {k: {"ms": v["firstPageMs"], "kb": v["kb"].get("total"), "score": v["score"]} for k, v in summ.items()}}
@@ -462,6 +470,25 @@ def do_check_files(files):
     return 0
 
 
+def shirokoma_local(base):
+    """白コマ数え（tools/shirotobi_zen.sh を短い場面表 tools/shirotobi_kanmon.json で）。測れなければ None（人質にしない）"""
+    try:
+        env = dict(os.environ, SHIRO_STEPS_FILE=os.path.join(HERE, "shirotobi_kanmon.json"), SHIRO_CPU="1")
+        name = "kanmon-local"
+        subprocess.run(["bash", os.path.join(HERE, "shirotobi_zen.sh"), name, base], env=env, capture_output=True, text=True, timeout=1800)
+        res = _load(os.path.join(ST, "shirotobi", name + ".json"), None)
+        if not res or not res.get("場面"):
+            return None
+        sys.path.insert(0, HERE)
+        import shirotobi_mimawari as sm
+        if any(not str(r.get("行き先") or "").startswith(base) for r in res["場面"]):
+            return None  # 着かなかった場面がある＝測れていない（合否を出さない）
+        n, line = sm.matome(res)
+        return {"n": n, "ichigyou": line}
+    except Exception:
+        return None
+
+
 def do_pre_publish():
     """直近のローカル(dist)検査が FAIL で、それが今の main と同じ sha なら公開を止める。記録が無ければ通す（人質にしない）。"""
     sha = _joy_sha()
@@ -478,6 +505,17 @@ def do_pre_publish():
     if last and last.get("result") == "FAIL" and sha and last.get("joyMainSha") == sha:
         print("KOUTAI_KANMON_RESULT: FAIL ｜ 公開を止めました：main %s のローカル検査が後退（%s）" % (sha, "／".join(last.get("riyuu") or [])))
         return 2
+    # ★2026-10-27 本番に白飛びが出ている間は、白飛びを直す公開以外を止める（印は tools/shirotobi_mimawari.py・48時間まで）
+    try:
+        sys.path.insert(0, HERE)
+        import shirotobi_mimawari as sm
+        msg = subprocess.run(["git", "-C", JOY, "log", "-1", "--format=%s", "origin/main"], capture_output=True, text=True, timeout=20).stdout.strip()
+        why = sm.tomeru_ka(msg)
+        if why:
+            print("KOUTAI_KANMON_RESULT: FAIL ｜ 公開を止めました：" + why)
+            return 2
+    except Exception:
+        pass
     print("KOUTAI_KANMON_RESULT: PASS（直近のローカル検査=%s, main=%s）" % ((last or {}).get("result", "記録なし"), sha or "?"))
     return 0
 

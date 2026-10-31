@@ -184,6 +184,15 @@ class Lovable(object):
         return True
 
     def _rpc(self, method, params=None, retry=True):
+        # 2026-10-29 新しいテーブルは GRANT とセット（Supabase 10/30 仕様変更）。GRANT の無い CREATE TABLE は送らない
+        if method == "tools/call" and (params or {}).get("name") == "query_database":
+            try:
+                import db_grant_kanmon as _dgk
+                _miss = _dgk.kensa(((params or {}).get("arguments") or {}).get("sql") or "")
+            except ImportError:
+                _miss = []
+            if _miss:
+                return "ERR " + _dgk.kanmon_msg(_miss)
         self._n += 1
         payload = json.dumps({"jsonrpc": "2.0", "id": self._n,
                               "method": method, "params": params or {}}).encode()

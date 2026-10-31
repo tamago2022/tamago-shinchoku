@@ -64,6 +64,17 @@ def gql(tok, query, variables=None):
     #   Bufferの枠は24時間250回。9/27に枠を使い切った実行犯のひとつはここ。
     #   → 叩く前に必ず buffer_waku（429で閉まる門）と buffer_kura（1日の天井）を通る。
     sys.path.insert(0, HERE)
+    # ★2026-10-24【投稿前の2重検品】createPost / editPost の本文は、機械＋別のAIを通ってから送る。
+    #   落ちたら Buffer に送らず GraphQL エラーの形で返す（tools/x_nijuu_kenpin.py）。
+    try:
+        import x_nijuu_kenpin
+        tometa = x_nijuu_kenpin.mon_gql(query, variables)
+    except Exception as e:  # 門が壊れたら安全側＝送らない
+        tometa = ({"errors": [{"message": "2重検品の道具が読めない：%s" % str(e)[:120]}]}
+                  if ("createPost" in query or "editPost" in query) else None)
+    if tometa is not None:
+        log("2重検品で止めた：%s" % json.dumps(tometa.get("errors"), ensure_ascii=False)[:300])
+        return tometa
     import buffer_waku
     import buffer_kura
     if not buffer_waku.ake():

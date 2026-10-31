@@ -51,6 +51,7 @@ status/queue.json の発車待ちへ積む（command_ingest.queue_add）。
 
 import base64
 import calendar
+from datetime import datetime, timedelta, timezone
 import json
 import os
 import re
@@ -367,6 +368,57 @@ def api_get(url, token, etag=None, timeout=20):
         return 0, None, etag
 
 
+
+def api_post_issue_comment(repo, issue_no, token, body, timeout=20):
+    """Post a factory ACK; failures must never cancel an accepted queue item."""
+    url = "https://api.github.com/repos/%s/issues/%s/comments" % (repo, issue_no)
+    req = urllib.request.Request(
+        url, data=json.dumps({"body": body}, ensure_ascii=False).encode("utf-8"),
+        method="POST")
+    req.add_header("Authorization", "Bearer %s" % token)
+    req.add_header("Accept", "application/vnd.github+json")
+    req.add_header("X-GitHub-Api-Version", "2022-11-28")
+    req.add_header("User-Agent", "tamago-github-watch")
+    req.add_header("Content-Type", "application/json; charset=utf-8")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            if resp.getcode() == 201:
+                return True
+            log("factory ACK POST unexpected HTTP %s (%s #%s)" % (resp.getcode(), repo, issue_no))
+    except Exception as e:
+        log("factory ACK POST failed (%s #%s): %s" % (repo, issue_no, e))
+    return False
+
+
+def _extract_queue_n(message):
+    """Extract a queue ticket only from the known queue_add receipt format."""
+    m = re.search(r"(?<!\d)(\d{1,9})番として発車待ち", str(message or ""))
+    return m.group(1) if m else "unknown"
+
+
+def _ack_body(source_kind, source_id, queue_message, accepted_at=None, route="queue_add"):
+    """Machine-readable acceptance proof, not an execution/completion claim."""
+    if source_kind not in ("issue", "comment"):
+        raise ValueError("invalid ACK source")
+    at = accepted_at or datetime.now(timezone(timedelta(hours=9))).isoformat(timespec="seconds")
+    return "\n".join([
+        FACTORY_MARK, "accepted", "accepted_at: %s" % at,
+        "local_queue_n: %s" % _extract_queue_n(queue_message),
+        "source: %s:%s" % (source_kind, source_id),
+        "route: %s" % route,
+    ])
+
+
+def _send_ack(repo, issue_no, token, source_kind, source_id, queue_message, route="queue_add"):
+    """Best-effort: the queue is already committed before this is called."""
+    try:
+        body = _ack_body(source_kind, source_id, queue_message, route=route)
+        if not api_post_issue_comment(repo, issue_no, token, body):
+            log("factory ACK not delivered; queue remains accepted (%s #%s)" % (repo, issue_no))
+    except Exception as e:
+        log("factory ACK generation failed; queue remains accepted: %s" % e)
+
+
 def _iso_to_epoch(s):
     """GitHubの時刻は必ずUTC（末尾Z）。★time.mktime はローカル時刻として読むので
     日本だと9時間ずれる（9時間分の取りこぼし／二度拾いになる）。timegm を使う。"""
@@ -530,6 +582,19 @@ def _ai_of_login(login):
         return ai_daicho.who_to_ai(login)
     except Exception:
         return None
+
+
+def _tenshu_machi(repo, num, author, title, url):
+    """許可されていない投稿者の号・PRを実行せず控える（status/tenshu_kakunin_machi.jsonl）。"""
+    try:
+        import io as _io
+        p = os.path.join(os.path.dirname(TOOLS), "status", "tenshu_kakunin_machi.jsonl")
+        with _io.open(p, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"), "repo": repo, "number": num,
+                                "author": author, "title": title[:120], "url": url}, ensure_ascii=False) + "\n")
+        log("店主確認待ちへ：%s#%s（投稿者 %s は許可外）" % (repo, num, author))
+    except Exception as e:
+        log("店主確認待ちの控えに失敗: %r" % (e,))
 
 
 def _known_thread(thread):
@@ -899,6 +964,21 @@ def check_repo(repo, token, st, budget):
             # ★977番：外のAIが自分で号やPRを立てたら、それも「返り」として1つ数える。
             #   （Devinは終わりの合図をPRで返す。PRを数えないと永久に「返り0」の赤のままになる）
             author_ai = _ai_of_login(author)
+            # 防衛ライン（2026-10-28）：公開の掲示板（ai-kaigi）は誰でも書ける。
+            #   店主（tamago2022）と台帳に載った店主のAI以外の号・PRは積まず「店主確認待ち」へ。
+            if repo.endswith("/ai-kaigi") and author != "tamago2022" and not author_ai:
+                seen.add(key)
+                _tenshu_machi(repo, num, author, it.get("title") or "", it.get("html_url") or "")
+                continue
+            try:                # 命令文は指示ではなくデータ：実行せず保留・通報（kinkyu_shutter）
+                sys.path.insert(0, TOOLS)
+                import kinkyu_shutter
+                if kinkyu_shutter.hold((it.get("title") or "") + "\n" + (it.get("body") or ""),
+                                       "github:%s#%s" % (repo, num)):
+                    seen.add(key)
+                    continue
+            except ImportError:
+                pass
             if author_ai:
                 _daicho("in", author_ai, thread="gh:%s#%s" % (repo, num),
                         topic=(it.get("title") or "")[:120],
@@ -942,6 +1022,8 @@ def check_repo(repo, token, st, budget):
             seen.add(key)
             just_queued.add(str(num))
             picked += 1 if status == "done" else 0
+            if status == "done":
+                _send_ack(repo, num, token, "issue", num, msg)
             log("%s #%s「%s」→ %s（%s）" % (repo, num, (it.get("title") or "")[:40], status, msg))
         # ★2026-09-19 実機で踏んだ：1回の上限で break した回にもETagを保存していたため、
         #   **次の回が304になり、積み残した分を二度と見なくなった**（#431がこれで消えた）。
@@ -1050,6 +1132,10 @@ def check_repo(repo, token, st, budget):
                     repo, num, "%sさんの返信（%s）" % (login, _jst_hm(c.get("created_at") or "")),
                     c.get("body") or "", c.get("html_url") or "", who=login)
             if _saki:
+                # Existing ticket was updated rather than creating another queue item.
+                _send_ack(repo, num, token, "comment", cid,
+                          "%s番として発車待ちに追加しました" % _saki,
+                          route="fold_existing")
                 log("%s #%s へのコメント → %s番の票に足した（新しい票は作らない）"
                     % (repo, num, _saki))
                 continue
@@ -1071,6 +1157,8 @@ def check_repo(repo, token, st, budget):
                 label="GH%s %sさんの返信（%s）重複OK"
                       % (num, user.get("login") or "?", _jst_hm(c.get("created_at") or "")))
             picked += 1 if status == "done" else 0
+            if status == "done":
+                _send_ack(repo, num, token, "comment", cid, msg)
             log("%s #%s へのコメント → %s（%s）" % (repo, num, status, msg))
         if not capped_c:
             st["etags"][curl] = etag

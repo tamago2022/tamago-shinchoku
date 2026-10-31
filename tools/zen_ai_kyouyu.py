@@ -245,6 +245,13 @@ def tick(force=False):
             with open(KAITA, "a", encoding="utf-8") as f:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
             log("書いた %s %s" % (rec.get("title", "")[:40], url))
+            # 2026-10-25 書いた瞬間に Grok へ呼び鈴（Reason Network・tools/grok_tsuushin.py）。3時間待たせない。
+            try:
+                import grok_tsuushin
+                grok_tsuushin.okuru(rec.get("title") or ("工場が受けた指示（3時間分）" if rec.get("kind") == "digest" else "共有メモ"),
+                                    fusei(rec.get("body", ""))[:600], url, who=rec.get("who", ""), kind=rec.get("kind", "kyouyu"))
+            except Exception as e:
+                log("Grokへの呼び鈴を積めない: %r" % (e,))
         except Exception as e:
             rec["tries"] = rec.get("tries", 0) + 1
             log("書けない（%d回目）: %r" % (rec["tries"], e))

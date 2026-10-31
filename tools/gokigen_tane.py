@@ -504,7 +504,15 @@ def okane_kanmon(tok, today):
     return True, "今月 %d通使用＋今回 %d人≦%d通" % (used, need, limit)
 
 
-def okuru(force_time=None):
+# 2026-10-25 たまごさん方針確定：「LINEの配信・運営はGrokボットが担当。工場は配信を作らない」
+#   （LINE公式 @759fytwa から Grokボットの配信が既に届いている＝二重配信を防ぐ）。
+#   工場は送らない。下書き（junbi）はネタ帳として残すだけ。配信の記録と反応は tools/line_haishin.py が読む。
+HAISHIN_TANTOU = "grok"
+
+
+def okuru(force_time=None, tantou=None):
+    if (tantou or HAISHIN_TANTOU) != "factory":
+        return "配信はGrokボット担当（工場は送らない）"
     t = force_time or now()
     today = t.date()
     if today.weekday() != 4 or not (SEND_HOUR <= t.hour < SEND_UNTIL):
@@ -614,8 +622,9 @@ def self_test():
     g3["text"] = compose(g3)
     eq(len([b for b in kenpin(g3, check_url=False) if "使わない言葉" in b]) >= 2, True, "水道水コピーは落とす")
     eq(any("ための下書き" in b for b in kenpin(g, today="2026-11-06", check_url=False)), True, "別の週の下書きは送らない")
-    eq(okuru(datetime(2026, 10, 29, 20, 0, tzinfo=JST)), "送る時間ではない", "金曜以外は送らない")
-    eq(okuru(datetime(2026, 10, 30, 23, 10, tzinfo=JST)), "送る時間ではない", "23時を過ぎたら送らない")
+    eq(okuru(datetime(2026, 10, 29, 20, 0, tzinfo=JST), tantou="factory"), "送る時間ではない", "金曜以外は送らない")
+    eq(okuru(datetime(2026, 10, 30, 23, 10, tzinfo=JST), tantou="factory"), "送る時間ではない", "23時を過ぎたら送らない")
+    eq(okuru(datetime(2026, 10, 30, 20, 5, tzinfo=JST)), "配信はGrokボット担当（工場は送らない）", "配信はGrokボット＝工場は金曜20時でも送らない")
     print("SELF-TEST", "OK" if ok else "NG")
     return 0 if ok else 1
 

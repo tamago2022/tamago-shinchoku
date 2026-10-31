@@ -9,7 +9,8 @@
   きっかけ：「生放送中になかやまきんに君と対面した一橋アナウンサーの反応」（X @rurutannnnnn107・あるある 人間だもの）が「見つかりません」。
 
 ■ 何をするか（毎日1回）
-  ① 棚のカードの元（DB の admin_stock の X・YouTube 全部＋joy-relief-station のコードの棚に書かれた X 投稿）を1本ずつ確かめる。
+  ① 棚のカードの元（DB の admin_stock の X・YouTube 全部＋joy-relief-station のコードの棚に書かれた X 投稿
+       ＋マガジン・特集の動画 status/hikkomi/magazine_videos.json＝magazine_gate.py が毎日書く・2026-10-29）を1本ずつ確かめる。
        X       … publish.twitter.com の oEmbed と api.fxtwitter.com の2か所が両方「無い／非公開」と言ったら「消えた」。
        YouTube … youtube.com の oEmbed が 404/400（削除）・401/403（非公開・埋め込み不可）を2回続けて返したら「消えた」。
        どちらも、通信の失敗や片方だけの「無い」は「分からない」＝前の判定のまま（勝手に引っ込めない）。
@@ -280,7 +281,20 @@ def collect():
             items[k] = {"kind": "x", "ref": m.group(0), "title": (tm[-1] if tm else ""), "stock_ids": [],
                         "shelves": ["コードの棚（%s）" % os.path.basename(f)], "from": "code"}
             n_static += 1
-    log("集めた：DB %d件（X・YouTube）＋コードの棚のX %d件 → 確かめる %d件" % (len(stock), n_static, len(items)))
+    # マガジン・特集の動画（2026-10-29 マガジン曲点検：tools/magazine/magazine_gate.py が毎日この表を書く）
+    n_mag = 0
+    try:
+        feed = json.load(io.open(os.path.join(REPO, "status", "hikkomi", "magazine_videos.json"), encoding="utf-8"))
+        for vid, v in (feed.get("videos") or {}).items():
+            k = "yt:" + vid
+            if k in items:
+                continue
+            items[k] = {"kind": "youtube", "ref": "https://www.youtube.com/watch?v=" + vid, "title": v.get("title") or "",
+                        "stock_ids": [], "shelves": ["マガジン（%s）" % "・".join(sorted(set(v.get("pages") or []))[:3])], "from": "magazine"}
+            n_mag += 1
+    except Exception:
+        pass
+    log("集めた：DB %d件（X・YouTube）＋コードの棚のX %d件＋マガジン・特集の動画 %d件 → 確かめる %d件" % (len(stock), n_static, n_mag, len(items)))
     return items
 
 
