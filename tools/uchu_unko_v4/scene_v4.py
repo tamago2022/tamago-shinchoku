@@ -279,7 +279,7 @@ def facade(side):
     x_in, x_out = sgn * ALLEY, sgn * 7.0
     lo_x, hi_x = min(x_in, x_out), max(x_in, x_out)
     # 本体（窓の帯の部分は開口にするので、本体は y 0.35 より奥。外壁は帯で作る）
-    box("tower%s_body" % ("L" if side < 0 else "R"), (lo_x, 0.35, 0), (hi_x, 40.0, TOP), mat)
+    box("tower%s_body" % ("L" if side < 0 else "R"), (lo_x, 0.35, 0), (hi_x, 6.35, TOP), mat)
     # 外壁：柱（窓列の間）と、床ごとの帯（窓の上下）
     edges = sorted([ALLEY] + [b + WIN_W / 2 + 0.0 for b in BAYS] + [b - WIN_W / 2 for b in BAYS] + [7.0])
     # 柱：ALLEY〜bay0 の内側、bay 間、bay2 の外側〜7
@@ -295,7 +295,8 @@ def facade(side):
         box("slab%s%d" % (side, fl), (lo_x, -0.05, z0 - 0.02), (hi_x, 0.0, z0 + 0.10), M_CONC_D)
     # 屋上のパラペット
     box("parapet%s" % side, (lo_x, -0.1, TOP), (hi_x, 0.5, TOP + 0.9), M_CONC)
-    box("roofslab%s" % side, (lo_x, 0.35, TOP), (hi_x, 40.0, TOP + 0.2), M_CONC_D)
+    box("roofslab%s" % side, (lo_x, 0.35, TOP), (hi_x, 6.35, TOP + 0.2), M_CONC_D)
+    box("parapet%s_back" % side, (lo_x, 5.85, TOP), (hi_x, 6.35, TOP + 0.9), M_CONC)
 facade(-1); facade(1)
 # 窓（ガラス・枠・窓台）と部屋
 ROOM_MATS = {}
@@ -565,14 +566,13 @@ for k, pp in enumerate(M["pipes"]):
         box("pipe%d_b%d" % (k, j), (pp["x"] - pp["r"] - 0.03, -pp["r"] * 2 - 0.03, 3.5 * j + 1.0), (pp["x"] + pp["r"] + 0.03, 0.0, 3.5 * j + 1.06), M_METAL_R)
 # 側壁（手前・左右）と、通りへ張り出す看板
 for sgn, nm in ((-1, "L"), (1, "R")):
-    box("side_%s" % nm, (min(sgn * 3.6, sgn * 4.8), -14.0, 0), (max(sgn * 3.6, sgn * 4.8), 0.0, TOP + 2), M_TILE_S)
+    box("side_%s" % nm, (min(sgn * 6.5, sgn * 7.5), -14.0, 0), (max(sgn * 6.5, sgn * 7.5), 0.0, TOP + 2), M_TILE_S)
     for fl in range(NFLOOR):
         for yy in (-2.5, -5.5, -8.5, -11.5):
             z0 = fl * FLOOR_H + SILL
             r = rnd.random()
             m = M_DIM if r < 0.12 else (M_TV if r < 0.17 else M_GLASS)
-            plane("sw_%s%d_%d" % (nm, fl, int(-yy)), (sgn * 3.59, yy, z0 + WIN_H / 2), WIN_H, 0.9, m, rot=(0, math.pi / 2, 0))
-            box("swf_%s%d_%d" % (nm, fl, int(-yy)), (min(sgn * 3.56, sgn * 3.62), yy - 0.5, z0 - 0.05), (max(sgn * 3.56, sgn * 3.62), yy + 0.5, z0), M_CONC)
+            plane("sw_%s%d_%d" % (nm, fl, int(-yy)), (sgn * 6.49, yy, z0 + WIN_H / 2), WIN_H, 0.9, m, rot=(0, math.pi / 2, 0))
 for k, s in enumerate(M["signs"]):
     sgn = s["side"]; x0 = s["x0"]; w = s["w"]; y = s["y"]; z = s["z"]; h = s["h"]
     if open(os.path.join(SOZAI, s["tex"] + ".txt")).read().strip() == "vertical": w, h = 0.55, 2.1
@@ -591,7 +591,7 @@ for k, s in enumerate(M["signs"]):
 # 路地：向かい合う壁の窓（薄明かり）・ケーブル・奥の床
 for sgn, nm in ((-1, "L"), (1, "R")):
     for fl in range(NFLOOR):
-        for yy in (1.8, 4.0, 6.2, 8.4, 10.6, 12.8, 15.0):
+        for yy in (1.6, 3.4, 5.2):
             z0 = fl * FLOOR_H + SILL; r = rnd.random()
             m = M_DIM if r < 0.18 else (M_TV if r < 0.23 else M_GLASS)
             plane("aw_%s%d_%d" % (nm, fl, int(yy * 10)), (sgn * (ALLEY - 0.01), yy, z0 + WIN_H / 2), WIN_H, 0.8, m, rot=(0, math.pi / 2, 0))
@@ -610,8 +610,20 @@ link(ntf, tcf.outputs["Object"], I(mpf, "Vector")); link(ntf, mpf.outputs[0], I(
 pin(pf, "Emission Strength", 1.2); pin(pf, "Base Color", (0.02, 0.02, 0.03, 1))
 for k, f_ in enumerate(M["far"]):
     box("far%d" % k, (f_["x"] - f_["w"] / 2, f_["y"], 0), (f_["x"] + f_["w"] / 2, f_["y"] + f_["d"], f_["h"]), M_FAR)
-# 地面（通り＋路地の床）
-plane("ground", (0, 13, 0), 30, 54, M_STREET)
+# 港の水（塔の裏・月を映す）
+mw_, ntw, pw = newmat("water")
+pin(pw, "Base Color", (0.004, 0.006, 0.012, 1)); pin(pw, "Roughness", 0.06); pin(pw, "Specular IOR Level", 1.0); pin(pw, "Metallic", 0.2)
+nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 0.8; I(nzw, "Detail").default_value = 5
+mpw2 = node(ntw, "ShaderNodeMapping"); tcw2 = node(ntw, "ShaderNodeTexCoord"); link(ntw, tcw2.outputs["Object"], I(mpw2, "Vector")); link(ntw, mpw2.outputs[0], I(nzw, "Vector"))
+low_ = I(mpw2, "Location"); low_.default_value = (0, 0, 0); low_.keyframe_insert("default_value", frame=1); low_.default_value = (0, 3.0, 1.5); low_.keyframe_insert("default_value", frame=NF)
+bpw = node(ntw, "ShaderNodeBump"); I(bpw, "Strength").default_value = 0.12; link(ntw, O(nzw, "Fac"), I(bpw, "Height")); link(ntw, bpw.outputs[0], I(pw, "Normal"))
+anim_lin(ntw)
+plane("water", (0, 300, -0.15), 800, 600, mw_)
+box("quay", (-8, 6.35, -0.2), (8, 7.0, 0.05), M_CONC_D)
+for k in range(9): cyl("quay_post%d" % k, (-7.5 + 1.9 * k, 6.9, 0.0), (-7.5 + 1.9 * k, 6.9, 0.95), 0.03, M_PIPE, 6)
+for k in range(8): cyl("quay_rail%d" % k, (-7.5 + 1.9 * k, 6.9, 0.93), (-5.6 + 1.9 * k, 6.9, 0.93), 0.02, M_PIPE, 6)
+# 地面（通り＋すき間の床）
+plane("ground", (0, -3.75, 0), 30, 20.5, M_STREET)
 # 通りのゴミ袋・段ボール（手前の下の方）
 for k in range(7):
     x = rnd.choice([-1, 1]) * rnd.uniform(2.9, 3.4); y = rnd.uniform(-6, -1.5)
@@ -657,12 +669,12 @@ nzA = node(unt, "ShaderNodeTexNoise"); I(nzA, "Scale").default_value = 3.2; I(nz
 nzB = node(unt, "ShaderNodeTexNoise"); I(nzB, "Scale").default_value = 7.0; I(nzB, "Detail").default_value = 5; link(unt, tcu.outputs["Object"], I(nzB, "Vector"))
 rpA = node(unt, "ShaderNodeValToRGB"); cr = rpA.color_ramp
 cr.elements[0].position = 0.30; cr.elements[0].color = (0.02, 0.01, 0.08, 1)
-cr.elements[1].position = 0.62; cr.elements[1].color = (0.55, 0.10, 0.60, 1)
-e2 = cr.elements.new(0.78); e2.color = (0.15, 0.55, 0.85, 1)
+cr.elements[1].position = 0.60; cr.elements[1].color = (0.75, 0.12, 0.70, 1)
+e2 = cr.elements.new(0.76); e2.color = (0.20, 0.75, 1.0, 1)
 e3 = cr.elements.new(0.46); e3.color = (0.12, 0.05, 0.32, 1)
 link(unt, O(nzA, "Fac"), I(rpA, "Fac"))
-vor = node(unt, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 55; link(unt, tcu.outputs["Object"], I(vor, "Vector"))
-stars = math_(unt, 'LESS_THAN', O(vor, "Distance"), vb=0.06)
+vor = node(unt, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 75; link(unt, tcu.outputs["Object"], I(vor, "Vector"))
+stars = math_(unt, 'LESS_THAN', O(vor, "Distance"), vb=0.085)
 starsB = math_(unt, 'MULTIPLY', math_(unt, 'LESS_THAN', O(nzB, "Fac"), vb=0.42), stars)
 mixc = node(unt, "ShaderNodeMixRGB"); mixc.blend_type = 'ADD'; mixc.inputs[0].default_value = 1.0
 link(unt, rpA.outputs["Color"], mixc.inputs[1]); link(unt, stars, mixc.inputs[2])
@@ -733,7 +745,7 @@ def ring_mat(col):
     # しきい値が上がるほど、ノイズで欠けていく（ふわっと粒になって消える）
     frag2 = math_(nt, 'GREATER_THAN', O(nz, "Fac"), thr.outputs[0])
     al2 = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', band, frag2), fade.outputs[0])
-    link(nt, al2, I(p, "Alpha")); pin(p, "Base Color", (0, 0, 0, 1)); pin(p, "Emission Color", col + (1,)); pin(p, "Emission Strength", 5.0)
+    link(nt, al2, I(p, "Alpha")); pin(p, "Base Color", (0, 0, 0, 1)); pin(p, "Emission Color", col + (1,)); pin(p, "Emission Strength", 1.6)
     return m, fade.outputs[0], thr.outputs[0]
 M_SPARK, _ = mat_emit("spark", (1.0, 0.9, 0.7), 8.0); blend(M_SPARK, 'BLEND')
 for k, fl in enumerate(M["flashes"]):
@@ -750,7 +762,7 @@ for k, fl in enumerate(M["flashes"]):
     # 広がる輪（壁と平行の面。中心は着地点）
     m, fade, thr = ring_mat(col)
     rg = plane("ring%02d" % k, (fl["p"][0], -0.13, fl["p"][2] - 0.2), 1, 1, m, rot=(math.pi / 2, 0, 0)) if fl["kind"] != "final" else plane("ring%02d" % k, (fl["p"][0], fl["p"][1], 0.01), 1, 1, m)
-    for ff, s_, fd, th in ((f0 - 1, 0.05, 0.0, 0.0), (f0, 0.25, 1.0, 0.0), (f0 + 8, 1.6, 0.8, 0.3), (f0 + 20, 3.0, 0.0, 0.75), (f0 + 21, 0.05, 0.0, 1.0)):
+    for ff, s_, fd, th in ((f0 - 1, 0.05, 0.0, 0.0), (f0, 0.2, 0.9, 0.0), (f0 + 8, 1.2, 0.6, 0.3), (f0 + 20, 2.0, 0.0, 0.75), (f0 + 21, 0.05, 0.0, 1.0)):
         rg.scale = (s_, s_, 1); rg.keyframe_insert("scale", frame=ff)
         fade.default_value = fd; fade.keyframe_insert("default_value", frame=ff)
         thr.default_value = th; thr.keyframe_insert("default_value", frame=ff)
@@ -858,15 +870,20 @@ link(wn, rampB.outputs["Color"], mcol.inputs[1]); link(wn, moonc.outputs[0], mco
 link(wn, mcol.outputs["Color"], I(bg, "Color")); I(bg, "Strength").default_value = 1.0
 # 霧（世界の体積）：薄く、街の底ほど濃い
 vol = node(wn, "ShaderNodeVolumePrincipled"); I(vol, "Color").default_value = (0.55, 0.62, 0.75, 1); I(vol, "Anisotropy").default_value = 0.45
-I(vol, "Density").default_value = 0.012
+I(vol, "Density").default_value = 0.005
 link(wn, vol.outputs[0], I(outw, "Volume"))
 # 月明かり（太陽ランプ・青白い・路地を抜けて差す）
-sun_d = bpy.data.lights.new("moon_sun", 'SUN'); sun_d.energy = 0.9; sun_d.color = (0.75, 0.82, 1.0); sun_d.angle = math.radians(1.5)
+sun_d = bpy.data.lights.new("moon_sun", 'SUN'); sun_d.energy = 1.3; sun_d.color = (0.75, 0.82, 1.0); sun_d.angle = math.radians(1.5)
 sun = bpy.data.objects.new("moon_sun", sun_d); bpy.context.collection.objects.link(sun)
 sun.rotation_euler = (-V(md)).to_track_quat('-Z', 'Y').to_euler()
 # 街全体の薄い環境光（ネオンの照り返し）
-amb_d = bpy.data.lights.new("amb", 'SUN'); amb_d.energy = 0.12; amb_d.color = (1.0, 0.75, 0.6); amb_d.angle = math.radians(40); amb_d.use_shadow = False
+amb_d = bpy.data.lights.new("amb", 'SUN'); amb_d.energy = 0.10; amb_d.color = (1.0, 0.75, 0.6); amb_d.angle = math.radians(40); amb_d.use_shadow = False
 amb = bpy.data.objects.new("amb", amb_d); bpy.context.collection.objects.link(amb); amb.rotation_euler = (math.radians(60), 0, math.radians(180))
+# 街明かりの照り返し（カメラ側の斜め上から・青灰色・影あり＝台の影が壁に落ちる）
+key_d = bpy.data.lights.new("city_key", 'SUN'); key_d.energy = 0.55; key_d.color = (0.62, 0.70, 0.95); key_d.angle = math.radians(6)
+keyo = bpy.data.objects.new("city_key", key_d); bpy.context.collection.objects.link(keyo)
+kd = V((math.sin(math.radians(-35)) * math.cos(math.radians(28)), math.cos(math.radians(-35)) * math.cos(math.radians(28)), -math.sin(math.radians(28))))   # 光の進む向き（カメラ側から壁へ）
+keyo.rotation_euler = kd.to_track_quat('-Z', 'Y').to_euler()
 # 漂う埃（小さな光る粒・ゆっくり）
 M_DUST, _ = mat_emit("dust", (1.0, 0.95, 0.85), 2.0); blend(M_DUST, 'BLEND'); pin(M_DUST.node_tree.nodes["Principled BSDF"], "Alpha", 0.6)
 for k in range(140):
