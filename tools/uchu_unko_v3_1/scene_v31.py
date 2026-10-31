@@ -691,7 +691,8 @@ def build_haikyo_hall():
     ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 1500; ld2.size = 15; ld2.color = (0.95, 0.90, 0.80)
     lo2 = bpy.data.objects.new("fillA", ld2); bpy.context.collection.objects.link(lo2)
     lo2.location = (cen[0], cen[1], ZTOP + 4); lo2.rotation_euler = (0, 0, 0)
-    ld4 = bpy.data.lights.new("bounceA", 'POINT'); ld4.energy = 2600; ld4.color = (1.0, 0.82, 0.62); ld4.shadow_soft_size = 3.0
+    ld4 = bpy.data.lights.new("bounceA", 'POINT'); ld4.energy = 1900; ld4.color = (1.0, 0.82, 0.62); ld4.shadow_soft_size = 3.0
+    tryset(ld4, volume_factor=0.0)      # 霧の中で光の玉にならないように（実測：試し描きで白く飛んだ）
     lo4 = bpy.data.objects.new("bounceA", ld4); bpy.context.collection.objects.link(lo4)
     lo4.location = (cen[0] + 3.0, cen[1] - 2.5, (zt + pz) / 2 - 2.0)     # 太陽が当たる側の床からの跳ね返り（温かい）
     ld3 = bpy.data.lights.new("mizu_glow", 'AREA'); ld3.energy = 220; ld3.size = 14; ld3.color = (0.6, 0.8, 0.9)
@@ -821,7 +822,7 @@ tcw = node(wn, "ShaderNodeTexCoord"); sepw = node(wn, "ShaderNodeSeparateXYZ"); 
 zmap = node(wn, "ShaderNodeMath"); zmap.operation = 'MULTIPLY_ADD'; zmap.inputs[1].default_value = 0.5; zmap.inputs[2].default_value = 0.5
 link(wn, sepw.outputs["Z"], zmap.inputs[0])
 rampA = node(wn, "ShaderNodeValToRGB")
-rampA.color_ramp.elements[0].position = 0.40; rampA.color_ramp.elements[0].color = (0.012, 0.013, 0.015, 1)
+rampA.color_ramp.elements[0].position = 0.40; rampA.color_ramp.elements[0].color = (0.03, 0.032, 0.036, 1)
 rampA.color_ramp.elements[1].position = 0.85; rampA.color_ramp.elements[1].color = (0.55, 0.55, 0.52, 1)
 link(wn, zmap.outputs[0], I(rampA, "Fac"))
 vor = node(wn, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 220
