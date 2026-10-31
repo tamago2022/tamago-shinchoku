@@ -43,10 +43,10 @@ tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom
        bloom_threshold=0.85, bloom_radius=6.5, bloom_knee=0.6, use_gtao=True, gtao_distance=0.5, gtao_factor=1.1,
        use_ssr=True, use_ssr_refraction=True, use_ssr_halfres=True, ssr_quality=0.5, ssr_thickness=0.1,
        use_soft_shadows=True, use_volumetric_shadows=True, use_volumetric_lights=True,
-       volumetric_tile_size='8' if not LITE else '16', volumetric_samples=48 if not LITE else 24,
+       volumetric_tile_size='16' if not LITE else '16', volumetric_samples=40 if not LITE else 24,
        volumetric_start=0.3, volumetric_end=90.0, volumetric_light_clamp=6.0,
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.42, motion_blur_steps=1,
-       shadow_cube_size='1024', shadow_cascade_size='2048', use_shadow_high_bitdepth=True, sss_samples=7)
+       shadow_cube_size='1024', shadow_cascade_size='2048', use_shadow_high_bitdepth=True, sss_samples=5)
 sc.render.use_persistent_data = True
 sc.render.resolution_x, sc.render.resolution_y = 720, 1280
 sc.render.resolution_percentage = int(os.environ.get("UU_PCT", "100"))
@@ -158,9 +158,9 @@ def gummy(name, img):
     link(nt, bright.outputs[0], I(p, "Base Color"))
     try: link(nt, hsv.outputs[0], I(p, "Subsurface Color"))
     except Exception: pass
-    pin(p, "Subsurface Weight", 0.09); pin(p, "Subsurface Radius", (1.0, 0.55, 0.8))
+    pin(p, "Subsurface Weight", 0.12); pin(p, "Subsurface Radius", (1.0, 0.6, 0.85))
     pin(p, "Roughness", 0.13); pin(p, "Coat Weight", 1.0); pin(p, "Coat Roughness", 0.03); pin(p, "Specular IOR Level", 0.7)
-    pin(p, "Transmission Weight", 0.32); pin(p, "IOR", 1.42)
+    pin(p, "Transmission Weight", 0.07); pin(p, "IOR", 1.42)
     # 中の小さな星（ちらちら光る）
     tc = node(nt, "ShaderNodeTexCoord"); vor = node(nt, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 38
     link(nt, tc.outputs["Object"], I(vor, "Vector"))
@@ -217,13 +217,13 @@ for p in UNKO_MATS:
 stage("bars")
 def keycol(midi):
     s = max(0, min(1, (midi - 52) / 36))
-    pal = [(0.72, 0.50, 0.24), (0.74, 0.60, 0.36), (0.56, 0.58, 0.60), (0.50, 0.56, 0.68)]
+    pal = [(0.78, 0.55, 0.22), (0.62, 0.70, 0.52), (0.45, 0.66, 0.68), (0.60, 0.52, 0.78)]
     x = s * (len(pal) - 1); i = min(int(x), len(pal) - 2); u = x - i
     return tuple(pal[i][k] * (1 - u) + pal[i + 1][k] * u for k in range(3))
 SHU = (1.0, 0.30, 0.13)
 MAT_WOOD, ntw, pw = newmat("yokogi")
 nzw = node(ntw, "ShaderNodeTexWave"); I(nzw, "Scale").default_value = 7; I(nzw, "Distortion").default_value = 6
-rw = node(ntw, "ShaderNodeValToRGB"); rw.color_ramp.elements[0].color = (0.10, 0.05, 0.025, 1); rw.color_ramp.elements[1].color = (0.30, 0.16, 0.08, 1)
+rw = node(ntw, "ShaderNodeValToRGB"); rw.color_ramp.elements[0].color = (0.02, 0.015, 0.012, 1); rw.color_ramp.elements[1].color = (0.06, 0.04, 0.03, 1)
 link(ntw, nzw.outputs["Color"], I(rw, "Fac")); link(ntw, rw.outputs["Color"], I(pw, "Base Color")); pin(pw, "Roughness", 0.5)
 def bar_mat(i, b):
     m, nt, p = newmat("barM%02d" % i)
@@ -253,7 +253,7 @@ for i, b in enumerate(BARS):
     for s_ in (-1, 1):
         off = V((math.cos(yaw), math.sin(yaw), 0)) * (L * 0.28 * s_)
         bpy.ops.mesh.primitive_cube_add(size=1, location=p0 + off - V((0, 0, T + 0.035)))
-        r = bpy.context.object; r.scale = (0.07, W + 0.24, 0.07); r.rotation_euler = (0, 0, yaw); r.data.materials.append(MAT_WOOD)
+        r = bpy.context.object; r.scale = (0.06, W + 0.12, 0.06); r.rotation_euler = (0, 0, yaw); r.data.materials.append(MAT_WOOD)
         bv2 = r.modifiers.new("b", 'BEVEL'); bv2.width = 0.01; bv2.segments = 2
         rails.append(r)
     # 叩かれて光る・沈む（沈む量はうんこと同じ＝すき間0）
@@ -462,7 +462,7 @@ def leaf_cards(name, base, n, img, size, outward, droop=0.0, seed=0):
     r_ = random.Random(seed)
     m = bpy.data.materials.get("leaf_" + img)
     if not m:
-        m, nt, p = newmat("leaf_" + img); blend(m, 'HASHED', 'HASHED')
+        m, nt, p = newmat("leaf_" + img); blend(m, 'CLIP', 'CLIP'); tryset(m, alpha_threshold=0.5)
         tx = node(nt, "ShaderNodeTexImage"); tx.image = load_img(img)
         hsv = node(nt, "ShaderNodeHueSaturation"); I(hsv, "Value").default_value = 1.0; link(nt, tx.outputs["Color"], I(hsv, "Color"))
         link(nt, hsv.outputs[0], I(p, "Base Color")); link(nt, tx.outputs["Alpha"], I(p, "Alpha"))
@@ -502,24 +502,51 @@ def build_mori_no_taki():
     # 滝の上の縁（白く盛り上がって落ち始める水）
     lip = mat_water("lipA", (1.0, 1.0, 1.0), 1.5, 1.3, 0.9)
     curtain("taki_fuchi", wl - 0.5, wr + 0.5, cy_ - 0.75, zt + 3.3, zt + 2.2, lip, 1.2, 48, 0.2)
-    # 崖（左右）：中は空けて、道から十分はなす
-    for k in range(13):
-        z = zt + 2 - (zt - pz + 2) * k / 12
-        for sgn, xw in ((-1, wl), (1, wr)):
-            for j in range(2):
-                yy = rnd.uniform(ymin - 4, cy_ + 0.5)
-                rx = rnd.uniform(1.4, 2.3)
-                rock("cliff%d%d%d" % (k, sgn, j), (xw + sgn * (rx + 0.1), yy, z + rnd.uniform(-0.8, 0.8)),
-                     (rx, rnd.uniform(1.5, 2.6), rnd.uniform(1.6, 2.4)), rockA, rnd.uniform(0, 6.28), 0.45, 4)
+    # 谷の壁（左右と手前）：すき間のない岩の壁。カメラの通り道から 0.8m 以上はなす（凹凸は ±0.6m）
+    fy = A["front_y"]
+    def wall(name, o, ua, va, su, sv, nrm, mat, nu=140, nv=170):
+        verts = []; faces = []
+        for j in range(nv + 1):
+            for i in range(nu + 1):
+                pnt = V(o) + V(ua) * (su * (i / nu - 0.5)) + V(va) * (sv * (j / nv - 0.5)); verts.append(tuple(pnt))
+        for j in range(nv):
+            for i in range(nu):
+                a_ = j * (nu + 1) + i; faces.append((a_, a_ + 1, a_ + nu + 2, a_ + nu + 1))
+        w_ = obj_from_mesh(name, verts, faces, mat)
+        vg = w_.vertex_groups.new(name="all"); vg.add(list(range(len(verts))), 1.0, 'REPLACE')
+        t1 = bpy.data.textures.new(name + "1", 'CLOUDS'); t1.noise_scale = 2.2; t1.noise_depth = 4
+        d1 = w_.modifiers.new("d1", 'DISPLACE'); d1.texture = t1; d1.strength = 1.1; d1.mid_level = 0.5; d1.texture_coords = 'GLOBAL'; d1.direction = 'CUSTOM_NORMAL' if False else 'NORMAL'
+        t2 = bpy.data.textures.new(name + "2", 'VORONOI'); t2.noise_scale = 0.9
+        d2 = w_.modifiers.new("d2", 'DISPLACE'); d2.texture = t2; d2.strength = 0.25; d2.mid_level = 0.5; d2.texture_coords = 'GLOBAL'
+        bpy.context.view_layer.objects.active = w_; w_.select_set(True); bpy.ops.object.shade_smooth()
+        # 面の向き（谷の内側を向く）
+        if (V(ua).cross(V(va))).dot(V(nrm)) < 0:
+            bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.mesh.flip_normals(); bpy.ops.object.mode_set(mode='OBJECT')
+        return w_
+    zc, zh = (zt + 8 + pz - 2) / 2, (zt + 8) - (pz - 2)
+    yc, yl = (fy + cy_ + 4) / 2, (cy_ + 4) - fy
+    wall("kabe_L", (wl - 0.7, yc, zc), (0, 1, 0), (0, 0, 1), yl, zh, (1, 0, 0), rockA)
+    wall("kabe_R", (wr + 0.7, yc, zc), (0, 1, 0), (0, 0, 1), yl, zh, (-1, 0, 0), rockA)
+    wall("kabe_mae", ((wl + wr) / 2, fy - 0.7, zc), (1, 0, 0), (0, 0, 1), wr - wl + 4, zh, (0, 1, 0), rockA, 60, 170)
     box("cliff_back", (cx, cy_ + 3.5, (zt + pz) / 2), (30, 1.5, zt - pz + 14), rockW)
-    # 板の下の岩（当たり判定の楕円体と同じ大きさ・へこませるだけ）
-    for b in BARS:
-        if b["stage"] != "A": continue
-        p0 = V(b["p"]); L, W = b["L"], b["W"]
-        rock("ledge%02d" % b["i"], p0 + V((0, 0, -0.40)), (L * 0.40, W * 0.70, 0.22), rockA, b["yaw"], 0.10, 4, safe=True)
-        # 岩の下から崖へ伸びる根（細い柱）
-        bpy.ops.mesh.primitive_cone_add(radius1=0.10, radius2=0.03, depth=2.4, location=p0 + V((0, 0, -1.7)))
-        bpy.context.object.data.materials.append(rockA)
+    # 上の縁から張り出す岩（空との境目の形）
+    for k in range(18):
+        sgn = rnd.choice((-1, 1)); xw = wl - 1.6 if sgn < 0 else wr + 1.6
+        rock("fuchi%02d" % k, (xw, rnd.uniform(fy, cy_ + 1), zt + 8 + rnd.uniform(-1, 1)), (rnd.uniform(1.5, 2.6), rnd.uniform(1.5, 2.5), rnd.uniform(1.0, 1.8)), rockA, rnd.uniform(0, 6.28), 0.45, 4)
+    # 左右と手前の壁を流れ落ちる細い滝（どちらを向いても滝が見える）
+    wS = mat_water("waterS", (0.86, 0.95, 1.0), 4.0, 0.9, 0.7)
+    for k, (xx, yy, wd) in enumerate(((wl - 0.15, ymin + 2.0, 2.2), (wl - 0.15, ymin + 11.0, 1.4), (wr + 0.15, ymin + 5.5, 2.6), (wr + 0.15, ymin + 14.0, 1.6))):
+        verts = []; faces = []; NZ = 40; NS = 12
+        for j in range(NZ + 1):
+            z = zt + 7.5 + (pz - zt - 7.5) * j / NZ
+            for i in range(NS + 1):
+                u = i / NS; verts.append((xx + (0.25 if xx < cx else -0.25) * (1 - j / NZ) ** 8, yy + (u - 0.5) * wd, z))
+        for j in range(NZ):
+            for i in range(NS):
+                a_ = j * (NS + 1) + i; faces.append((a_, a_ + 1, a_ + NS + 2, a_ + NS + 1))
+        obj_from_mesh("taki_yoko%d" % k, verts, faces, wS)
+    for k, (xx, wd) in enumerate((((wl + wr) / 2 - 2.2, 1.8), ((wl + wr) / 2 + 2.6, 2.4))):
+        curtain("taki_mae%d" % k, xx - wd / 2, xx + wd / 2, fy - 0.15, zt + 7.5, pz - 0.5, wS, -0.05, 10, -0.25)
     # 滝つぼ（水面・泡・しぶき・霧）
     mw, ntw_, pw_ = newmat("pool"); pin(pw_, "Base Color", (0.015, 0.06, 0.055, 1)); pin(pw_, "Roughness", 0.04)
     tcw = node(ntw_, "ShaderNodeTexCoord"); mpw = node(ntw_, "ShaderNodeMapping"); link(ntw_, tcw.outputs["Object"], I(mpw, "Vector"))
@@ -553,12 +580,12 @@ def build_mori_no_taki():
     # 植物：崖のシダ・垂れる葉・水辺の大きな葉（道の中には置かない）
     for k in range(80):
         sgn = rnd.choice((-1, 1)); xw = wl if sgn < 0 else wr
-        base = (xw + sgn * rnd.uniform(0.1, 0.6), rnd.uniform(ymin - 2, cy_ - 0.3), rnd.uniform(pz + 0.5, zt + 2))
+        base = (xw + sgn * rnd.uniform(0.15, 0.45), rnd.uniform(A["front_y"] + 0.5, cy_ - 0.3), rnd.uniform(pz + 0.5, zt + 6))
         leaf_cards("shida%02d" % k, base, rnd.randint(4, 7), rnd.choice(("shida_a.png", "shida_b.png")), rnd.uniform(0.6, 1.2),
                    (-sgn, rnd.uniform(-0.3, 0.3), 0), rnd.choice((0.0, 0.0, 0.6, 1.2)), k)
     for k in range(14):
         sgn = rnd.choice((-1, 1)); xw = wl if sgn < 0 else wr
-        base = (xw + sgn * rnd.uniform(-0.2, 0.4), rnd.uniform(ymin - 4, cy_ - 2.5), pz + 0.05)
+        base = (xw + sgn * rnd.uniform(0.0, 0.4), rnd.uniform(A["front_y"] + 1, cy_ - 2.5), pz + 0.05)
         leaf_cards("ha%02d" % k, base, rnd.randint(3, 5), "ha_ooki.png", rnd.uniform(0.9, 1.6), (-sgn, -0.4, 0), 0.0, 100 + k)
     for k in range(18):   # 上から垂れるつる（シダを下向きに）
         x = rnd.uniform(wl - 0.3, wr + 0.3); base = (x, cy_ - rnd.uniform(0.9, 2.0), zt + rnd.uniform(1.5, 3.5))
@@ -573,10 +600,12 @@ def build_kumo_no_yoru():
     B = SC["B"]; ct = B["cloud_top"]; cx, cy = B["cx"], B["cy"]
     PE = V(M["pe"]); MOON = V(M["moon"]); MOUNT = V(M["mount"]); LOGO = V(M["logo"])
     # 雲海（もこもこの面：上の面が ct-0.2 を越えない）
-    bpy.ops.mesh.primitive_grid_add(x_subdivisions=220, y_subdivisions=220, size=1, location=(cx, cy + 60, ct - 2.4))
-    cl = bpy.context.object; cl.scale = (260, 260, 1)
-    tx = bpy.data.textures.new("kumo", 'CLOUDS'); tx.noise_scale = 0.035; tx.noise_depth = 4
-    dm = cl.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = 2.2; dm.mid_level = 0.0; dm.texture_coords = 'GLOBAL'
+    bpy.ops.mesh.primitive_grid_add(x_subdivisions=360, y_subdivisions=360, size=260, location=(cx, cy + 60, ct - 2.4))
+    cl = bpy.context.object
+    tx = bpy.data.textures.new("kumo", 'CLOUDS'); tx.noise_scale = 9.0; tx.noise_depth = 3
+    dm = cl.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = 1.6; dm.mid_level = 0.0; dm.texture_coords = 'GLOBAL'
+    tx2 = bpy.data.textures.new("kumo2", 'CLOUDS'); tx2.noise_scale = 2.5; tx2.noise_depth = 2
+    dm2 = cl.modifiers.new("d2", 'DISPLACE'); dm2.texture = tx2; dm2.strength = 0.6; dm2.mid_level = 0.0; dm2.texture_coords = 'GLOBAL'
     bpy.ops.object.shade_smooth()
     mc, ntc, pc = newmat("kumoM"); pin(pc, "Base Color", (0.42, 0.47, 0.70, 1)); pin(pc, "Roughness", 1.0)
     pin(pc, "Subsurface Weight", 0.5); pin(pc, "Subsurface Color", (0.55, 0.55, 0.95, 1)); pin(pc, "Subsurface Radius", (3, 3, 4))
@@ -651,12 +680,12 @@ def build_kumo_no_yoru():
         bpy.ops.mesh.primitive_cone_add(radius1=0.16, radius2=0.01, depth=1.0, location=p0 + V((0, 0, -0.95)))
         o = bpy.context.object; o.rotation_euler = (math.pi, 0, 0); o.data.materials.append(shima)
     # 遠くの山並み（シルエット）と、ロゴの山
-    mtn = mat_rock("yama", moss=0.4, wet=0.0, dark=0.55)
+    mtn = mat_rock("yama", moss=0.45, wet=0.0, dark=1.6)
     def yama(name, c, rad, hgt, seed, sub=6, rough=0.12):
         bpy.ops.mesh.primitive_cone_add(vertices=160, radius1=rad, radius2=rad * 0.05, depth=hgt, location=(c[0], c[1], c[2] + hgt / 2))
         o = bpy.context.object; o.name = name
         bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.subdivide(number_cuts=sub); bpy.ops.object.mode_set(mode='OBJECT')
-        t_ = bpy.data.textures.new(name + "t", 'CLOUDS'); t_.noise_scale = 0.25; t_.noise_depth = 4
+        t_ = bpy.data.textures.new(name + "t", 'CLOUDS'); t_.noise_scale = hgt * 0.22; t_.noise_depth = 4
         d_ = o.modifiers.new("d", 'DISPLACE'); d_.texture = t_; d_.strength = hgt * rough; d_.mid_level = 0.5; d_.texture_coords = 'LOCAL'
         bpy.ops.object.shade_smooth(); o.data.materials.append(mtn); return o
     for k, (dx, dy, r_, h_) in enumerate(((-90, 210, 70, 55), (95, 230, 80, 62), (-30, 300, 90, 70), (160, 180, 60, 40), (-160, 170, 60, 38))):
