@@ -867,13 +867,18 @@ def kensa():
                 n_check += 1
                 if n.startswith("bar") and int(n[3:5]) in (fr.get("bi"), (fr.get("bi") or 0) + 1) and n == ("bar%02d" % int(n[3:5])):
                     # 乗っている板・次に乗る板：三角が触れているだけ（＝着地）は当たり前。板の上面より下に沈んでいたら、めり込み
+                    # 板の上面と向き・大きさは michi.json（置いた位置の正本）から
+                    bb = BARS[int(n[3:5])]; top = bb["p"][2] + bb["dz"].get(str(f), bb["dz"].get(str(f + 1), 0.0) if False else 0.0)
+                    ks = sorted(int(k) for k in bb["dz"])
+                    if ks and ks[0] <= f <= ks[-1]:
+                        a0 = bb["dz"].get(str(f), 0.0); a1 = bb["dz"].get(str(f + 1), a0); top = bb["p"][2] + a0 + (a1 - a0) * sub
+                    cy_, sy_ = math.cos(bb["yaw"]), math.sin(bb["yaw"]); hx = bb["L"] / 2; hy = bb["W"] / 2
                     ev = unko.evaluated_get(dg); me_ = ev.to_mesh(); mw = ev.matrix_world
-                    top = o.matrix_world.translation.z + BARS[0]["T"] / 2
-                    inv = o.matrix_world.inverted(); hx = o.dimensions.x / 2; hy = o.dimensions.y / 2
-                    pen = 0.0
+                    pen = -9.0
                     for v in me_.vertices:
-                        w = mw @ v.co; lv = inv @ w
-                        if abs(lv.x) < hx - 0.03 and abs(lv.y) < hy - 0.03: pen = max(pen, top - w.z)
+                        w = mw @ v.co; dx, dy = w.x - bb["p"][0], w.y - bb["p"][1]
+                        lx, ly = dx * cy_ + dy * sy_, -dx * sy_ + dy * cy_
+                        if abs(lx) < hx - 0.03 and abs(ly) < hy - 0.03 and w.z > top - 0.3: pen = max(pen, top - w.z)
                     ev.to_mesh_clear()
                     if pen > 0.005: bad.append({"f": f, "sub": sub, "obj": n, "st": fr["st"], "shizumi_m": round(pen, 4)})
                     continue
