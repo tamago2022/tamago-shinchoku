@@ -1,0 +1,49 @@
+# 宇宙うんこ v4：Blender 3.6 EEVEE（画面なし＝xvfb＋Mesa）で連番を分けて描く。成果物は1日で消える。
+# 描き直しは tools/uchu_unko_v4/render_go.txt を書き換えて status/uchu_unko/v4/push_v4.sh go（FRAMES=all か 1,60,300 のような並び）。
+name: uchu-unko-v4-render
+on:
+  workflow_dispatch:      # push では走らせない（工場の自動 push で、走っている描画が止められたため）。push_v4.sh が API で起こす
+concurrency: { group: uchu-unko-v4-render, cancel-in-progress: true }
+jobs:
+  render:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix: { chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/uchu_unko_v4
+          sparse-checkout-cone-mode: false
+      - name: settings
+        id: s
+        run: |
+          set -a; . tools/uchu_unko_v4/render_go.txt; set +a
+          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT
+          echo "$FRAMES $PCT $SAMPLES"
+      - name: deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglu1-mesa libxi6 libxxf86vm1 libxfixes3 libxrender1 libsm6 libxkbcommon0 libegl1 >/dev/null
+          curl -sSL --retry 5 -o b.tar.xz https://mirrors.ocf.berkeley.edu/blender/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz \
+            || curl -sSL --retry 5 -o b.tar.xz https://download.blender.org/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz
+          mkdir bl && tar -xf b.tar.xz -C bl --strip-components=1 && rm b.tar.xz
+      - name: render
+        env: { UU_PCT: "${{ steps.s.outputs.pct }}", UU_SAMPLES: "${{ steps.s.outputs.samples }}", UU_MB: "${{ steps.s.outputs.mb }}" }
+        run: |
+          W=$PWD/tools/uchu_unko_v4; OUT=$PWD/out; mkdir -p $OUT
+          NF=$(python3 -c "import json;print(json.load(open('$W/hits.json'))['nf'])")
+          N=20; C=${{ matrix.chunk }}; FR="${{ steps.s.outputs.frames }}"
+          if [ "$FR" = "all" ]; then A=$(( C*NF/N + 1 )); B=$(( (C+1)*NF/N )); SPEC="$A-$B"; WANT=$(( B-A+1 ))
+          else SPEC=$(python3 -c "l='$FR'.split(',');print(','.join(x for i,x in enumerate(l) if i%$N==$C))"); WANT=$(python3 -c "print(len([x for x in '$SPEC'.split(',') if x]))"); fi
+          echo "frames $SPEC"
+          if [ -z "$SPEC" ]; then exit 0; fi
+          for k in 1 2 3; do
+            xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v4.py -- $W $OUT "$SPEC" 2>&1 | grep -E "ENGINE|STAGE|^FRAME|Error|error|Traceback|File \"|kubire|DONE|skip|pin " | head -200 || true
+            [ $(ls $OUT/*.jpg 2>/dev/null | wc -l) -ge $WANT ] && break
+          done
+          ls $OUT | wc -l
+      - uses: actions/upload-artifact@v4
+        with: { name: "frames-${{ matrix.chunk }}", path: out/, retention-days: 1, if-no-files-found: ignore }
