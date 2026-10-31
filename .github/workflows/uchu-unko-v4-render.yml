@@ -21,7 +21,7 @@ jobs:
         id: s
         run: |
           set -a; . tools/uchu_unko_v4/render_go.txt; set +a
-          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT
+          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT
           echo "$FRAMES $PCT $SAMPLES"
       - name: deps
         run: |
@@ -35,6 +35,7 @@ jobs:
         run: |
           W=$PWD/tools/uchu_unko_v4; OUT=$PWD/out; mkdir -p $OUT
           NF=$(python3 -c "import json;print(json.load(open('$W/hits.json'))['nf'])")
+          if [ "${{ steps.s.outputs.nfr }}" != "0" ]; then NF=${{ steps.s.outputs.nfr }}; fi   # ケツロゴの分（最後の66コマ）は描かない
           N=20; C=${{ matrix.chunk }}; FR="${{ steps.s.outputs.frames }}"
           if [ "$FR" = "all" ]; then A=$(( C*NF/N + 1 )); B=$(( (C+1)*NF/N )); SPEC="$A-$B"; WANT=$(( B-A+1 ))
           else SPEC=$(python3 -c "l='$FR'.split(',');print(','.join(x for i,x in enumerate(l) if i%$N==$C))"); WANT=$(python3 -c "print(len([x for x in '$SPEC'.split(',') if x]))"); fi
