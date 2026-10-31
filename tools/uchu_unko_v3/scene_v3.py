@@ -217,7 +217,7 @@ for p in UNKO_MATS:
 stage("bars")
 def keycol(midi):
     s = max(0, min(1, (midi - 52) / 36))
-    pal = [(0.86, 0.72, 0.48), (0.88, 0.80, 0.62), (0.80, 0.82, 0.84), (0.72, 0.78, 0.90)]
+    pal = [(0.72, 0.50, 0.24), (0.74, 0.60, 0.36), (0.56, 0.58, 0.60), (0.50, 0.56, 0.68)]
     x = s * (len(pal) - 1); i = min(int(x), len(pal) - 2); u = x - i
     return tuple(pal[i][k] * (1 - u) + pal[i + 1][k] * u for k in range(3))
 SHU = (1.0, 0.30, 0.13)
@@ -235,7 +235,7 @@ def bar_mat(i, b):
     tc = node(nt, "ShaderNodeTexCoord"); mp = node(nt, "ShaderNodeMapping"); I(mp, "Scale").default_value = (2.0, 90.0, 2.0)
     link(nt, tc.outputs["Object"], I(mp, "Vector")); nz = node(nt, "ShaderNodeTexNoise"); I(nz, "Scale").default_value = 4; I(nz, "Detail").default_value = 6
     link(nt, mp.outputs[0], I(nz, "Vector"))
-    rr = node(nt, "ShaderNodeMapRange"); I(rr, "To Min").default_value = 0.12; I(rr, "To Max").default_value = 0.3
+    rr = node(nt, "ShaderNodeMapRange"); I(rr, "To Min").default_value = 0.2; I(rr, "To Max").default_value = 0.42
     link(nt, O(nz, "Fac"), I(rr, "Value")); link(nt, rr.outputs[0], I(p, "Roughness"))
     pin(p, "Emission Color", (SHU if (b["bass"] or b["final"]) else (1.0, 0.86, 0.62)) + (1,)); pin(p, "Emission Strength", 0.0)
     return m, p
