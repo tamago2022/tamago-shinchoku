@@ -43,10 +43,10 @@ tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom
        bloom_threshold=0.85, bloom_radius=6.5, bloom_knee=0.6, use_gtao=True, gtao_distance=0.5, gtao_factor=1.1,
        use_ssr=True, use_ssr_refraction=True, use_ssr_halfres=True, ssr_quality=0.5, ssr_thickness=0.1,
        use_soft_shadows=True, use_volumetric_shadows=True, use_volumetric_lights=True,
-       volumetric_tile_size='8' if not LITE else '16', volumetric_samples=48 if not LITE else 24,
+       volumetric_tile_size='16' if not LITE else '16', volumetric_samples=40 if not LITE else 24,
        volumetric_start=0.3, volumetric_end=90.0, volumetric_light_clamp=6.0,
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.42, motion_blur_steps=1,
-       shadow_cube_size='1024', shadow_cascade_size='2048', use_shadow_high_bitdepth=True, sss_samples=7)
+       shadow_cube_size='1024', shadow_cascade_size='2048', use_shadow_high_bitdepth=True, sss_samples=5)
 sc.render.use_persistent_data = True
 sc.render.resolution_x, sc.render.resolution_y = 720, 1280
 sc.render.resolution_percentage = int(os.environ.get("UU_PCT", "100"))
@@ -158,9 +158,9 @@ def gummy(name, img):
     link(nt, bright.outputs[0], I(p, "Base Color"))
     try: link(nt, hsv.outputs[0], I(p, "Subsurface Color"))
     except Exception: pass
-    pin(p, "Subsurface Weight", 0.09); pin(p, "Subsurface Radius", (1.0, 0.55, 0.8))
+    pin(p, "Subsurface Weight", 0.12); pin(p, "Subsurface Radius", (1.0, 0.6, 0.85))
     pin(p, "Roughness", 0.13); pin(p, "Coat Weight", 1.0); pin(p, "Coat Roughness", 0.03); pin(p, "Specular IOR Level", 0.7)
-    pin(p, "Transmission Weight", 0.32); pin(p, "IOR", 1.42)
+    pin(p, "Transmission Weight", 0.07); pin(p, "IOR", 1.42)
     # 中の小さな星（ちらちら光る）
     tc = node(nt, "ShaderNodeTexCoord"); vor = node(nt, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 38
     link(nt, tc.outputs["Object"], I(vor, "Vector"))
@@ -217,13 +217,13 @@ for p in UNKO_MATS:
 stage("bars")
 def keycol(midi):
     s = max(0, min(1, (midi - 52) / 36))
-    pal = [(0.72, 0.50, 0.24), (0.74, 0.60, 0.36), (0.56, 0.58, 0.60), (0.50, 0.56, 0.68)]
+    pal = [(0.78, 0.55, 0.22), (0.62, 0.70, 0.52), (0.45, 0.66, 0.68), (0.60, 0.52, 0.78)]
     x = s * (len(pal) - 1); i = min(int(x), len(pal) - 2); u = x - i
     return tuple(pal[i][k] * (1 - u) + pal[i + 1][k] * u for k in range(3))
 SHU = (1.0, 0.30, 0.13)
 MAT_WOOD, ntw, pw = newmat("yokogi")
 nzw = node(ntw, "ShaderNodeTexWave"); I(nzw, "Scale").default_value = 7; I(nzw, "Distortion").default_value = 6
-rw = node(ntw, "ShaderNodeValToRGB"); rw.color_ramp.elements[0].color = (0.10, 0.05, 0.025, 1); rw.color_ramp.elements[1].color = (0.30, 0.16, 0.08, 1)
+rw = node(ntw, "ShaderNodeValToRGB"); rw.color_ramp.elements[0].color = (0.02, 0.015, 0.012, 1); rw.color_ramp.elements[1].color = (0.06, 0.04, 0.03, 1)
 link(ntw, nzw.outputs["Color"], I(rw, "Fac")); link(ntw, rw.outputs["Color"], I(pw, "Base Color")); pin(pw, "Roughness", 0.5)
 def bar_mat(i, b):
     m, nt, p = newmat("barM%02d" % i)
@@ -253,7 +253,7 @@ for i, b in enumerate(BARS):
     for s_ in (-1, 1):
         off = V((math.cos(yaw), math.sin(yaw), 0)) * (L * 0.28 * s_)
         bpy.ops.mesh.primitive_cube_add(size=1, location=p0 + off - V((0, 0, T + 0.035)))
-        r = bpy.context.object; r.scale = (0.07, W + 0.24, 0.07); r.rotation_euler = (0, 0, yaw); r.data.materials.append(MAT_WOOD)
+        r = bpy.context.object; r.scale = (0.06, W + 0.12, 0.06); r.rotation_euler = (0, 0, yaw); r.data.materials.append(MAT_WOOD)
         bv2 = r.modifiers.new("b", 'BEVEL'); bv2.width = 0.01; bv2.segments = 2
         rails.append(r)
     # 叩かれて光る・沈む（沈む量はうんこと同じ＝すき間0）
@@ -462,7 +462,7 @@ def leaf_cards(name, base, n, img, size, outward, droop=0.0, seed=0):
     r_ = random.Random(seed)
     m = bpy.data.materials.get("leaf_" + img)
     if not m:
-        m, nt, p = newmat("leaf_" + img); blend(m, 'HASHED', 'HASHED')
+        m, nt, p = newmat("leaf_" + img); blend(m, 'CLIP', 'CLIP'); tryset(m, alpha_threshold=0.5)
         tx = node(nt, "ShaderNodeTexImage"); tx.image = load_img(img)
         hsv = node(nt, "ShaderNodeHueSaturation"); I(hsv, "Value").default_value = 1.0; link(nt, tx.outputs["Color"], I(hsv, "Color"))
         link(nt, hsv.outputs[0], I(p, "Base Color")); link(nt, tx.outputs["Alpha"], I(p, "Alpha"))
@@ -573,10 +573,12 @@ def build_kumo_no_yoru():
     B = SC["B"]; ct = B["cloud_top"]; cx, cy = B["cx"], B["cy"]
     PE = V(M["pe"]); MOON = V(M["moon"]); MOUNT = V(M["mount"]); LOGO = V(M["logo"])
     # 雲海（もこもこの面：上の面が ct-0.2 を越えない）
-    bpy.ops.mesh.primitive_grid_add(x_subdivisions=220, y_subdivisions=220, size=1, location=(cx, cy + 60, ct - 2.4))
-    cl = bpy.context.object; cl.scale = (260, 260, 1)
-    tx = bpy.data.textures.new("kumo", 'CLOUDS'); tx.noise_scale = 0.035; tx.noise_depth = 4
-    dm = cl.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = 2.2; dm.mid_level = 0.0; dm.texture_coords = 'GLOBAL'
+    bpy.ops.mesh.primitive_grid_add(x_subdivisions=360, y_subdivisions=360, size=260, location=(cx, cy + 60, ct - 2.4))
+    cl = bpy.context.object
+    tx = bpy.data.textures.new("kumo", 'CLOUDS'); tx.noise_scale = 9.0; tx.noise_depth = 3
+    dm = cl.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = 1.6; dm.mid_level = 0.0; dm.texture_coords = 'GLOBAL'
+    tx2 = bpy.data.textures.new("kumo2", 'CLOUDS'); tx2.noise_scale = 2.5; tx2.noise_depth = 2
+    dm2 = cl.modifiers.new("d2", 'DISPLACE'); dm2.texture = tx2; dm2.strength = 0.6; dm2.mid_level = 0.0; dm2.texture_coords = 'GLOBAL'
     bpy.ops.object.shade_smooth()
     mc, ntc, pc = newmat("kumoM"); pin(pc, "Base Color", (0.42, 0.47, 0.70, 1)); pin(pc, "Roughness", 1.0)
     pin(pc, "Subsurface Weight", 0.5); pin(pc, "Subsurface Color", (0.55, 0.55, 0.95, 1)); pin(pc, "Subsurface Radius", (3, 3, 4))
@@ -651,12 +653,12 @@ def build_kumo_no_yoru():
         bpy.ops.mesh.primitive_cone_add(radius1=0.16, radius2=0.01, depth=1.0, location=p0 + V((0, 0, -0.95)))
         o = bpy.context.object; o.rotation_euler = (math.pi, 0, 0); o.data.materials.append(shima)
     # 遠くの山並み（シルエット）と、ロゴの山
-    mtn = mat_rock("yama", moss=0.4, wet=0.0, dark=0.55)
+    mtn = mat_rock("yama", moss=0.45, wet=0.0, dark=1.6)
     def yama(name, c, rad, hgt, seed, sub=6, rough=0.12):
         bpy.ops.mesh.primitive_cone_add(vertices=160, radius1=rad, radius2=rad * 0.05, depth=hgt, location=(c[0], c[1], c[2] + hgt / 2))
         o = bpy.context.object; o.name = name
         bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.subdivide(number_cuts=sub); bpy.ops.object.mode_set(mode='OBJECT')
-        t_ = bpy.data.textures.new(name + "t", 'CLOUDS'); t_.noise_scale = 0.25; t_.noise_depth = 4
+        t_ = bpy.data.textures.new(name + "t", 'CLOUDS'); t_.noise_scale = hgt * 0.22; t_.noise_depth = 4
         d_ = o.modifiers.new("d", 'DISPLACE'); d_.texture = t_; d_.strength = hgt * rough; d_.mid_level = 0.5; d_.texture_coords = 'LOCAL'
         bpy.ops.object.shade_smooth(); o.data.materials.append(mtn); return o
     for k, (dx, dy, r_, h_) in enumerate(((-90, 210, 70, 55), (95, 230, 80, 62), (-30, 300, 90, 70), (160, 180, 60, 40), (-160, 170, 60, 38))):
