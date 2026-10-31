@@ -41,7 +41,7 @@ jobs:
           echo "frames $SPEC"
           if [ -z "$SPEC" ]; then exit 0; fi
           for k in 1 2 3; do
-            xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v31.py -- $W $OUT "$SPEC" 2>&1 | grep -E "ENGINE|STAGE|^FRAME|Error|error|Traceback|File \"|kubire|DONE|skip|pin " | head -200 || true
+            xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v31.py -- $W $OUT "$SPEC" 2>&1 | grep -E "ENGINE|STAGE|^FRAME|Error|error|Traceback|File \"|kubire|DONE|skip|pin |BAKE|UNKO_MESH" | head -200 || true
             [ $(ls $OUT/*.jpg 2>/dev/null | wc -l) -ge $WANT ] && break
           done
           ls $OUT | wc -l
