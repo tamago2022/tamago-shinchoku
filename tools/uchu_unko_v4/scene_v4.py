@@ -732,6 +732,8 @@ for k, fl in enumerate(M["flashes"]):
     for ff, vv in ((f0 - 1, 0.0), (f0, peak), (f0 + 2, peak * 0.7), (f0 + 10, peak * 0.12), (f0 + 26, 0.0)):
         lt.energy = vv; lt.keyframe_insert("energy", frame=ff)
     anim_lin(lt)
+    for ff, vv in ((1, True), (f0 - 2, True), (f0 - 1, False), (f0 + 26, False), (f0 + 27, True)):   # 光っていない間は消す（影の計算を減らす）
+        lo.hide_render = vv; lo.keyframe_insert("hide_render", frame=ff); lo.hide_viewport = vv; lo.keyframe_insert("hide_viewport", frame=ff)
     # 広がる輪（壁と平行の面。中心は着地点）
     m, fade, thr = ring_mat(col)
     rg = plane("ring%02d" % k, (fl["p"][0], -0.13, fl["p"][2] - 0.2), 1, 1, m, rot=(math.pi / 2, 0, 0)) if fl["kind"] != "final" else plane("ring%02d" % k, (fl["p"][0], fl["p"][1], 0.01), 1, 1, m)
