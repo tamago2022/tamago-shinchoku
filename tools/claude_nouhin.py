@@ -49,6 +49,7 @@ ANKEN = {
     "告知動画の型": ["告知動画の型", "kokuchi_kata"],   # 2026-10-25 たまごさん「AI生成物/Claude/告知動画の型/」
     "音ハメ文字動画": ["音ハメ", "motion_lab", "kinetic", "kokuchi_ikareru"],   # 2026-10-31 たまごさん（Scenario の音ハメ文字・告知試作）
     "宇宙うんこ": ["宇宙うんこ", "uchu_unko"],   # 2026-10-31 案件ごとにそろえる（写すだけ）
+    "Fable": [],   # 2026-11-01 たまごさん「AI制作物/Claude/Fable」Fableで作ったもの（--anken Fable で明示して入れる）
     "その他": [],
 }
 SONOTA = "その他"

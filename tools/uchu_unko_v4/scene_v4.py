@@ -236,8 +236,8 @@ def mat_street(name, pond):
     crk = node(nt, "ShaderNodeMixRGB"); crk.blend_type = 'MULTIPLY'; crk.inputs[0].default_value = 0.85
     link(nt, mx.outputs[0], crk.inputs[1]); link(nt, crack, crk.inputs[2])
     link(nt, crk.outputs[0], I(p, "Base Color"))
-    rg = node(nt, "ShaderNodeMixRGB"); link(nt, mask, rg.inputs[0]); rg.inputs[1].default_value = (0.42, 0.42, 0.42, 1); rg.inputs[2].default_value = (0.03, 0.03, 0.03, 1)
-    link(nt, rg.outputs[0], I(p, "Roughness")); pin(p, "Specular IOR Level", 0.8)
+    rg = node(nt, "ShaderNodeMixRGB"); link(nt, mask, rg.inputs[0]); rg.inputs[1].default_value = (0.78, 0.78, 0.78, 1); rg.inputs[2].default_value = (0.03, 0.03, 0.03, 1)
+    link(nt, rg.outputs[0], I(p, "Roughness")); pin(p, "Specular IOR Level", 0.35)
     # 波紋：着水から広がる輪（sin）× 減衰。t はコマで動かす
     tval = node(nt, "ShaderNodeValue"); tval.name = "ripple_t"; tval.outputs[0].default_value = -1.0
     tval.outputs[0].keyframe_insert("default_value", frame=1); tval.outputs[0].default_value = -1.0; tval.outputs[0].keyframe_insert("default_value", frame=FINAL)
@@ -284,7 +284,11 @@ def facade(side):
     x_in, x_out = sgn * ALLEY, sgn * 7.0
     lo_x, hi_x = min(x_in, x_out), max(x_in, x_out)
     # 本体（窓の帯の部分は開口にするので、本体は y 0.35 より奥。外壁は帯で作る）
-    box("tower%s_body" % ("L" if side < 0 else "R"), (lo_x, 0.35, 0), (hi_x, 6.35, TOP), mat)
+    # 塔の中は空洞（部屋の箱が見えるように）。すき間側の面・外側の面・裏の面だけ
+    nm_ = "L" if side < 0 else "R"
+    plane("tower%s_in" % nm_, (sgn * ALLEY, 3.35, TOP / 2), TOP, 6.0, mat, rot=(0, math.pi / 2, 0))
+    plane("tower%s_out" % nm_, (sgn * 7.0, 3.35, TOP / 2), TOP, 6.0, mat, rot=(0, math.pi / 2, 0))
+    plane("tower%s_back" % nm_, (sgn * (ALLEY + 7.0) / 2, 6.35, TOP / 2), 7.0 - ALLEY, TOP, mat, rot=(math.pi / 2, 0, 0))
     # 外壁：柱（窓列の間）と、床ごとの帯（窓の上下）
     edges = sorted([ALLEY] + [b + WIN_W / 2 + 0.0 for b in BAYS] + [b - WIN_W / 2 for b in BAYS] + [7.0])
     # 柱：ALLEY〜bay0 の内側、bay 間、bay2 の外側〜7
@@ -533,9 +537,9 @@ def build_ledge(L):
         b = L["parts"][0]; o = box("ledge%02d_body" % i, b["lo"], b["hi"], M_METAL_R); objs.append(o)
         for k in range(6):
             xx = b["lo"][0] + 0.1 + k * (b["hi"][0] - b["lo"][0] - 0.2) / 5
-            objs.append(box("ledge%02d_rib%d" % (i, k), (xx - 0.015, b["lo"][1], b["hi"][2]), (xx + 0.015, b["hi"][1], b["hi"][2] + 0.03), M_METAL_R))
+            objs.append(box("ledge%02d_rib%d" % (i, k), (xx - 0.015, b["lo"][1], b["lo"][2] - 0.03), (xx + 0.015, b["hi"][1], b["lo"][2]), M_METAL_R))
         for sg in (-1, 1):
-            objs.append(cyl("ledge%02d_arm%d" % (i, sg), (x + sg * 0.5, -0.02, z + 0.45), (x + sg * 0.5, b["lo"][1] + 0.05, z), 0.015, M_PIPE))
+            objs.append(cyl("ledge%02d_arm%d" % (i, sg), (x + sg * 0.63, -0.02, z - 0.45), (x + sg * 0.63, b["lo"][1] + 0.05, z - 0.06), 0.015, M_PIPE))
     else:   # pole
         b = L["parts"][0]
         objs.append(cyl("ledge%02d_body" % i, (b["lo"][0], -0.55, z - 0.02), (b["hi"][0], -0.55, z - 0.02), 0.022, M_PIPE))
@@ -733,14 +737,14 @@ for fl in M["flashes"]:
 # =====================================================================
 stage("flash")
 import colorsys
-def hue_col(h, s=0.55, v=1.0): return colorsys.hsv_to_rgb(h, s, v)
+def hue_col(h, s=0.8, v=1.0): return colorsys.hsv_to_rgb(h, s, v)
 RING_MATS = []
 def ring_mat(col):
     m, nt, p = newmat("ring"); blend(m, 'BLEND')
     tc = node(nt, "ShaderNodeTexCoord"); sep = node(nt, "ShaderNodeSeparateXYZ"); link(nt, tc.outputs["Generated"], sep.inputs[0])
     dx = math_(nt, 'SUBTRACT', sep.outputs["X"], vb=0.5); dy = math_(nt, 'SUBTRACT', sep.outputs["Y"], vb=0.5)
     r = math_(nt, 'MULTIPLY', math_(nt, 'SQRT', math_(nt, 'ADD', math_(nt, 'MULTIPLY', dx, dx), math_(nt, 'MULTIPLY', dy, dy))), vb=2.0)
-    band = math_(nt, 'EXPONENT', math_(nt, 'MULTIPLY', math_(nt, 'POWER', math_(nt, 'SUBTRACT', r, vb=0.82), vb=2.0), vb=-90.0))
+    band = math_(nt, 'EXPONENT', math_(nt, 'MULTIPLY', math_(nt, 'POWER', math_(nt, 'SUBTRACT', r, vb=0.82), vb=2.0), vb=-400.0))
     # 粒で消える：ノイズでちぎれる
     nz = node(nt, "ShaderNodeTexNoise"); I(nz, "Scale").default_value = 14; link(nt, tc.outputs["Generated"], I(nz, "Vector"))
     frag = math_(nt, 'GREATER_THAN', O(nz, "Fac"), vb=0.0)
@@ -750,7 +754,7 @@ def ring_mat(col):
     # しきい値が上がるほど、ノイズで欠けていく（ふわっと粒になって消える）
     frag2 = math_(nt, 'GREATER_THAN', O(nz, "Fac"), thr.outputs[0])
     al2 = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', band, frag2), fade.outputs[0])
-    link(nt, al2, I(p, "Alpha")); pin(p, "Base Color", (0, 0, 0, 1)); pin(p, "Emission Color", col + (1,)); pin(p, "Emission Strength", 1.6)
+    link(nt, al2, I(p, "Alpha")); pin(p, "Base Color", (0, 0, 0, 1)); pin(p, "Emission Color", col + (1,)); pin(p, "Emission Strength", 1.2)
     return m, fade.outputs[0], thr.outputs[0]
 M_SPARK, _ = mat_emit("spark", (1.0, 0.9, 0.7), 8.0); blend(M_SPARK, 'BLEND')
 for k, fl in enumerate(M["flashes"]):
@@ -767,7 +771,7 @@ for k, fl in enumerate(M["flashes"]):
     # 広がる輪（壁と平行の面。中心は着地点）
     m, fade, thr = ring_mat(col)
     rg = plane("ring%02d" % k, (fl["p"][0], -0.13, fl["p"][2] - 0.2), 1, 1, m, rot=(math.pi / 2, 0, 0)) if fl["kind"] != "final" else plane("ring%02d" % k, (fl["p"][0], fl["p"][1], 0.01), 1, 1, m)
-    for ff, s_, fd, th in ((f0 - 1, 0.05, 0.0, 0.0), (f0, 0.2, 0.9, 0.0), (f0 + 8, 1.2, 0.6, 0.3), (f0 + 20, 2.0, 0.0, 0.75), (f0 + 21, 0.05, 0.0, 1.0)):
+    for ff, s_, fd, th in ((f0 - 1, 0.05, 0.0, 0.0), (f0, 0.2, 0.9, 0.0), (f0 + 7, 1.1, 0.5, 0.35), (f0 + 16, 1.7, 0.0, 0.8), (f0 + 17, 0.05, 0.0, 1.0)):
         rg.scale = (s_, s_, 1); rg.keyframe_insert("scale", frame=ff)
         fade.default_value = fd; fade.keyframe_insert("default_value", frame=ff)
         thr.default_value = th; thr.keyframe_insert("default_value", frame=ff)
@@ -860,7 +864,7 @@ nzm = node(wn, "ShaderNodeTexNoise"); I(nzm, "Scale").default_value = 9.0; I(nzm
 mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.42; I(mare, "From Max").default_value = 0.6; I(mare, "To Min").default_value = 0.55; I(mare, "To Max").default_value = 1.0
 link(wn, O(nzm, "Fac"), I(mare, "Value"))
 moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=7.0)
-halo = math_(wn, 'MULTIPLY', math_(wn, 'EXPONENT', math_(wn, 'MULTIPLY', math_(wn, 'POWER', math_(wn, 'DIVIDE', ang, vb=math.radians(16.0)), vb=1.6), vb=-1.0)), vb=0.35)
+halo = math_(wn, 'MULTIPLY', math_(wn, 'EXPONENT', math_(wn, 'MULTIPLY', math_(wn, 'POWER', math_(wn, 'DIVIDE', ang, vb=math.radians(9.0)), vb=1.6), vb=-1.0)), vb=0.14)
 # 空：下ほど街明かりで少し明るい紺、上は黒に近い
 zmap = node(wn, "ShaderNodeMath"); zmap.operation = 'MULTIPLY_ADD'; zmap.inputs[1].default_value = 0.5; zmap.inputs[2].default_value = 0.5; link(wn, sepw.outputs["Z"], zmap.inputs[0])
 rampB = node(wn, "ShaderNodeValToRGB"); rampB.color_ramp.elements[0].position = 0.45; rampB.color_ramp.elements[0].color = (0.035, 0.03, 0.06, 1)
