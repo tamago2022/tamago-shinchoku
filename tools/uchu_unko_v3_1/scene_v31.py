@@ -688,9 +688,12 @@ def build_haikyo_hall():
     ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 40.0; ld.color = (1.0, 0.86, 0.64); ld.angle = math.radians(1.0)
     lo = bpy.data.objects.new("sunA", ld); bpy.context.collection.objects.link(lo)
     lo.rotation_euler = (math.radians(-46), math.radians(14), math.radians(150))
-    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 420; ld2.size = 14; ld2.color = (0.95, 0.88, 0.76)
+    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 1500; ld2.size = 15; ld2.color = (0.95, 0.90, 0.80)
     lo2 = bpy.data.objects.new("fillA", ld2); bpy.context.collection.objects.link(lo2)
     lo2.location = (cen[0], cen[1], ZTOP + 4); lo2.rotation_euler = (0, 0, 0)
+    ld4 = bpy.data.lights.new("bounceA", 'POINT'); ld4.energy = 2600; ld4.color = (1.0, 0.82, 0.62); ld4.shadow_soft_size = 3.0
+    lo4 = bpy.data.objects.new("bounceA", ld4); bpy.context.collection.objects.link(lo4)
+    lo4.location = (cen[0] + 3.0, cen[1] - 2.5, (zt + pz) / 2 - 2.0)     # 太陽が当たる側の床からの跳ね返り（温かい）
     ld3 = bpy.data.lights.new("mizu_glow", 'AREA'); ld3.energy = 220; ld3.size = 14; ld3.color = (0.6, 0.8, 0.9)
     lo3 = bpy.data.objects.new("mizu_glow", ld3); bpy.context.collection.objects.link(lo3)
     lo3.location = (cen[0], cen[1], pz + 0.3); lo3.rotation_euler = (math.pi, 0, 0)
@@ -706,7 +709,7 @@ def build_haikyo_hall():
     for k in range(26):
         ph = rnd.uniform(0, 2 * math.pi); rr = RW + rnd.uniform(0.1, 1.5)
         leaf_cards("tsuru%02d" % k, (cen[0] + rr * math.cos(ph), cen[1] + rr * math.sin(ph), ZTOP + rnd.uniform(-2.5, 0.2)), 3, "shida_b.png", rnd.uniform(1.2, 2.4), (-math.cos(ph), -math.sin(ph), 0), 1.6, 200 + k)
-    return [lo, lo2, lo3]
+    return [lo, lo2, lo3, lo4]
 
 # =====================================================================
 # 舞台B：水に沈んだ廃墟の夜（月・崩れた塔のまわりを上る・遠くに崩れた街のシルエット）
@@ -818,8 +821,8 @@ tcw = node(wn, "ShaderNodeTexCoord"); sepw = node(wn, "ShaderNodeSeparateXYZ"); 
 zmap = node(wn, "ShaderNodeMath"); zmap.operation = 'MULTIPLY_ADD'; zmap.inputs[1].default_value = 0.5; zmap.inputs[2].default_value = 0.5
 link(wn, sepw.outputs["Z"], zmap.inputs[0])
 rampA = node(wn, "ShaderNodeValToRGB")
-rampA.color_ramp.elements[0].position = 0.40; rampA.color_ramp.elements[0].color = (0.035, 0.038, 0.042, 1)
-rampA.color_ramp.elements[1].position = 0.85; rampA.color_ramp.elements[1].color = (0.75, 0.74, 0.70, 1)
+rampA.color_ramp.elements[0].position = 0.40; rampA.color_ramp.elements[0].color = (0.012, 0.013, 0.015, 1)
+rampA.color_ramp.elements[1].position = 0.85; rampA.color_ramp.elements[1].color = (0.55, 0.55, 0.52, 1)
 link(wn, zmap.outputs[0], I(rampA, "Fac"))
 vor = node(wn, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 220
 stp = math_(wn, 'LESS_THAN', O(vor, "Distance"), vb=0.05)
@@ -864,7 +867,7 @@ if kg:
 # 間接光（v3.1）：舞台Aの吹き抜けに EEVEE の Irradiance Volume を置いて焼く（跳ね返りの光＝のっぺり対策。失敗しても描画は続ける）
 # =====================================================================
 stage("bake")
-if os.environ.get("UU_BAKE", "1") == "1" and not LITE:
+if os.environ.get("UU_BAKE", "0") == "1" and not LITE:   # 実測：GitHub の Mesa で焼きが1時間たっても終わらなかった → 既定は切る
     try:
         A_ = SC["A"]; cenA = A_["center"]; RWA = A_["R_wall"]; ztA = A_["ztop"] + 8.6; pzA = A_["pool_z"]
         bpy.ops.object.lightprobe_add(type='GRID', location=(cenA[0], cenA[1], (ztA + pzA) / 2))
