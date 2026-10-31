@@ -654,7 +654,7 @@ def build_kumo_no_yoru():
     ld3 = bpy.data.lights.new("fillB", 'AREA'); ld3.energy = 160; ld3.size = 12; ld3.color = (0.55, 0.62, 1.0)
     lo3 = bpy.data.objects.new("fillB", ld3); bpy.context.collection.objects.link(lo3)
     lo3.location = (cx, cy - 12, ct + 8); lo3.rotation_euler = (math.radians(65), 0, 0)
-    ld4 = bpy.data.lights.new("yama_sun", 'SUN'); ld4.energy = 0.7; ld4.color = (0.55, 0.62, 0.95); ld4.angle = math.radians(4)
+    ld4 = bpy.data.lights.new("yama_sun", 'SUN'); ld4.energy = 1.8; ld4.color = (0.55, 0.62, 0.95); ld4.angle = math.radians(4)
     lo4 = bpy.data.objects.new("yama_sun", ld4); bpy.context.collection.objects.link(lo4)
     lo4.rotation_euler = (LOGO - V(FRM[-1]["cam"])).normalized().to_track_quat('-Z', 'Y').to_euler()
     # 星の滝（空から雲海へ落ちる、すみれ色の光の滝）
@@ -693,7 +693,12 @@ def build_kumo_no_yoru():
         bpy.ops.mesh.primitive_cone_add(radius1=0.16, radius2=0.01, depth=1.0, location=p0 + V((0, 0, -0.95)))
         o = bpy.context.object; o.rotation_euler = (math.pi, 0, 0); o.data.materials.append(shima)
     # 遠くの山並み（シルエット）と、ロゴの山
-    mtn = mat_rock("yama", moss=0.45, wet=0.0, dark=1.6)
+    mtn, ntm_, pmt = newmat("yama")
+    tcm = node(ntm_, "ShaderNodeTexCoord"); nzm_ = node(ntm_, "ShaderNodeTexNoise"); I(nzm_, "Scale").default_value = 0.08; I(nzm_, "Detail").default_value = 8
+    link(ntm_, tcm.outputs["Object"], I(nzm_, "Vector"))
+    rmt = node(ntm_, "ShaderNodeValToRGB"); rmt.color_ramp.elements[0].color = (0.05, 0.06, 0.10, 1); rmt.color_ramp.elements[1].color = (0.20, 0.22, 0.30, 1)
+    link(ntm_, O(nzm_, "Fac"), I(rmt, "Fac")); link(ntm_, rmt.outputs[0], I(pmt, "Base Color")); pin(pmt, "Roughness", 0.95)
+    bmm = node(ntm_, "ShaderNodeBump"); I(bmm, "Strength").default_value = 0.6; link(ntm_, O(nzm_, "Fac"), I(bmm, "Height")); link(ntm_, bmm.outputs[0], I(pmt, "Normal"))
     def yama(name, c, rad, hgt, seed, sub=6, rough=0.12):
         bpy.ops.mesh.primitive_cone_add(vertices=160, radius1=rad, radius2=rad * 0.05, depth=hgt, location=(c[0], c[1], c[2] + hgt / 2))
         o = bpy.context.object; o.name = name
@@ -726,9 +731,9 @@ def build_kumo_no_yoru():
     mlogo, ntl, pl = newmat("hekiga"); blend(mlogo, 'BLEND')
     txl = node(ntl, "ShaderNodeTexImage"); txl.image = load_img("hekiga_logo.png"); txl.extension = 'CLIP'
     link(ntl, txl.outputs["Color"], I(pl, "Base Color")); link(ntl, txl.outputs["Color"], I(pl, "Emission Color"))
-    nzl = node(ntl, "ShaderNodeTexNoise"); I(nzl, "Scale").default_value = 60; I(nzl, "Detail").default_value = 8
+    nzl = node(ntl, "ShaderNodeTexNoise"); I(nzl, "Scale").default_value = 9; I(nzl, "Detail").default_value = 4
     bml = node(ntl, "ShaderNodeBump"); I(bml, "Strength").default_value = 0.5; link(ntl, O(nzl, "Fac"), I(bml, "Height")); link(ntl, bml.outputs[0], I(pl, "Normal"))
-    wr_ = node(ntl, "ShaderNodeMapRange"); I(wr_, "From Min").default_value = 0.3; I(wr_, "From Max").default_value = 0.55; link(ntl, O(nzl, "Fac"), I(wr_, "Value"))
+    wr_ = node(ntl, "ShaderNodeMapRange"); I(wr_, "From Min").default_value = 0.2; I(wr_, "From Max").default_value = 0.6; I(wr_, "To Min").default_value = 0.82; link(ntl, O(nzl, "Fac"), I(wr_, "Value"))
     link(ntl, math_(ntl, 'MULTIPLY', txl.outputs["Alpha"], wr_.outputs[0]), I(pl, "Alpha")); pin(pl, "Roughness", 0.9)
     el_ = I(pl, "Emission Strength")
     f_rise0 = M["rise"][0]
