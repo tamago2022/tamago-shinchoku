@@ -101,9 +101,9 @@ def V(a): return Vector(a)
 # =====================================================================
 stage("unko")
 parts = []
-for c, r in (((0, 0, 0.215), (0.56, 0.54, 0.235)), ((0.0, 0, 0.495), (0.43, 0.42, 0.19)), ((0.01, 0, 0.735), (0.30, 0.30, 0.16))):
+for c, r in (((0, 0, 0.225), (0.56, 0.54, 0.25)), ((0.0, 0, 0.50), (0.44, 0.43, 0.215)), ((0.01, 0, 0.735), (0.31, 0.31, 0.18))):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, radius=1, location=c); o = bpy.context.object; o.scale = r; parts.append(o)
-for c, r in (((0.03, 0, 0.85), 0.155), ((0.085, 0, 0.94), 0.11), ((0.15, 0, 1.005), 0.078), ((0.21, 0, 1.05), 0.05), ((0.255, 0, 1.075), 0.03)):
+for c, r in (((0.03, 0, 0.85), 0.165), ((0.075, 0, 0.93), 0.125), ((0.13, 0, 0.995), 0.09), ((0.185, 0, 1.04), 0.065), ((0.235, 0, 1.07), 0.045), ((0.27, 0, 1.085), 0.03)):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=r, location=c); parts.append(bpy.context.object)
 bpy.ops.object.select_all(action='DESELECT')
 for o in parts: o.select_set(True)
@@ -113,7 +113,7 @@ for v in unko.data.vertices:          # 底を平らに（板の上にぺたっ�
     if v.co.z < 0.05: v.co.z = 0.05
 rm = unko.modifiers.new("r", 'REMESH'); rm.mode = 'VOXEL'; rm.voxel_size = 0.011
 bpy.ops.object.modifier_apply(modifier="r")
-sm = unko.modifiers.new("s", 'SMOOTH'); sm.iterations = 6; sm.factor = 0.6
+sm = unko.modifiers.new("s", 'SMOOTH'); sm.iterations = 14; sm.factor = 0.6
 bpy.ops.object.modifier_apply(modifier="s")
 zmin = min(v.co.z for v in unko.data.vertices)
 for v in unko.data.vertices: v.co.z -= zmin
@@ -121,6 +121,9 @@ hgt = max(v.co.z for v in unko.data.vertices)
 S0 = H_UNKO / hgt
 for v in unko.data.vertices: v.co *= S0
 bpy.ops.object.shade_smooth()
+import bmesh
+bm_ = bmesh.new(); bm_.from_mesh(unko.data)
+print("UNKO_MESH verts", len(bm_.verts), "non_manifold_edges", sum(1 for e in bm_.edges if not e.is_manifold), "loose_parts_check", flush=True); bm_.free()
 # 段の境目（くびれ）を、半径の一番細いところで決める
 bins = {}
 for v in unko.data.vertices:
@@ -158,8 +161,8 @@ def gummy(name, img):
     link(nt, bright.outputs[0], I(p, "Base Color"))
     try: link(nt, hsv.outputs[0], I(p, "Subsurface Color"))
     except Exception: pass
-    pin(p, "Subsurface Weight", 0.12); pin(p, "Subsurface Radius", (1.0, 0.6, 0.85))
-    pin(p, "Roughness", 0.13); pin(p, "Coat Weight", 1.0); pin(p, "Coat Roughness", 0.03); pin(p, "Specular IOR Level", 0.7)
+    pin(p, "Subsurface Weight", 0.16); pin(p, "Subsurface Radius", (1.0, 0.6, 0.85))
+    pin(p, "Roughness", 0.1); pin(p, "Coat Weight", 1.0); pin(p, "Coat Roughness", 0.03); pin(p, "Specular IOR Level", 0.7)
     pin(p, "Transmission Weight", 0.07); pin(p, "IOR", 1.42)
     # 中の小さな星（ちらちら光る）
     tc = node(nt, "ShaderNodeTexCoord"); vor = node(nt, "ShaderNodeTexVoronoi"); I(vor, "Scale").default_value = 38
@@ -182,12 +185,12 @@ def key(name, fn):
     for i, v in enumerate(me.vertices): kb.data[i].co = fn(v.co.copy())
     return kb
 def tsubure(c):
-    h = c.z / H_UNKO; bul = 1 + 0.10 * math.sin(math.pi * min(1, h * 1.6))
-    k = 1.27 * bul; return V((c.x * k, c.y * k, c.z * 0.62))
-def nobi(c): return V((c.x * 0.9, c.y * 0.9, c.z * 1.22))
+    h = c.z / H_UNKO
+    k = 1.118 * (1 + 0.06 * math.sin(math.pi * min(1, h * 1.6))); return V((c.x * k, c.y * k, c.z * 0.80))
+def nobi(c): return V((c.x * 0.945, c.y * 0.945, c.z * 1.12))
 def yure(axis):
     def f(c):
-        h = c.z / H_UNKO; d = 0.42 * H_UNKO * h * h
+        h = c.z / H_UNKO; d = 0.30 * H_UNKO * h * h
         return V((c.x + d, c.y, c.z)) if axis == 0 else V((c.x, c.y + d, c.z))
     return f
 KB = {"tsubure": key("tsubure", tsubure), "nobi": key("nobi", nobi), "yureX": key("yureX", yure(0)), "yureY": key("yureY", yure(1))}
@@ -198,7 +201,7 @@ for f, fr in enumerate(FRM, start=1):
     unko.location = fr["u"]; unko.keyframe_insert("location", frame=f)
     unko.rotation_euler = fr["rot"]; unko.keyframe_insert("rotation_euler", frame=f)
     s = fr["sq"]; yaw = fr["rot"][2]
-    KB["tsubure"].value = max(0.0, s) / 0.38; KB["nobi"].value = max(0.0, -s) / 0.22
+    KB["tsubure"].value = max(0.0, s) / 0.20; KB["nobi"].value = max(0.0, -s) / 0.12
     lx = (fr["wx"] * math.cos(yaw) + fr["wy"] * math.sin(yaw)) / 0.35
     ly = (-fr["wx"] * math.sin(yaw) + fr["wy"] * math.cos(yaw)) / 0.35
     KB["yureX"].value = max(-1, min(1, lx)); KB["yureY"].value = max(-1, min(1, ly))

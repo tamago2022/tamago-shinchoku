@@ -103,7 +103,11 @@ def shurui_of(name):
 
 
 def seikei_name(name, path=None, saishin=None):
-    """「日付_[★最新_]種類_中身.ext」にそろえる。saishin=None なら今の★をそのまま、True/False で付け外し。"""
+    """「日付_[★最新_]種類_中身.ext」にそろえる。saishin=None なら今の★をそのまま、True/False で付け外し。
+    例外（2026-10-31 たまごさん「Driveで見て何の動画か分かるように、先頭に 261031_宇宙うんこv3_滝と月 のように。2026- と ★最新 は付けない」）：
+    「YYMMDD_中身」で始まる名前は、そのまま使う（並べ替え・★の付け外しもしない）。"""
+    if re.match(r"^\d{6}_", name):
+        return name
     m = DATE_RE.match(name)
     if m:
         d, rest = m.group(1), name[m.end():]
@@ -473,6 +477,7 @@ def self_test():
     assert seikei_name("2026-10-11_★最新_動画_EP01男の子.mp4", saishin=False) == "2026-10-11_動画_EP01男の子.mp4"
     assert seikei_name("2026-10-11_★最新_動画_EP01男の子.mp4") == "2026-10-11_★最新_動画_EP01男の子.mp4"
     assert seikei_name("2026-10-14_01_machi.png") == "2026-10-14_静止画_01_machi.png"
+    assert seikei_name("261031_宇宙うんこv3_滝と月.mp4", saishin=True) == "261031_宇宙うんこv3_滝と月.mp4"
     assert DATE_RE.match(seikei_name("x.m4a")) and "_音声_" in seikei_name("x.m4a")
     assert nakami_key("2026-10-11_★最新_動画_EP01男の子_1080p.mp4") == "EP01男の子"
     assert nakami_key("2026-10-12_動画_EP01男の子_540p.mp4") == "EP01男の子"
