@@ -1,10 +1,8 @@
 # 宇宙うんこ v3：Blender 3.6 EEVEE（画面なし＝xvfb＋Mesa）で連番を分けて描く。成果物は2日で消える。
-# 描き直しは tools/uchu_unko_v3/render_go.txt を書き換えて push（FRAMES=all か 1,60,300 のような並び）。
+# 描き直しは tools/uchu_unko_v3/render_go.txt を書き換えて status/uchu_unko/v3/push_v3.sh go（FRAMES=all か 1,60,300 のような並び）。
 name: uchu-unko-v3-render
 on:
-  workflow_dispatch:
-  push:
-    paths: ["tools/uchu_unko_v3/render_go.txt"]
+  workflow_dispatch:      # push では走らせない（工場の自動 push で、走っている描画が止められたため）。push_v3.sh が API で起こす
 concurrency: { group: uchu-unko-v3-render, cancel-in-progress: true }
 jobs:
   render:
