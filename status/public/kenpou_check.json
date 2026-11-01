@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-10-31T09:13:52+09:00",
+ "checkedAt": "2026-11-01T09:13:20+09:00",
  "overallColor": "red",
- "redCount": 5,
+ "redCount": 3,
  "items": [
   {
    "key": "ctx_1m",
@@ -22,9 +22,9 @@
   {
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
-   "color": "red",
-   "count": 1,
-   "detail": "最終記録から約56.9時間経過（2026-10-29T00:17:49+09:00）／直近24時間に完了した仕事なし（カバー率は計測できず）（24時間ルールに抵触）"
+   "color": "green",
+   "count": 0,
+   "detail": "最終記録から約2.1時間経過（2026-11-01T07:01:19+09:00）／直近24時間の完了1件中、鬼監督の記録が付いているのは1件"
   },
   {
    "key": "done_missing_url",
@@ -36,16 +36,16 @@
   {
    "key": "factory_stalled",
    "label": "工場が止まったまま放置されていないか",
-   "color": "red",
-   "count": 5007,
-   "detail": "最終発車から62.0時間・発車待ち5007件・空き1枠あり"
+   "color": "green",
+   "count": 0,
+   "detail": "走行2本／上限1本（枠が埋まっているだけ・正常）"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回204008番 → 今回204008番（減少なし）"
+   "detail": "前回204008番 → 今回204039番（減少なし）"
   },
   {
    "key": "big_files",
@@ -80,23 +80,14 @@
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 51692,
-   "detail": "未報告の完了が51692件たまっている（最古は約891.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 51720,
+   "detail": "未報告の完了が51720件たまっている（最古は約915.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
    "key": "ctx_1m",
    "skipped": "既存の714番と同じ内容のためスキップ"
-  },
-  {
-   "key": "oni_kantoku_alive",
-   "skipped": "既存の684番と同じ内容のためスキップ"
-  },
-  {
-   "key": "factory_stalled",
-   "status": "failed",
-   "message": "緊急停止（シャッター）中のため積めません。解除は店主だけ（status/kinkyu_shutter_fukkyu.md）"
   },
   {
    "key": "big_files",
