@@ -185,10 +185,22 @@ function connect(wsUrl, onEvent) {
     ws.addEventListener("open", res);
     ws.addEventListener("error", (e) => rej(new Error(`CDP接続失敗: ${e?.message ?? e}`)));
   });
+  // 178606号（2026-11-02）実測：CDPの返事を無期限に待っていたため、重いページ（cover-guide
+  // カバー側・longtask25回・TBT4.7秒）で1回返事が来ないだけでクリック輪の90秒予算を素通りし、
+  // 工場側の280秒・本セッションの600秒まで黙って固まった（原曲側は同ルートでも3.5分で完走）。
+  // 送信ごとに上限を付け、超えたらrejectして輪の既存のcatch（＝評価失敗も反応の証拠扱い）へ落とす。
+  const SEND_TIMEOUT_MS = 30000;
   const send = (method, params = {}) =>
     new Promise((resolve2, reject) => {
       const myId = ++id;
+      const timer = setTimeout(() => {
+        if (pending.has(myId)) {
+          pending.delete(myId);
+          reject(new Error(`CDP応答待ちタイムアウト(${SEND_TIMEOUT_MS / 1000}秒): ${method}`));
+        }
+      }, SEND_TIMEOUT_MS);
       pending.set(myId, (msg) => {
+        clearTimeout(timer);
         if (msg.error) reject(new Error(JSON.stringify(msg.error)));
         else resolve2(msg.result);
       });
@@ -790,11 +802,16 @@ async function main() {
     }
   }
 
+  // 178606号（2026-11-02）：既知/未知の内訳をJSONにも書く。以前はJSON書き出しの後で分けていたため、
+  // 工場側(auto_launcher.collect_touch_check)が内訳の無い consoleErrors を見て、この検品器自身が
+  // PASSと言っているページ（既知#418だけ）を「コンソールエラー1件」でFAILにしていた。
+  const { known: knownConsoleErrors, unknown: unknownConsoleErrors } = splitKnownConsoleErrors(result.consoleErrors);
+  result.knownConsoleErrors = knownConsoleErrors;
+  result.unknownConsoleErrors = unknownConsoleErrors;
+
   if (OUT_JSON) {
     writeFileSync(OUT_JSON, JSON.stringify(result, null, 1));
   }
-
-  const { known: knownConsoleErrors, unknown: unknownConsoleErrors } = splitKnownConsoleErrors(result.consoleErrors);
 
   console.log("実測:", JSON.stringify({
     url: result.url,

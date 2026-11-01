@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#178606 森田美勇人「小麦色のマーメイド」⇄ 松田聖子 原曲：触る検品(2段目)の差し戻しを解消 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #178606 森田美勇人「小麦色のマーメイド」⇄ 松田聖子 原曲：触る検品(2段目)の差し戻しを解消</div>
+<h1>#178606 森田美勇人「小麦色のマーメイド」⇄ 松田聖子 原曲：触る検品(2段目)の差し戻しを解消</h1>
+<div class="date">2026-11-02 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+11-02 01:20に2段目(触る検品)が「コンソールエラー1件」で差し戻した。本番2ページ(カバー側・原曲側)を<code>verify_click.mjs</code>で自分で回し直すと両方PASS。原因は曲ページ側ではなく検品の仕組み側：①検品器は既知のサイト共通エラー(React #418・#35287で既存バグ確定)を除いて判定するのに、工場の回収側は既知込みで数えて不合格にしていた ②同ページは検品が時々固まる(CDP応答待ちに上限が無かった)。両方直し、既知のみ→合格／未知あり→不合格／内訳なし→従来どおり、の逆テスト3通りで確認。曲ページの接続(カバー側「オリジナルはこちら」＝松田聖子、原曲側「カバー」＝森田美勇人)は11-01のまま本番で生きている。棚には置いていない。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>16/16</b><span>カバー側：押せる要素の反応(全67件中実クリック16件)・無反応0・未知エラー0・既知#418が1件</span></div>
+  <div class="num"><b>17/17</b><span>原曲側：押せる要素の反応(全67件中実クリック17件)・無反応0・エラー0</span></div>
+  <div class="num"><b>200/200</b><span>本番2ページのHTTP(カバー側98,890B・原曲側109,331B)</span></div>
+  <div class="num"><b>3通り</b><span>回収判定の逆テスト：既知のみ→合格／未知1件→不合格／内訳なし→不合格(従来どおり)</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot plain"><b>カバー側：触る検品後の画面（headless・無音）</b><img src="img/178606-touch-a4.jpg" alt="カバー側：触る検品後の画面（headless・無音）"><span class="meta">2026-11-02 04:1x 実測</span></div>
+  <div class="shot plain"><b>原曲側：触る検品後の画面（headless・無音）</b><img src="img/178606-touch-b2.jpg" alt="原曲側：触る検品後の画面（headless・無音）"><span class="meta">2026-11-02 04:1x 実測</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番：森田美勇人「小麦色のマーメイド」（カバー側）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=morita-miyuto&amp;song=komugi-iro-no-mermaid-morita" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=morita-miyuto&amp;song=komugi-iro-no-mermaid-morita</a></li>
+  <li><b>本番：松田聖子「小麦色のマーメイド」（原曲側）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=seiko&amp;song=komugi-iro-no-mermaid" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=seiko&amp;song=komugi-iro-no-mermaid</a></li>
+  <li><b>前回の確認ページ（11-01・接続の実測）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/178606-morita-miyuto-komugi-mermaid-live.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/178606-morita-miyuto-komugi-mermaid-live.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>カバー側：verify_click.mjs CLICK_VERDICT</td><td class="yes">PASS（16件中16件・既知issue1件はFAIL対象外）</td></tr>
+<tr><td>原曲側：verify_click.mjs CLICK_VERDICT</td><td class="yes">PASS（17件中17件・エラー0）</td></tr>
+<tr><td>工場側の回収関数(collect_touch_check)に実物JSONを通す</td><td class="yes">カバー側・原曲側とも合格</td></tr>
+<tr><td>カバー側本文に松田聖子・「オリジナルはこちら」</td><td class="yes">松田聖子18回・「オリジナルはこちら」1回（実測）</td></tr>
+<tr><td>原曲側本文に森田美勇人</td><td class="yes">12回（実測）</td></tr>
+<tr><td>既知のReact #418(サイト共通・#35287)の根治</td><td class="no">未解決のまま（1434号で試行→SSR退行でrevert済み）。本件では除外扱い</td></tr>
+</table>
+
+<footer>
+実測（2026-11-02 04:1x・tools/verify_click.mjs 修正版）：カバー側 totalClickable 67 / tested 16 / noResponse 0 / consoleErrors 1(known #418) / unknown 0 ／ 原曲側 totalClickable 67 / tested 17 / noResponse 0 / consoleErrors 0。HTTP（Python urllib）：カバー側 200/98890B「松田聖子」18「オリジナルはこちら」1 ／ 原曲側 200/109331B「森田美勇人」12。直した道具：tools/verify_click.mjs（JSONに既知/未知の内訳・CDP送信30秒上限）、tools/auto_launcher.py collect_touch_check（unknownConsoleErrorsで判定）。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

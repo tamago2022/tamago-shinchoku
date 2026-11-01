@@ -771,13 +771,23 @@ def collect_touch_check(it):
     if not report:
         return None, "触る検品の結果ファイルが読み取れませんでした（技術的な失敗として素通しします）", None
     no_resp = report.get("noResponse") or report.get("unresponsive") or []
-    console_errs = report.get("consoleErrors") or []
+    # 178606号（2026-11-02）：verify_click.mjs自身の判定（CLICK_VERDICT）と同じ数え方にする。
+    # 既知のサイト共通エラー（React #418・#35287で既存バグと確定）はFAIL対象外。
+    # 検品器が内訳(unknownConsoleErrors)を書いていればそれを使い、無ければ従来どおり全件を見る。
+    all_console_errs = report.get("consoleErrors") or []
+    if "unknownConsoleErrors" in report:
+        console_errs = report.get("unknownConsoleErrors") or []
+    else:
+        console_errs = all_console_errs
+    known_console_cnt = len(all_console_errs) - len(console_errs)
     tech_error = report.get("error")
     ok = (not tech_error) and (not no_resp) and (not console_errs)
     total_clickable = report.get("totalClickable", 0)
     tested = report.get("tested", 0)
     if ok:
         reason = "無反応0件・コンソールエラー0件（%d件中%d件を実クリック）" % (total_clickable, tested)
+        if known_console_cnt:
+            reason += "・既知issueのコンソールエラー%d件はFAIL対象外(#35287)" % known_console_cnt
     else:
         parts = []
         if no_resp:
@@ -2976,6 +2986,12 @@ def launch_one(item, q, alive, safe_max):
     #   worktree1本の発車失敗が丸ごと15分の空白になっていた（882/883/884/874番で実際に発生）。
     #   ここで長く粘っても次の周回でどのみち再挑戦するだけなので、短く見切って次へ回す方が損が小さい。
     WT_ADD_TIMEOUT = 90
+    # 2026-11-01 たまごさん「決まりでは worktree は禁止。発車係が今後 worktree を作らないよう直して」
+    #   実測：204009番（音ハメFable版）で、負荷の中 git worktree add が90秒×3回切れたあと作業場が残り、
+    #   その上で発車した。→ 新しい作業場は作らず、リポジトリ本体（repo）で走らせる。
+    #   item["worktree"] に既にある場所を明示した時だけ、その場所を使う（作り足しはしない）。
+    if not (item.get("worktree") and os.path.isdir(wt)):
+        wt = repo
     if not os.path.isdir(wt):
         try:
             subprocess.run(["git", "-C", repo, "worktree", "add", wt,
