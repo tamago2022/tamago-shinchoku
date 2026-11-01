@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-01 15:45
+更新：2026-11-01 16:13
+
+---
+## 2026-11-01 16:01 ［音ハメ文字動画Fable版］ 204009 再開3回目（Fable）
+https://github.com/tamago2022/joy-relief-station/issues/1124#issuecomment-6554733734
+
+A シティポップ「真夜中のLP」は完成・Drive AI制作物/Claude/Fable に納品済み。B ケツロゴ4型は k1 完成・k2/k3/k4 の残り9かたまりを切り離した一本道（/private/tmp/204009_fm/finish_b.sh・結合→crf21→一覧シートまで自動）で描画中。Macがディスク待ちで混み1コマ30〜110秒・あと2時間見込み。次の担当は finish_b.log に FINISH_B_DONE が出たら out/*.c21.mp4 を正式名にして claude_nouhin.py put --anken Fable するだけ。3時間ルールで打ち切った前セッション（pid 87708）がプロセスとして生き残り並走していたので kill した。店主の入力待ち：なし
 
 ---
 ## 2026-11-01 14:24 ［宇宙うんこ］ 204018 v4 夜の香港クレーン 直し（Fable）
@@ -1606,10 +1612,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1062#issuecomment-639267
 出典は公式（消費者庁・e-Gov・FTC・米著作権局など）を優先、推測で埋めない。住所・電話・氏名など個人情報は書かない（公開リポ）。
 いま調べている特商法の住所・海外の法的リスクの結果も、全部このIssueに集めてください（GitHubに書けなければ Reason Network で工場へ返信）。
 ※法律の助言ではない下調べとして扱います。
-
----
-## 2026-10-25 11:53 ［大塚食品ページ汚染調査］ 35199番完了報告・Lovable公開ブロック(3回目)
-https://github.com/tamago2022/joy-relief-station/issues/1061#issuecomment-6392678096
-
-判定日赤35199番:大塚食品ページ汚染調査→main反映(8932b5ca6)まで完了。仁鶴・松山容子の持ち歌から無関係動画4件を識別子裏取りで確認して除去。二重の部屋(otsuka-chemical-bon-curry)は2026-08-13統合済みで対応不要。Lovable公開はCDP:9223未開通で失敗(1186号のChrome起動禁止関所・自分では起動できず)。この構造的ギャップは2026-10-16に2回既に指摘済み(F-20261016142004/171713)で今回が3回目の再発。恒久対策が必要:owner側でLovable公開専用Chromeを常時起動しておくか、非ブラウザの公開API経路を探す必要がある。本番は未反映のまま
 
