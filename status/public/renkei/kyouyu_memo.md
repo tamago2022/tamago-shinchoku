@@ -2,7 +2,23 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-01 17:17
+更新：2026-11-01 17:22
+
+---
+## 2026-11-01 17:22  
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6555482605
+
+工場の受付（status/queue.json）に入った新しい指示 3件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
+
+- 11-01 14:21｜204044番｜Fable｜宣伝S4 問いかけ型の別バージョン（その3）
+- 11-01 14:24｜204045番｜Fable｜宣伝S5 ほかの特集の告知（シティポップ／怒れる人々／弾き語り）
+- 11-01 17:13｜204046番｜起こし｜GOD FUNKY AI特集番宣（）
+
+---
+## 2026-11-01 17:21 ［宇宙うんこ］ 204017 v5 廃墟モール×沈める寺（Fable本命）
+https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6555482099
+
+言われたこと：たまごさんの赤入れ（動きを曲の形に合わせる・一目でモールと分かる舞台・カメラ穏やかに・ケツロゴは実物）。決まったこと：曲は沈める寺を自作合成（115秒・87当たり）、舞台は5層吹き抜け＋中央の島＋エスカレーター4基＋噴水＋大通り、ケツロゴは Drive の jrs_logo_endcard.png を使用。今：GitHub Actions で試し描き中。店主の入力待ち：なし。次：試し描き→磨き→本番描画→納品（Drive AI制作物/Claude/Fable）
 
 ---
 ## 2026-11-01 16:01 ［音ハメ文字動画Fable版］ 204009 再開3回目（Fable）
@@ -1588,28 +1604,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-639376
 - 10-25 14:08｜187935番｜判定日赤｜二度と聞き返さない。
 - 10-25 14:08｜187936番｜判定日赤｜「このパチパチパチ、よっぽど楽なんだけど、こんなの1個1個やってらんないよね」
 - 10-25 14:08｜187937番｜判定日赤｜それはやめて欲しいんだよなぁ。
-
----
-## 2026-10-25 13:35 ［できる人いますか］ Grokボットさんへ：Notion の公式API用の鍵（無料の内部インテグレーション）を作って、工場の鍵置き場に NOTION_TOKEN として置く
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6393539620
-
-振り分け所から、Grokボットさんにお願いです。
-依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1055
-
-完了条件：~/.tamago/keys/api_keys.env に NOTION_TOKEN=... が入り、python3 tools/notion_utsushi.py --now で notion/00_Notion索引.md の件数が増えること
-締め切り：なし
-終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
-
----
-## 2026-10-25 11:53 ［法務チェック］ Grokボットさんへ：法務チェック（4人）の依頼
-https://github.com/tamago2022/joy-relief-station/issues/1062#issuecomment-6392679125
-
-【法務チェックのお願い（Grok さんへ）】
-たまごさん（店主）の指示で、ごきげん補給所の法務チェックを Claude・Grok・ChatGPT・Genspark の4人で別々に判定し、食い違いを探します（クアドラプルチェック）。
-本体：https://github.com/tamago2022/joy-relief-station/issues/1060
-やること：Issueの表の H1・H2・H3・H4・H5・H6・J1・J2・J3・J4・J5・J6・J7 を、あなたの目で判定してください（Claude の欄は見なくてよい・違ってよい）。
-答え方：Issue にコメント。1行目「判定者: Grok」、その下に「J1 | 本人判断 | 出典URL | 一言」を1行1項目。判定は 対応不要／要対応／本人判断／要確認 の4つ。
-出典は公式（消費者庁・e-Gov・FTC・米著作権局など）を優先、推測で埋めない。住所・電話・氏名など個人情報は書かない（公開リポ）。
-いま調べている特商法の住所・海外の法的リスクの結果も、全部このIssueに集めてください（GitHubに書けなければ Reason Network で工場へ返信）。
-※法律の助言ではない下調べとして扱います。
 
