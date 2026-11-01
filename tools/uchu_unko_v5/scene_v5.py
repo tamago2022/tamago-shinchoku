@@ -514,6 +514,7 @@ for k in range(8):
     y = rnd.uniform(CONC[2] + 2, CONC[3] - 2); x = rnd.uniform(-4, 4); s_ = rnd.uniform(0.8, 2.5)
     acc_box("water", (x - s_, y - s_ * 0.6, 0.0), (x + s_, y + s_ * 0.6, 0.012))
 
+ESC_INFO = M["esc_info"]; STEPD = M["step"]
 # 植物（葉の塊）：天窓から垂れるつる・床の草・各階の縁・プランター
 def leaf_clump(center, r, n, mat="plant"):
     for k in range(n):
