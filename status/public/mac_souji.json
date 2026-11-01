@@ -2,7 +2,7 @@
  "runs": 6,
  "totalFreedBytes": 56180628889,
  "runsWithZeroFreed": 0,
- "calls": 4344,
+ "calls": 4345,
  "schemaVersion": 2,
  "lastRunAt": "2026-10-26T12:36:35+0900",
  "lastRunSeconds": 231.6,
@@ -376,37 +376,37 @@
   }
  },
  "route": "心臓(heartbeat.sh)＋5分便(machine_status_push.sh)に相乗り。許可ダイアログの要る定期タスクは使っていない",
- "lastCallAt": "2026-11-01T16:03:58+0900",
- "reliefCalls": 4339,
+ "lastCallAt": "2026-11-01T16:55:32+0900",
+ "reliefCalls": 4340,
  "relief": {
-  "lastRunAt": "2026-11-01T16:03:58+0900",
+  "lastRunAt": "2026-11-01T16:55:31+0900",
   "gateSeconds": 540,
   "dryRun": false,
   "lastFreedBytes": 0,
   "lastFreedHuman": "0.0B",
-  "runs": 2974,
-  "calls": 4339,
-  "lastTargets": 1,
-  "totalTargets": 1490,
-  "gapMinutes": 33,
-  "heartbeatAgeSec": 2,
+  "runs": 2975,
+  "calls": 4340,
+  "lastTargets": 3,
+  "totalTargets": 1493,
+  "gapMinutes": 51,
+  "heartbeatAgeSec": 7,
   "routeDead": false,
   "totalFreedBytes": 5292480980,
   "totalFreedHuman": "4.9GB",
-  "runsWithZeroFreed": 2534,
+  "runsWithZeroFreed": 2535,
   "color": "red",
-  "reason": "今回、掃く候補が1件あったのに0バイトしか取れなかった（走行2974回・累計4.9GB）",
+  "reason": "今回、掃く候補が3件あったのに0バイトしか取れなかった（走行2975回・累計4.9GB）",
   "memoryBefore": {
-   "freeMB": 52.1,
-   "swapUsedGB": 18.93,
-   "swapFreeGB": 1.07,
-   "compressedMB": 879.3
+   "freeMB": 173.1,
+   "swapUsedGB": 18.25,
+   "swapFreeGB": 0.75,
+   "compressedMB": 1466.5
   },
   "memoryAfter": {
-   "freeMB": 408.5,
-   "swapUsedGB": 18.91,
-   "swapFreeGB": 1.09,
-   "compressedMB": 1291.3
+   "freeMB": 380.7,
+   "swapUsedGB": 16.75,
+   "swapFreeGB": 1.25,
+   "compressedMB": 4629.3
   },
   "items": [
    {
@@ -418,7 +418,16 @@
    {
     "name": "own_leftovers",
     "freedBytes": 0,
-    "detail": [],
+    "detail": [
+     {
+      "pattern": "top -l",
+      "error": "TimeoutExpired(['pgrep', '-f', 'top -l'], 10)"
+     },
+     {
+      "pattern": "vm_stat -c",
+      "error": "TimeoutExpired(['pgrep', '-f', 'vm_stat -c'], 10)"
+     }
+    ],
     "error": null
    },
    {
@@ -475,8 +484,8 @@
   ],
   "route": "心臓(heartbeat.sh)が10分ごと・5分便が5分ごとに mac_souji.py を呼ぶ。許可ダイアログの要る定期タスクは使っていない"
  },
- "reliefRuns": 2974,
+ "reliefRuns": 2975,
  "reliefTotalFreedBytes": 5292480980,
- "reliefRunsWithZeroFreed": 2534,
- "reliefTotalTargets": 1490
+ "reliefRunsWithZeroFreed": 2535,
+ "reliefTotalTargets": 1493
 }
