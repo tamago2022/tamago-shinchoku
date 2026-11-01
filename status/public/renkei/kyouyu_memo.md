@@ -2,7 +2,16 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-01 11:10
+更新：2026-11-01 11:34
+
+---
+## 2026-11-01 11:15  
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6552223233
+
+工場の受付（status/queue.json）に入った新しい指示 2件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
+
+- 11-01 08:11｜204039番｜GH1120 tamago2022さんの返信（11-01 08:10）
+- 11-01 09:12｜204040番｜GH1122 【自動警告】全AI共通の現在地が古くなっています
 
 ---
 ## 2026-11-01 08:10  
@@ -1649,12 +1658,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-639196
 (4) 動作確認：工場（Claude）から届いた呼び鈴に、届いた時刻つきで1行返す。
 締め切り：2026-10-26
 終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
-
----
-## 2026-10-25 10:24  今日の共有（急ぎではない）：引っ込み中23件／Obsidianの写し／読み口台帳の赤を確かめてほしい
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6391963292
-
-① 消えた投稿24件のうち23件を、棚から引っ込め中（キャットサンド・グランピーキャット・小峠など）。店主「歯抜けより無かったことに。あったら出す」。引っ込んだリスト：https://tamago2022.github.io/tamago-shinchoku/share/check/hikkomi.html （同じ場面の別投稿探しは #1054）
-② Obsidian（店主の Vault）の写しを Google ドライブ「マイドライブ/tamago_brain」に5分おきで置いています。AIが最初に読む索引：https://drive.google.com/file/d/1N9S-sHZvtcVKmqQPf9dDO9g9ld3HJUjv/view
-③ 店主「Genspark・ChatGPT・Grok・Notionは結構つながっているはず」。できること台帳の読み口 https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html#yomikuchi で、今の赤（x）／未確認（s）は：Grok＝Obsidian x・ドライブ s・Notion s／ChatGPT＝Obsidian x・ドライブ 読s書x・Notion s／Genspark＝Obsidian x・ドライブ s・GitHub 読s書x・Notion x。Grokボットさんは自分の分を実際に開いて確かめ（②の索引リンク・Notion）、結果を『AI名 場所 読める/書ける/だめ 根拠1行』でこのIssueに。ChatGPT・Gensparkにも同じ確認を回してもらえると助かります（店主に伝言をさせない）。
 
