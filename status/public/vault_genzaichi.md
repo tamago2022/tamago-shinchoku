@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-11-01 21:52:48・hash=d3f4e00052e3 -->
+<!-- 自動生成・genzaichi_sync.py・2026-11-01 22:02:50・hash=f471dbd374e9 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -149,10 +149,13 @@
 - 2026-10-11 名カバーの棚を許可制に（台帳 src/lib/meiCoverLedger.ts＝たまごさん指定だけ表示・prebuild点検 check-meicover-gate）。25件を外し（1語で戻せる：MEI_COVER_UNDO_20261011）、風をあつめて(Josh Turner)を追加。ハートは全サイト一時非表示（HEARTS_VISIBLE）。文字マークは左下・英語、グッドカバーだけ左上。added_by列のmigrationは未適用なら台帳だけで動く。
 
 <!-- 自動まとめ:始 -->
-## 今日までに届いた更新（自動まとめ・1日1回／2026-10-26 22:28）
+## 今日までに届いた更新（自動まとめ・1日1回／2026-11-01 22:00）
 
-- **35199番:大塚食品ページ汚染調査**（10-25 11:53）main反映(8932b5ca6)まで完了。仁鶴・松山容子の持ち歌から無関係動画4件除去(竹内まりや/尾崎豊/五木ひろし＆市川由紀乃/生活笑百科)、二重の部屋(otsuka-chemical-bon-curry)は2026-08-13に統合済みと確認。Lovable公開はCDP:9223未開通(1186号のChrome起動禁止で自分では直せない、既知の構造的ギャップの3回目再発)で本番は未反映のまま
-- **振り分け所（できる人いますか）**（10-25 03:54）2026-10-25 稼働。tools/furiwake.py（心臓2分おき）＋できること台帳 status/furiwake/dekiru_daicho.json・share/check/furiwake.html。ラベル「できる人いますか」＋Issue型を joy-relief-station に設置。試し#1051（gdrive_md_mirror install.sh）を工場が実行→Drive tamago_brain 7756/7846本・launchd登録yes・rsync rc=23で約90本未転送。次：未転送の原因、Codex枠の生死、Gensparkが受付を読むか
+- **宇宙うんこ v5（204017・Fable）納品**（11-01 21:54）完成MP4（115秒・ケツロゴ＝Drive の jrs_logo_endcard.png）をドライブ AI制作物/Claude/Fable に納品 https://drive.google.［除去］ 。自己採点62（80未満＝磨き中）。fal は残高切れで店内静止画は見送り（0円）。次：v5.1＝CC0写真テクスチャ・葉のカード・間接光の焼き込み（README 9章）
+- **204018 宇宙うんこ v4 直し（Fable）**（11-01 18:12）曲の分解（kyoku_bunkai.md）・軌道の再設計（当たり28回・その場跳ね・溜め・フェルマータ→飛び込み）・密度（看板37・電線13・湯気・汚れ・DOF）・ケツロゴ差し替え、まで実装。GitHub Actions で試し描き中（run 41291760825）。次：試し描きを見て直し→本描画→組み立て→納品→Dispatch報告
+- **宇宙うんこ v5（204017・Fable）**（11-01 18:03）曲（沈める寺・自作合成115秒）と道・カメラ（michi.json）と舞台（scene_v5・Blender 3.6）ができ、GitHub Actions で試し描き3b（植物・小物入り）中。fal は残高切れで店内静止画は見送り。次：試し描きの絵を見て磨き→本番描画（75%・10サンプル）→組み立て（ケツロゴ＝Drive の jrs_logo_endcard.png）→納品
+- **204009 Fable版 音ハメ文字動画**（11-01 17:22）完了。A シティポップ「真夜中のLP」＋ケツロゴ4型＋一覧シートの6点を Drive AI制作物/Claude/Fable に納品（claude-fable-5-1）。確認ページ https://tamago2022.github.［除去］.html 。次の一手：たまごさんの感想待ち（60点だった前回Cを超えたかの判定）。教訓：3時間ルールで打ち切った子がプロセスとして生き残り並走する（failures.md に記録）
+- **178606号 仕入れて原曲と接続**（11-01 06:48）完了：森田美勇人「小麦色のマーメイド」×松田聖子原曲の双方向接続が本番で生きていることを実測（35101号の再積み）。確認ページ https://tamago2022.github.［除去］.html 。次：外部検品PASS待ち
 
 （子セッションは Vault に直接書かない。status/genzaichi_kouho.md に追記→夜にここへ1回だけ反映）
 <!-- 自動まとめ:終 -->
