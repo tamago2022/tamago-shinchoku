@@ -519,7 +519,7 @@ def build_ledge(L):
         objs.append(cyl("ledge%02d_fan" % i, (x, b["lo"][1] + 0.1, (b["lo"][2] + b["hi"][2]) / 2), (x, b["lo"][1] - 0.005, (b["lo"][2] + b["hi"][2]) / 2), 0.17, M_SIL, 20))
     elif typ == "sign":
         b = L["parts"][0]; o = box("ledge%02d_body" % i, b["lo"], b["hi"], M_METAL_R); objs.append(o)
-        tex = rnd.choice([t for t in ["sign_a", "sign_b", "sign_c", "sign_d", "sign_e", "sign_f", "sign_g", "sign_h"] if open(os.path.join(SOZAI, t + ".txt")).read().strip() == "horizontal"])
+        tex = rnd.choice([t for t in ["sign_%s" % ch_ for ch_ in "abcdefghijklmnop"] if open(os.path.join(SOZAI, t + ".txt")).read().strip() == "horizontal"])
         m, st = mat_neon("neon_l%02d" % i, tex + ".png")
         face = plane("ledge%02d_face" % i, ((b["lo"][0] + b["hi"][0]) / 2, b["lo"][1] - 0.005, (b["lo"][2] + b["hi"][2]) / 2), b["hi"][0] - b["lo"][0] - 0.06, b["hi"][2] - b["lo"][2] - 0.06, m, rot=(math.pi / 2, 0, 0))
         objs.append(face)
@@ -653,11 +653,12 @@ for k, f_ in enumerate(M["far"]):
     box("far%d" % k, (f_["x"] - f_["w"] / 2, f_["y"], 0), (f_["x"] + f_["w"] / 2, f_["y"] + f_["d"], f_["h"]), M_FAR)
 # 港の水（塔の裏・月を映す）
 mw_, ntw, pw = newmat("water")
-pin(pw, "Base Color", (0.003, 0.005, 0.010, 1)); pin(pw, "Roughness", 0.32); pin(pw, "Specular IOR Level", 0.25); pin(pw, "Metallic", 0.0)
-nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 2.5; I(nzw, "Detail").default_value = 6
+pin(pw, "Base Color", (0.002, 0.004, 0.009, 1)); pin(pw, "Roughness", 0.10); pin(pw, "Specular IOR Level", 0.14); pin(pw, "Metallic", 0.0)
+nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 1.0; I(nzw, "Detail").default_value = 8; I(nzw, "Roughness").default_value = 0.7
 mpw2 = node(ntw, "ShaderNodeMapping"); tcw2 = node(ntw, "ShaderNodeTexCoord"); link(ntw, tcw2.outputs["Object"], I(mpw2, "Vector")); link(ntw, mpw2.outputs[0], I(nzw, "Vector"))
+I(mpw2, "Scale").default_value = (0.35, 9.0, 1.0)   # さざ波は横に長く・奥行きに細かく → 月の映りが縦に砕けて「光の道」になる
 low_ = I(mpw2, "Location"); low_.default_value = (0, 0, 0); low_.keyframe_insert("default_value", frame=1); low_.default_value = (0, 3.0, 1.5); low_.keyframe_insert("default_value", frame=NF)
-bpw = node(ntw, "ShaderNodeBump"); I(bpw, "Strength").default_value = 0.7; link(ntw, O(nzw, "Fac"), I(bpw, "Height")); link(ntw, bpw.outputs[0], I(pw, "Normal"))
+bpw = node(ntw, "ShaderNodeBump"); I(bpw, "Strength").default_value = 1.0; I(bpw, "Distance").default_value = 0.6; link(ntw, O(nzw, "Fac"), I(bpw, "Height")); link(ntw, bpw.outputs[0], I(pw, "Normal"))
 anim_lin(ntw)
 plane("water", (0, 300, -0.15), 800, 600, mw_)
 box("quay", (-8, 6.35, -0.2), (8, 7.0, 0.05), M_CONC_D)
