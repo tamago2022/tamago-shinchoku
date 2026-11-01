@@ -37,9 +37,9 @@ print("ENGINE", sc.render.engine, bpy.app.version_string, flush=True)
 EV = sc.eevee
 tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom=True, bloom_intensity=0.05, bloom_threshold=1.0, bloom_radius=6.5, bloom_knee=0.5,
        use_gtao=True, gtao_distance=1.2, gtao_factor=1.0, use_ssr=True, use_ssr_refraction=True, use_ssr_halfres=True, ssr_quality=0.6, ssr_thickness=0.3, ssr_max_roughness=0.6,
-       use_soft_shadows=True, use_volumetric_shadows=True, use_volumetric_lights=True, volumetric_tile_size='8', volumetric_samples=48, volumetric_start=0.3, volumetric_end=140.0, volumetric_light_clamp=3.0,
+       use_soft_shadows=False, use_volumetric_shadows=True, use_volumetric_lights=True, volumetric_tile_size='16', volumetric_samples=32, volumetric_start=0.3, volumetric_end=140.0, volumetric_light_clamp=3.0,
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.35, motion_blur_steps=1,
-       shadow_cube_size='1024', shadow_cascade_size='2048', use_shadow_high_bitdepth=True, sss_samples=4)
+       shadow_cube_size='512', shadow_cascade_size='1024', use_shadow_high_bitdepth=False, sss_samples=4)
 sc.render.use_persistent_data = True
 sc.render.resolution_x, sc.render.resolution_y = 720, 1280
 sc.render.resolution_percentage = int(os.environ.get("UU_PCT", "100"))
@@ -47,7 +47,7 @@ sc.render.fps = FPS; sc.frame_start = 1; sc.frame_end = NF
 sc.render.image_settings.file_format = 'JPEG'; sc.render.image_settings.quality = 93
 try: sc.view_settings.view_transform = 'Filmic'; sc.view_settings.look = 'Medium High Contrast'
 except Exception: pass
-sc.view_settings.exposure = 0.1
+sc.view_settings.exposure = -0.35
 
 # ---------------- ノードの道具 ----------------
 def newmat(name):
@@ -120,7 +120,7 @@ for s in range(NSLOT):
     d = dist.outputs["Value"]
     # 輪：exp(-((d - r)/w)^2)、w は r と共に少し太る
     sub_ = RIP.nodes.new("ShaderNodeMath"); sub_.operation = 'SUBTRACT'; RIP.links.new(d, sub_.inputs[0]); RIP.links.new(r.outputs[0], sub_.inputs[1])
-    wdt = RIP.nodes.new("ShaderNodeMath"); wdt.operation = 'MULTIPLY_ADD'; RIP.links.new(r.outputs[0], wdt.inputs[0]); wdt.inputs[1].default_value = 0.06; wdt.inputs[2].default_value = 0.9
+    wdt = RIP.nodes.new("ShaderNodeMath"); wdt.operation = 'MULTIPLY_ADD'; RIP.links.new(r.outputs[0], wdt.inputs[0]); wdt.inputs[1].default_value = 0.10; wdt.inputs[2].default_value = 1.6
     dv = RIP.nodes.new("ShaderNodeMath"); dv.operation = 'DIVIDE'; RIP.links.new(sub_.outputs[0], dv.inputs[0]); RIP.links.new(wdt.outputs[0], dv.inputs[1])
     sq = RIP.nodes.new("ShaderNodeMath"); sq.operation = 'MULTIPLY'; RIP.links.new(dv.outputs[0], sq.inputs[0]); RIP.links.new(dv.outputs[0], sq.inputs[1])
     neg = RIP.nodes.new("ShaderNodeMath"); neg.operation = 'MULTIPLY'; RIP.links.new(sq.outputs[0], neg.inputs[0]); neg.inputs[1].default_value = -1.0
@@ -198,8 +198,9 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     st = noise(nt, 2.5, 3, 0.7, O(mp, "Vector")); st = ramp(nt, st, [(0.45, (1, 1, 1, 1)), (0.7, (0.5, 0.5, 0.5, 1))])
     colr = mixrgb(nt, streak, mot, mixrgb(nt, st, (0.12, 0.11, 0.10, 1), mot), 'MIX')
     # ひび：ボロノイの縁
-    cr = voronoi(nt, 0.9, Pw); crk = ramp(nt, cr, [(0.0, (0.08, 0.08, 0.08, 1)), (0.02, (0.08, 0.08, 0.08, 1)), (0.035, (1, 1, 1, 1))])
-    colr = mixrgb(nt, 0.9, colr, crk, 'MULTIPLY')
+    cr = voronoi(nt, 0.3, Pw); crk = ramp(nt, cr, [(0.0, (0.25, 0.25, 0.25, 1)), (0.004, (0.25, 0.25, 0.25, 1)), (0.009, (1, 1, 1, 1))])
+    crmask = ramp(nt, noise(nt, 0.12, 2, 0.5, Pw, 21.0), [(0.5, (0, 0, 0, 1)), (0.62, (1, 1, 1, 1))])
+    colr = mixrgb(nt, crmask, colr, mixrgb(nt, 0.9, colr, crk, 'MULTIPLY'))
     # 苔：上向きの面 × ノイズ × 低い所
     up = node(nt, "ShaderNodeSeparateXYZ"); link(nt, O(g, "Normal"), up.inputs[0])
     upf = math_(nt, 'MULTIPLY', ramp(nt, up.outputs[2], [(0.3, (0, 0, 0, 1)), (0.9, (1, 1, 1, 1))]), noise(nt, 1.6, 5, 0.65, Pw, 3.0))
@@ -213,7 +214,7 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     colf = mixrgb(nt, math_(nt, 'MULTIPLY', dust, 0.35), colf, (0.62, 0.60, 0.56, 1))
     if tile > 0:   # 目地
         br = node(nt, "ShaderNodeTexBrick"); link(nt, Pw, I(br, "Vector")); I(br, "Scale").default_value = tile; I(br, "Mortar Size").default_value = 0.015
-        I(br, "Color1").default_value = (1, 1, 1, 1); I(br, "Color2").default_value = (0.92, 0.92, 0.92, 1); I(br, "Mortar").default_value = (0.35, 0.35, 0.35, 1)
+        I(br, "Color1").default_value = (1, 1, 1, 1); I(br, "Color2").default_value = (0.94, 0.94, 0.94, 1); I(br, "Mortar").default_value = (0.6, 0.6, 0.6, 1)
         colf = mixrgb(nt, 0.8, colf, O(br, "Color"), 'MULTIPLY')
     link(nt, desat(nt, colf, mask), I(p, "Base Color"))
     # 濡れ：低い所（ノイズ）→ 粗さ 0.03・暗く
@@ -223,7 +224,7 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     link(nt, rough, I(p, "Roughness")); I(p, "Specular").default_value = 0.45
     bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.25; link(nt, mottle, I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
     # 波紋の輪そのものは、淡く光る
-    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 1.2
+    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.35
     return finish(m, nt, out, p)
 def mat_metal(name, col=(0.55, 0.55, 0.56), rust=0.5, rough=0.4):
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position"); mask, ring = add_ripple(nt)
@@ -233,7 +234,7 @@ def mat_metal(name, col=(0.55, 0.55, 0.56), rust=0.5, rough=0.4):
     link(nt, desat(nt, c, mask, 0.15), I(p, "Base Color")); link(nt, math_(nt, 'SUBTRACT', 1.0, math_(nt, 'MULTIPLY', rs, 0.9)), I(p, "Metallic"))
     link(nt, mixrgb(nt, rs, (rough, rough, rough, 1), (0.85, 0.85, 0.85, 1)), I(p, "Roughness"))
     bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.3; link(nt, rs, I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
-    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 1.0
+    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.3
     return finish(m, nt, out, p)
 def mat_glass(name, broken=0.0, tint=(0.85, 0.9, 0.9)):
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position")
@@ -247,7 +248,7 @@ def mat_glass(name, broken=0.0, tint=(0.85, 0.9, 0.9)):
         link(nt, mixrgb(nt, crack, (0.9, 0.9, 0.9, 1), (0.0, 0.0, 0.0, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.6
     blend(m, 'BLEND', 'HASHED'); tryset(m, use_screen_refraction=True, show_transparent_back=False)
     return finish(m, nt, out, p)
-def mat_shutter(name, col=(0.6, 0.6, 0.58)):
+def mat_shutter(name, col=(0.40, 0.40, 0.38)):
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position"); mask, ring = add_ripple(nt)
     wv = node(nt, "ShaderNodeTexWave"); link(nt, Pw, I(wv, "Vector")); I(wv, "Scale").default_value = 7.0; wv.wave_type = 'BANDS'; wv.bands_direction = 'Z'
     rs = ramp(nt, noise(nt, 1.8, 5, 0.7, Pw, 9.0), [(0.4, (0, 0, 0, 1)), (0.6, (1, 1, 1, 1))])
@@ -266,7 +267,10 @@ def mat_sign(name, col, strength=6.0):
     dead = ramp(nt, noise(nt, 3.0, 4, 0.6, Pw, 1.0), [(0.3, (0.0, 0.0, 0.0, 1)), (0.7, (0.25, 0.25, 0.25, 1))])
     link(nt, mixrgb(nt, mask, dead, (col[0], col[1], col[2], 1)), I(p, "Emission"))
     flick = math_(nt, 'MULTIPLY_ADD', noise(nt, 40.0, 1, 0.5, Pw, 0.0), 0.5, 0.6)
-    link(nt, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', mask, strength), flick), I(p, "Emission Strength"))
+    wv = node(nt, "ShaderNodeTexWave"); link(nt, Pw, I(wv, "Vector")); I(wv, "Scale").default_value = 60.0; wv.wave_type = 'BANDS'; wv.bands_direction = 'Z'
+    scan = math_(nt, 'MULTIPLY_ADD', O(wv, "Fac"), 0.5, 0.5)
+    broken = ramp(nt, noise(nt, 2.5, 3, 0.6, Pw, 5.0), [(0.38, (0, 0, 0, 1)), (0.5, (1, 1, 1, 1))])
+    link(nt, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', mask, strength * 0.45), flick), math_(nt, 'MULTIPLY', scan, broken)), I(p, "Emission Strength"))
     return finish(m, nt, out, p)
 def mat_emit(name, col, strength=1.0):
     m, nt, out = newmat(name); e = node(nt, "ShaderNodeEmission"); I(e, "Color").default_value = (col[0], col[1], col[2], 1); I(e, "Strength").default_value = strength
@@ -293,13 +297,13 @@ def mat_spray(name):
     blend(m, 'BLEND', 'NONE'); return finish(m, nt, out, mx)
 
 MAT = {
-    "floor": mat_concrete("floor", (0.50, 0.49, 0.47), moss=0.55, wet=0.45, streak=0.5, tile=0.8),
-    "wall": mat_concrete("wall", (0.56, 0.55, 0.53), moss=0.25, wet=0.0, streak=0.9),
-    "panel": mat_concrete("panel", (0.70, 0.70, 0.69), moss=0.1, wet=0.0, streak=0.7),      # 未来モールの白いリブ・床の縁
-    "step": mat_concrete("step", (0.40, 0.40, 0.40), moss=0.85, wet=0.2, streak=0.3),
-    "metal": mat_metal("metal", (0.55, 0.55, 0.57), rust=0.5, rough=0.35),
-    "metal_dark": mat_metal("metal_dark", (0.25, 0.25, 0.26), rust=0.7, rough=0.5),
-    "rim": mat_concrete("rim", (0.58, 0.57, 0.55), moss=0.7, wet=0.5, streak=0.6),
+    "floor": mat_concrete("floor", (0.34, 0.33, 0.31), moss=0.6, wet=0.5, streak=0.5, tile=0.8),
+    "wall": mat_concrete("wall", (0.36, 0.35, 0.33), moss=0.3, wet=0.0, streak=0.9),
+    "panel": mat_concrete("panel", (0.46, 0.46, 0.45), moss=0.15, wet=0.0, streak=0.7),      # 未来モールの白いリブ・床の縁
+    "step": mat_concrete("step", (0.26, 0.26, 0.26), moss=0.9, wet=0.3, streak=0.3),
+    "metal": mat_metal("metal", (0.40, 0.40, 0.42), rust=0.55, rough=0.35),
+    "metal_dark": mat_metal("metal_dark", (0.16, 0.16, 0.17), rust=0.7, rough=0.5),
+    "rim": mat_concrete("rim", (0.36, 0.35, 0.33), moss=0.75, wet=0.5, streak=0.6),
     "glass": mat_glass("glass", 0.0), "glass_broken": mat_glass("glass_broken", 0.6), "roof_glass": mat_glass("roof_glass", 0.35, (0.8, 0.85, 0.9)),
     "shutter": mat_shutter("shutter"), "water": mat_water("water"), "ghost": mat_ghost("ghost"), "spray": mat_spray("spray"),
 }
@@ -576,12 +580,12 @@ def unko_mesh():
 me = unko_mesh(); unko = bpy.data.objects.new("unko", me); sc.collection.objects.link(unko)
 um, unt, uout = newmat("unko_galaxy"); up = principled(unt); g, tc = geo(unt); P = O(tc, "Object")
 nebA = noise(unt, 7.0, 6, 0.7, P, 0.0); nebB = noise(unt, 11.0, 5, 0.6, P, 2.0)
-c = mixrgb(unt, ramp(unt, nebA, [(0.35, (0, 0, 0, 1)), (0.62, (1, 1, 1, 1))]), (0.05, 0.03, 0.14, 1), (0.85, 0.15, 0.55, 1))
-c = mixrgb(unt, ramp(unt, nebB, [(0.45, (0, 0, 0, 1)), (0.68, (1, 1, 1, 1))]), c, (0.15, 0.75, 0.95, 1))
+c = mixrgb(unt, ramp(unt, nebA, [(0.45, (0, 0, 0, 1)), (0.72, (1, 1, 1, 1))]), (0.02, 0.015, 0.08, 1), (0.55, 0.10, 0.40, 1))
+c = mixrgb(unt, ramp(unt, nebB, [(0.55, (0, 0, 0, 1)), (0.75, (1, 1, 1, 1))]), c, (0.10, 0.55, 0.80, 1))
 stars = ramp(unt, voronoi(unt, 90.0, P, 'F1'), [(0.0, (1, 1, 1, 1)), (0.04, (1, 1, 1, 1)), (0.09, (0, 0, 0, 1))])
 link(unt, c, I(up, "Base Color")); I(up, "Roughness").default_value = 0.22; I(up, "Clearcoat").default_value = 0.8; I(up, "Clearcoat Roughness").default_value = 0.05
-I(up, "Subsurface").default_value = 0.15; I(up, "Subsurface Color").default_value = (0.4, 0.2, 0.6, 1)
-link(unt, mixrgb(unt, stars, (0.25, 0.1, 0.5, 1), (1.0, 0.95, 0.9, 1)), I(up, "Emission")); I(up, "Emission Strength").default_value = 0.6
+I(up, "Subsurface").default_value = 0.04; I(up, "Subsurface Color").default_value = (0.3, 0.1, 0.5, 1)
+link(unt, mixrgb(unt, stars, (0.06, 0.02, 0.14, 1), (1.0, 0.95, 0.9, 1)), I(up, "Emission")); I(up, "Emission Strength").default_value = 0.5
 bpu = node(unt, "ShaderNodeBump"); I(bpu, "Strength").default_value = 0.06; link(unt, nebB, I(bpu, "Height")); link(unt, bpu.outputs[0], I(up, "Normal"))
 finish(um, unt, uout, up); me.materials.append(um); UNKO_EM = I(up, "Emission Strength")
 unko.shape_key_add(name="Basis")
@@ -614,7 +618,7 @@ def anim_lin(owner):
             for kp in fc.keyframe_points: kp.interpolation = 'LINEAR'
 anim_lin(unko); anim_lin(me.shape_keys)
 for ld in M["landings"]:
-    for ff, vv in ((ld["fr"] - 1, 0.6), (ld["fr"], 2.2 + 2.0 * ld["vel"]), (ld["fr"] + 12, 0.6)):
+    for ff, vv in ((ld["fr"] - 1, 0.5), (ld["fr"], 1.6 + 1.5 * ld["vel"]), (ld["fr"] + 12, 0.5)):
         UNKO_EM.default_value = vv; UNKO_EM.keyframe_insert("default_value", frame=ff)
 # グミの着地の閃光（小さな点光源が一瞬）
 lamp = bpy.data.lights.new("flash", 'POINT'); lamp.energy = 0; lamp.color = (1.0, 0.85, 0.6); lamp.shadow_soft_size = 0.5
@@ -628,20 +632,20 @@ for ld in M["landings"]:
 stage("unko")
 
 # ---------------- 光：天窓からの太陽（光の筋）・曇った空の光・霧 ----------------
-sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = 5.5; sun.color = (1.0, 0.93, 0.82); sun.angle = math.radians(1.5)
+sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = 4.0; sun.color = (1.0, 0.92, 0.80); sun.angle = math.radians(1.5)
 try: sun.use_contact_shadow = True; sun.shadow_cascade_max_distance = 120; sun.shadow_cascade_count = 4
 except Exception: pass
 so = bpy.data.objects.new("sun", sun); sc.collection.objects.link(so); so.rotation_euler = (math.radians(52), 0.0, math.radians(-30))
 wd = bpy.data.worlds.new("w"); sc.world = wd; wd.use_nodes = True; wn = wd.node_tree
-bg = wn.nodes["Background"]; bg.inputs[0].default_value = (0.55, 0.62, 0.72, 1); bg.inputs[1].default_value = 0.55
-vol = wn.nodes.new("ShaderNodeVolumeScatter"); vol.inputs["Density"].default_value = 0.012; vol.inputs["Anisotropy"].default_value = 0.45
+bg = wn.nodes["Background"]; bg.inputs[0].default_value = (0.45, 0.55, 0.70, 1); bg.inputs[1].default_value = 0.16
+vol = wn.nodes.new("ShaderNodeVolumeScatter"); vol.inputs["Density"].default_value = 0.010; vol.inputs["Anisotropy"].default_value = 0.55
 wn.links.new(vol.outputs[0], wn.nodes["World Output"].inputs["Volume"])
 # 大通りの弱い非常灯（緑がかった冷たい光）と、吹き抜けの冷たい補助光
 for k, y in enumerate((-46.0, -34.0, -22.0)):
-    l = bpy.data.lights.new("exit%d" % k, 'POINT'); l.energy = 180; l.color = (0.6, 1.0, 0.75); l.shadow_soft_size = 0.3
+    l = bpy.data.lights.new("exit%d" % k, 'POINT'); l.energy = 60; l.color = (0.6, 1.0, 0.75); l.shadow_soft_size = 0.3
     o = bpy.data.objects.new("exit%d" % k, l); sc.collection.objects.link(o); o.location = (4.5 if k % 2 else -4.5, y, H - 0.9)
 for k, (x, y, z) in enumerate(((0, 0, 28.0), (-14, 0, 20.0), (14, 0, 12.0))):
-    l = bpy.data.lights.new("fill%d" % k, 'POINT'); l.energy = 2500; l.color = (0.7, 0.8, 1.0); l.shadow_soft_size = 4.0
+    l = bpy.data.lights.new("fill%d" % k, 'POINT'); l.energy = 500; l.color = (0.7, 0.8, 1.0); l.shadow_soft_size = 4.0
     o = bpy.data.objects.new("fill%d" % k, l); sc.collection.objects.link(o); o.location = (x, y, z)
 # ほこりの粒（光の筋の中に浮く小さな球）
 dm = bpy.data.meshes.new("dust"); vs = []; fs = []
@@ -651,7 +655,7 @@ for k in range(1400):
 for k in range(300):
     x = rnd.uniform(-5, 5); y = rnd.uniform(CONC[2], CONC[3]); z = rnd.uniform(0.3, H - 0.5); r = rnd.uniform(0.006, 0.015)
     n = len(vs); vs += [(x - r, y, z), (x + r, y, z), (x, y, z + r * 1.6)]; fs.append((n, n + 1, n + 2))
-dm.from_pydata(vs, [], fs); dm.update(); dm.materials.append(mat_emit("dust", (1.0, 0.95, 0.85), 1.6))
+dm.from_pydata(vs, [], fs); dm.update(); dm.materials.append(mat_emit("dust", (1.0, 0.95, 0.85), 0.7))
 do = bpy.data.objects.new("dust", dm); sc.collection.objects.link(do)
 do.location = (0, 0, 0); do.keyframe_insert("location", frame=1); do.location = (0.3, 0.1, -0.6); do.keyframe_insert("location", frame=NF)
 stage("lights")
@@ -680,15 +684,32 @@ comp = cn.nodes.new("CompositorNodeComposite")
 cn.links.new(rl.outputs["Image"], gl.inputs[0]); cn.links.new(gl.outputs[0], ld.inputs[0]); cn.links.new(ld.outputs[0], mix.inputs[1])
 cn.links.new(el.outputs[0], bl.inputs[0]); cn.links.new(bl.outputs[0], mm.inputs[0]); cn.links.new(mm.outputs[0], mix.inputs[2]); cn.links.new(mix.outputs[0], cb.inputs["Image"]); cn.links.new(cb.outputs[0], comp.inputs[0])
 stage("camera")
+
+# ---------------- 深度画像（FLUX 深度制御の入力用）：UU_DEPTH=1 のとき、指定コマの深度を 0..1 に正規化した PNG で出す ----------------
+if os.environ.get("UU_DEPTH") == "1":
+    vl = sc.view_layers[0]; vl.use_pass_z = True
+    for n in list(cn.nodes): cn.nodes.remove(n)
+    rl = cn.nodes.new("CompositorNodeRLayers"); mr = cn.nodes.new("CompositorNodeMapRange"); mr.use_clamp = True
+    mr.inputs["From Min"].default_value = 0.5; mr.inputs["From Max"].default_value = float(os.environ.get("UU_DEPTH_MAX", "60")); mr.inputs["To Min"].default_value = 1.0; mr.inputs["To Max"].default_value = 0.0
+    comp = cn.nodes.new("CompositorNodeComposite"); cn.links.new(rl.outputs["Depth"], mr.inputs[0]); cn.links.new(mr.outputs[0], comp.inputs[0])
+    sc.render.image_settings.file_format = 'PNG'; sc.render.image_settings.color_mode = 'BW'; sc.render.image_settings.color_depth = '8'
+    try: sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
+    except Exception: pass
+    sc.view_settings.exposure = 0.0; EV.taa_render_samples = 1; tryset(EV, use_bloom=False, use_motion_blur=False)
 if os.environ.get("UU_SAVE"): bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "scene_v5.blend"))
 
 # ---------------- 描画 ----------------
 STEP = int(os.environ.get("UU_STEP", "1"))
 if FR == "all": frames = range(1, NF + 1, STEP)
 elif "-" in FR and "," not in FR: a_, b_ = FR.split("-"); frames = range(int(a_), int(b_) + 1, STEP)
-else: frames = [int(x) for x in FR.split(",") if x]
+else:
+    frames = []
+    for x in FR.split(","):
+        if not x: continue
+        if "-" in x: a_, b_ = x.split("-"); frames += list(range(int(a_), int(b_) + 1))
+        else: frames.append(int(x))
 for f in frames:
-    path = os.path.join(OUT, "f%04d.jpg" % f)
+    path = os.path.join(OUT, ("d%04d.png" if os.environ.get("UU_DEPTH") == "1" else "f%04d.jpg") % f)
     if os.path.exists(path): continue
     t0 = time.time(); sc.frame_set(f); sc.render.filepath = path; bpy.ops.render.render(write_still=True)
     print("FRAME", f, round(time.time() - t0, 1), flush=True)
