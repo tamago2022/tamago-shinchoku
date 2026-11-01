@@ -52,7 +52,7 @@
 <div class="date">2026-11-01 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-Fable（claude-fable-5-1）で、A シティポップ「真夜中のLP」（15秒）と、B「ごきげん補給所」のケツロゴ短尺4型（叩き／ネオン管／誌面／フィルム）＋一覧シート1枚を作り、6点すべて Drive「AI制作物/Claude/Fable」に納品しました。A：針を落とす→ラベルの丸が夜の街の丸になる→帯の後ろから横縞の夕日→CITY/POP の字で写真をくり抜き→盤に戻ってテープストップ、最後にサングラスのコンシェルジュ。B：4本とも違う型で、最後はサングラスのコンシェルジュのロゴで終わります。有料API・新規契約なし。
+Fable（claude-fable-5-1）で、A シティポップ「真夜中のLP」（15秒）と、B「ごきげん補給所」のケツロゴ短尺4型（叩き／ネオン管／誌面／フィルム）＋一覧シート1枚を作り、6点すべて Drive「AI制作物/Claude/Fable」に納品しました。A：針を落とす→ラベルの丸が夜の街の丸になる→帯の後ろから横縞の夕日→CITY/POP の字で写真をくり抜き→盤に戻ってテープストップ、最後にサングラスのコンシェルジュ。B：4本とも違う型で、最後はサングラスのコンシェルジュのロゴで終わります。有料API・新規契約なし。下のコマ画像は納品した mp4 そのものから ffmpeg で抜いたものです。
 </div>
 
 <h2>② 数字</h2>
@@ -77,7 +77,7 @@ Fable（claude-fable-5-1）で、A シティポップ「真夜中のLP」（15�
 <ul class="links">
   <li><b>Drive：AI制作物/Claude/Fable（6点の現物）</b><a href="https://drive.google.com/drive/folders/1dEn01jXnO2798sso37srK7K9Cy73bCoH" target="_blank" rel="noopener">https://drive.google.com/drive/folders/1dEn01jXnO2798sso37srK7K9Cy73bCoH</a></li>
   <li><b>作り方と正直な弱点（README）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/fable_motion_1101/README.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/fable_motion_1101/README.md</a></li>
-  <li><b>1本ごとの記録（kiroku.jsonl）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/fable_motion_1101/kiroku.jsonl" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/fable_motion_1101/kiroku.jsonl</a></li>
+  <li><b>1本ごとの記録（kiroku.jsonl・前後のallPct・週枠・DriveURL・見どころ）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/fable_motion_1101/kiroku.jsonl" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/public/fable_motion_1101/kiroku.jsonl</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -87,12 +87,16 @@ Fable（claude-fable-5-1）で、A シティポップ「真夜中のLP」（15�
 <tr><td>ロゴはサングラスのコンシェルジュだけ・最後だけ</td><td class="yes">egg-concierge-rocker.png のみ使用・下のコマ画像で確認</td></tr>
 <tr><td>卵だけのロゴ・宇宙うんこの絵は不使用</td><td class="yes">使っていない</td></tr>
 <tr><td>A を Drive に納品</td><td class="yes">2026-11-01 15:56 上げた（93MB）</td></tr>
-<tr><td>B 4型＋一覧シートを Drive に納品</td><td class="yes">2026-11-01 17:16 上げた</td></tr>
+<tr><td>B 4型＋一覧シートを Drive に納品</td><td class="yes">2026-11-01 17:16 上げた（ls で6ファイル確認 17:17）</td></tr>
+<tr><td>kiroku.jsonl に1本ごと記録（model・開始・終了・前後のallPct・週枠・DriveURL・見どころ）</td><td class="yes">9行（blocked/queued/kaizen の3行＋A＋B5点）</td></tr>
+<tr><td>README に作り方と正直な弱点</td><td class="yes">書いた（描画の遅さ・整数px・写真の解像度・筆順・粒子）</td></tr>
+<tr><td>Dispatch へ報告（status/dispatch_outbox.jsonl）</td><td class="yes">17:22 に1行追記（type=fable_motion_houkoku）</td></tr>
+<tr><td>/private/tmp の作業場を消した</td><td class="yes">/private/tmp/204009_fm（800MB）を 17:25 に削除・残り0</td></tr>
 <tr><td>この便だけの週枠の切り分け</td><td class="no">取れていない（同じ週枠を別のFable便と共有）</td></tr>
 </table>
 
 <footer>
-実測（ffmpeg -i）：A 15.00秒／型01 4.50秒／型02 5.00秒／型03 4.83秒／型04 5.13秒。全部 1080x1920・30fps・h264 crf21・AAC。実測（status/quota.json の allPct）：A開始時 25.4 → 完了時 43.0（別のFable便と同じ週枠なので、この便だけの分は切り分けられていない）。1コマの描画時間（単独実測・load 18〜22）：型02 109秒・型03 94秒・型04 33秒。正直な弱点は README に。
+実測（ffmpeg -i）：A 15.00秒／型01 4.50秒／型02 5.00秒／型03 4.83秒／型04 5.13秒。全部 1080x1920・30fps・h264 crf21・AAC。実測（status/quota.json の allPct）：A開始時 25.4 → 完了時 43.0（別のFable便と同じ週枠なので、この便だけの分は切り分けられていない）。実測（ls /private/tmp | grep -c 204009）：0。1コマの描画時間（単独実測・load 18〜22）：型02 109秒・型03 94秒・型04 33秒。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
