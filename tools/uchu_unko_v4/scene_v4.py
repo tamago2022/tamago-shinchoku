@@ -202,12 +202,14 @@ def mat_sil(name="sil"):
 def mat_neon(name, img):
     m, nt, p = newmat(name); blend(m, 'BLEND')
     tex = node(nt, "ShaderNodeTexImage"); tex.image = load_img(img); tex.extension = 'CLIP'
+    tcn = node(nt, "ShaderNodeTexCoord"); link(nt, tcn.outputs["Generated"], I(tex, "Vector"))
     link(nt, tex.outputs["Color"], I(p, "Emission Color")); link(nt, tex.outputs["Color"], I(p, "Base Color"))
     pin(p, "Emission Strength", 6.0); pin(p, "Roughness", 0.5)
     return m, I(p, "Emission Strength")
 def mat_cloth(name, img):
     m, nt, p = newmat(name)
     tex = node(nt, "ShaderNodeTexImage"); tex.image = load_img(img)
+    tcc = node(nt, "ShaderNodeTexCoord"); link(nt, tcc.outputs["Generated"], I(tex, "Vector"))
     link(nt, tex.outputs["Color"], I(p, "Base Color")); pin(p, "Roughness", 0.95); pin(p, "Specular IOR Level", 0.1)
     try: link(nt, tex.outputs["Color"], I(p, "Subsurface Color")); pin(p, "Subsurface Weight", 0.1)
     except Exception: pass
@@ -651,7 +653,7 @@ for k, f_ in enumerate(M["far"]):
     box("far%d" % k, (f_["x"] - f_["w"] / 2, f_["y"], 0), (f_["x"] + f_["w"] / 2, f_["y"] + f_["d"], f_["h"]), M_FAR)
 # 港の水（塔の裏・月を映す）
 mw_, ntw, pw = newmat("water")
-pin(pw, "Base Color", (0.003, 0.005, 0.010, 1)); pin(pw, "Roughness", 0.24); pin(pw, "Specular IOR Level", 0.25); pin(pw, "Metallic", 0.0)
+pin(pw, "Base Color", (0.003, 0.005, 0.010, 1)); pin(pw, "Roughness", 0.32); pin(pw, "Specular IOR Level", 0.25); pin(pw, "Metallic", 0.0)
 nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 2.5; I(nzw, "Detail").default_value = 6
 mpw2 = node(ntw, "ShaderNodeMapping"); tcw2 = node(ntw, "ShaderNodeTexCoord"); link(ntw, tcw2.outputs["Object"], I(mpw2, "Vector")); link(ntw, mpw2.outputs[0], I(nzw, "Vector"))
 low_ = I(mpw2, "Location"); low_.default_value = (0, 0, 0); low_.keyframe_insert("default_value", frame=1); low_.default_value = (0, 3.0, 1.5); low_.keyframe_insert("default_value", frame=NF)
@@ -913,6 +915,7 @@ I(vol, "Density").default_value = 0.0075
 link(wn, vol.outputs[0], I(outw, "Volume"))
 # 月明かり（太陽ランプ・青白い・路地を抜けて差す）
 sun_d = bpy.data.lights.new("moon_sun", 'SUN'); sun_d.energy = 1.3; sun_d.color = (0.75, 0.82, 1.0); sun_d.angle = math.radians(1.5)
+tryset(sun_d, volume_factor=0.22)
 sun = bpy.data.objects.new("moon_sun", sun_d); bpy.context.collection.objects.link(sun)
 sun.rotation_euler = (-V(md)).to_track_quat('-Z', 'Y').to_euler()
 # 街全体の薄い環境光（ネオンの照り返し）
@@ -920,6 +923,7 @@ amb_d = bpy.data.lights.new("amb", 'SUN'); amb_d.energy = 0.10; amb_d.color = (1
 amb = bpy.data.objects.new("amb", amb_d); bpy.context.collection.objects.link(amb); amb.rotation_euler = (math.radians(60), 0, math.radians(180))
 # 街明かりの照り返し（カメラ側の斜め上から・青灰色・影あり＝台の影が壁に落ちる）
 key_d = bpy.data.lights.new("city_key", 'SUN'); key_d.energy = 0.45; key_d.color = (0.72, 0.78, 0.95); key_d.angle = math.radians(6)
+tryset(key_d, volume_factor=0.5)
 keyo = bpy.data.objects.new("city_key", key_d); bpy.context.collection.objects.link(keyo)
 kd = V((math.sin(math.radians(-35)) * math.cos(math.radians(28)), math.cos(math.radians(-35)) * math.cos(math.radians(28)), -math.sin(math.radians(28))))   # 光の進む向き（カメラ側から壁へ）
 keyo.rotation_euler = kd.to_track_quat('-Z', 'Y').to_euler()
@@ -941,6 +945,7 @@ for o in list(bpy.data.objects):
     if o.type != 'MESH' or o.animation_data is not None or o.parent is not None: continue
     if o.name in ("unko", "ground") or o.name.startswith(("ring", "spark", "splash", "dust", "ledge")): continue
     key_ = o.data.materials[0].name if o.data.materials else "none"
+    if key_.startswith(("cloth", "steam", "grime")): continue
     groups.setdefault(key_, []).append(o)
 for key_, objs in groups.items():
     if len(objs) < 2: continue
@@ -982,7 +987,7 @@ def kensa():
     from mathutils.bvhtree import BVHTree
     dg = bpy.context.evaluated_depsgraph_get()
     pre = ("ledge", "deco", "sign", "pipe", "pier", "band", "slab", "tower", "side_", "shutter", "cable", "parapet", "ground", "bag", "swf", "w", "static_")
-    names = [o.name for o in bpy.data.objects if o.type == 'MESH' and o.name.startswith(pre) and o.name != "unko" and not o.name.startswith(("ring", "spark", "splash", "dust"))]
+    names = [o.name for o in bpy.data.objects if o.type == 'MESH' and o.name.startswith(pre) and o.name != "unko" and not o.name.startswith(("ring", "spark", "splash", "dust", "steam", "grime", "static_steam", "static_grime"))]
     def bvh_of(o):
         ev = o.evaluated_get(dg); me_ = ev.to_mesh(); bm = bmesh.new(); bm.from_mesh(me_); bm.transform(ev.matrix_world)
         t = BVHTree.FromBMesh(bm); c = sum((v.co for v in bm.verts), Vector()) / max(1, len(bm.verts)); r = max(((v.co - c).length for v in bm.verts), default=0)

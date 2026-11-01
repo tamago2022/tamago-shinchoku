@@ -47,7 +47,7 @@ sc.render.fps = FPS; sc.frame_start = 1; sc.frame_end = NF
 sc.render.image_settings.file_format = 'JPEG'; sc.render.image_settings.quality = 93
 try: sc.view_settings.view_transform = 'Filmic'; sc.view_settings.look = 'Medium High Contrast'
 except Exception: pass
-sc.view_settings.exposure = -0.55
+sc.view_settings.exposure = -0.45
 
 # ---------------- ノードの道具 ----------------
 def newmat(name):
@@ -120,7 +120,7 @@ for s in range(NSLOT):
     d = dist.outputs["Value"]
     # 輪：exp(-((d - r)/w)^2)、w は r と共に少し太る
     sub_ = RIP.nodes.new("ShaderNodeMath"); sub_.operation = 'SUBTRACT'; RIP.links.new(d, sub_.inputs[0]); RIP.links.new(r.outputs[0], sub_.inputs[1])
-    wdt = RIP.nodes.new("ShaderNodeMath"); wdt.operation = 'MULTIPLY_ADD'; RIP.links.new(r.outputs[0], wdt.inputs[0]); wdt.inputs[1].default_value = 0.10; wdt.inputs[2].default_value = 1.6
+    wdt = RIP.nodes.new("ShaderNodeMath"); wdt.operation = 'MULTIPLY_ADD'; RIP.links.new(r.outputs[0], wdt.inputs[0]); wdt.inputs[1].default_value = 0.12; wdt.inputs[2].default_value = 2.2
     dv = RIP.nodes.new("ShaderNodeMath"); dv.operation = 'DIVIDE'; RIP.links.new(sub_.outputs[0], dv.inputs[0]); RIP.links.new(wdt.outputs[0], dv.inputs[1])
     sq = RIP.nodes.new("ShaderNodeMath"); sq.operation = 'MULTIPLY'; RIP.links.new(dv.outputs[0], sq.inputs[0]); RIP.links.new(dv.outputs[0], sq.inputs[1])
     neg = RIP.nodes.new("ShaderNodeMath"); neg.operation = 'MULTIPLY'; RIP.links.new(sq.outputs[0], neg.inputs[0]); neg.inputs[1].default_value = -1.0
@@ -228,7 +228,7 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     link(nt, rough, I(p, "Roughness")); I(p, "Specular").default_value = 0.45
     bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.25; link(nt, mottle, I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
     # 波紋の輪そのものは、淡く光る
-    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.35
+    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.2
     return finish(m, nt, out, p)
 def mat_metal(name, col=(0.55, 0.55, 0.56), rust=0.5, rough=0.4):
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position"); mask, ring = add_ripple(nt)
@@ -723,7 +723,7 @@ for ld in M["landings"]:
 stage("unko")
 
 # ---------------- 光：天窓からの太陽（光の筋）・曇った空の光・霧 ----------------
-sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = 6.5; sun.color = (1.0, 0.85, 0.66); sun.angle = math.radians(1.5)
+sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = 3.6; sun.color = (1.0, 0.85, 0.66); sun.angle = math.radians(1.5)
 try: sun.use_contact_shadow = True; sun.shadow_cascade_max_distance = 120; sun.shadow_cascade_count = 4
 except Exception: pass
 so = bpy.data.objects.new("sun", sun); sc.collection.objects.link(so); so.rotation_euler = (math.radians(52), 0.0, math.radians(-30))
