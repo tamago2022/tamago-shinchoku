@@ -36,7 +36,7 @@ for e in ("BLENDER_EEVEE", "BLENDER_EEVEE_NEXT"):
 print("ENGINE", sc.render.engine, bpy.app.version_string, flush=True)
 EV = sc.eevee
 tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom=True, bloom_intensity=0.05, bloom_threshold=1.0, bloom_radius=6.5, bloom_knee=0.5,
-       use_gtao=True, gtao_distance=1.2, gtao_factor=1.0, use_ssr=True, use_ssr_refraction=True, use_ssr_halfres=True, ssr_quality=0.6, ssr_thickness=0.3, ssr_max_roughness=0.6,
+       use_gtao=True, gtao_distance=2.0, gtao_factor=1.3, use_ssr=True, use_ssr_refraction=True, use_ssr_halfres=True, ssr_quality=0.6, ssr_thickness=0.3, ssr_max_roughness=0.6,
        use_soft_shadows=False, use_volumetric_shadows=True, use_volumetric_lights=True, volumetric_tile_size='16', volumetric_samples=32, volumetric_start=0.3, volumetric_end=140.0, volumetric_light_clamp=3.0,
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.35, motion_blur_steps=1,
        shadow_cube_size='512', shadow_cascade_size='1024', use_shadow_high_bitdepth=False, sss_samples=4)
@@ -47,7 +47,7 @@ sc.render.fps = FPS; sc.frame_start = 1; sc.frame_end = NF
 sc.render.image_settings.file_format = 'JPEG'; sc.render.image_settings.quality = 93
 try: sc.view_settings.view_transform = 'Filmic'; sc.view_settings.look = 'Medium High Contrast'
 except Exception: pass
-sc.view_settings.exposure = -0.35
+sc.view_settings.exposure = -0.55
 
 # ---------------- ノードの道具 ----------------
 def newmat(name):
@@ -191,11 +191,11 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); P = O(tc, "Object"); Pw = O(g, "Position")
     mask, ring = add_ripple(nt)
     base = (col[0], col[1], col[2], 1)
-    mottle = noise(nt, 0.35, 5, 0.6, Pw); mot = mixrgb(nt, 0.45, base, (col[0] * 0.55, col[1] * 0.55, col[2] * 0.55, 1), 'MIX')
+    mottle = noise(nt, 0.35, 5, 0.6, Pw); mot = mixrgb(nt, 0.55, base, (col[0] * 0.40, col[1] * 0.40, col[2] * 0.40, 1), 'MIX')
     mot = mixrgb(nt, mottle, (col[0] * 1.15, col[1] * 1.15, col[2] * 1.12, 1), mot)
     # 雨だれ：縦にのばしたノイズ（上から垂れる）
     mp = node(nt, "ShaderNodeMapping"); link(nt, Pw, I(mp, "Vector")); I(mp, "Scale").default_value = (1.0, 1.0, 0.08)
-    st = noise(nt, 2.5, 3, 0.7, O(mp, "Vector")); st = ramp(nt, st, [(0.45, (1, 1, 1, 1)), (0.7, (0.5, 0.5, 0.5, 1))])
+    st = noise(nt, 2.5, 3, 0.7, O(mp, "Vector")); st = ramp(nt, st, [(0.40, (1, 1, 1, 1)), (0.68, (0.35, 0.35, 0.35, 1))])
     colr = mixrgb(nt, streak, mot, mixrgb(nt, st, (0.12, 0.11, 0.10, 1), mot), 'MIX')
     # ひび：ボロノイの縁
     cr = voronoi(nt, 0.3, Pw); crk = ramp(nt, cr, [(0.0, (0.25, 0.25, 0.25, 1)), (0.004, (0.25, 0.25, 0.25, 1)), (0.009, (1, 1, 1, 1))])
@@ -204,11 +204,15 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     # 苔：上向きの面 × ノイズ × 低い所
     up = node(nt, "ShaderNodeSeparateXYZ"); link(nt, O(g, "Normal"), up.inputs[0])
     upf = math_(nt, 'MULTIPLY', ramp(nt, up.outputs[2], [(0.3, (0, 0, 0, 1)), (0.9, (1, 1, 1, 1))]), noise(nt, 1.6, 5, 0.65, Pw, 3.0))
-    upf = math_(nt, 'MULTIPLY', ramp(nt, upf, [(0.28, (0, 0, 0, 1)), (0.5, (1, 1, 1, 1))]), moss)
+    upf = math_(nt, 'MULTIPLY', ramp(nt, upf, [(0.22, (0, 0, 0, 1)), (0.42, (1, 1, 1, 1))]), moss)
     colm = mixrgb(nt, upf, colr, (0.10, 0.16, 0.07, 1))
     # 隅・接する所は暗く（AO）
     ao = node(nt, "ShaderNodeAmbientOcclusion"); I(ao, "Distance").default_value = 1.5; link(nt, colm, I(ao, "Color"))
-    colf = mixrgb(nt, 0.55, colm, O(ao, "Color"))
+    colf = mixrgb(nt, 0.7, colm, O(ao, "Color"))
+    # 床際の汚れ：各階の床から 0.8m までを暗く（高さの端数）
+    zz = node(nt, "ShaderNodeSeparateXYZ"); link(nt, Pw, zz.inputs[0]); fz = math_(nt, 'MODULO', zz.outputs[2], 6.0)
+    low = ramp(nt, math_(nt, 'MULTIPLY', fz, 1 / 0.8, clamp=True), [(0.0, (1, 1, 1, 1)), (1.0, (0, 0, 0, 1))])
+    colf = mixrgb(nt, math_(nt, 'MULTIPLY', low, 0.55), colf, (0.10, 0.09, 0.08, 1))
     # ほこり（白っぽい粉）
     dust = math_(nt, 'MULTIPLY', ramp(nt, up.outputs[2], [(0.5, (0, 0, 0, 1)), (1.0, (1, 1, 1, 1))]), noise(nt, 0.6, 3, 0.5, Pw, 7.0))
     colf = mixrgb(nt, math_(nt, 'MULTIPLY', dust, 0.35), colf, (0.62, 0.60, 0.56, 1))
@@ -270,7 +274,7 @@ def mat_sign(name, col, strength=6.0):
     wv = node(nt, "ShaderNodeTexWave"); link(nt, Pw, I(wv, "Vector")); I(wv, "Scale").default_value = 60.0; wv.wave_type = 'BANDS'; wv.bands_direction = 'Z'
     scan = math_(nt, 'MULTIPLY_ADD', O(wv, "Fac"), 0.5, 0.5)
     broken = ramp(nt, noise(nt, 2.5, 3, 0.6, Pw, 5.0), [(0.38, (0, 0, 0, 1)), (0.5, (1, 1, 1, 1))])
-    link(nt, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', mask, strength * 0.45), flick), math_(nt, 'MULTIPLY', scan, broken)), I(p, "Emission Strength"))
+    link(nt, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', mask, strength * 0.25), flick), math_(nt, 'MULTIPLY', scan, broken)), I(p, "Emission Strength"))
     return finish(m, nt, out, p)
 def mat_emit(name, col, strength=1.0):
     m, nt, out = newmat(name); e = node(nt, "ShaderNodeEmission"); I(e, "Color").default_value = (col[0], col[1], col[2], 1); I(e, "Strength").default_value = strength
@@ -289,14 +293,28 @@ def mat_water(name):
     I(p, "Base Color").default_value = (0.05, 0.06, 0.06, 1); I(p, "Roughness").default_value = 0.02; I(p, "Specular").default_value = 0.6
     mp = node(nt, "ShaderNodeMapping"); link(nt, Pw, I(mp, "Vector")); I(mp, "Scale").default_value = (3, 3, 3)
     bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.08; link(nt, noise(nt, 4.0, 2, 0.5, O(mp, "Vector")), I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
+    link(nt, ramp(nt, noise(nt, 0.5, 3, 0.6, Pw, 23.0), [(0.44, (0, 0, 0, 1)), (0.5, (1, 1, 1, 1))]), I(p, "Alpha")); blend(m, 'CLIP', 'CLIP')
     return finish(m, nt, out, p)
 def mat_spray(name):
-    m, nt, out = newmat(name); e = node(nt, "ShaderNodeEmission"); I(e, "Color").default_value = (0.8, 0.9, 1.0, 1); I(e, "Strength").default_value = 1.5
+    m, nt, out = newmat(name); e = node(nt, "ShaderNodeEmission"); I(e, "Color").default_value = (0.8, 0.9, 1.0, 1); I(e, "Strength").default_value = 0.6
     g, tc = geo(nt); Pw = O(g, "Position"); n_ = noise(nt, 6.0, 3, 0.6, Pw)
-    tr = node(nt, "ShaderNodeBsdfTransparent"); mx = node(nt, "ShaderNodeMixShader"); link(nt, math_(nt, 'MULTIPLY', n_, 0.5), mx.inputs[0]); link(nt, tr.outputs[0], mx.inputs[1]); link(nt, e.outputs[0], mx.inputs[2])
+    tr = node(nt, "ShaderNodeBsdfTransparent"); mx = node(nt, "ShaderNodeMixShader"); link(nt, math_(nt, 'MULTIPLY', n_, 0.22), mx.inputs[0]); link(nt, tr.outputs[0], mx.inputs[1]); link(nt, e.outputs[0], mx.inputs[2])
     blend(m, 'BLEND', 'NONE'); return finish(m, nt, out, mx)
 
+def mat_plant(name):
+    m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position"); mask, ring = add_ripple(nt)
+    c = mixrgb(nt, noise(nt, 3.0, 3, 0.6, Pw, 13.0), (0.05, 0.11, 0.03, 1), (0.14, 0.26, 0.07, 1))
+    link(nt, desat(nt, c, mask, 0.12), I(p, "Base Color")); I(p, "Roughness").default_value = 0.75; I(p, "Specular").default_value = 0.3
+    I(p, "Subsurface").default_value = 0.12; I(p, "Subsurface Color").default_value = (0.2, 0.5, 0.1, 1)
+    return finish(m, nt, out, p)
+def mat_cloth(name, col):
+    m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position"); mask, ring = add_ripple(nt)
+    c = mixrgb(nt, math_(nt, 'MULTIPLY', noise(nt, 1.2, 4, 0.6, Pw, 17.0), 0.6), (col[0], col[1], col[2], 1), (0.25, 0.23, 0.2, 1))
+    link(nt, desat(nt, c, mask, 0.08), I(p, "Base Color")); I(p, "Roughness").default_value = 0.9; I(p, "Specular").default_value = 0.1
+    holes = ramp(nt, noise(nt, 2.5, 3, 0.7, Pw, 19.0), [(0.36, (0, 0, 0, 1)), (0.42, (1, 1, 1, 1))]); link(nt, holes, I(p, "Alpha"))
+    blend(m, 'CLIP', 'CLIP'); return finish(m, nt, out, p)
 MAT = {
+    "plant": mat_plant("plant"), "cloth0": mat_cloth("cloth0", (0.7, 0.15, 0.2)), "cloth1": mat_cloth("cloth1", (0.15, 0.3, 0.7)), "cloth2": mat_cloth("cloth2", (0.8, 0.6, 0.15)),
     "floor": mat_concrete("floor", (0.34, 0.33, 0.31), moss=0.6, wet=0.5, streak=0.5, tile=0.8),
     "wall": mat_concrete("wall", (0.36, 0.35, 0.33), moss=0.3, wet=0.0, streak=0.9),
     "panel": mat_concrete("panel", (0.46, 0.46, 0.45), moss=0.15, wet=0.0, streak=0.7),      # 未来モールの白いリブ・床の縁
@@ -441,7 +459,7 @@ for i, s in enumerate(SHOPS):
     for j in range(3):
         ox = rnd.uniform(-2.2, 2.2); oy = rnd.uniform(-1.5, 1.5); hgt = rnd.uniform(0.8, 2.2)
         acc_box("metal_dark", (cx + ox - 0.4, cy + oy - 0.3, z0), (cx + ox + 0.4, cy + oy + 0.3, z0 + hgt))
-    acc_box("sign%d" % (i % 6), sl, sh_)
+    acc_box("metal_dark", (sl[0] - 0.08, sl[1] - 0.08, sl[2] - 0.08), (sh_[0] + 0.08, sh_[1] + 0.08, sh_[2] + 0.08)); acc_box("sign%d" % (i % 6), sl, sh_)
     # 看板の脱落（たまに斜め）
     if i % 5 == 2:
         acc_box("metal_dark", (sl[0], sl[1], sl[2] - 0.3), (sh_[0], sh_[1], sl[2] - 0.2), (0.0, 0.0, 0.0, (sl[0] + sh_[0]) / 2, (sl[1] + sh_[1]) / 2, sl[2]))
@@ -495,6 +513,79 @@ for k in range(12):
 for k in range(8):
     y = rnd.uniform(CONC[2] + 2, CONC[3] - 2); x = rnd.uniform(-4, 4); s_ = rnd.uniform(0.8, 2.5)
     acc_box("water", (x - s_, y - s_ * 0.6, 0.0), (x + s_, y + s_ * 0.6, 0.012))
+
+ESC_INFO = M["esc_info"]; STEPD = M["step"]
+# 植物（葉の塊）：天窓から垂れるつる・床の草・各階の縁・プランター
+def leaf_clump(center, r, n, mat="plant"):
+    for k in range(n):
+        a = rnd.uniform(0, 2 * math.pi); b = rnd.uniform(-1, 1); rr = r * rnd.uniform(0.3, 1.0)
+        c = (center[0] + rr * math.cos(a) * math.sqrt(1 - b * b), center[1] + rr * math.sin(a) * math.sqrt(1 - b * b), center[2] + rr * b)
+        sz = rnd.uniform(0.08, 0.22); ang = rnd.uniform(0, 2 * math.pi); t_ = rnd.uniform(0, math.pi)
+        v0 = (c[0], c[1], c[2]); v1 = (c[0] + sz * math.cos(ang), c[1] + sz * math.sin(ang), c[2] + sz * 0.3 * math.cos(t_)); v2 = (c[0] + sz * math.cos(ang + 1.2), c[1] + sz * math.sin(ang + 1.2), c[2] - sz * 0.4 * math.sin(t_))
+        acc_tris(mat, [v0, v1, v2], [(0, 1, 2)])
+for k in range(90):   # 天窓の桁から垂れるつる（葉つき）
+    x = rnd.uniform(VOID[0] + 1, VOID[1] - 1); y = rnd.choice([-6, -2, 2, 6]) + rnd.uniform(-0.2, 0.2); L_ = rnd.uniform(3, 16); z0 = TRUSS - 0.2
+    xe = x + rnd.uniform(-1.0, 1.0); ye = y + rnd.uniform(-1.0, 1.0)
+    acc_cyl("step", (x, y, z0), (xe, ye, z0 - L_), rnd.uniform(0.02, 0.05), 6)
+    for j in range(int(L_ / 0.7)):
+        u = (j + 0.5) / (L_ / 0.7); leaf_clump((x + (xe - x) * u, y + (ye - y) * u, z0 - L_ * u), 0.35, 7)
+for f in range(1, NFLOOR):   # 各階の縁からこぼれる草とつる
+    z = f * H
+    for k in range(40):
+        x = rnd.uniform(VOID[0], VOID[1]); y = rnd.choice([VOID[2], VOID[3]])
+        leaf_clump((x, y + (0.3 if y > 0 else -0.3), z + 0.15), 0.45, 10)
+        if rnd.random() < 0.5: 
+            L_ = rnd.uniform(1, 5); acc_cyl("step", (x, y, z - 0.45), (x + rnd.uniform(-0.4, 0.4), y, z - 0.45 - L_), 0.03, 6)
+            for j in range(int(L_ / 0.6)): leaf_clump((x, y, z - 0.45 - L_ * (j + 0.5) / (L_ / 0.6)), 0.3, 6)
+    for k in range(16):
+        x = rnd.uniform(ISLAND[0], ISLAND[1]); y = rnd.choice([ISLAND[2], ISLAND[3]]); leaf_clump((x, y, z + 0.15), 0.4, 9)
+for k in range(260):   # 床の草むら（吹き抜けの地上・大通り・各階の通路）
+    z = rnd.choice([0, 0, 0, 0, 1, 2, 3, 4]) * H
+    if z == 0:
+        if rnd.random() < 0.35: x = rnd.uniform(-5, 5); y = rnd.uniform(CONC[2], CONC[3])
+        else:
+            x = rnd.uniform(VOID[0], VOID[1]); y = rnd.uniform(VOID[2], VOID[3])
+            if math.hypot(x, y) < 5.6: continue
+    else:
+        x = rnd.uniform(RING[0] + 1, RING[1] - 1); y = rnd.uniform(RING[2] + 1, RING[3] - 1)
+        if VOID[0] < x < VOID[1] and VOID[2] < y < VOID[3]: continue
+    for j in range(rnd.randint(4, 9)):
+        a = rnd.uniform(0, 2 * math.pi); h_ = rnd.uniform(0.15, 0.5); w_ = 0.03
+        bx, by = x + rnd.uniform(-0.3, 0.3), y + rnd.uniform(-0.3, 0.3)
+        acc_tris("plant", [(bx - w_ * math.sin(a), by + w_ * math.cos(a), z), (bx + w_ * math.sin(a), by - w_ * math.cos(a), z), (bx + 0.25 * h_ * math.cos(a), by + 0.25 * h_ * math.sin(a), z + h_)], [(0, 1, 2)])
+# エスカレーターの段の苔の盛り上がり（葉ではなく低い塊）
+for name, f0, xb, xt, yy in M["escs"]:
+    for tw in (0, 1):
+        e = ESC_INFO[name + ("b" if tw else "")]
+        for k in range(STEPD["n"]):
+            if rnd.random() < 0.45: continue
+            x = e["xb"] + e["sgn"] * (k + 0.5) * STEPD["run"] + rnd.uniform(-0.2, 0.2); y = e["y"] + rnd.uniform(-0.45, 0.45); z = f0 * H + (k + 1) * STEPD["rise"]
+            leaf_clump((x, y, z + 0.04), 0.14, 5)
+# プランター・ベンチ・ごみ箱・垂れ幕（各階の通路）
+for f in range(0, NFLOOR):
+    z = f * H
+    spots = [(rnd.uniform(VOID[0] + 2, VOID[1] - 2), rnd.choice([VOID[2] - 3.0, VOID[3] + 3.0])) for _ in range(8)] + [(rnd.choice([VOID[0] - 3.0, VOID[1] + 3.0]), rnd.uniform(VOID[2] + 1, VOID[3] - 1)) for _ in range(5)]
+    if f == 0: spots += [(rnd.uniform(-4.5, 4.5), rnd.uniform(CONC[2] + 2, CONC[3] - 2)) for _ in range(7)]
+    for i, (x, y) in enumerate(spots):
+        kind = i % 4
+        if kind == 0:     # プランター（土＋植物）
+            acc_box("panel", (x - 0.8, y - 0.4, z), (x + 0.8, y + 0.4, z + 0.55)); acc_box("step", (x - 0.72, y - 0.32, z + 0.4), (x + 0.72, y + 0.32, z + 0.52))
+            leaf_clump((x, y, z + 0.8), 0.7, 26); leaf_clump((x + 0.5, y, z + 0.6), 0.4, 10)
+        elif kind == 1:   # ベンチ
+            acc_box("metal_dark", (x - 0.9, y - 0.25, z + 0.42), (x + 0.9, y + 0.25, z + 0.48)); acc_box("metal_dark", (x - 0.9, y + 0.2, z + 0.48), (x + 0.9, y + 0.25, z + 0.9))
+            for dx_ in (-0.8, 0.8): acc_box("metal_dark", (x + dx_ - 0.03, y - 0.22, z), (x + dx_ + 0.03, y + 0.22, z + 0.42))
+        elif kind == 2:   # ごみ箱（倒れているのも）
+            tipped = rnd.random() < 0.4
+            if tipped: acc_box("metal_dark", (x - 0.25, y - 0.25, z), (x + 0.25, y + 0.25, z + 0.85), (1.5, 0.0, rnd.uniform(0, 3), x, y, z + 0.25))
+            else: acc_cyl("metal_dark", (x, y, z), (x, y, z + 0.85), 0.27, 12)
+        else:             # 垂れ幕（破れた布）
+            w_, h_ = 0.9, rnd.uniform(1.8, 3.0); acc_box("cloth%d" % (i % 3), (x - w_ / 2, y - 0.01, z + 2.2), (x + w_ / 2, y + 0.01, z + 2.2 + h_), (rnd.uniform(-0.15, 0.15), 0.0, rnd.uniform(-0.3, 0.3), x, y, z + 2.2 + h_))
+# 吹き抜けの縁の手すりから垂れる幕
+for f in range(1, NFLOOR):
+    z = f * H
+    for k in range(5):
+        x = rnd.uniform(VOID[0] + 2, VOID[1] - 2); y = rnd.choice([VOID[2], VOID[3]]); h_ = rnd.uniform(2.0, 4.5)
+        acc_box("cloth%d" % (k % 3), (x - 0.6, y - 0.02, z + 1.0 - h_), (x + 0.6, y + 0.02, z + 1.0), (0.0, rnd.uniform(-0.1, 0.1), 0.0, x, y, z + 1.0))
 STATIC = flush_meshes("static_")
 for o in STATIC.values():
     for p in o.data.polygons: p.use_smooth = False
@@ -502,10 +593,10 @@ stage("static meshes %d" % len(STATIC))
 
 # ---------------- 噴水の噴き上げ（波紋の時だけ） ----------------
 sp_me = bpy.data.meshes.new("spray"); vs = []; fs = []
-for j in range(5):
-    a = 2 * math.pi * j / 5 + 0.4; vs0 = len(vs)
+for j in range(9):
+    a = 2 * math.pi * j / 9 + 0.4; vs0 = len(vs)
     for k in range(8):
-        t = k / 7; r = 0.12 + 0.5 * t; xo = math.cos(a) * (0.6 + 2.8 * t); yo = math.sin(a) * (0.6 + 2.8 * t); z = 2.0 + 6.5 * math.sin(math.pi * t) ** 0.8 * (1 - t * 0.5)
+        t = k / 7; r = 0.04 + 0.10 * t; xo = math.cos(a) * (0.4 + 2.4 * t); yo = math.sin(a) * (0.4 + 2.4 * t); z = 1.2 + 5.0 * math.sin(math.pi * t) ** 0.8 * (1 - t * 0.5)
         for q in range(4):
             b = 2 * math.pi * q / 4; vs.append((xo + math.cos(b) * r, yo + math.sin(b) * r, z))
     for k in range(7):
@@ -632,12 +723,12 @@ for ld in M["landings"]:
 stage("unko")
 
 # ---------------- 光：天窓からの太陽（光の筋）・曇った空の光・霧 ----------------
-sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = 4.0; sun.color = (1.0, 0.92, 0.80); sun.angle = math.radians(1.5)
+sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = 6.5; sun.color = (1.0, 0.85, 0.66); sun.angle = math.radians(1.5)
 try: sun.use_contact_shadow = True; sun.shadow_cascade_max_distance = 120; sun.shadow_cascade_count = 4
 except Exception: pass
 so = bpy.data.objects.new("sun", sun); sc.collection.objects.link(so); so.rotation_euler = (math.radians(52), 0.0, math.radians(-30))
 wd = bpy.data.worlds.new("w"); sc.world = wd; wd.use_nodes = True; wn = wd.node_tree
-bg = wn.nodes["Background"]; bg.inputs[0].default_value = (0.45, 0.55, 0.70, 1); bg.inputs[1].default_value = 0.16
+bg = wn.nodes["Background"]; bg.inputs[0].default_value = (0.45, 0.55, 0.70, 1); bg.inputs[1].default_value = 0.10
 vol = wn.nodes.new("ShaderNodeVolumeScatter"); vol.inputs["Density"].default_value = 0.010; vol.inputs["Anisotropy"].default_value = 0.55
 wn.links.new(vol.outputs[0], wn.nodes["World Output"].inputs["Volume"])
 # 大通りの弱い非常灯（緑がかった冷たい光）と、吹き抜けの冷たい補助光
