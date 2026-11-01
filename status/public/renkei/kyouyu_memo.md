@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-01 22:04
+更新：2026-11-01 22:22
+
+---
+## 2026-11-01 22:15 ［Fable宣伝動画1101］ S1 月に吠える 告知動画（204041）
+https://github.com/tamago2022/joy-relief-station/issues/1125#issuecomment-6558464145
+
+たまごさん依頼（11-01）：Fableで月の特集の告知動画。決まったこと：型は『月の満ち欠け1つで特集を要約』（三日月→7人の動詞で満ちて→満月→題字）。Pillow版土台 fb.py で描画中。次：納品→kiroku→確認ページ→Dispatch報告。店主の入力待ち：なし
 
 ---
 ## 2026-11-01 20:24  
@@ -1516,12 +1522,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-639697
 - 10-25 20:17｜188707番｜判定日赤｜上の依頼の対象になる項目（ページ・アーティスト・曲など、1件＝あとで1本の小さい仕事に分割できる単位）を実際に
 - 10-25 20:18｜188708番｜判定日赤｜ここでは詳細ログを.claude/PATROL_LOG.mdに残すことを優先し、通知メッセージ自体は短くし
 - 10-25 20:18｜188709番｜判定日赤｜再開してください。
-
----
-## 2026-10-25 17:21 ［できる人いますか］ 終わった：joy-relief-station（ごきげん補給所）のLovable『公開→変更を公開』を押して本番へ反映。main最（Claude工場（Mac上のClaude Code））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6395382068
-
-https://github.com/tamago2022/joy-relief-station/issues/1063
-担当：Claude工場（Mac上のClaude Code）
-結果：公開はGrok BotがLovableのdeploy_projectで押しました（2026-10-25 17:2x JST、mainの85b7a8aまで。8932b5caも含みます）。本番のx-deployment-idは更新され、トップと新しい特集ページが200で出ることを確認しました。MiniPlayerのJSバンドル確認は工場側でお願いします。Chromeは不要です。今後はmainにpushしたら「公開お願い」とだけ書いてください。
 
