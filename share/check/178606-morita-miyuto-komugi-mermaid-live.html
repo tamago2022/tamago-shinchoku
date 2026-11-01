@@ -84,14 +84,7 @@
 <tr><td>カバー側に「オリジナルはこちら」＝松田聖子カードが出る</td><td class="yes">スクショ①で確認</td></tr>
 <tr><td>原曲側に「カバー」＝森田美勇人カードが出る</td><td class="yes">スクショ②で確認</td></tr>
 <tr><td>棚への新規掲載</td><td class="yes">していない（曲ページ＋接続のみ）</td></tr>
-<tr><td>触る検品（押して動くか）カバー側</td><td class="yes">15件中15件が反応・無反応0件・未知のコンソールエラー0件（2026-11-02 04:0x 実測・verify_click.mjs）</td></tr>
-<tr><td>触る検品（押して動くか）原曲側</td><td class="yes">15件中15件が反応・無反応0件・未知のコンソールエラー0件（2026-11-02 03:5x 実測）</td></tr>
 </table>
-<h2>⑥ 11-02 はね返し「コンソールエラー1件」の正体と直し</h2>
-<p>残っていた1件は、このサイトの cover-guide 系ページ共通の既存事象 React #418（#35287で既存バグと確定済み・検品器 verify_click.mjs 自身は FAIL 対象外として PASS を出す）。ところが工場側の回収（auto_launcher.collect_touch_check）が内訳の無い件数だけを見て FAIL にしていた＝数え方の不一致。検品器が結果JSONに既知/未知の内訳を書き、工場側がその内訳で判定するよう直した。逆テスト（未知エラー1件・無反応1件を混ぜた結果）が正しく FAIL になることも確認済み。</p>
-<pre>実測 カバー側: {"totalClickable":68,"tested":15,"noResponseCount":0,"consoleErrorCount":1,"knownConsoleErrorCount":1,"unknownConsoleErrorCount":0} CLICK_VERDICT: PASS
-実測 原曲側:   {"totalClickable":67,"tested":15,"noResponseCount":0,"consoleErrorCount":1,"knownConsoleErrorCount":1,"unknownConsoleErrorCount":0} CLICK_VERDICT: PASS
-工場側判定(修正後): A本番→True「無反応0件・コンソールエラー0件（68件中15件を実クリック）・既知issue1件はFAIL対象外」 / C未知エラー追加→False / D無反応1件→False</pre>
 
 <footer>
 実測（2026-11-01 06:2x・Python urllib）：カバー側 200/98890B 「小麦色のマーメイド」29「森田美勇人」29「松田聖子」18 ／ 原曲側 200/109331B 「小麦色のマーメイド」28「森田美勇人」12「松田聖子」73。x-deployment-id psr2.be97dc29…
