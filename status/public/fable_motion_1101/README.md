@@ -30,7 +30,11 @@
 - 音ハメのずれは、文字と音を同じ拍の表から作っているので原理的にずれないが、今回は `sync_check.py` での実測はしていない。
 - 粒子（グレイン）は少し強め。「画質が少し粗いのは今はかまわない」（たまごさん）に甘えた。
 
-## 進み（2026-11-01 16:05・再開3回目）
+## 進み（2026-11-01 17:20・完了）
+- **全部納品済み**：A（93MB）＋B 4型（37／27／4／35MB）＋一覧シート → Drive「AI制作物/Claude/Fable」 https://drive.google.com/drive/folders/1dEn01jXnO2798sso37srK7K9Cy73bCoH （6点とも 17:16 までに上がった）。
+- 長さ実測：A 15.00秒／型01 4.50秒／型02 5.00秒／型03 4.83秒／型04 5.13秒（ffmpeg -i）。
+
+### 途中経過の控え（16:05時点）
 - A：完成・Drive「AI制作物/Claude/Fable」に納品済み（crf21・93MB・15.0秒）。フォルダ https://drive.google.com/drive/folders/1dEn01jXnO2798sso37srK7K9Cy73bCoH
 - B：型01 叩き＝8/8かたまり描けて結合済み（raw）。型02 ネオン管＝5/8、型03 誌面＝6/8、型04 フィルム＝4/8 → 残り9かたまりを `/private/tmp/204009_fm/finish_b.sh`（nohup で切り離し・ログ `finish_b.log`）が描いている。描き終わると自動で 結合（`rend.py --join`）→ crf21 圧縮（`out/<型>.c21.mp4`）→ 一覧シート（`out/ichiran.jpg`）まで進み、最後に `FINISH_B_DONE` を出す。
 - **次の担当がやること（finish_b.log に FINISH_B_DONE が出たら）：** `out/k1_tataki.c21.mp4` 等を `261101_Fable_ケツロゴ_01叩き.mp4`／`02ネオン管`／`03誌面`／`04フィルム`、`out/ichiran.jpg` を `261101_Fable_ケツロゴ_一覧シート.jpg` に改名 → `python3 tools/claude_nouhin.py put <各ファイル> --anken Fable --saishin` → kiroku.jsonl に1本ずつ追記 → 確認ページ（share/check/204009-*.html）を更新 → Dispatch へ報告 → `/private/tmp/204009_fm` を消す。FINISH_B_DONE が出ていなければ `finish_b.sh` をもう一度 nohup で走らせる（続きから）。
