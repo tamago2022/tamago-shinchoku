@@ -2980,3 +2980,36 @@
 - **対応**：①`git config user.name/email`を正しい値(`tamago-patrol-local[bot]`)へ復旧。②`extensions.worktreeConfig true`を有効化し、以後`health-patrol-local.sh`は`git config --worktree`で設定するよう修正。③消えたstashはオブジェクトがまだ残っていたため`git stash store`で復元済み。
 - **再発防止**：worktreeで`git config user.*`を設定するスクリプトは必ず`--worktree`を付ける。oneshot経由で`git stash pop`を含む複雑なgit操作は書かない（単純なworktree+patch方式に留める）。
 - **日付**：2026-10-28 17:00
+
+## 178606号：触る検品(2段目)が、検品器自身はPASSと言うページを「コンソールエラー1件」でFAILにしていた
+
+- **症状**：cover-guideカバー側（森田美勇人「小麦色のマーメイド」）が2段目で「コンソールエラー1件」でやり直しの列へ戻された（11-02 01:20）。同じURLを`verify_click.mjs`で直に回すと`CLICK_VERDICT: PASS`。
+- **原因①**：`verify_click.mjs`は既知のサイト共通エラー（React #418・#35287で既存バグ確定）を除いて判定するが、その内訳をJSONに書く前に書き出していた。工場側`auto_launcher.collect_touch_check`は内訳の無い`consoleErrors`を全件数えて不合格にしていた＝道具と工場で数え方が食い違っていた。
+- **原因②**：同URLは触る検品が時々固まる（11-01 06:55 工場280秒超、本セッション320秒・600秒の2回）。CDP送信`send()`に応答待ち上限が無く、重いページ（longtask25回・TBT4.7秒）で1回返事が来ないと輪の90秒予算を素通りして永久に待っていた。
+- **対応**：①JSONに`knownConsoleErrors`/`unknownConsoleErrors`を書き、工場側は`unknownConsoleErrors`だけで判定（内訳が無い古いJSONは従来どおり全件）。既知分はPASS理由に件数を明記して隠さない。②`send()`に30秒上限を付け、超過はrejectして既存のcatch（評価失敗＝反応の証拠）へ落とす。逆テスト：既知のみ→合格／未知1件→不合格／内訳なし→従来どおり不合格、の3通りを確認。
+- **再発防止**：検品器の判定（CLICK_VERDICT）と工場側の回収判定は同じ数え方にする。新しい除外パターンを`verify_click.mjs`に足す時は、JSONの内訳にも出ているかを同時に確認する。CDP通信は無期限待ちにしない。
+- **日付**：2026-11-02 04:10
+
+## 204227号系：「空カード埋め」の積み上げが、21バッチ全部を「三國清三」の名前で誤表示している
+
+- **症状**：queue.jsonの「空カード埋め｜三國清三（N/21）」(204225〜204245)は、対象曲IDの実体を見るとchef-john-food-wishes・chef-babish・chef-matsuo-kozo・bon-appetit・chef-cococoro等、三國清三(mikuni-kiyomi)とは無関係な別アーティストの曲が混ざっている（204227号の実例：john-food-wishes-*15曲とbabish-*5曲は実際にはchef-john-food-wishes/chef-babishのsongs）。
+- **原因**：`tools/kara_card_tsumu.py`の`ART_RE`正規表現 `\{\s*id:\s*"...",\s*name:\s*"..."` が、コメント付きアーティストエントリ（`{\n  // コメント\n  id: "...", name: "..."`の形。2026-10-17以降の「レシピレーダー」仕入れで追加されたchef-*系は全てこの形）を検出できない。検出できないエントリの曲は、直前にマッチした別アーティスト（この場合mikuni-kiyomi、コメント無しでマッチ）の範囲に誤って合算される。
+- **対応**：204227号は実際のアーティストID（chef-john-food-wishes/chef-babish）で正しくtabiCopy.tsへ処理した（本ファイルの別件参照）。ツール自体の正規表現修正は未着手。
+- **再発防止（未着手）**：`ART_RE`をコメント行を許容する形に直すか、コメント行を先に除去してからマッチさせる。4/21以降（204228〜204245）にも同種の誤表示が残っている可能性が高いので、各バッチ着手時に対象IDの実在アーティストをcoverGuide.ts側で必ず確認してから作業すること（タイトルの「三國清三」を信用しない）。
+- **日付**：2026-11-02（tamago-orchestrator・204227号対応時に発見）
+
+### 追記（204237号・tamago-orchestrator・2026-11-02）：ツール修正を適用済み
+
+- **修正**：`tools/kara_card_tsumu.py`の`ART_RE`を`\{\s*(?://[^\n]*\n\s*)*id:\s*"..."`へ変更し、`{`直後のコメント行をスキップできるようにした。回帰テストを`self_test()`に追加済み（コメント付きアーティストが前のアーティストに誤帰属しないことを確認）。`python3 tools/kara_card_tsumu.py --self-test` で確認可能。
+- **効果**：再集計（`--kazoe`）で49アーティストが新たに正しく認識された（アーティスト数2726→2765、空カード数38885→38851）。`chef-ryuji`(料理研究家リュウジ)の本当の空カード数は48件と判明。
+- **204237号の対象20曲（依頼票では「三國清三13/21」）は全部chef-ryujiの曲だった**（oEmbedで投稿者「料理研究家リュウジのバズレシピ」を20件全件確認済み）。chef-ryujiのsongs配列へ正しくnoteを書く対応をtamago-builderへ委任した。
+- **残課題**：tsunda.jsonに積まれた「mikuni-kiyomi#1〜#21」のうち、204227号・204234号・204237号以外（#1-8,11,12,15-21など）は未確認。着手するセッションは対象IDをまず`?artist=mikuni-kiyomi`ではなく実際のsongs配列の所属アーティストで確認すること。ツール修正後の再集計結果は`status/kara_card/ichiran_saishin.json`。
+
+
+---
+
+## 797番自動記録：発車が21分止まっていたので自分で直しました
+
+- **症状**：status/.last_launch_at が21分更新されておらず、10分ルールに抵触しました。
+- **対応**：心臓は生きていたので、5分便(machine-status)へ蹴り直しを依頼しました
+- **日付**：2026-11-02 08:12

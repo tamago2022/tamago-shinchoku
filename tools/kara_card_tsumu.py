@@ -23,7 +23,7 @@ JRS_DEFAULT = "/Users/mac/Desktop/joy-relief-station"
 SHIMEKIRI = "2026-11-03T18:00"  # 火曜の週枠リセット。これを過ぎたら積まない
 CHUNK = 20
 
-ART_RE = re.compile(r'\{\s*id:\s*"([^"]+)",\s*name:\s*"((?:[^"\\]|\\.)*)"')
+ART_RE = re.compile(r'\{\s*(?://[^\n]*\n\s*)*id:\s*"([^"]+)",\s*name:\s*"((?:[^"\\]|\\.)*)"')
 SONG_RE = re.compile(r'\{\s*id:\s*"([^"]+)",\s*title:\s*"((?:[^"\\]|\\.)*)"')
 
 
@@ -161,6 +161,19 @@ def self_test():
     big = {"artists": [{"id": "b", "name": "B", "kara": 45, "songs": ["x%d" % i for i in range(45)]}]}
     bins = bin_list(big, [])
     assert [len(b["songs"]) for b in bins] == [20, 20, 5] and bins[2]["busu"] == 3
+    # 回帰テスト（2026-11-02・204237号で発見）：{ の直後にコメント行が挟まるアーティストは
+    # 旧ART_REだと境界を見失い、直前のアーティスト（a1）に曲が誤って帰属していた
+    # （実例：mikuni-kiyomi の直後の chef-ryuji 等、コメント付きで仕入れたアーティスト49件が
+    #  全部 mikuni-kiyomi の空カードとして誤カウントされていた）。
+    cg2 = (
+        '{ id: "a1", name: "A", songs: [\n { id: "s1", title: "T1", note: "", youtubeId: "y1" },\n]},\n'
+        '{\n  // 料理人（2026-10-17 仕入れ）。コメントが id の直前に入る実例\n'
+        '  id: "a2", name: "B", songs: [\n { id: "s2", title: "T2", note: "", youtubeId: "y2" },\n]},\n'
+    )
+    d2 = kazoe_text(cg2, "", "")
+    by_id = {a["id"]: a for a in d2["artists"]}
+    assert "a2" in by_id and by_id["a2"]["songs"] == ["s2"], d2
+    assert by_id["a1"]["songs"] == ["s1"], d2
     print("self-test OK")
 
 
