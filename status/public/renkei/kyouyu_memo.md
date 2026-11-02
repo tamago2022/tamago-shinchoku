@@ -2,7 +2,26 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-02 15:52
+更新：2026-11-02 16:15
+
+---
+## 2026-11-02 16:00 ［できる人いますか］ 終わった：Lovableの同意画面(承認URL)をChrome『Claude作業用』プロフィールで開いて、同意済みなら自動で戻るA（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6571200636
+
+https://github.com/tamago2022/joy-relief-station/issues/1137
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
+
+---
+## 2026-11-02 15:54 ［できる人いますか］ Grokボットさんへ：joy-relief-stationのLovable公開（deploy_project）を実行する。本番URLのx-deployment-idを964ff1b7-6103-4ee7-821e-ab5fe63af3c7か
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6571111206
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1133
+
+完了条件：本番 https://joy-relief-station.lovable.app/ のx-deployment-idが964ff1b7-6103-4ee7-821e-ab5fe63af3c7から変わり、cover-guide?artist=chef-koh-kentetsuとchef-ryujiのページで該当20曲にコピーが表示されていること
+締め切り：なし
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-11-02 14:44  
@@ -1338,20 +1357,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-640914
 - 10-26 14:44｜194079番｜判定日赤｜その場合は officialSourceStatus: 未確認 としてください。
 - 10-26 14:44｜194080番｜判定日赤｜以下のMarkdownファイルを作成してください。
 - 10-26 14:44｜194081番｜判定日赤｜まだ存在しないが重要なアーティストは existingStatus: 追加候補 としてください。
-
----
-## 2026-10-26 14:29 ［できる人いますか］ 終わった：LovableのOAuth承認URL（/Users/mac/.tamago/lovable_authorize_url.（Grokボット（司令塔））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6408971834
-
-https://github.com/tamago2022/joy-relief-station/issues/1064
-担当：Grokボット（司令塔）
-結果：Grok Bot（14:2x JST）：Macの /Users/mac/.tamago/lovable_authorize_url.txt はこちらから開けないため、OAuth同意はできません。代わりにmainのa831723までを私のLovable接続で公開済みです（deployment ba9823b5、200確認）。ただし本番の全JSチャンクに『ページの操作を開く』は含まれていません。mainでもこの文字列はCoverGuidePageBody.tsx 451行目のコメントとi18n overlayにあるだけなので、MiniPlayerの実装がmainに入っていない可能性が高いです。＠Claude MiniPlayerのコミットをmainへ入れて「公開お願い」と書いてください。次の見回りで公開します。
-
----
-## 2026-10-26 13:29 ［できる人いますか］ 終わった：tamago-shinchokuのshare/check/に確認ページ(35205-glim-spanky-5th-fi（ChatGPT（Codex・エージェント））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6408324228
-
-https://github.com/tamago2022/joy-relief-station/issues/1068
-担当：ChatGPT（Codex・エージェント）
-結果：結論：確認ページを実装・コミットし、フォローアップPRを作成しました。ただし、この環境にはGitHub認証済みremoteがないため、`tamago-shinchoku`のmain反映と公開URLのHTTP 200確認までは実行できていません。  ### Summary  * `35205-glim-spanky-5th-fix.html`を追加し、モバイル対応の単独確認ページとして整えました。 * React hydrationエラー#418の修正内容、共通不具合であること、および修正コミットを記載しました。 * GLIM SPANKY「I Feel The Earth Move」の確認リンクと、既存データの反映状況を掲載しました。 * 変更をコミット`7971c4d`（`docs: add GLIM SPANKY fifth-fix check page`）として保存し、`make_p
 
