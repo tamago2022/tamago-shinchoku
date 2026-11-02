@@ -608,6 +608,11 @@ if __name__ == "__main__":
     #   つながって確認が済めば何もしない（tools/suno_mcp.py・結果 status/suno_mcp/jotai.json）
     _okosu("suno_mcp.py", "--tick")
 
+    # 2026-11-02 会話の自動共有（たまごさん「Claude Code も Grok もチャッピーも全部聞いとけよ。コピペして貼るのがもう本当に嫌だ」）。
+    #   Dispatch・Coworkの子・Claude Code の会話を差分だけ読み、伏せ字にして非公開 tamago-dispatch-log/kaiwa/ へ。
+    #   要約1枚は joy-relief-station #1040 の常設コメントを書き換え（Grok Bot が読む）。中で2分に間引く（tools/kaiwa_kyouyuu.py）
+    _okosu("kaiwa_kyouyuu.py", "--tick")
+
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:
