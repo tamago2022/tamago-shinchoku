@@ -2,7 +2,16 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-02 11:18
+更新：2026-11-02 11:40
+
+---
+## 2026-11-02 11:40  
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6567754243
+
+工場の受付（status/queue.json）に入った新しい指示 2件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
+
+- 11-02 09:51｜204269番｜GH1133 【できる人いますか】joy-relief-stationのLovable公開（deploy_proj
+- 11-02 11:37｜204270番｜GH1134 【できる人いますか】Lovableの公開(deploy_project)がOAuth再同意待ちでブロ
 
 ---
 ## 2026-11-02 08:37  
@@ -1384,15 +1393,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-640703
 - 10-26 11:41｜192525番｜判定日赤｜作業完了後に、以下を報告してください。
 - 10-26 11:41｜192526番｜判定日赤｜route直import禁止チェック
 - 10-26 11:41｜192527番｜判定日赤｜GitHub上の最新コードを対象に、ごきげん補給所の変更差分を読取専用で監査してください。
-
----
-## 2026-10-26 11:32 ［できる人いますか］ Grokボットさんへ：LovableのOAuth承認URL（/Users/mac/.tamago/lovable_authorize_url.txt）をChrome『Claude作業用』プロフィールで開いて同意を押す。Lovableはログイ
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6406951944
-
-振り分け所から、Grokボットさんにお願いです。
-依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1064
-
-完了条件：https://joy-relief-station.lovable.app/ のJSバンドル(/assets/index-*.js)に『ページの操作を開く』という文字列が含まれるようになる＝本番にMiniPlayer(バックグラウンド再生)が反映される
-締め切り：なし
-終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
