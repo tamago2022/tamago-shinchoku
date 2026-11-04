@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-11-03T09:12:42+09:00",
+ "checkedAt": "2026-11-04T09:10:49+09:00",
  "overallColor": "red",
- "redCount": 3,
+ "redCount": 5,
  "items": [
   {
    "key": "ctx_1m",
@@ -22,9 +22,9 @@
   {
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
-   "color": "green",
-   "count": 7,
-   "detail": "最終記録から約0.9時間経過（2026-11-03T08:15:26+09:00）／直近24時間の完了26件中、鬼監督の記録が付いているのは19件"
+   "color": "red",
+   "count": 28,
+   "detail": "最終記録から約3.7時間経過（2026-11-04T05:27:58+09:00）／直近24時間の完了44件中、鬼監督の記録が付いているのは16件（自動フックが完了のたびに動いていない疑い＝684番と同じ症状）"
   },
   {
    "key": "done_missing_url",
@@ -45,22 +45,22 @@
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回204268番 → 今回205157番（減少なし）"
+   "detail": "前回205157番 → 今回205671番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
    "count": 72,
-   "detail": "status/public/verify_log.jsonl(49.4MB)、share/done/index.html(35.0MB)、status/public/dispatch_outbox.jsonl(25.1MB)、share/_deliver/godfunky/2026-11-02_★最新_動画_GODFUNKY番宣_ロボットフェス試作.mp4(19.9MB)、status/public/done_archive.json.gz(12.1MB)"
+   "detail": "status/public/verify_log.jsonl(49.4MB)、share/done/index.html(35.0MB)、status/public/dispatch_outbox.jsonl(25.2MB)、share/_deliver/godfunky/2026-11-02_★最新_動画_GODFUNKY番宣_ロボットフェス試作.mp4(19.9MB)、status/public/done_archive.json.gz(12.1MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
-   "color": "green",
-   "count": 0,
-   "sample": 7,
-   "detail": "直近7件の確認ページはすべて200だった"
+   "color": "red",
+   "count": 1,
+   "sample": 1,
+   "detail": "直近1件の確認ページのうち1件が200以外だった：#35273=None"
   },
   {
    "key": "orphan_sessions",
@@ -73,15 +73,15 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "green",
-   "count": 7,
-   "detail": "7件（しきい値100件以内）"
+   "count": 6,
+   "detail": "6件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 51785,
-   "detail": "未報告の完了が51785件たまっている（最古は約963.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 51888,
+   "detail": "未報告の完了が51888件たまっている（最古は約987.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
@@ -90,8 +90,17 @@
    "skipped": "既存の714番と同じ内容のためスキップ"
   },
   {
+   "key": "oni_kantoku_alive",
+   "skipped": "既存の684番と同じ内容のためスキップ"
+  },
+  {
    "key": "big_files",
    "skipped": "既にこの点検が積んだ925番が未解決のため積み直さない"
+  },
+  {
+   "key": "check_page_404",
+   "status": "skipped",
+   "message": "78470番と同じ内容です（積みませんでした。別物なら label に『重複OK』と書いて送ってください）"
   },
   {
    "key": "unreported_completions",
