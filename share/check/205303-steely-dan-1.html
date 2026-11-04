@@ -52,20 +52,20 @@
 <div class="date">2026-11-04 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-Steely Danの空カード20曲すべてにnote/memo/src（Wikipedia＋Apple Musicの2本出典）を実装。mainへの合流は完了（コミット941147c0b）。<b>Lovableの公開は工場共通の障害でブロック中のため、本番にはまだ反映されていません。</b>
+Steely Danの空カード20曲すべてにnote/memo/src（Wikipedia＋Apple Musicの2本出典）を実装し、mainへ合流（コミット941147c0b）。Lovableの公開便が反映し、本番URLで20曲全件のnoteが表示されていることを実測で確認済み。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>20/20</b><span>note・src実装済み曲数</span></div>
-  <div class="num"><b>0/20</b><span>本番で新しい文が出ている曲数（未公開のため）</span></div>
+  <div class="num"><b>20/20</b><span>本番で新しい文が出ている曲数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番ページ(まだ旧データ)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=steely-dan" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=steely-dan</a></li>
+  <li><b>本番ページ(確認済み)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=steely-dan" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=steely-dan</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
@@ -73,12 +73,12 @@ Steely Danの空カード20曲すべてにnote/memo/src（Wikipedia＋Apple Musi
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>mainへの合流</td><td class="yes">OK(941147c0b)</td></tr>
 <tr><td>事実検品(gate_fact_source --strict)</td><td class="yes">対象20曲は新規の未出典なし</td></tr>
-<tr><td>Lovable公開(③)</td><td class="no">ブロック中(Chrome起動禁止#1186／MCPトークン403が終日継続)</td></tr>
-<tr><td>本番URLに反映(④)</td><td class="no">未反映（旧データのまま）</td></tr>
+<tr><td>Lovable公開</td><td class="yes">OK（自動便で反映）</td></tr>
+<tr><td>本番URLで実測(20曲)</td><td class="yes">OK</td></tr>
 </table>
 
 <footer>
-main合流は確認済み。公開ボタンは自動化2経路（Chrome CDP／MCPトークン）とも終日403/CDP未開通で失敗しており、たまごさんの操作ではなく工場側の既知障害。公開が通った後、本番URLの再確認が必要。
+本番HTMLをPythonで取得し、対象20曲すべてのnoteフィールドが空でなく新しい文章に差し替わっていることを個別に確認した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
