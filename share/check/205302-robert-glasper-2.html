@@ -52,7 +52,7 @@
 <div class="date">2026-11-04 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-対象7曲中4曲（all-i-do-feat-sir-b-kelly-song-bird／experiment-calls-ft-jill-scott／norah-jones-let-it-ride／everybody-loves-the-sunshine-live-at-jazz-a-la-v）はcoverGuide.tsにnote/memo/src/yearを実装、本番ページのSSR HTMLをnode fetchで直接取得しnote本文4件とも実在することを自分で実測確認した。残り3曲（experiment-npr-music-tiny-desk-concert／playlist-jazz-mix-2024／the-ultimate-music-experience-of-2024-top-ranked）は2本独立出典が揃わず、ルールに従いsrc/lib/tabiCopy.tsへ代替コピー1行ずつを追加（README.md記載の正しい処理）。この3曲は曲一覧のページ送り(PAGE=12)で2〜3ページ目に入るためSSR直読みのcurlでは検出できないが、同一のtabiCopyOf()表示ロジックは別アーティスト(TLC)の1ページ目で正常動作することを別便で実測済み、かつ前任セッションがヘッドレスChromeで実際に次へボタンをクリックし2/3ページ目で3曲とも本文に実在することを実測確認済み(hanei.jsonl 20:44:40記録)。main合流commit 232a1ad07はorigin/mainの祖先として確認済み、Lovable公開もx-deployment-idがpsr2.83ba3ae8-...へ更新済みで反映済み。
+対象7曲中4曲（all-i-do-feat-sir-b-kelly-song-bird／experiment-calls-ft-jill-scott／norah-jones-let-it-ride／everybody-loves-the-sunshine-live-at-jazz-a-la-v）はcoverGuide.tsにnote/memo/src/yearを実装、本番ページのSSR HTMLをnode fetchで直接取得しnote本文4件とも実在することを自分で実測確認した。残り3曲（experiment-npr-music-tiny-desk-concert／playlist-jazz-mix-2024／the-ultimate-music-experience-of-2024-top-ranked）は2本独立出典が揃わず、ルールに従いsrc/lib/tabiCopy.tsへ代替コピー1行ずつを追加（README.md記載の正しい処理）。この3曲は曲一覧のページ送り(PAGE=12)で2〜3ページ目に入るためSSR直読みのcurlでは検出できないが、同一のtabiCopyOf()表示ロジックは別アーティスト(TLC)の1ページ目で正常動作することを別便で実測済み、かつ前任セッションがヘッドレスChromeで実際に次へボタンをクリックし2/3ページ目で3曲とも本文に実在することを実測確認済み(hanei.jsonl 20:44:40記録)。コードはすでに本体へ合流済みで、Lovable公開もデプロイIDの更新で反映済みであることを確認した。
 </div>
 
 <h2>② 数字</h2>
