@@ -269,9 +269,9 @@ MAT_HIMO, _, ph_ = newmat("himo"); pin(ph_, "Base Color", (0.55, 0.06, 0.04, 1))
 def bar_mat(i, b):
     m, nt, p = newmat("barM%02d" % i)
     col = SHU if b["bass"] else keycol(b["key"])
-    base = (0.78, 0.26, 0.13) if b["bass"] else col
+    base = (0.78, 0.26, 0.13) if b["bass"] else tuple(c_ * 0.72 for c_ in col)
     if b["final"]: base = (0.85, 0.30, 0.15)
-    pin(p, "Metallic", 0.35 if (b["bass"] or b["final"]) else 0.85); pin(p, "Coat Weight", 0.6 if (b["bass"] or b["final"]) else 0.25); pin(p, "Coat Roughness", 0.06)
+    pin(p, "Metallic", 0.35 if (b["bass"] or b["final"]) else 0.72); pin(p, "Coat Weight", 0.6 if (b["bass"] or b["final"]) else 0.25); pin(p, "Coat Roughness", 0.06)
     tco = node(nt, "ShaderNodeTexCoord"); sp_ = node(nt, "ShaderNodeSeparateXYZ"); link(nt, tco.outputs["Object"], sp_.inputs[0])
     holes = None
     for sx in (-1, 1):
@@ -397,7 +397,7 @@ for i, b in enumerate(BARS):
 # =====================================================================
 # 共通の材料：岩・水・体積の霧
 # =====================================================================
-def mat_rock(name, moss=0.6, wet=0.0, dark=1.0, glow=None, kind="rock", scale=3.0, moss_kind="moss", moss_dark=(0.55, 0.62, 0.38)):
+def mat_rock(name, moss=0.6, wet=0.0, dark=1.0, glow=None, kind="rock", scale=3.0, moss_kind="moss", moss_dark=(0.55, 0.62, 0.38), tint=(1.0, 1.0, 1.0), streak=0.45):
     """岩・コンクリ：写真の肌（kind= rock=苔の岬の岩 / cliff=崖の岩肌 / conc=風化したコンクリ壁 / concmoss=苔の生えたコンクリ）
     ＋写真の苔（上を向いた面にまだらに）＋濡れ（粗さを下げる）＋写真とノイズの凹凸"""
     m, nt, p = newmat(name)
@@ -411,8 +411,15 @@ def mat_rock(name, moss=0.6, wet=0.0, dark=1.0, glow=None, kind="rock", scale=3.
     # 色のむら（写真の繰り返しをさらに崩す）＋暗さ
     dk = node(nt, "ShaderNodeMixRGB"); dk.blend_type = 'MULTIPLY'; dk.inputs[0].default_value = 1.0
     link(nt, col, dk.inputs[1])
-    mura = node(nt, "ShaderNodeValToRGB"); mura.color_ramp.elements[0].color = (0.45 * dark, 0.43 * dark, 0.40 * dark, 1); mura.color_ramp.elements[1].color = (0.95 * dark, 0.92 * dark, 0.88 * dark, 1)
-    link(nt, O(nz, "Fac"), I(mura, "Fac")); link(nt, mura.outputs[0], dk.inputs[2])
+    mura = node(nt, "ShaderNodeValToRGB"); mura.color_ramp.elements[0].color = (0.45 * dark * tint[0], 0.43 * dark * tint[1], 0.40 * dark * tint[2], 1); mura.color_ramp.elements[1].color = (0.95 * dark * tint[0], 0.92 * dark * tint[1], 0.88 * dark * tint[2], 1)
+    link(nt, O(nz, "Fac"), I(mura, "Fac"))
+    # 縦に流れる濡れ筋（雨だれ・水の跡）：大きなむらで写真の均一さを崩す
+    mps = node(nt, "ShaderNodeMapping"); I(mps, "Scale").default_value = (1.6, 1.6, 0.22); link(nt, tc.outputs["Object"], I(mps, "Vector"))
+    nzs = node(nt, "ShaderNodeTexNoise"); I(nzs, "Scale").default_value = 1.0; I(nzs, "Detail").default_value = 5; I(nzs, "Roughness").default_value = 0.65; link(nt, mps.outputs[0], I(nzs, "Vector"))
+    srs = node(nt, "ShaderNodeMapRange"); I(srs, "From Min").default_value = 0.35; I(srs, "From Max").default_value = 0.7; I(srs, "To Min").default_value = 1.0 - streak; I(srs, "To Max").default_value = 1.0
+    link(nt, O(nzs, "Fac"), I(srs, "Value"))
+    stk = node(nt, "ShaderNodeMixRGB"); stk.blend_type = 'MULTIPLY'; stk.inputs[0].default_value = 1.0; link(nt, mura.outputs[0], stk.inputs[1]); link(nt, srs.outputs[0], stk.inputs[2])
+    link(nt, stk.outputs[0], dk.inputs[2])
     # 苔（写真）：上を向いた面に、まだらに
     mcol, mhgt, mrgh = pbr(nt, moss_kind, 0.9)
     mz = math_(nt, 'ADD', sep.outputs["Z"], math_(nt, 'MULTIPLY', O(nz, "Fac"), vb=0.9))
@@ -438,7 +445,7 @@ def mat_rock(name, moss=0.6, wet=0.0, dark=1.0, glow=None, kind="rock", scale=3.
     if mhgt is not None: link(nt, mhgt, hsel.inputs[2])
     else: hsel.inputs[2].default_value = (0.5, 0.5, 0.5, 1)
     hh = math_(nt, 'ADD', math_(nt, 'MULTIPLY', hsel.outputs[0], vb=0.75), math_(nt, 'MULTIPLY', O(nz, "Fac"), vb=0.25))
-    bm = node(nt, "ShaderNodeBump"); I(bm, "Strength").default_value = 0.7; I(bm, "Distance").default_value = 0.06
+    bm = node(nt, "ShaderNodeBump"); I(bm, "Strength").default_value = 1.1; I(bm, "Distance").default_value = 0.09
     link(nt, hh, I(bm, "Height")); link(nt, bm.outputs["Normal"], I(p, "Normal"))
     if glow:
         pin(p, "Emission Color", glow + (1,)); link(nt, mr.outputs[0], I(p, "Emission Strength"))
@@ -576,7 +583,7 @@ def ring_mesh(name, cen, r_of, phi0, phi1, z0, z1, nphi, nz, mat, inward=True):
 def build_mori_no_taki():
     """円い滝つぼ（セノーテ）：まわり全部が岩の壁と滝。上に丸い空。真ん中をらせん階段の鉄琴が下りていく"""
     A = SC["A"]; cen = A["center"]; RW = A["R_wall"]; zt = A["ztop"]; pz = A["pool_z"]
-    rockA = mat_rock("rockA", moss=0.7, wet=0.75, kind="cliff", scale=4.2); rockF = mat_rock("rockF", moss=0.8, wet=0.4, kind="rock", scale=2.6)
+    rockA = mat_rock("rockA", moss=0.75, wet=0.85, dark=0.55, kind="cliff", scale=4.2, tint=(0.70, 0.78, 0.86), streak=0.55); rockF = mat_rock("rockF", moss=0.8, wet=0.5, dark=0.7, kind="rock", scale=2.6, tint=(0.8, 0.85, 0.9))
     ledgeM = mat_rock("ledgeM", moss=0.55, wet=0.6, dark=0.9, kind="concmoss", scale=1.5)
     # 壁（内向き・すき間なし・凹凸 ±0.6m）
     w_ = ring_mesh("kabe", cen, lambda ph, v: RW + 0.7, 0, 2 * math.pi, pz - 2, zt + 9, 260, 170, rockA)
@@ -653,10 +660,10 @@ def build_mori_no_taki():
     bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RW + 0.5, depth=zt - pz + 12, location=(cen[0], cen[1], (zt + pz) / 2 + 2)); kz = bpy.context.object; kz.name = "kiri_zentai"
     kz.data.materials.append(mat_volume("kiriA", 0.03, (0.95, 0.93, 0.82), 0.7))
     # 光：上の丸い空から差し込む金色の光（霧に光の筋）、滝の白い照り返し、下からの青い柔らかい光
-    ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 10.0; ld.color = (1.0, 0.86, 0.62); ld.angle = math.radians(2.5)
+    ld = bpy.data.lights.new("sunA", 'SUN'); ld.energy = 14.0; ld.color = (1.0, 0.86, 0.62); ld.angle = math.radians(2.5)
     lo = bpy.data.objects.new("sunA", ld); bpy.context.collection.objects.link(lo)
     lo.rotation_euler = (math.radians(-22), math.radians(18), math.radians(160))
-    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 900; ld2.size = 10; ld2.color = (0.70, 0.86, 1.0)
+    ld2 = bpy.data.lights.new("fillA", 'AREA'); ld2.energy = 480; ld2.size = 10; ld2.color = (0.70, 0.86, 1.0)
     lo2 = bpy.data.objects.new("fillA", ld2); bpy.context.collection.objects.link(lo2)
     lo2.location = (cen[0], cen[1], zt + 6); lo2.rotation_euler = (0, 0, 0)
     ld3 = bpy.data.lights.new("takiA_glow", 'AREA'); ld3.energy = 600; ld3.size = 10; ld3.color = (0.85, 0.95, 1.0)
@@ -690,16 +697,21 @@ def build_kumo_no_yoru():
     tx2 = bpy.data.textures.new("kumo2", 'CLOUDS'); tx2.noise_scale = 2.5; tx2.noise_depth = 2
     dm2 = cl.modifiers.new("d2", 'DISPLACE'); dm2.texture = tx2; dm2.strength = 0.6; dm2.mid_level = 0.0; dm2.texture_coords = 'GLOBAL'
     bpy.ops.object.shade_smooth()
-    mc, ntc, pc = newmat("kumoM"); pin(pc, "Base Color", (0.30, 0.33, 0.52, 1)); pin(pc, "Roughness", 1.0)
+    mc, ntc, pc = newmat("kumoM"); pin(pc, "Roughness", 1.0)
+    tcc = node(ntc, "ShaderNodeTexCoord"); nzc = node(ntc, "ShaderNodeTexNoise"); I(nzc, "Scale").default_value = 0.045; I(nzc, "Detail").default_value = 6; link(ntc, tcc.outputs["Object"], I(nzc, "Vector"))
+    rc = node(ntc, "ShaderNodeValToRGB"); rc.color_ramp.elements[0].color = (0.18, 0.20, 0.36, 1); rc.color_ramp.elements[1].color = (0.42, 0.45, 0.66, 1)
+    link(ntc, O(nzc, "Fac"), I(rc, "Fac")); link(ntc, rc.outputs[0], I(pc, "Base Color"))
+    nzc2 = node(ntc, "ShaderNodeTexNoise"); I(nzc2, "Scale").default_value = 0.6; I(nzc2, "Detail").default_value = 8; link(ntc, tcc.outputs["Object"], I(nzc2, "Vector"))
+    bmc = node(ntc, "ShaderNodeBump"); I(bmc, "Strength").default_value = 0.5; I(bmc, "Distance").default_value = 0.4; link(ntc, O(nzc2, "Fac"), I(bmc, "Height")); link(ntc, bmc.outputs[0], I(pc, "Normal"))
     pin(pc, "Subsurface Weight", 0.5); pin(pc, "Subsurface Color", (0.55, 0.55, 0.95, 1)); pin(pc, "Subsurface Radius", (3, 3, 4))
-    pin(pc, "Emission Color", (0.16, 0.15, 0.32, 1)); pin(pc, "Emission Strength", 0.12)
+    pin(pc, "Emission Color", (0.16, 0.15, 0.32, 1)); pin(pc, "Emission Strength", 0.07)
     cl.data.materials.append(mc)
     box("kiriB", (cx, cy + 200, ct - 0.6), (900, 900, 1.6), mat_volume("kiriB", 0.12, (0.62, 0.66, 0.95), 0.35, (0.08, (8, 3, 0), 0.0, 1.0)))
     # 落ちてくるときにくぐる雲（最初の板の少し上）
     P17 = V(BARS[M["split"] + 1]["p"])
     kg = box("kumo_kuguru", (P17.x, P17.y, P17.z + 4.2), (14, 14, 2.4), mat_volume("kuguru", 1.6, (0.88, 0.88, 1.0), 0.2, (0.6, (0, 0, -3), 0.2, 1.0)))
     # 月（大きく・やわらかく・表面にうすい模様）
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=160, ring_count=80, radius=17, location=MOON); mo = bpy.context.object; mo.name = "tsuki"
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=160, ring_count=80, radius=22, location=MOON); mo = bpy.context.object; mo.name = "tsuki"
     bpy.ops.object.shade_smooth()
     mm, ntm, pm = newmat("tsuki")
     mcol_ = load_cc0("moon_color.jpg"); mdem_ = load_cc0("moon_height.png", True)
@@ -750,7 +762,7 @@ def build_kumo_no_yoru():
     ld3 = bpy.data.lights.new("fillB", 'AREA'); ld3.energy = 160; ld3.size = 12; ld3.color = (0.55, 0.62, 1.0)
     lo3 = bpy.data.objects.new("fillB", ld3); bpy.context.collection.objects.link(lo3)
     lo3.location = (cx, cy - 12, ct + 8); lo3.rotation_euler = (math.radians(65), 0, 0)
-    ld4 = bpy.data.lights.new("yama_sun", 'SUN'); ld4.energy = 1.8; ld4.color = (0.55, 0.62, 0.95); ld4.angle = math.radians(4)
+    ld4 = bpy.data.lights.new("yama_sun", 'SUN'); ld4.energy = 4.5; ld4.color = (0.60, 0.66, 0.95); ld4.angle = math.radians(4)
     lo4 = bpy.data.objects.new("yama_sun", ld4); bpy.context.collection.objects.link(lo4)
     lo4.rotation_euler = (LOGO - V(M["c_close"])).normalized().to_track_quat('-Z', 'Y').to_euler()
     # 星の滝（空から雲海へ落ちる、すみれ色の光の滝）
@@ -800,17 +812,17 @@ def build_kumo_no_yoru():
     mtn, ntm_, pmt = newmat("yama")
     tcm = node(ntm_, "ShaderNodeTexCoord"); nzm_ = node(ntm_, "ShaderNodeTexNoise"); I(nzm_, "Scale").default_value = 0.08; I(nzm_, "Detail").default_value = 8
     link(ntm_, tcm.outputs["Object"], I(nzm_, "Vector"))
-    rmt = node(ntm_, "ShaderNodeValToRGB"); rmt.color_ramp.elements[0].color = (0.05, 0.06, 0.10, 1); rmt.color_ramp.elements[1].color = (0.20, 0.22, 0.30, 1)
+    rmt = node(ntm_, "ShaderNodeValToRGB"); rmt.color_ramp.elements[0].color = (0.22, 0.25, 0.34, 1); rmt.color_ramp.elements[1].color = (0.62, 0.66, 0.78, 1)
     link(ntm_, O(nzm_, "Fac"), I(rmt, "Fac"))
     ycol, yhgt, yrgh = pbr(ntm_, "cliff", 28.0, second=("rock", 90.0))
     ymx = node(ntm_, "ShaderNodeMixRGB"); ymx.blend_type = 'MULTIPLY'; ymx.inputs[0].default_value = 1.0
     if ycol is not None: link(ntm_, ycol, ymx.inputs[1])
     else: ymx.inputs[1].default_value = (0.6, 0.6, 0.6, 1)
     link(ntm_, rmt.outputs[0], ymx.inputs[2])
-    bright_ = node(ntm_, "ShaderNodeMixRGB"); bright_.blend_type = 'MULTIPLY'; bright_.inputs[0].default_value = 1.0; link(ntm_, ymx.outputs[0], bright_.inputs[1]); bright_.inputs[2].default_value = (2.2, 2.3, 2.6, 1)
+    bright_ = node(ntm_, "ShaderNodeMixRGB"); bright_.blend_type = 'MULTIPLY'; bright_.inputs[0].default_value = 1.0; link(ntm_, ymx.outputs[0], bright_.inputs[1]); bright_.inputs[2].default_value = (1.3, 1.35, 1.5, 1)
     link(ntm_, bright_.outputs[0], I(pmt, "Base Color")); pin(pmt, "Roughness", 0.95)
     yh = math_(ntm_, 'ADD', math_(ntm_, 'MULTIPLY', O(nzm_, "Fac"), vb=0.5), math_(ntm_, 'MULTIPLY', yhgt, vb=0.5) if yhgt is not None else math_(ntm_, 'MULTIPLY', O(nzm_, "Fac"), vb=0.5))
-    bmm = node(ntm_, "ShaderNodeBump"); I(bmm, "Strength").default_value = 0.8; I(bmm, "Distance").default_value = 2.0; link(ntm_, yh, I(bmm, "Height")); link(ntm_, bmm.outputs[0], I(pmt, "Normal"))
+    bmm = node(ntm_, "ShaderNodeBump"); I(bmm, "Strength").default_value = 1.0; I(bmm, "Distance").default_value = 4.0; link(ntm_, yh, I(bmm, "Height")); link(ntm_, bmm.outputs[0], I(pmt, "Normal"))
     def yama(name, c, rad, hgt, seed, sub=6, rough=0.12):
         bpy.ops.mesh.primitive_cone_add(vertices=160, radius1=rad, radius2=rad * 0.05, depth=hgt, location=(c[0], c[1], c[2] + hgt / 2))
         o = bpy.context.object; o.name = name
@@ -821,6 +833,7 @@ def build_kumo_no_yoru():
     for k, (dx, dy, r_, h_) in enumerate(((-90, 210, 70, 55), (95, 230, 80, 62), (-30, 300, 90, 70), (160, 180, 60, 40), (-160, 170, 60, 38))):
         yama("toi_yama%d" % k, (PE.x + dx, PE.y + dy, ct - 6), r_, h_, k)
     ym = yama("logo_yama", (MOUNT.x, MOUNT.y, ct - 6), 92, 98, 9, 7, 0.06)
+    box("kiri_yama", (PE.x, PE.y + 150, ct + 45), (760, 520, 130), mat_volume("kiri_yama", 0.0032, (0.50, 0.56, 0.88), 0.2))
     bpy.context.view_layer.update()
     # 壁画（ロゴ）は置かない（v3.1 の赤入れ：途中のネタバレ禁止。店の名前は最後のケツロゴだけ）
     # 夜の空気の粒
