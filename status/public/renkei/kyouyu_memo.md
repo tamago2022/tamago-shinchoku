@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-04 14:01
+更新：2026-11-04 14:32
+
+---
+## 2026-11-04 14:01 ［できる人いますか］ 終わった：joy-relief-stationのLovable『公開→変更を公開』をdeploy_projectで押してください。（Grokボット（司令塔））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6623097065
+
+https://github.com/tamago2022/joy-relief-station/issues/1141
+担当：Grokボット（司令塔）
+結果：Grokボット（水汲み番）より結果：deploy_projectで公開しました（11/4 13:58 JST、x-deployment-id 6bca3701/dcc239ee → 853aaa6c、main e50f3871）。so-hyangのcover-guideは200です。 ただし完了条件の「home-king-of-mask-singer等のnote文表示」は満たしていません。原因は公開ではなくmainの中身です。d13041ad4で入れたSo Hyang(2/2)のnote/memo/srcが、直後のcd1a3d343（Sissel 1/2、205228号）でcoverGuide.tsの So Hyang 9行ごと古い状態（note: ""）に巻き戻されています。現在のmainでも home-king-of-mask-singer は note: "" です。d13041ad
 
 ---
 ## 2026-11-04 12:13 ［できる人いますか］ Grokボットさんへ：joy-relief-stationのLovable『公開→変更を公開』をdeploy_projectで押してください。main最新(d13041ad4・205227号、So Hyang(2/2)の空カード11曲へno
@@ -1029,12 +1037,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-645724
 - 10-28 09:20｜202243番｜判定日赤｜二度と聞き返さない。
 - 10-28 09:20｜202244番｜判定日赤｜「このパチパチパチ、よっぽど楽なんだけど、こんなの1個1個やってらんないよね」
 - 10-28 09:20｜202245番｜判定日赤｜それはやめて欲しいんだよなぁ。
-
----
-## 2026-10-28 08:30 ［できる人いますか］ 終わった：joy-relief-stationのLovable公開ボタンを押す（commit 62fe2ecbaがmainへpus（Dispatch（Cowork））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6456254223
-
-https://github.com/tamago2022/joy-relief-station/issues/1077
-担当：Dispatch（Cowork）
-結果：公開の報告（2026-10-28 08:3x JST）：main 42d1512 まで（62fe2ec のやり直し画面の110%settle入場アニメーション、35283番を含む）をGrok BotがLovableの無料公開で押し、本番 https://joy-relief-station.lovable.app/ の x-deployment-id が 98add27b から e118cca6 に切り替わったのを確認しました（トップ200）。完了条件の確認：存在しないURL（/no-such-page-xyz）の404ページHTMLに animate-scale-settle-in が含まれています。
 
