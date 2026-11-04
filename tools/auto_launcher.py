@@ -1472,6 +1472,28 @@ def harvest(q):
             changed = True
             log("⏳ %sを検知。%d番は列に戻し、発車を%sまで止めます" % ("週次利用上限" if _is_weekly else "5時間枠の上限", it.get("n"), _wl_resume))
             continue
+        # ---- 通信障害（APIに届かない）も「仕事の失敗」にしない（2026-11-05 たまごさん「止めるのが最悪」）----
+        # 実測：空カード埋めの47便が "API Error: Can't reach the API server (ENOTFOUND)" で何もできずに終わり、
+        #   やり直し2回を使い切って確認待ちへ落ちていた。上限と同じ扱い：数えずに列へ戻し、
+        #   status/tsuushin_machi.json を立てて、通信が戻るまで新規発車を待つ（戻ったら自動で再開）。
+        try:
+            import itsumo_shigoto as _its
+            _is_net = _its.tsuushin_shougai(_lim_txt, urls)
+        except Exception:
+            _is_net = False
+        if _is_net:
+            try:
+                _its.tsuushin_tateru(it.get("n"))
+            except Exception:
+                pass
+            it["status"] = "waiting"
+            it["netRetry"] = int(it.get("netRetry") or 0) + 1
+            for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                it.pop(k, None)
+            it.pop("pid", None)
+            changed = True
+            log("📡 通信障害を検知。%s番は失敗に数えず列に戻し、通信が戻るまで新規発車を待ちます" % it.get("n"))
+            continue
         # 2026-09-05 たまごさん「何も動いてない状態は作らないで。クレジット消費最小で」
         #   → 空回し（keepalive）は終わったら台帳から静かに消す。
         #     確認待ちに積むと、判定するものが増えるだけで意味がない（今日それで29件溜めた）。
@@ -1538,6 +1560,10 @@ def harvest(q):
                     it["cutAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
                 _inject_cut_note(it, elapsed_min)  # 894番：「切られた＝最初からやり直し」を無くす
                 it["priority"] = it.get("priority") or 2
+                # 2026-11-05 たまごさん「1つの便が詰まったら、全体を止めずに次の便へ」：
+                #   切られた便がすぐ同じ席に座り直すと、次の便がいつまでも流れない（試験で実測）。
+                #   30分は後ろに回し（retryAfter）、その間はほかの便を流す。30分後に続きから再挑戦。
+                it["retryAfter"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00", time.localtime(time.time() + 30 * 60))
                 for k in ("finishedAt", "result", "urls", "startedAt"):
                     it.pop(k, None)
                 it.pop("pid", None)
@@ -2170,11 +2196,22 @@ def queued_minutes_ago(it, now=None):
         return None
 
 
+def _ato_de(it):
+    """2026-11-05：詰まって切られた便の「後で再挑戦」の時刻（retryAfter）がまだ来ていなければ True＝今は飛ばす。"""
+    ra = it.get("retryAfter")
+    if not ra:
+        return False
+    try:
+        return datetime.strptime(str(ra)[:19], "%Y-%m-%dT%H:%M:%S") > datetime.now()
+    except Exception:
+        return False
+
+
 def urgent_wait_list(items, now=None):
     """発車待ち(waiting)のうち、優先度1またはurgentで、URGENT_WAIT_MIN分を超えて
     待たされているものを「待たされた時間が長い順」に返す。空きが無ければ[]。"""
     out = [it for it in items
-           if it.get("status") == "waiting"
+           if it.get("status") == "waiting" and not _ato_de(it)
            and (it.get("urgent") or it.get("priority") == 1)
            and (queued_minutes_ago(it, now) or 0) > URGENT_WAIT_MIN]
     out.sort(key=lambda it: queued_minutes_ago(it, now) or 0, reverse=True)
@@ -2356,6 +2393,20 @@ def _main_impl():
       #   自分が「実際に変更した項目」だけを正確に見分けて重ね書きするため
       #   （渡さないと保守的に「持っている項目は全部変更した」扱いになる）。
       _snap = queue_store.snapshot_items(q)
+      # ---- 2026-11-05 いつもの仕事（itsumo_shigoto.py）----
+      #   ①列が空になる前に「いつもの仕事」（空コピー埋め→コピー直し→Spotify仕入れ）を自分で積み足す
+      #   ②通信障害の旗が立っている間は新規発車を待つ（戻ったら自動で外して再開）
+      #   ③80点以上で納品された便は「完成：名前／Driveリンク」を Dispatch へ1行
+      #   新しい定期タスク・常駐は足さない（この発車係の中で、5分に1回だけ間引いて動く）。
+      try:
+          import itsumo_shigoto as _its
+          if _its.tick(q):
+              save_queue(q, snapshot=_snap)
+              _snap = queue_store.snapshot_items(q)
+          if _its.tsuushin_matsu():
+              return 0
+      except Exception as _e:
+          log("いつもの仕事で例外: %s" % _e)
       # ---- 2026-10-15 Fableレーン（たまごさん「この3本を最優先で今すぐFableで発車。発車できない原因は自分で取り除く」）----
       #   fableLane:true の仕事だけ、ロード比・スワップ%の天井（負荷の番人の旗を含む）を越えて最大 FABLE_LANE_MAX 本まで出す。
       #   ただし本当に危ないとき（メモリ圧が緑でない／空きメモリ15%未満／ディスク20GB未満の旗／ログイン切れ・週枠の旗）は出さない。
@@ -2595,7 +2646,7 @@ def _main_impl():
           save_queue(q, snapshot=_snap)
           _snap = queue_store.snapshot_items(q)
 
-      waiting = sorted([it for it in items if it.get("status") == "waiting"
+      waiting = sorted([it for it in items if it.get("status") == "waiting" and not _ato_de(it)
                         and (not _sen_stop or _isogi(it))], key=rank)
 
       # ---- 759番3回目の重複発車を機に追加した恒久ガード（案件#759・2026-09-13）----

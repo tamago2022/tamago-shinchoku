@@ -135,7 +135,7 @@ M = dict(
                    f'司会の古舘伊知郎は、夕方のリハーサルで気づいていた。「歌の中で古舘伊知郎って26回言ったんですよ。本番でそこに違う言葉をはめるんだな、と」。楽屋に乗り込むと、返事は「大丈夫、大丈夫！古舘君、迷惑は掛けないから」。本番、出演者は笑い転げ、「僕だけ青ざめてる」。放送後に文句を言いに行くと、もう楽屋にいなかった。2週間後、西麻布のワインバーで鉢合わせした清志郎は、立ち上がって深々とおじぎし、小さな声で「ごめんなさい、古舘くん」{src("スポニチ", SP25)}。',
                    f'ちなみに、清志郎のRCサクセション「スローバラード」の編曲は星勝{src("Wikipedia", WSLOW)}。その話の続きは、<a class="cw-inl" href="https://joy-relief-station.lovable.app/magazine/kimi-wa-hoshi-katsu.html#ch07">「君は星勝を知っているか」</a>で。'],
              more_label='関連動画 — 司会者が振り返るあの夜、火種になった曲',
-             more=[dict(id='uk8PA5A1yk4', role='Witness', artist='古舘伊知郎チャンネル', song='忌野清志郎さんの忘れられない話', cap=''),
+             more=[dict(id='uk8PA5A1yk4', role='Witness', artist='古舘伊知郎チャンネル', song='忌野清志郎さんの忘れられない話', cap='', page='https://joy-relief-station.lovable.app/cover-guide?artist=furutachi-ichiro', page_label='このページへ →'),  # 2026-11-05 たまごさん名指し：古舘伊知郎のページ
                    dict(id='GpF3hoKLiFY', role='COVERS 1988', artist='RCサクセション', song='サマータイム・ブルース', cap=''),
                    dict(id='BnU7Yr6tZxU', role='1989', artist='THE TIMERS', song='FM東京', cap='')],
              say='実はこれ、生放送じゃなかった（文春オンライン）。もうひとりの司会のGWINKOが16歳で、深夜に働けない。だから夕方に撮って、そのまま流した。「これ流していいですか」と聞かれたプロデューサーの返事は「いいんじゃない？」。止める時間は、あった。止めなかった。',

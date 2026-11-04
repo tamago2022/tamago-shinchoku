@@ -61,7 +61,7 @@ def video(v, size='main'):
             f'data-yt-cover="{v["id"]}" aria-label="ここで再生：{e(v["artist"])}「{e(v["song"])}」"><img src="https://i.ytimg.com/vi/{v["id"]}/{q}.jpg" alt="" loading="lazy" decoding="async"/>'
             f'<span class="cw-video__role">{e(v["role"])}</span><span class="cw-video__play" aria-hidden="true">{PLAY}</span></button></div>'
             f'<figcaption><span class="cw-video__name"><b>{e(v["artist"])}</b><i>「{e(v["song"])}」</i></span>' + (f'<span class="cw-video__cap">{v["cap"]}</span>' if v.get("cap") else '')
-            + (f'<a href="{e(v["page"])}" class="cw-video__page">この曲のページへ →</a>' if v.get("page") else '') + '</figcaption></figure>')
+            + (f'<a href="{e(v["page"])}" class="cw-video__page">{e(v.get("page_label") or "この曲のページへ →")}</a>' if v.get("page") else '') + '</figcaption></figure>')  # page_label：曲でないカード（人のページへ飛ぶ等）の文言。2026-11-05 古舘伊知郎
 
 
 def say(t):

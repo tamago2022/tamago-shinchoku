@@ -676,7 +676,7 @@ if __name__ == "__main__":
 
     # 2026-09-26（1160番）調べもの常駐ライン。Gensparkに「調べて」を1本ずつ絶やさず流す。
     # 止めたいときは status/genspark.stop を置く。
-    _okosu("1160_shirabe.py")
+    pass  # 【停止 2026-11-05 見回りの棚卸し：お金の栓で7日ずっと「投げない」・同じページの書き直しだけ（status/mihari_tanaoroshi/hyou.md）】 _okosu("1160_shirabe.py")
 
     # 2026-09-26（1162番）LINEスタンプ「ラシコル」の審査の見張り。
     # 3時間おきにLINE STOREの商品ページを見に行き、公開されたら表が変わる。
@@ -692,12 +692,12 @@ if __name__ == "__main__":
     # 2026-09-28（1500番）枠番＝含まれてる枠が空いた瞬間に勝手にDevinへ発車する係。
     #   リセット時刻を狙わない。**空振り（403 out_of_quota・0円）を繰り返して、通った瞬間に乗る。**
     #   同時1本・従量は1円も使わせない。待ち時間中の周回は何も叩かずに即戻る。
-    _okosu("1500_wakuban.py")
+    pass  # 【停止 2026-11-05 見回りの棚卸し：最後の出力が10-15（status/mihari_tanaoroshi/hyou.md）】 _okosu("1500_wakuban.py")
 
     # 2026-09-28（1501番）Devin成績表を機械で付ける係。10/16の更新判定の材料。
     #   1本ごとに「たまごさんの何が変わるか／PR／merge／本番の重さ」を自動で並べる。手書き0。
     #   中で30分に1回に間引く。→ share/check/1500-devin-seiseki.html
-    _okosu("1501_devin_seiseki.py")
+    pass  # 【停止 2026-11-05 見回りの棚卸し：7日で出力0（status/mihari_tanaoroshi/hyou.md）】 _okosu("1501_devin_seiseki.py")
 
     # 2026-09-27（1166番）「次に何がいつ出るか」の1枚を毎周回つくり直す。
     # Bufferから取り直した実測だけを載せる（自己申告を載せない）。鍵が無い周回は即戻る。
@@ -739,7 +739,7 @@ if __name__ == "__main__":
 
     # 2026-09-27（1166番）待機列を自分で積む係。候補1本を15分に1つだけ進める。
     # YouTubeの検索枠が尽きた日はその場で退き、翌日また続きから。止めたいときは status/1166.stop。
-    _okosu("1166_machi_tsumu.py")
+    pass  # 【停止 2026-11-05 見回りの棚卸し：最後に動いたのが9-27（status/mihari_tanaoroshi/hyou.md）】 _okosu("1166_machi_tsumu.py")
 
     # 2026-10-17 Claude Code 受付係（たまごさん「Gensparkとの間で水汲みはしたくない」）。
     #   joy-relief-station / tamago-shinchoku の open Issue でタイトルに【Claude Codeに頼む】の新着を
