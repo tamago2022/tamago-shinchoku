@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-11-04T11:28:32.138507+09:00",
- "generatedAtEpoch": 1793759312.138834,
+ "generatedAt": "2026-11-04T12:14:29.281303+09:00",
+ "generatedAtEpoch": 1793762069.281334,
  "rows": [
   {
    "id": "buffer",
@@ -9,10 +9,10 @@
    "stops": "Xの予約が1本も入らない。毎回「ログインして」に戻る",
    "fix": "publish.buffer.com/settings/api で1回だけ鍵を作り、~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す（/Users/mac/tamago/kagi/buffer_token.txt に貼るだけでも自動で写る）",
    "status": "unknown",
-   "detail": "叩けませんでした（回線かホスト名）",
+   "detail": "400 未実測",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759308.579613
+   "measuredAt": 1793762025.249844
   },
   {
    "id": "claude",
@@ -24,7 +24,7 @@
    "detail": "通った（auth_keeperが実測）",
    "note": "使う合図(use_token)：立っている",
    "expiry": 1821934089.8953223,
-   "measuredAt": 1793758309.743834
+   "measuredAt": 1793760973.332722
   },
   {
    "id": "gmail",
@@ -36,7 +36,7 @@
    "detail": "アプリパスワードのファイルが置かれていません",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759308.5798779
+   "measuredAt": 1793762025.275923
   },
   {
    "id": "github",
@@ -44,11 +44,11 @@
    "where": "gh auth token / GITHUB_TOKEN",
    "stops": "チャッピーがIssueを置いても誰も気づかない（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
    "fix": "gh auth login",
-   "status": "unknown",
-   "detail": "叩けませんでした（回線かホスト名）",
+   "status": "ok",
+   "detail": "200 通った",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.148536
+   "measuredAt": 1793762026.327799
   },
   {
    "id": "openai",
@@ -56,11 +56,11 @@
    "where": "~/.tamago/keys/api_keys.env",
    "stops": "鬼監督の外部検品と、詰まった仕事の逃がし先が消える",
    "fix": "platform.openai.com で鍵を作り直して鍵ファイルへ",
-   "status": "unknown",
-   "detail": "叩けませんでした（回線かホスト名）",
+   "status": "ok",
+   "detail": "200 通った",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.157286
+   "measuredAt": 1793762027.455435
   },
   {
    "id": "gemini",
@@ -68,11 +68,11 @@
    "where": "~/.tamago/keys/api_keys.env の GEMINI_API_KEY",
    "stops": "安い代行先が消えてClaudeの枠を食う（※ページの「話す」が使うのはブラウザ側の別の鍵 tamago_gemini_key。それは 969_kagi_kanmon.py が見ている）",
    "fix": "Google AI Studio で無料発行して鍵ファイルへ",
-   "status": "unknown",
-   "detail": "叩けませんでした（回線かホスト名）",
+   "status": "ok",
+   "detail": "200 通った",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.168898
+   "measuredAt": 1793762027.872704
   },
   {
    "id": "xai",
@@ -84,7 +84,7 @@
    "detail": "鍵が置かれていません",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.169677
+   "measuredAt": 1793762027.873733
   },
   {
    "id": "xai_koe",
@@ -93,10 +93,10 @@
    "stops": "ごきげん補給所の「話す」と 970号の台が鳴らなくなる",
    "fix": "Lovable→クラウド→Secrets の XAI_API_KEY2 を見る。窓口＝supabase/functions/voice-session",
    "status": "ng",
-   "detail": "窓口に届かない（URLError(gaierror(8, 'nodename nor servname provided, or not known'))）",
+   "detail": "窓口は生きているが断られた（budget_exceeded）",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.184161
+   "measuredAt": 1793762029.155324
   },
   {
    "id": "copilot",
@@ -104,11 +104,11 @@
    "where": "gh auth token ＋ GitHub側の許可",
    "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
    "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
-   "status": "unknown",
-   "detail": "叩けませんでした（URLError）",
+   "status": "ng",
+   "detail": "担当者の候補にCopilotが居ません＝Issueを立てても受け取られません（有料プラン／組織の許可が要る形）",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.3206341
+   "measuredAt": 1793762030.001844
   },
   {
    "id": "meta",
@@ -120,7 +120,7 @@
    "detail": "鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.321557
+   "measuredAt": 1793762030.002841
   },
   {
    "id": "fal",
@@ -128,11 +128,11 @@
    "where": "~/.tamago/keys/api_keys.env",
    "stops": "絵と動画が1枚も作れない",
    "fix": "fal.ai で鍵を作り直して鍵ファイルへ",
-   "status": "unknown",
-   "detail": "叩けませんでした（回線かホスト名）",
+   "status": "ok",
+   "detail": "404（鍵は通った。点検用の住所が無いだけ）",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.3342888
+   "measuredAt": 1793762031.016547
   },
   {
    "id": "buffer",
@@ -141,10 +141,10 @@
    "stops": "oasisjoyrelief への予約が1本も出せない。★台帳に無い間は、毎回たまごさんに「ログインして」と頼み直していた",
    "fix": "publish.buffer.com/settings/api で鍵を1回だけ作り、/Users/mac/tamago/kagi/buffer_token.txt に貼って保存する。5分便の buffer_kagi_install.py が拾って鍵ファイルへしまい、平文を消す",
    "status": "unknown",
-   "detail": "叩けませんでした（回線かホスト名）",
+   "detail": "400 未実測",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.345429
+   "measuredAt": 1793762031.410037
   },
   {
    "id": "devin",
@@ -152,11 +152,11 @@
    "where": "DEVIN_API_KEY",
    "stops": "Devinへ仕事を出せない",
    "fix": "app.devin.ai で鍵を作り直す",
-   "status": "unknown",
-   "detail": "叩けませんでした（回線かホスト名）",
+   "status": "ok",
+   "detail": "200 通った",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.353035
+   "measuredAt": 1793762032.4587572
   },
   {
    "id": "lovable",
@@ -168,7 +168,7 @@
    "detail": "トークンがあります（更新用あり）",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.353434
+   "measuredAt": 1793762032.459172
   },
   {
    "id": "nagekomi",
@@ -176,11 +176,11 @@
    "where": "share/nagekomi-*.html → 中継所 → 棚",
    "stops": "たまごさんが投げても棚に入らない（黙って失敗していた）",
    "fix": "relay_watch がトンネルを張り直す／鍵は lovable_auth_keeper の受け皿で同意を1回",
-   "status": "ng",
-   "detail": "公開されている中継所の場所が読めない（URLError）",
+   "status": "ok",
+   "detail": "スマホの箱と同じ道で空荷が通りました。棚へ書く鍵もあります",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.353777
+   "measuredAt": 1793762038.9342668
   },
   {
    "id": "heart",
@@ -189,10 +189,10 @@
    "stops": "着火と受信箱が止まる＝ボタンが効かない",
    "fix": "5分便が自分で立て直す。立て直らなければ launchctl kickstart",
    "status": "ok",
-   "detail": "動いています（0秒前）",
+   "detail": "動いています（1秒前）",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.353808
+   "measuredAt": 1793762038.93434
   },
   {
    "id": "gobun",
@@ -200,11 +200,11 @@
    "where": "launchd com.tamago.machine-status",
    "stops": "心臓が落ちても誰も立て直さない",
    "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
-   "status": "ok",
-   "detail": "動いています（3分前）",
+   "status": "ng",
+   "detail": "28分前 から止まっています",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.353827
+   "measuredAt": 1793762038.934369
   },
   {
    "id": "hassha",
@@ -213,10 +213,10 @@
    "stops": "仕事が1本も進まない",
    "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
    "status": "ok",
-   "detail": "止め札はありません（最後の発車記録 12秒前）",
+   "detail": "止め札はありません（最後の発車記録 0秒前）",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.353875
+   "measuredAt": 1793762038.93445
   },
   {
    "id": "relay",
@@ -228,7 +228,7 @@
    "detail": "200 返事があります",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.4765508
+   "measuredAt": 1793762039.047925
   },
   {
    "id": "mac_omosa",
@@ -237,10 +237,10 @@
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "status": "ng",
-   "detail": "swap 19.2GB・負荷 11.2（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（3.9GB）",
+   "detail": "swap 17.6GB・負荷 38.3（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（3.9GB）",
    "note": "",
    "expiry": null,
-   "measuredAt": 1793759309.650532
+   "measuredAt": 1793762039.370792
   }
  ],
  "watchers": [
@@ -248,7 +248,7 @@
    "id": "line_shinsa",
    "label": "LINE審査結果の見張り",
    "need": "gmail",
-   "lastRunAt": 1793758311.8401854,
+   "lastRunAt": 1793760975.8753924,
    "lastCatchAt": null,
    "runs": 78,
    "catches": 0,
@@ -296,25 +296,25 @@
    "id": "github_watch",
    "label": "GitHub見張り番",
    "need": "github",
-   "lastRunAt": 1793759272.6251712,
-   "lastCatchAt": 1793759272.6251712,
-   "runs": 1290,
-   "catches": 1301,
+   "lastRunAt": 1793761930.732545,
+   "lastCatchAt": 1793761930.732545,
+   "runs": 1291,
+   "catches": 1302,
    "blocked": "",
    "red": false,
-   "line": "✅ GitHub見張り番：走った1290回 → 取れた1301回"
+   "line": "✅ GitHub見張り番：走った1291回 → 取れた1302回"
   },
   {
    "id": "auth_keeper",
    "label": "ログインの番人",
    "need": "claude",
-   "lastRunAt": 1793758429.8371754,
-   "lastCatchAt": 1793758429.8371754,
-   "runs": 1108,
-   "catches": 1107,
+   "lastRunAt": 1793761093.433722,
+   "lastCatchAt": 1793761093.433722,
+   "runs": 1109,
+   "catches": 1108,
    "blocked": "",
    "red": false,
-   "line": "✅ ログインの番人：走った1108回 → 取れた1107回"
+   "line": "✅ ログインの番人：走った1109回 → 取れた1108回"
   },
   {
    "id": "line_store_watch",
@@ -332,13 +332,13 @@
    "id": "commit_kuchi",
    "label": "コミットの口（909）",
    "need": "",
-   "lastRunAt": 1793759024.2332444,
-   "lastCatchAt": 1793759024.2332444,
-   "runs": 1128,
-   "catches": 1128,
+   "lastRunAt": 1793761491.4346066,
+   "lastCatchAt": 1793761491.4346066,
+   "runs": 1129,
+   "catches": 1129,
    "blocked": "",
    "red": false,
-   "line": "✅ コミットの口（909）：走った1128回 → 取れた1128回"
+   "line": "✅ コミットの口（909）：走った1129回 → 取れた1129回"
   },
   {
    "id": "gaibu_copy_naoshi",
@@ -356,25 +356,25 @@
    "id": "gaibu_copy_nippou",
    "label": "外部コピー日報（971）",
    "need": "",
-   "lastRunAt": 1793758053.4367902,
+   "lastRunAt": 1793760528.4715118,
    "lastCatchAt": null,
-   "runs": 1192,
+   "runs": 1193,
    "catches": 1143,
    "blocked": "",
    "red": false,
-   "line": "✅ 外部コピー日報（971）：走った1192回 → 取れた1143回"
+   "line": "✅ 外部コピー日報（971）：走った1193回 → 取れた1143回"
   },
   {
    "id": "mac_souji",
    "label": "Macの掃除",
    "need": "",
-   "lastRunAt": 1793758312.0292282,
-   "lastCatchAt": 1793758312.0292282,
-   "runs": 1157,
-   "catches": 1157,
+   "lastRunAt": 1793760984.7693002,
+   "lastCatchAt": 1793760984.7693002,
+   "runs": 1158,
+   "catches": 1158,
    "blocked": "",
    "red": false,
-   "line": "✅ Macの掃除：走った1157回 → 取れた1157回"
+   "line": "✅ Macの掃除：走った1158回 → 取れた1158回"
   },
   {
    "id": "oni_kuchi",
@@ -404,25 +404,25 @@
    "id": "shuhen_horu",
    "label": "周辺を掘る（仕入れ候補）",
    "need": "",
-   "lastRunAt": 1793759152.8999758,
-   "lastCatchAt": 1793759152.8999758,
-   "runs": 867,
-   "catches": 867,
+   "lastRunAt": 1793761691.352644,
+   "lastCatchAt": 1793761691.352644,
+   "runs": 868,
+   "catches": 868,
    "blocked": "",
    "red": false,
-   "line": "✅ 周辺を掘る（仕入れ候補）：走った867回 → 取れた867回"
+   "line": "✅ 周辺を掘る（仕入れ候補）：走った868回 → 取れた868回"
   },
   {
    "id": "avatar_reply",
    "label": "アバターの返信拾い（969）",
    "need": "github",
-   "lastRunAt": 1793759017.0161572,
-   "lastCatchAt": 1793759017.0161572,
-   "runs": 1298,
-   "catches": 1202,
+   "lastRunAt": 1793761475.846216,
+   "lastCatchAt": 1793761475.846216,
+   "runs": 1299,
+   "catches": 1203,
    "blocked": "",
    "red": false,
-   "line": "✅ アバターの返信拾い（969）：走った1298回 → 取れた1202回"
+   "line": "✅ アバターの返信拾い（969）：走った1299回 → 取れた1203回"
   },
   {
    "id": "auto:1140_mainichi",
@@ -452,10 +452,10 @@
    "id": "auto:1142_fukkyuu",
    "label": "1142_fukkyuu（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759249.4876428,
-   "lastCatchAt": 1793759249.4876428,
+   "lastRunAt": 1793761625.3888345,
+   "lastCatchAt": 1793761625.3888345,
    "runs": 297,
-   "catches": 1130,
+   "catches": 1131,
    "blocked": "blocked=固まった案件 1件・幽霊項目0件・繰り返しブロック1件（下見だけ）",
    "red": true,
    "line": "🔴 1142_fukkyuu（名簿に無いので自動で台帳入り）：止められています：blocked=固まった案件 1件・幽霊項目0件・繰り返しブロック1件（下見だけ）"
@@ -464,13 +464,13 @@
    "id": "auto:1142_loop",
    "label": "1142_loop（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759151.0511415,
-   "lastCatchAt": 1793759151.0511415,
-   "runs": 1132,
-   "catches": 1132,
+   "lastRunAt": 1793761559.288235,
+   "lastCatchAt": 1793761559.288235,
+   "runs": 1133,
+   "catches": 1133,
    "blocked": "",
    "red": false,
-   "line": "✅ 1142_loop（名簿に無いので自動で台帳入り）：走った1132回 → 取れた1132回"
+   "line": "✅ 1142_loop（名簿に無いので自動で台帳入り）：走った1133回 → 取れた1133回"
   },
   {
    "id": "auto:1143_freshness",
@@ -524,13 +524,13 @@
    "id": "auto:1175_kagi_uketori",
    "label": "1175_kagi_uketori（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759143.8968635,
+   "lastRunAt": 1793761705.9304514,
    "lastCatchAt": null,
-   "runs": 1101,
+   "runs": 1102,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 1175_kagi_uketori（名簿に無いので自動で台帳入り）：**走った1101回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 1175_kagi_uketori（名簿に無いので自動で台帳入り）：**走った1102回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:1191_honyaku_jidou",
@@ -572,25 +572,25 @@
    "id": "auto:aibou_mail",
    "label": "aibou_mail（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758311.942664,
+   "lastRunAt": 1793760975.8318384,
    "lastCatchAt": null,
-   "runs": 717,
+   "runs": 718,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 aibou_mail（名簿に無いので自動で台帳入り）：**走った717回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 aibou_mail（名簿に無いので自動で台帳入り）：**走った718回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:aitara_mawasu",
    "label": "aitara_mawasu（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759211.276304,
+   "lastRunAt": 1793761909.5980093,
    "lastCatchAt": null,
-   "runs": 1119,
+   "runs": 1120,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 aitara_mawasu（名簿に無いので自動で台帳入り）：**走った1119回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 aitara_mawasu（名簿に無いので自動で台帳入り）：**走った1120回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:aki_toko",
@@ -656,25 +656,25 @@
    "id": "auto:claude_nouhin",
    "label": "claude_nouhin（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758341.085581,
+   "lastRunAt": 1793761001.640198,
    "lastCatchAt": null,
-   "runs": 599,
+   "runs": 600,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 claude_nouhin（名簿に無いので自動で台帳入り）：**走った599回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 claude_nouhin（名簿に無いので自動で台帳入り）：**走った600回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:cloud_credit_henji",
    "label": "cloud_credit_henji（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758311.184777,
+   "lastRunAt": 1793760976.138477,
    "lastCatchAt": null,
-   "runs": 592,
+   "runs": 593,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 cloud_credit_henji（名簿に無いので自動で台帳入り）：**走った592回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 cloud_credit_henji（名簿に無いので自動で台帳入り）：**走った593回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:cloud_mainichi",
@@ -692,13 +692,13 @@
    "id": "auto:daicho",
    "label": "daicho（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759031.9984066,
+   "lastRunAt": 1793761952.3416522,
    "lastCatchAt": null,
-   "runs": 729,
+   "runs": 730,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 daicho（名簿に無いので自動で台帳入り）：**走った729回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 daicho（名簿に無いので自動で台帳入り）：**走った730回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:daimei_naoshi",
@@ -716,25 +716,25 @@
    "id": "auto:dojisu_jougen",
    "label": "dojisu_jougen（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759305.5754118,
+   "lastRunAt": 1793762011.495656,
    "lastCatchAt": null,
-   "runs": 1160,
+   "runs": 1161,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 dojisu_jougen（名簿に無いので自動で台帳入り）：**走った1160回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 dojisu_jougen（名簿に無いので自動で台帳入り）：**走った1161回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:fuka_mihari",
    "label": "fuka_mihari（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759137.4896643,
+   "lastRunAt": 1793761705.2242227,
    "lastCatchAt": null,
-   "runs": 629,
+   "runs": 630,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 fuka_mihari（名簿に無いので自動で台帳入り）：**走った629回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 fuka_mihari（名簿に無いので自動で台帳入り）：**走った630回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:fukkatsu",
@@ -836,13 +836,13 @@
    "id": "auto:haibun",
    "label": "haibun（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758320.9797533,
+   "lastRunAt": 1793760985.4772074,
    "lastCatchAt": null,
-   "runs": 1083,
+   "runs": 1084,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 haibun（名簿に無いので自動で台帳入り）：**走った1083回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 haibun（名簿に無いので自動で台帳入り）：**走った1084回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:haikanzu",
@@ -872,13 +872,13 @@
    "id": "auto:hyoudai",
    "label": "hyoudai（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758518.7649024,
+   "lastRunAt": 1793761182.5664763,
    "lastCatchAt": null,
-   "runs": 934,
+   "runs": 935,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 hyoudai（名簿に無いので自動で台帳入り）：**走った934回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 hyoudai（名簿に無いので自動で台帳入り）：**走った935回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:inochi",
@@ -896,13 +896,13 @@
    "id": "auto:kagi_jidou_makinaoshi",
    "label": "kagi_jidou_makinaoshi（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793756594.69745,
+   "lastRunAt": 1793760235.0935736,
    "lastCatchAt": null,
-   "runs": 686,
+   "runs": 687,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 kagi_jidou_makinaoshi（名簿に無いので自動で台帳入り）：**走った686回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 kagi_jidou_makinaoshi（名簿に無いので自動で台帳入り）：**走った687回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:kagi_seimei",
@@ -920,25 +920,25 @@
    "id": "auto:kaitsuu",
    "label": "kaitsuu（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758052.785333,
+   "lastRunAt": 1793760527.7830837,
    "lastCatchAt": null,
-   "runs": 1173,
+   "runs": 1174,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 kaitsuu（名簿に無いので自動で台帳入り）：**走った1173回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 kaitsuu（名簿に無いので自動で台帳入り）：**走った1174回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:kakeibo",
    "label": "kakeibo（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758359.4821765,
+   "lastRunAt": 1793761020.3177943,
    "lastCatchAt": null,
-   "runs": 668,
+   "runs": 669,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 kakeibo（名簿に無いので自動で台帳入り）：**走った668回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 kakeibo（名簿に無いので自動で台帳入り）：**走った669回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:kakunin_machi",
@@ -1028,37 +1028,37 @@
    "id": "auto:modoseru",
    "label": "modoseru（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758318.3781466,
+   "lastRunAt": 1793760982.134697,
    "lastCatchAt": null,
-   "runs": 1073,
+   "runs": 1074,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 modoseru（名簿に無いので自動で台帳入り）：**走った1073回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 modoseru（名簿に無いので自動で台帳入り）：**走った1074回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:nagekomi_list",
    "label": "nagekomi_list（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759271.3847244,
+   "lastRunAt": 1793761864.9408522,
    "lastCatchAt": null,
-   "runs": 1137,
+   "runs": 1138,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 nagekomi_list（名簿に無いので自動で台帳入り）：**走った1137回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 nagekomi_list（名簿に無いので自動で台帳入り）：**走った1138回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:obsidian_mamoru",
    "label": "obsidian_mamoru（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758397.0220964,
+   "lastRunAt": 1793761051.2628653,
    "lastCatchAt": null,
-   "runs": 601,
+   "runs": 602,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 obsidian_mamoru（名簿に無いので自動で台帳入り）：**走った601回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 obsidian_mamoru（名簿に無いので自動で台帳入り）：**走った602回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:obsidian_modosu",
@@ -1112,25 +1112,25 @@
    "id": "auto:okane_ichimai",
    "label": "okane_ichimai（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758314.1792629,
+   "lastRunAt": 1793760978.5178497,
    "lastCatchAt": null,
-   "runs": 778,
+   "runs": 779,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 okane_ichimai（名簿に無いので自動で台帳入り）：**走った778回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 okane_ichimai（名簿に無いので自動で台帳入り）：**走った779回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:okoshi",
    "label": "okoshi（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758994.358735,
+   "lastRunAt": 1793761707.9746168,
    "lastCatchAt": null,
-   "runs": 727,
+   "runs": 728,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 okoshi（名簿に無いので自動で台帳入り）：**走った727回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 okoshi（名簿に無いので自動で台帳入り）：**走った728回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:omosa_mihari",
@@ -1220,13 +1220,13 @@
    "id": "auto:shingou",
    "label": "shingou（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759009.4250166,
+   "lastRunAt": 1793761450.96755,
    "lastCatchAt": null,
-   "runs": 1119,
+   "runs": 1120,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 shingou（名簿に無いので自動で台帳入り）：**走った1119回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 shingou（名簿に無いので自動で台帳入り）：**走った1120回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:shukudai",
@@ -1268,13 +1268,13 @@
    "id": "auto:subsc_calendar",
    "label": "subsc_calendar（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758312.129968,
+   "lastRunAt": 1793760977.127576,
    "lastCatchAt": null,
-   "runs": 595,
+   "runs": 596,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 subsc_calendar（名簿に無いので自動で台帳入り）：**走った595回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 subsc_calendar（名簿に無いので自動で台帳入り）：**走った596回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:subsc_shirase",
@@ -1328,49 +1328,49 @@
    "id": "auto:tokushu",
    "label": "tokushu（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758557.82954,
+   "lastRunAt": 1793761219.724817,
    "lastCatchAt": null,
-   "runs": 671,
+   "runs": 672,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 tokushu（名簿に無いので自動で台帳入り）：**走った671回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 tokushu（名簿に無いので自動で台帳入り）：**走った672回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:tomaranai",
    "label": "tomaranai（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758320.3505692,
+   "lastRunAt": 1793760984.9377306,
    "lastCatchAt": null,
-   "runs": 1087,
+   "runs": 1088,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 tomaranai（名簿に無いので自動で台帳入り）：**走った1087回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 tomaranai（名簿に無いので自動で台帳入り）：**走った1088回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:vault_kanmon",
    "label": "vault_kanmon（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793758332.3396196,
+   "lastRunAt": 1793760992.6696012,
    "lastCatchAt": null,
-   "runs": 670,
+   "runs": 671,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 vault_kanmon（名簿に無いので自動で台帳入り）：**走った670回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 vault_kanmon（名簿に無いので自動で台帳入り）：**走った671回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:worktree_taihi",
    "label": "worktree_taihi（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759034.742972,
+   "lastRunAt": 1793761464.950669,
    "lastCatchAt": null,
-   "runs": 239,
+   "runs": 240,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 worktree_taihi（名簿に無いので自動で台帳入り）：**走った239回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 worktree_taihi（名簿に無いので自動で台帳入り）：**走った240回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:xai_zandaka_yoru",
@@ -1496,13 +1496,13 @@
    "id": "auto:youryou_mihari",
    "label": "youryou_mihari（名簿に無いので自動で台帳入り）",
    "need": "",
-   "lastRunAt": 1793759135.8798416,
+   "lastRunAt": 1793761703.3317556,
    "lastCatchAt": null,
-   "runs": 694,
+   "runs": 695,
    "catches": 0,
    "blocked": "",
    "red": true,
-   "line": "🔴 youryou_mihari（名簿に無いので自動で台帳入り）：**走った694回 → 取れた0回。動いているのに何も産んでいません**"
+   "line": "🔴 youryou_mihari（名簿に無いので自動で台帳入り）：**走った695回 → 取れた0回。動いているのに何も産んでいません**"
   },
   {
    "id": "auto:youryou_nozoki",
@@ -2272,67 +2272,67 @@
   {
    "path": "/",
    "label": "トップ",
-   "code": null,
-   "bytes": 0,
+   "code": 200,
+   "bytes": 58157,
    "word": "ひとこと目安箱",
    "hasWord": false,
    "ssrBroken": false,
    "red": true,
-   "why": "HTTP None が返りました",
-   "at": 1793759312.094862
+   "why": "200は返るのに『ひとこと目安箱』がどこにも無い＝本体が描かれていません",
+   "at": 1793762058.4259148
   },
   {
    "path": "/watch?v=w1gCW_66zzc",
    "label": "動画ページ(/watch)",
-   "code": null,
-   "bytes": 0,
+   "code": 200,
+   "bytes": 64043,
    "word": "ごきげん補給所トップへ戻る",
    "hasWord": false,
    "ssrBroken": false,
    "red": true,
-   "why": "HTTP None が返りました",
-   "at": 1793759312.102277
+   "why": "200は返るのに『ごきげん補給所トップへ戻る』がどこにも無い＝本体が描かれていません",
+   "at": 1793762061.491992
   },
   {
    "path": "/room/card/living-yakutia-cold-village",
    "label": "部屋カード",
-   "code": null,
-   "bytes": 0,
+   "code": 200,
+   "bytes": 91049,
    "word": "ひとこと目安箱",
    "hasWord": false,
    "ssrBroken": false,
    "red": true,
-   "why": "HTTP None が返りました",
-   "at": 1793759312.1134138
+   "why": "200は返るのに『ひとこと目安箱』がどこにも無い＝本体が描かれていません",
+   "at": 1793762064.461306
   },
   {
    "path": "/cover-guide?artist=southern&song=kibou-no-wadachi",
    "label": "名カバー案内所",
-   "code": null,
-   "bytes": 0,
+   "code": 200,
+   "bytes": 91231,
    "word": "ひとこと目安箱",
    "hasWord": false,
    "ssrBroken": false,
    "red": true,
-   "why": "HTTP None が返りました",
-   "at": 1793759312.124403
+   "why": "200は返るのに『ひとこと目安箱』がどこにも無い＝本体が描かれていません",
+   "at": 1793762067.134014
   },
   {
    "path": "/checkup",
    "label": "今日の気分診断",
-   "code": null,
-   "bytes": 0,
+   "code": 200,
+   "bytes": 30380,
    "word": "ひとこと目安箱",
    "hasWord": false,
    "ssrBroken": false,
    "red": true,
-   "why": "HTTP None が返りました",
-   "at": 1793759312.1384509
+   "why": "200は返るのに『ひとこと目安箱』がどこにも無い＝本体が描かれていません",
+   "at": 1793762069.281238
   }
  ],
  "redRoutes": 5,
- "redCount": 206,
- "redKeys": 6,
+ "redCount": 207,
+ "redKeys": 7,
  "redWatchers": 99,
  "redLies": 0,
  "redUnlisted": 96
