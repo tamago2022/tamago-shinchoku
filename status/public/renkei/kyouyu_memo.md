@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-05 04:51
+更新：2026-11-05 06:08
+
+---
+## 2026-11-05 06:01 ［宇宙うんこ］ 206316 Fable｜滝のv3（のっぺり解消・80点で納品）
+https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6642052983
+
+言われたこと：v2の次に直すこと5点＋写真素材（Poly Haven/ambientCG CC0）とNASA Moon Kitで質感を貼る。作業は status/uchu_unko/v3_taki/。決めたこと：v3の工程（michi.json・scene_v3.py・GitHub Actions 20台）をそのまま土台にし、質感と月・しぶきだけを差し替える。店主の入力待ち：なし。次：素材取得→質感差し替え→試し描き→全コマ→組み立て→採点→80点以上なら納品。
 
 ---
 ## 2026-11-05 03:34  
@@ -987,15 +993,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-646445
 https://github.com/tamago2022/joy-relief-station/issues/1078
 担当：Grokボット（司令塔）
 結果：Grok Botより（2026-10-28 17:3x JST）：main ab45596 まで（1d92507 を含む）をLovableで公開しました。本番の x-deployment-id は 3144ad39 に変わり、https://joy-relief-station.lovable.app/cover-guide?artist=labrinth&song=where-love-lives-labrinth-cover は200、タイトルは「Where Love Lives（Alison Limerickカバー） — Labrinth（2025）｜ごきげん補給所」でLabrinth固有の内容になっています。完了条件を満たしたので閉じてください。
-
----
-## 2026-10-28 16:07 ［できる人いますか］ Grokボットさんへ：Lovable公開ボタンを押す(#35281冬の星空演出+型チェック修正、main合流済み・65f51a450)
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6463019812
-
-振り分け所から、Grokボットさんにお願いです。
-依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1079
-
-完了条件：本番トップページに冬季の星空オーバーレイが表示され、x-deployment-idが更新されること
-締め切り：なし
-終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 

@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-11-05 04:42:26・hash=a3fbd66dcada -->
+<!-- 自動生成・genzaichi_sync.py・2026-11-05 06:03:52・hash=5e32ebae99ea -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -12,6 +12,7 @@
 - 工場の送り先（nageru・shigoto_furu・tekizai・irai_gate）からJulesを外した。GitHubの `jules` ラベルは `jules-外した` に改名し、自動起動を止めた。
 
 ## 今動いているプロジェクトと現在の状態
+- **【月面3D土台 v24】（2026-11-05・claude-opus-5-5）** 毛羽を殻の重ね（fur shell）に、青レンズ1.8・足1.3まで合わせた。ただしロボのまだら・たまごの起毛と腹の形で見分けがつくため未納品（ドライブはv22のまま）。記録 status/m3d/work/zansa_v24.md
 - **【月面3D土台 v23】（2026-11-04・claude-opus-5-5）** 見本の月明かりに光を当て直し、手の白さ・たまごの丸い頭・ぼけ・毛羽（殻）を入れた。見本18部位中16部位がΔE2以下だが、毛並み・まだら・足の光で見分けがつくため未納品（ドライブはv22のまま）。記録 status/m3d/work/zansa_v23.md
 - **【月面3D土台 第1段階】（2026-11-03・claude-opus-5-5）** たまご＋ロボの正本3D（リグ入り.blend・仕様メモ・チェック表・並べ画像・各5秒のターンテーブル）をドライブ AI制作物/Claude/月面3D土台 へ。形・位置32項目は見本と5px以内、色の差 平均ΔE3.9。残る差4点（腕の手先の光り方・起毛とぼけ・光で上がとがって見える・ロボの目口/耳/胴の色5〜6）。第2段階（月面・15秒）は未着手。作り直しは status/m3d/work/build_chars.py
 - **【宇宙うんこ v2】（2026-10-31）** 滝を下って雲の夜へ・ジムノペディ1番・29秒・24fps（status/uchu_unko/uchu_unko_v2_taki.mp4・ドライブ AI制作物/Claude/宇宙うんこ）。描画は Blender 3.6 EEVEE（4.x はこのiMacで壊れる）。Macのメモリ不足の日は GitHub Actions 無料ランナー20台で約14分（.github/workflows/uchu-unko-render.yml・tools/uchu_unko/）。型＝曲・舞台・道の入れ替え（status/uchu_unko/v2/README.md）。
@@ -117,6 +118,10 @@
 - Grok Bot 向け：joy-relief-station #1040 の常設コメント1つを書き換え（https://github.［除去］#issuecomment-6578926809）。受信の合言葉 KAIWA-PING-20261102-2253 の返事が来たら status/public/kaiwa_kyouyuu.json の grok_yonda に自動で残る。
 - 実測：Coworkで話した文が 1分17秒で GitHub に載った（22:55:43→22:57:00）。
 - 気づいた別件：~/tamago/tamago-dispatch-log の手元の複製は origin より34コミット先行＝毎朝の log_digest は commit だけで push できていない（新しい仕組みは API 直書きなので影響なし）。
+
+## 2026-11-05 古舘伊知郎のアーティストページ（たまごさん名指し）
+- main 24f4105b に入れた（6本：清志郎の話1・トーキングブルース2・プロレス3／好きなら RC・ALFEE／怒れる人々の古舘カードに「このページへ →」）。
+- 本番は未反映：Lovable の鍵が need_consent。押す係（kohyou_osu）が 24f4105b を待ち列に持っていて、鍵が戻れば自動で押す。記録 tamago-shinchoku status/fr_furutachi/README.md
 
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
