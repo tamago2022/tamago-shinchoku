@@ -2,7 +2,7 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-04 12:51
+更新：2026-11-04 13:12
 
 ---
 ## 2026-11-04 12:13 ［できる人いますか］ Grokボットさんへ：joy-relief-stationのLovable『公開→変更を公開』をdeploy_projectで押してください。main最新(d13041ad4・205227号、So Hyang(2/2)の空カード11曲へno
