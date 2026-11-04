@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#205302 空カード埋め｜Robert Glasper（2/2）本番反映確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #205302 空カード埋め｜Robert Glasper（2/2）本番反映確認</div>
+<h1>#205302 空カード埋め｜Robert Glasper（2/2）本番反映確認</h1>
+<div class="date">2026-11-04 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+対象7曲中4曲（all-i-do-feat-sir-b-kelly-song-bird／experiment-calls-ft-jill-scott／norah-jones-let-it-ride／everybody-loves-the-sunshine-live-at-jazz-a-la-v）はcoverGuide.tsにnote/memo/src/yearを実装、本番ページのSSR HTMLをnode fetchで直接取得しnote本文4件とも実在することを自分で実測確認した。残り3曲（experiment-npr-music-tiny-desk-concert／playlist-jazz-mix-2024／the-ultimate-music-experience-of-2024-top-ranked）は2本独立出典が揃わず、ルールに従いsrc/lib/tabiCopy.tsへ代替コピー1行ずつを追加（README.md記載の正しい処理）。この3曲は曲一覧のページ送り(PAGE=12)で2〜3ページ目に入るためSSR直読みのcurlでは検出できないが、同一のtabiCopyOf()表示ロジックは別アーティスト(TLC)の1ページ目で正常動作することを別便で実測済み、かつ前任セッションがヘッドレスChromeで実際に次へボタンをクリックし2/3ページ目で3曲とも本文に実在することを実測確認済み(hanei.jsonl 20:44:40記録)。main合流commit 232a1ad07はorigin/mainの祖先として確認済み、Lovable公開もx-deployment-idがpsr2.83ba3ae8-...へ更新済みで反映済み。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>4</b><span>note直接curl確認済み</span></div>
+  <div class="num"><b>3</b><span>tabiCopy対応(ページ送り先・前任CDP実測で確認済み)</span></div>
+  <div class="num"><b>7</b><span>対象曲数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番アーティストページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=robert-glasper" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=robert-glasper</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>all-i-do-feat-sir-b-kelly-song-bird のnote本文</td><td class="yes">FOUND(curl実測)</td></tr>
+<tr><td>experiment-calls-ft-jill-scott のnote本文</td><td class="yes">FOUND(curl実測)</td></tr>
+<tr><td>norah-jones-let-it-ride のnote本文</td><td class="yes">FOUND(curl実測)</td></tr>
+<tr><td>everybody-loves-the-sunshine-live-at-jazz-a-la-v のnote本文</td><td class="yes">FOUND(curl実測)</td></tr>
+<tr><td>experiment-npr-music-tiny-desk-concert のtabiCopy文</td><td class="yes">前任CDPクリック実測でFOUND(2/3ページ)</td></tr>
+<tr><td>playlist-jazz-mix-2024 のtabiCopy文</td><td class="yes">前任CDPクリック実測でFOUND(2/3ページ)</td></tr>
+<tr><td>the-ultimate-music-experience-of-2024-top-ranked のtabiCopy文</td><td class="yes">前任CDPクリック実測でFOUND(2/3ページ)</td></tr>
+</table>
+
+<footer>
+このページは #205302 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
