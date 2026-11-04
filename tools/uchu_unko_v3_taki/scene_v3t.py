@@ -690,12 +690,12 @@ def build_kumo_no_yoru():
     B = SC["B"]; ct = B["cloud_top"]; cx, cy = B["cx"], B["cy"]
     PE = V(M["pe"]); MOON = V(M["moon"]); MOUNT = V(M["mount"]); LOGO = V(M["logo"])
     # 雲海（もこもこの面：上の面が ct-0.2 を越えない）
-    bpy.ops.mesh.primitive_grid_add(x_subdivisions=420, y_subdivisions=420, size=900, location=(cx, cy + 200, ct - 2.4))
+    bpy.ops.mesh.primitive_grid_add(x_subdivisions=420, y_subdivisions=420, size=900, location=(cx, cy + 200, ct - 3.6))
     cl = bpy.context.object
     tx = bpy.data.textures.new("kumo", 'CLOUDS'); tx.noise_scale = 11.0; tx.noise_depth = 3
-    dm = cl.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = 1.6; dm.mid_level = 0.0; dm.texture_coords = 'GLOBAL'
+    dm = cl.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = 3.0; dm.mid_level = 0.0; dm.texture_coords = 'GLOBAL'
     tx2 = bpy.data.textures.new("kumo2", 'CLOUDS'); tx2.noise_scale = 2.5; tx2.noise_depth = 2
-    dm2 = cl.modifiers.new("d2", 'DISPLACE'); dm2.texture = tx2; dm2.strength = 0.6; dm2.mid_level = 0.0; dm2.texture_coords = 'GLOBAL'
+    dm2 = cl.modifiers.new("d2", 'DISPLACE'); dm2.texture = tx2; dm2.strength = 1.3; dm2.mid_level = 0.0; dm2.texture_coords = 'GLOBAL'
     bpy.ops.object.shade_smooth()
     mc, ntc, pc = newmat("kumoM"); pin(pc, "Roughness", 1.0)
     tcc = node(ntc, "ShaderNodeTexCoord"); nzc = node(ntc, "ShaderNodeTexNoise"); I(nzc, "Scale").default_value = 0.045; I(nzc, "Detail").default_value = 6; link(ntc, tcc.outputs["Object"], I(nzc, "Vector"))
@@ -706,7 +706,7 @@ def build_kumo_no_yoru():
     pin(pc, "Subsurface Weight", 0.5); pin(pc, "Subsurface Color", (0.55, 0.55, 0.95, 1)); pin(pc, "Subsurface Radius", (3, 3, 4))
     pin(pc, "Emission Color", (0.16, 0.15, 0.32, 1)); pin(pc, "Emission Strength", 0.07)
     cl.data.materials.append(mc)
-    box("kiriB", (cx, cy + 200, ct - 0.6), (900, 900, 1.6), mat_volume("kiriB", 0.12, (0.62, 0.66, 0.95), 0.35, (0.08, (8, 3, 0), 0.0, 1.0)))
+    box("kiriB", (cx, cy + 200, ct - 1.4), (900, 900, 3.6), mat_volume("kiriB", 0.22, (0.62, 0.66, 0.95), 0.35, (0.08, (8, 3, 0), 0.0, 1.0)))
     # 落ちてくるときにくぐる雲（最初の板の少し上）
     P17 = V(BARS[M["split"] + 1]["p"])
     kg = box("kumo_kuguru", (P17.x, P17.y, P17.z + 4.2), (14, 14, 2.4), mat_volume("kuguru", 1.6, (0.88, 0.88, 1.0), 0.2, (0.6, (0, 0, -3), 0.2, 1.0)))
