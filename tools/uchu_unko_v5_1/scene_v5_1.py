@@ -207,6 +207,8 @@ def pbr(nt, prefix, scale=3.0, second=None, blend_=0.3, coord=None):
             vm = node(nt, "ShaderNodeVectorMath"); vm.operation = 'SCALE'; link(nt, src, vm.inputs[0]); vm.inputs["Scale"].default_value = 1.0 / sc_; mpo = vm.outputs[0]
         else:
             mp = node(nt, "ShaderNodeMapping"); I(mp, "Scale").default_value = (1.0 / sc_, 1.0 / sc_, 1.0 / sc_); link(nt, src, I(mp, "Vector")); mpo = mp.outputs[0]
+        if os.environ.get("UU_FRACT", "1") == "1":   # v5.1d：座標を自分で 0..1 に折り返す（GitHub の llvmpipe では REPEAT が効かず端の色で塗り潰され、写真が「平均色」に見えていた疑い）
+            fr = node(nt, "ShaderNodeVectorMath"); fr.operation = 'FRACTION'; link(nt, mpo, fr.inputs[0]); mpo = fr.outputs[0]
         outs = {}
         for key, fn, nc in (("col", pref + "_diff.jpg", False), ("rgh", "__none__.jpg", True), ("hgt", pref + "_disp.jpg", True)):   # v5.1b：粗さの写真は読まない（翻訳 85 分の短縮）
             im = load_cc0(fn, nc) if (key == "col" or os.path.exists(os.path.join(CC0, fn))) else None
