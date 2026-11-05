@@ -171,6 +171,7 @@ for fc in RIP.animation_data.action.fcurves:
     for kp in fc.keyframe_points: kp.interpolation = 'LINEAR'
 stage("ripple group"); print("FLAGS", {k: v for k, v in os.environ.items() if k.startswith("UU_")}, flush=True)
 def add_ripple(nt):
+    if os.environ.get("UU_NORIP") == "1": return val(nt, 0.0), val(nt, 0.0)   # 切り分け：波紋なし
     g = node(nt, "ShaderNodeGroup"); g.node_tree = RIP
     tc = node(nt, "ShaderNodeTexCoord"); link(nt, O(tc, "Object"), g.inputs[0])
     # Object 座標ではなく世界座標にするため、object を未指定＝自身の座標。ここでは Geometry の Position を使う
@@ -189,6 +190,7 @@ def load_cc0(name, noncolor=False):
         try: im.colorspace_settings.name = 'Non-Color'
         except Exception: pass
     return im
+PROJ = os.environ.get("UU_PROJ", "BOX")
 def pbr(nt, prefix, scale=3.0, second=None, blend_=0.3, coord=None):
     """<prefix>_diff/_rough(/_disp).jpg を箱投影（UVの無い箱にも貼れる）。second=(prefix2, scale2) で2つの大きさを半々に混ぜ、繰り返しの目を消す。
     返り：(色, 高さ 0..1, 粗さ)。無い面は None"""
@@ -200,7 +202,7 @@ def pbr(nt, prefix, scale=3.0, second=None, blend_=0.3, coord=None):
         for key, fn, nc in (("col", pref + "_diff.jpg", False), ("rgh", "__none__.jpg", True), ("hgt", pref + "_disp.jpg", True)):   # v5.1b：粗さの写真は読まない（翻訳 85 分の短縮）
             im = load_cc0(fn, nc) if (key == "col" or os.path.exists(os.path.join(CC0, fn))) else None
             if im is None: outs[key] = None; continue
-            tx = node(nt, "ShaderNodeTexImage"); tx.image = im; tx.projection = 'BOX'; tx.projection_blend = blend_; tx.extension = 'REPEAT'
+            tx = node(nt, "ShaderNodeTexImage"); tx.image = im; tx.projection = PROJ; tx.projection_blend = blend_; tx.extension = 'REPEAT'
             link(nt, mp.outputs[0], I(tx, "Vector")); outs[key] = tx.outputs["Color"]
         if outs["hgt"] is None and outs["col"] is not None:
             bw = node(nt, "ShaderNodeRGBToBW"); link(nt, outs["col"], bw.inputs[0]); outs["hgt"] = bw.outputs[0]
@@ -217,6 +219,7 @@ def tintc(nt, col, t):
 
 # ---------------- 材質 ----------------
 def desat(nt, col_socket, mask, keep=None):
+    if os.environ.get("UU_NOHSV") == "1": return col_socket   # 切り分け：彩度ノードなし
     keep = KEEP_SAT if keep is None else max(keep, KEEP_SAT * 0.8)
     """白黒基調：mask=0 で彩度 keep、mask=1 で元の色"""
     hs = node(nt, "ShaderNodeHueSaturation"); link(nt, col_socket, I(hs, "Color"))
@@ -305,6 +308,21 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     # 波紋の輪そのものは、淡く光る
     link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.2
     return finish(m, nt, out, p)
+def mat_concrete_slim(name, photo="plaster", scale=2.4, tint=(0.7, 0.7, 0.68), moss=0.4, **kw):
+    """切り分け用：写真＋色味＋苔（上向き）＋凹凸だけの軽い材質（mat_plant と同じ規模）"""
+    m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); mask, ring = add_ripple(nt)
+    pcol, phgt, prgh = pbr(nt, photo, scale)
+    c = tintc(nt, pcol, tint) if pcol is not None else (tint[0], tint[1], tint[2], 1)
+    up = node(nt, "ShaderNodeSeparateXYZ"); link(nt, O(g, "Normal"), up.inputs[0])
+    mcol, mhgt, mrgh = pbr(nt, "moss", 0.9)
+    upf = math_(nt, 'MULTIPLY', ramp(nt, up.outputs[2], [(0.3, (0, 0, 0, 1)), (0.9, (1, 1, 1, 1))]), noise(nt, 1.6, 4, 0.6, O(g, "Position"), 3.0))
+    upf = math_(nt, 'MULTIPLY', ramp(nt, upf, [(0.22, (0, 0, 0, 1)), (0.42, (1, 1, 1, 1))]), moss)
+    if mcol is not None: c = mixrgb(nt, upf, c, tintc(nt, mcol, (0.55, 0.62, 0.38)))
+    link(nt, desat(nt, c, mask), I(p, "Base Color")); I(p, "Roughness").default_value = 0.7; I(p, "Specular").default_value = 0.4
+    if phgt is not None:
+        bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.5; I(bump, "Distance").default_value = 0.06; link(nt, phgt, I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
+    return finish(m, nt, out, p)
+if os.environ.get("UU_SLIM") == "1": mat_concrete = lambda name, col=(0.4, 0.4, 0.4), **kw: mat_concrete_slim(name, photo=kw.get("photo", "plaster"), scale=kw.get("scale", 2.4), tint=kw.get("tint", (0.7, 0.7, 0.68)), moss=kw.get("moss", 0.4))
 def mat_metal(name, col=(0.55, 0.55, 0.56), rust=0.5, rough=0.4, photo="rustw", scale=1.6):
     """v5.1：錆びた金属の写真（photo）を箱投影。錆の濃い所（写真の暗い所）は金属感を落とし粗く。色は mask（波紋）で戻る"""
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position"); mask, ring = add_ripple(nt)
