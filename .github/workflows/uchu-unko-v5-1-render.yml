@@ -47,7 +47,7 @@ jobs:
           TMO="${{ steps.s.outputs.tmo }}"; PRE=""; [ "$TMO" != "0" ] && PRE="timeout $TMO"
           for k in 1 2 3; do
             date
-            $PRE xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v5_1.py -- $W $OUT "$SPEC" 2>&1 | grep --line-buffered -E "ENGINE|STAGE|^FRAME|FLAGS|GI |Error|error|Traceback|File \"|kubire|DONE|skip|pin " || true
+            $PRE xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v5_1.py -- $W $OUT "$SPEC" 2>&1 | grep --line-buffered -E "ENGINE|STAGE|^FRAME|FLAGS|GI |Error|error|Traceback|File \"|kubire|DONE|skip|pin |^Fra:" | awk 'BEGIN{n=0} /^Fra:/{n++; if(n%20!=1) next} {print strftime("%H:%M:%S"), $0; fflush()}' || true
             date
             [ $(ls $OUT/*.jpg 2>/dev/null | wc -l) -ge $WANT ] && break
             [ "$TMO" != "0" ] && break
