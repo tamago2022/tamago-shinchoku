@@ -195,16 +195,25 @@ FEAT = set(os.environ.get("UU_FEAT", "all").replace("all", "grime,streak,wet,lea
 def pbr(nt, prefix, scale=3.0, second=None, blend_=0.3, coord=None):
     """<prefix>_diff/_rough(/_disp).jpg を箱投影（UVの無い箱にも貼れる）。second=(prefix2, scale2) で2つの大きさを半々に混ぜ、繰り返しの目を消す。
     返り：(色, 高さ 0..1, 粗さ)。無い面は None"""
-    tc = node(nt, "ShaderNodeTexCoord")
+    tc = node(nt, "ShaderNodeTexCoord"); TEXCO = os.environ.get("UU_TEXCO", "obj_box")   # 切り分け4：座標の作り方
     def one(pref, sc_):
-        mp = node(nt, "ShaderNodeMapping"); I(mp, "Scale").default_value = (1.0 / sc_, 1.0 / sc_, 1.0 / sc_)
-        link(nt, coord if coord is not None else O(tc, "Object"), I(mp, "Vector"))
+        proj = PROJ
+        if TEXCO.startswith("uv_"):
+            uvn = node(nt, "ShaderNodeUVMap"); uvn.uv_map = "box"; src = uvn.outputs[0]; proj = 'FLAT'
+        elif TEXCO.startswith("gen_"): src = O(tc, "Generated"); proj = 'FLAT'
+        elif TEXCO.startswith("pos_"): gg = node(nt, "ShaderNodeNewGeometry"); src = O(gg, "Position")
+        else: src = coord if coord is not None else O(tc, "Object")
+        if TEXCO.startswith("obj_nomap"):
+            vm = node(nt, "ShaderNodeVectorMath"); vm.operation = 'SCALE'; link(nt, src, vm.inputs[0]); vm.inputs["Scale"].default_value = 1.0 / sc_; mpo = vm.outputs[0]
+        else:
+            mp = node(nt, "ShaderNodeMapping"); I(mp, "Scale").default_value = (1.0 / sc_, 1.0 / sc_, 1.0 / sc_); link(nt, src, I(mp, "Vector")); mpo = mp.outputs[0]
         outs = {}
         for key, fn, nc in (("col", pref + "_diff.jpg", False), ("rgh", "__none__.jpg", True), ("hgt", pref + "_disp.jpg", True)):   # v5.1b：粗さの写真は読まない（翻訳 85 分の短縮）
             im = load_cc0(fn, nc) if (key == "col" or os.path.exists(os.path.join(CC0, fn))) else None
             if im is None: outs[key] = None; continue
-            tx = node(nt, "ShaderNodeTexImage"); tx.image = im; tx.projection = PROJ; tx.projection_blend = blend_; tx.extension = 'REPEAT'
-            link(nt, mp.outputs[0], I(tx, "Vector")); outs[key] = tx.outputs["Color"]
+            tx = node(nt, "ShaderNodeTexImage"); tx.image = im; tx.projection = proj; tx.projection_blend = blend_; tx.extension = 'REPEAT'
+            if TEXCO.endswith("closest"): tx.interpolation = 'Closest'
+            link(nt, mpo, I(tx, "Vector")); outs[key] = tx.outputs["Color"]
         if outs["hgt"] is None and outs["col"] is not None:
             bw = node(nt, "ShaderNodeRGBToBW"); link(nt, outs["col"], bw.inputs[0]); outs["hgt"] = bw.outputs[0]
         return outs
@@ -536,6 +545,13 @@ def flush_meshes(prefix="static_"):
     for key, a in MESH_ACC.items():
         if not a["v"]: continue
         me = bpy.data.meshes.new(prefix + key); me.from_pydata(a["v"], [], a["f"]); me.update(); me.validate()
+        if os.environ.get("UU_TEXCO", "obj_box").startswith("uv_"):   # 切り分け4：箱UV
+            lb = me.uv_layers.new(name="box"); vs_ = me.vertices
+            for poly in me.polygons:
+                n_ = poly.normal; ax = max(range(3), key=lambda i: abs(n_[i]))
+                for li in poly.loop_indices:
+                    co = vs_[me.loops[li].vertex_index].co
+                    lb.data[li].uv = (co.x, co.y) if ax == 2 else ((co.y, co.z) if ax == 0 else (co.x, co.z))
         if "uv" in a and any(u is not None for u in a["uv"]):   # v5.1：葉のカードの UV（shape・tex）
             l_s = me.uv_layers.new(name="shape"); l_t = me.uv_layers.new(name="tex")
             for pi, poly in enumerate(me.polygons):
