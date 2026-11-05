@@ -963,15 +963,15 @@ if mimg is not None:
         dtx = bpy.data.textures.new("moonh", 'IMAGE'); dtx.image = mh
         dm_ = moon.modifiers.new("d", 'DISPLACE'); dm_.texture = dtx; dm_.strength = 0.08; dm_.mid_level = 0.5; dm_.texture_coords = 'UV'
 # 間接光の焼き込み（Irradiance Volume）：吹き抜けと大通りに格子を置き、描く前に1回焼く（EEVEE の直接光＋AO だけの平らさを無くす）
-GI = os.environ.get("UU_GI", "1") == "1"
+GI = os.environ.get("UU_GI", "0") == "1"   # 既定は焼かない（1回目の試しで6コマが40分以上返らず＝焼きが重い疑い。別便で小さな格子を試す）
 if GI:
     bpy.ops.object.lightprobe_add(type='GRID', location=(0, 0, ROOF / 2)); pr = bpy.context.object; pr.name = "gi_atrium"
-    pr.scale = ((RING[1] - RING[0]) / 2 + 2, (RING[3] - RING[2]) / 2 + 2, ROOF / 2 + 1); pr.data.grid_resolution_x = 12; pr.data.grid_resolution_y = 8; pr.data.grid_resolution_z = 7
+    pr.scale = ((RING[1] - RING[0]) / 2 + 2, (RING[3] - RING[2]) / 2 + 2, ROOF / 2 + 1); pr.data.grid_resolution_x = 8; pr.data.grid_resolution_y = 5; pr.data.grid_resolution_z = 5
     pr.data.intensity = 1.0; pr.data.falloff = 0.5; pr.data.clip_start = 0.3
     bpy.ops.object.lightprobe_add(type='GRID', location=(0, (CONC[2] + CONC[3]) / 2, H / 2)); pr2 = bpy.context.object; pr2.name = "gi_conc"
-    pr2.scale = (7, (CONC[3] - CONC[2]) / 2 + 1, H / 2 + 0.5); pr2.data.grid_resolution_x = 4; pr2.data.grid_resolution_y = 10; pr2.data.grid_resolution_z = 3
+    pr2.scale = (7, (CONC[3] - CONC[2]) / 2 + 1, H / 2 + 0.5); pr2.data.grid_resolution_x = 3; pr2.data.grid_resolution_y = 6; pr2.data.grid_resolution_z = 2
     bpy.ops.object.lightprobe_add(type='CUBEMAP', location=(0, 0, ROOF * 0.4)); cb_ = bpy.context.object; cb_.name = "refl"; cb_.scale = (40, 30, 30)
-    tryset(EV, gi_diffuse_bounces=2, gi_cubemap_resolution='128', gi_visibility_resolution='8', gi_irradiance_smoothing=0.25, gi_glossy_clamp=3.0, gi_filter_quality=1.0)
+    tryset(EV, gi_diffuse_bounces=2, gi_cubemap_resolution='64', gi_visibility_resolution='8', gi_irradiance_smoothing=0.25, gi_glossy_clamp=3.0, gi_filter_quality=1.0)
     sc.frame_set(int(os.environ.get("UU_GI_FRAME", "700")))   # 波紋の無い普通の瞬間で焼く
     t_gi = time.time()
     try: bpy.ops.scene.light_cache_bake(); print("GI baked", round(time.time() - t_gi, 1), flush=True)
