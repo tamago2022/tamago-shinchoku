@@ -507,6 +507,30 @@ MAT = {
 }
 SIGNM = [mat_sign("sign%d" % k, c) for k, c in enumerate(SIGN_COLS)]
 LEDM = mat_sign("led", (0.55, 0.78, 0.9), 1.2)
+# 切り分け9：写真の経路のどこで「平均色」になるかを直接測る。床・階段・壁を「写真だけ」の材質に差し替える
+_dbg = os.environ.get("UU_DEBUGTEX", "")
+if _dbg:
+    def mat_debug(name, pref, kind, scale=1.6):
+        m, nt, out = newmat(name); p = principled(nt); im = load_cc0(pref + "_diff.jpg")
+        print("DEBUGTEX", name, kind, pref, None if im is None else (tuple(im.size), im.has_data, im.filepath), flush=True)
+        tx = node(nt, "ShaderNodeTexImage"); tx.image = im; tx.extension = 'REPEAT'; tc = node(nt, "ShaderNodeTexCoord")
+        if kind == "raw":   # Object 座標をそのまま BOX（Mapping も折り返しも無し）
+            tx.projection = 'BOX'; tx.projection_blend = 0.3; link(nt, O(tc, "Object"), I(tx, "Vector"))
+        elif kind == "rawflat":   # Object 座標を FLAT
+            tx.projection = 'FLAT'; link(nt, O(tc, "Object"), I(tx, "Vector"))
+        elif kind == "gen":   # Generated（0..1 の bbox）を FLAT
+            tx.projection = 'FLAT'; link(nt, O(tc, "Generated"), I(tx, "Vector"))
+        elif kind == "map":   # Mapping(1/scale) → BOX（折り返し無し）
+            mp = node(nt, "ShaderNodeMapping"); I(mp, "Scale").default_value = (1 / scale, 1 / scale, 1 / scale); link(nt, O(tc, "Object"), I(mp, "Vector"))
+            tx.projection = 'BOX'; tx.projection_blend = 0.3; link(nt, mp.outputs[0], I(tx, "Vector"))
+        elif kind == "mapfract":   # Mapping → FRACTION → BOX（今の pbr と同じ）
+            mp = node(nt, "ShaderNodeMapping"); I(mp, "Scale").default_value = (1 / scale, 1 / scale, 1 / scale); link(nt, O(tc, "Object"), I(mp, "Vector"))
+            fr = node(nt, "ShaderNodeVectorMath"); fr.operation = 'FRACTION'; link(nt, mp.outputs[0], fr.inputs[0])
+            tx.projection = 'BOX'; tx.projection_blend = 0.3; link(nt, fr.outputs[0], I(tx, "Vector"))
+        elif kind == "pbr":   # pbr() の返りをそのまま Base Color に
+            c, h, r = pbr(nt, pref, scale); link(nt, c, I(p, "Base Color")); return finish(m, nt, out, p)
+        link(nt, tx.outputs["Color"], I(p, "Base Color")); return finish(m, nt, out, p)
+    for _k, _pref in (("floor", "tile"), ("step", "concmoss"), ("wall", "plaster")): MAT[_k] = mat_debug("dbg_" + _k, _pref, _dbg)
 stage("materials")
 if os.environ.get("UU_MINI") == "1":   # v5.1：材質のミニ試し。床・壁・段・金属・シャッターの箱を近くに置いて1コマだけ描く
     MESH_ACC = {}
