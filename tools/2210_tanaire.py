@@ -323,6 +323,12 @@ def doko(db, url):
             "kind": kind, "ref": ref}
 
 
+def _shelf_link(x):
+    """doko() の棚1つ → 本番の棚ページURL（前に空白1つ）。"""
+    sid = x.get("ext") or ("db-" + str(x.get("id") or ""))
+    return " %s/shelf/%s/%s" % (HONBAN, x.get("world") or "", sid)
+
+
 def check_message(url):
     """箱が［入れた瞬間］に赤字を出すための1行。「ダブり｜「棚A」、「棚B」」「ダブり｜在庫には…」「なし」。"""
     try:
@@ -331,9 +337,11 @@ def check_message(url):
         return "確認不能｜%s" % str(e)[:60]
     if not d["dup"]:
         return "なし"
+    # 2026-11-05 たまごさん：同じURL／投稿ID／動画IDは「これはもう入っています」＋既存の場所へ案内（サイト側 alreadyIn.server.ts と同じ言い方）
     if not d["shelves"]:
-        return "ダブり｜在庫には有ります（棚にはまだ結ばれていません）"
-    return "ダブり｜" + "、".join("「%s」" % x["title"] for x in d["shelves"])
+        return "これはもう入っています｜在庫に有ります（棚にはまだ結ばれていません）"
+    return "これはもう入っています｜" + "、".join(
+        "「%s」%s" % (x["title"], _shelf_link(x)) for x in d["shelves"])
 
 
 def wants_of(r):
@@ -408,8 +416,9 @@ def ireru(db, r):
             return (str(w.get("id") or "") in have_ids) or (str(w.get("title") or "") in have_titles)
         if all(_held(w) for w in wants):
             names = "、".join("「%s」" % x["title"] for x in dd["shelves"])
-            return {"ok": False, "why1": "ダブり", "why": "もうダブってます：%s に入っています" % names,
-                    "links": [], "dup_shelves": [x["title"] for x in dd["shelves"]]}
+            return {"ok": False, "why1": "もう入っています", "why": "これはもう入っています：%s" % names,
+                    "links": [_shelf_link(x).strip() for x in dd["shelves"]],
+                    "dup_shelves": [x["title"] for x in dd["shelves"]]}
     if not wants:
         # ★2026-10-06（たまごさん指示）：棚が未定でも**入荷だけは済ませる**。入れようとした物を落とさない。
         #   在庫に「🟡保留：棚待ち」の印つきで置く（棚には出ない）。棚が決まれば次の回／手動で結ばれる。
