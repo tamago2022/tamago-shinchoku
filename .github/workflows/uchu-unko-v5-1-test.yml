@@ -42,7 +42,8 @@ jobs:
           echo "frames $SPEC"
           if [ -z "$SPEC" ]; then exit 0; fi
           if [ "${{ steps.s.outputs.bisect }}" != "0" ]; then   # 切り分け：chunk ごとに1つずつ機能を切る
-            if [ "${{ steps.s.outputs.bisect }}" = "7" ]; then export UU_SLIM=1 UU_NOMOSS=1; case $C in 0) export UU_SLIMCLIP=1;; 1) export UU_IMGSWAP=1;; 2) export UU_IMGPACK=1;; 3) export UU_IMGRELOAD=1;; 4) export UU_IMGALPHA=1;; 5) export UU_SLIMCLIP=1 UU_IMGSWAP=1;; esac
+            if [ "${{ steps.s.outputs.bisect }}" = "8" ]; then case $C in 1) export UU_NOVOL=1;; 2) export UU_FRACT=0;; 3) export UU_SLIM=1;; 4) export UU_NOVOL=1 UU_FEAT=grime,low;; 5) export UU_NOVOL=1 UU_NOHSV=1 UU_FRACT=0;; esac
+            elif if [ "${{ steps.s.outputs.bisect }}" = "7" ]; then export UU_SLIM=1 UU_NOMOSS=1; case $C in 0) export UU_SLIMCLIP=1;; 1) export UU_IMGSWAP=1;; 2) export UU_IMGPACK=1;; 3) export UU_IMGRELOAD=1;; 4) export UU_IMGALPHA=1;; 5) export UU_SLIMCLIP=1 UU_IMGSWAP=1;; esac
             elif [ "${{ steps.s.outputs.bisect }}" = "6" ]; then case $C in 0) export UU_SLIM=1 UU_NOSSR=1;; 1) export UU_SLIM=1 UU_NOSSR=1 UU_NOAO=1;; 2) export UU_SLIM=1 UU_NOSSR=1 UU_NOAO=1 UU_NOVOLS=1;; 3) export UU_SLIM=1 UU_NOMOSS=1;; 4) export UU_FEAT=grime,streak,wet,crack,low,dust UU_NOSSR=1 UU_NOAO=1;; 5) export UU_FEAT=all UU_NOSSR=1 UU_NOAO=1 UU_NOVOLS=1;; esac
             elif [ "${{ steps.s.outputs.bisect }}" = "5" ]; then case $C in 0) export UU_SLIM=1 UU_TEXCO=obj_box;; 1) export UU_SLIM=1 UU_TEXCO=uv_flat;; 2) export UU_FEAT=grime,streak,wet,crack,low,dust;; 3) export UU_SLIM=1 UU_TEXCO=pos_box;; 4) export UU_FEAT=all;; 5) export UU_SLIM=1 UU_TEXCO=obj_box UU_FRACT=0;; esac
             elif [ "${{ steps.s.outputs.bisect }}" = "4" ]; then export UU_SLIM=1; case $C in 0) export UU_TEXCO=obj_box;; 1) export UU_TEXCO=gen_flat;; 2) export UU_TEXCO=pos_box;; 3) export UU_TEXCO=obj_nomap_box;; 4) export UU_TEXCO=uv_flat;; 5) export UU_TEXCO=obj_box_closest;; esac
