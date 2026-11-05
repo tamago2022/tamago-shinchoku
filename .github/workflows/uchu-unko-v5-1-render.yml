@@ -21,7 +21,7 @@ jobs:
         id: s
         run: |
           set -a; . tools/uchu_unko_v5_1/render_go.txt; set +a
-          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT
+          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT; echo "gi=${GI:-0}" >> $GITHUB_OUTPUT; echo "expo=${EXPO:--0.55}" >> $GITHUB_OUTPUT
           echo "$FRAMES $PCT $SAMPLES"
       - name: deps
         run: |
@@ -31,7 +31,7 @@ jobs:
             || curl -sSL --retry 5 -o b.tar.xz https://download.blender.org/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz
           mkdir bl && tar -xf b.tar.xz -C bl --strip-components=1 && rm b.tar.xz
       - name: render
-        env: { UU_PCT: "${{ steps.s.outputs.pct }}", UU_SAMPLES: "${{ steps.s.outputs.samples }}", UU_MB: "${{ steps.s.outputs.mb }}" }
+        env: { UU_PCT: "${{ steps.s.outputs.pct }}", UU_SAMPLES: "${{ steps.s.outputs.samples }}", UU_MB: "${{ steps.s.outputs.mb }}", UU_GI: "${{ steps.s.outputs.gi }}", UU_EXPO: "${{ steps.s.outputs.expo }}" }
         run: |
           W=$PWD/tools/uchu_unko_v5_1; OUT=$PWD/out; mkdir -p $OUT
           NF=$(python3 -c "import json;print(json.load(open('$W/hits.json'))['nf'])")
