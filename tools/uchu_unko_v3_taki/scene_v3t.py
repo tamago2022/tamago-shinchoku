@@ -778,7 +778,7 @@ def build_kumo_no_yoru():
         tc_ = node(nta, "ShaderNodeTexCoord"); sep = node(nta, "ShaderNodeSeparateXYZ"); link(nta, tc_.outputs["Generated"], sep.inputs[0])
         bump = node(nta, "ShaderNodeValToRGB"); el = bump.color_ramp.elements
         el[0].position = 0.0; el[0].color = (0, 0, 0, 1); el[1].position = 1.0; el[1].color = (0, 0, 0, 1)
-        e2 = el.new(0.30); e2.color = (1, 1, 1, 1); e3 = el.new(0.62); e3.color = (0.38, 0.38, 0.38, 1)
+        e2 = el.new(0.28); e2.color = (1, 1, 1, 1); e3 = el.new(0.52); e3.color = (0.30, 0.30, 0.30, 1); e4 = el.new(0.80); e4.color = (0.06, 0.06, 0.06, 1)
         link(nta, sep.outputs["Z"], I(bump, "Fac"))
         mp_ = node(nta, "ShaderNodeMapping"); I(mp_, "Scale").default_value = (30, 1, 0.5)
         link(nta, tc_.outputs["Generated"], I(mp_, "Vector"))
