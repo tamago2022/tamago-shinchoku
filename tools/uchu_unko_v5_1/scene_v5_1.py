@@ -307,7 +307,7 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
 def mat_metal(name, col=(0.55, 0.55, 0.56), rust=0.5, rough=0.4, photo="rustw", scale=1.6):
     """v5.1：錆びた金属の写真（photo）を箱投影。錆の濃い所（写真の暗い所）は金属感を落とし粗く。色は mask（波紋）で戻る"""
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position"); mask, ring = add_ripple(nt)
-    pcol, phgt, prgh = pbr(nt, photo, scale, second=(photo, scale * 2.3))
+    pcol, phgt, prgh = pbr(nt, photo, scale)   # v5.1b：2段混ぜをやめる（GitHub の Mesa でシェーダ翻訳が長い：v5 でも初コマ 1053 秒）
     base = (col[0], col[1], col[2], 1)
     rs = ramp(nt, noise(nt, 2.2, 5, 0.7, Pw, 5.0), [(0.42, (0, 0, 0, 1)), (0.62, (1, 1, 1, 1))]); rs = math_(nt, 'MULTIPLY', rs, rust)
     if pcol is not None:
@@ -444,12 +444,12 @@ MAT = {
     "plant": mat_plant("plant"), "grass": mat_grass("grass"), "cloth0": mat_cloth("cloth0", (0.7, 0.15, 0.2)), "cloth1": mat_cloth("cloth1", (0.15, 0.3, 0.7)), "cloth2": mat_cloth("cloth2", (0.8, 0.6, 0.15)),
     # v5.1：写真素材の割り当て（CREDITS.txt）
     "floor": mat_concrete("floor", (0.34, 0.33, 0.31), moss=0.55, wet=0.55, streak=0.35, tile=0.0, photo="tile", scale=2.4, tint=(0.72, 0.72, 0.70), grime=0.7, leaves=0.8),
-    "wall": mat_concrete("wall", (0.36, 0.35, 0.33), moss=0.3, wet=0.0, streak=0.9, photo="plaster", scale=3.2, second=("plaster", 7.5), tint=(0.78, 0.76, 0.72), grime=0.6, patch=("brickpl", 0.5)),
-    "panel": mat_concrete("panel", (0.46, 0.46, 0.45), moss=0.15, wet=0.0, streak=0.7, photo="white", scale=2.0, second=("white", 5.0), tint=(0.82, 0.82, 0.80), grime=0.55),
-    "step": mat_concrete("step", (0.26, 0.26, 0.26), moss=0.9, wet=0.3, streak=0.3, photo="concmoss", scale=1.4, second=("concmoss", 3.3), tint=(0.7, 0.7, 0.68), grime=0.4),
+    "wall": mat_concrete("wall", (0.36, 0.35, 0.33), moss=0.3, wet=0.0, streak=0.9, photo="plaster", scale=3.2, tint=(0.78, 0.76, 0.72), grime=0.6, patch=("brickpl", 0.5)),
+    "panel": mat_concrete("panel", (0.46, 0.46, 0.45), moss=0.15, wet=0.0, streak=0.7, photo="white", scale=2.0, tint=(0.82, 0.82, 0.80), grime=0.55),
+    "step": mat_concrete("step", (0.26, 0.26, 0.26), moss=0.9, wet=0.3, streak=0.3, photo="concmoss", scale=1.4, tint=(0.7, 0.7, 0.68), grime=0.4),
     "metal": mat_metal("metal", (0.40, 0.40, 0.42), rust=0.55, rough=0.35, photo="rustw", scale=1.5),
     "metal_dark": mat_metal("metal_dark", (0.16, 0.16, 0.17), rust=0.7, rough=0.5, photo="rustd", scale=1.2),
-    "rim": mat_concrete("rim", (0.36, 0.35, 0.33), moss=0.75, wet=0.5, streak=0.6, photo="dmgfloor", scale=2.2, second=("dmgfloor", 5.1), tint=(0.7, 0.7, 0.68), grime=0.6, leaves=0.4),
+    "rim": mat_concrete("rim", (0.36, 0.35, 0.33), moss=0.75, wet=0.5, streak=0.6, photo="dmgfloor", scale=2.2, tint=(0.7, 0.7, 0.68), grime=0.6, leaves=0.4),
     "glass": mat_glass("glass", 0.0), "glass_broken": mat_glass("glass_broken", 0.6), "roof_glass": mat_glass("roof_glass", 0.35, (0.8, 0.85, 0.9)),
     "shutter": mat_shutter("shutter"), "water": mat_water("water"), "ghost": mat_ghost("ghost"), "spray": mat_spray("spray"),
 }
