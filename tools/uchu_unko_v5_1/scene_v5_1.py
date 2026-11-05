@@ -48,7 +48,7 @@ sc.render.fps = FPS; sc.frame_start = 1; sc.frame_end = NF
 sc.render.image_settings.file_format = 'JPEG'; sc.render.image_settings.quality = 93
 try: sc.view_settings.view_transform = 'Filmic'; sc.view_settings.look = 'Medium High Contrast'
 except Exception: pass
-sc.view_settings.exposure = float(os.environ.get("UU_EXPO", "-0.55"))   # v5.1：少し締める（写真素材は中間調が明るい）
+sc.view_settings.exposure = float(os.environ.get("UU_EXPO", "-0.45"))   # v5.1：少し締める（写真素材は中間調が明るい）
 
 # ---------------- ノードの道具 ----------------
 def newmat(name):
@@ -179,7 +179,7 @@ def add_ripple(nt):
 
 # ---------------- v5.1：写真素材（Poly Haven／ambientCG CC0・NASA パブリックドメイン）を箱投影で貼る ----------------
 CC0 = os.path.join(W, "sozai_cc0")
-KEEP_SAT = float(os.environ.get("UU_KEEP", "0.22"))   # 白黒基調の「残す彩度」。v5 の 0.06 は粘土に見えたので、退色した写真くらいに上げる
+KEEP_SAT = float(os.environ.get("UU_KEEP", "0.45"))   # 白黒基調の「残す彩度」。v5 の 0.06 は粘土に見えたので、退色した写真くらいに上げる
 def load_cc0(name, noncolor=False):
     p = os.path.join(CC0, name)
     if os.environ.get("UU_NOPHOTO") == "1": return None   # 切り分け用：写真無し
@@ -197,8 +197,8 @@ def pbr(nt, prefix, scale=3.0, second=None, blend_=0.3, coord=None):
         mp = node(nt, "ShaderNodeMapping"); I(mp, "Scale").default_value = (1.0 / sc_, 1.0 / sc_, 1.0 / sc_)
         link(nt, coord if coord is not None else O(tc, "Object"), I(mp, "Vector"))
         outs = {}
-        for key, fn, nc in (("col", pref + "_diff.jpg", False), ("rgh", pref + "_rough.jpg", True), ("hgt", pref + "_disp.jpg", True)):
-            im = load_cc0(fn, nc) if (key != "hgt" or os.path.exists(os.path.join(CC0, fn))) else None
+        for key, fn, nc in (("col", pref + "_diff.jpg", False), ("rgh", "__none__.jpg", True), ("hgt", pref + "_disp.jpg", True)):   # v5.1b：粗さの写真は読まない（翻訳 85 分の短縮）
+            im = load_cc0(fn, nc) if (key == "col" or os.path.exists(os.path.join(CC0, fn))) else None
             if im is None: outs[key] = None; continue
             tx = node(nt, "ShaderNodeTexImage"); tx.image = im; tx.projection = 'BOX'; tx.projection_blend = blend_; tx.extension = 'REPEAT'
             link(nt, mp.outputs[0], I(tx, "Vector")); outs[key] = tx.outputs["Color"]
@@ -237,7 +237,7 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     base = tintc(nt, pcol, tint)
     mottle = noise(nt, 0.35, 5, 0.6, Pw)
     # 大きな明暗のむら（写真の繰り返しを崩す）
-    mot = mixrgb(nt, math_(nt, 'MULTIPLY', mottle, 0.55), base, mixrgb(nt, 1.0, base, (0.55, 0.55, 0.55, 1), 'MULTIPLY'))
+    mot = mixrgb(nt, math_(nt, 'MULTIPLY', mottle, 0.35), base, mixrgb(nt, 1.0, base, (0.6, 0.6, 0.6, 1), 'MULTIPLY'))
     # 剥がれ：下地（レンガ・コンクリ）が見える所
     if patch:
         qcol, qhgt, qrgh = pbr(nt, patch[0], scale * 0.9)
@@ -311,7 +311,7 @@ def mat_metal(name, col=(0.55, 0.55, 0.56), rust=0.5, rough=0.4, photo="rustw", 
     base = (col[0], col[1], col[2], 1)
     rs = ramp(nt, noise(nt, 2.2, 5, 0.7, Pw, 5.0), [(0.42, (0, 0, 0, 1)), (0.62, (1, 1, 1, 1))]); rs = math_(nt, 'MULTIPLY', rs, rust)
     if pcol is not None:
-        c = tintc(nt, pcol, (col[0] * 1.6, col[1] * 1.6, col[2] * 1.6))
+        c = tintc(nt, pcol, (col[0] * 2.2, col[1] * 2.2, col[2] * 2.2))
         c = mixrgb(nt, math_(nt, 'MULTIPLY', noise(nt, 0.5, 3, 0.5, Pw, 8.0), 0.4), c, mixrgb(nt, 1.0, c, (0.6, 0.6, 0.6, 1), 'MULTIPLY'))
         rr = node(nt, "ShaderNodeMapRange"); I(rr, "To Min").default_value = 0.25; I(rr, "To Max").default_value = 0.9
         if prgh is not None: link(nt, prgh, I(rr, "Value"))
@@ -443,19 +443,34 @@ def mat_cloth(name, col):
 MAT = {
     "plant": mat_plant("plant"), "grass": mat_grass("grass"), "cloth0": mat_cloth("cloth0", (0.7, 0.15, 0.2)), "cloth1": mat_cloth("cloth1", (0.15, 0.3, 0.7)), "cloth2": mat_cloth("cloth2", (0.8, 0.6, 0.15)),
     # v5.1：写真素材の割り当て（CREDITS.txt）
-    "floor": mat_concrete("floor", (0.34, 0.33, 0.31), moss=0.55, wet=0.55, streak=0.35, tile=0.0, photo="tile", scale=2.4, tint=(0.72, 0.72, 0.70), grime=0.7, leaves=0.8),
-    "wall": mat_concrete("wall", (0.36, 0.35, 0.33), moss=0.3, wet=0.0, streak=0.9, photo="plaster", scale=3.2, tint=(0.78, 0.76, 0.72), grime=0.6, patch=("brickpl", 0.5)),
-    "panel": mat_concrete("panel", (0.46, 0.46, 0.45), moss=0.15, wet=0.0, streak=0.7, photo="white", scale=2.0, tint=(0.82, 0.82, 0.80), grime=0.55),
-    "step": mat_concrete("step", (0.26, 0.26, 0.26), moss=0.9, wet=0.3, streak=0.3, photo="concmoss", scale=1.4, tint=(0.7, 0.7, 0.68), grime=0.4),
+    "floor": mat_concrete("floor", (0.34, 0.33, 0.31), moss=0.55, wet=0.55, streak=0.35, tile=0.0, photo="tile", scale=1.6, tint=(0.72, 0.72, 0.70), grime=0.6, leaves=0.6),
+    "wall": mat_concrete("wall", (0.36, 0.35, 0.33), moss=0.3, wet=0.0, streak=0.9, photo="plaster", scale=2.4, tint=(0.62, 0.60, 0.56), grime=0.5, patch=("brickpl", 0.6)),
+    "panel": mat_concrete("panel", (0.46, 0.46, 0.45), moss=0.15, wet=0.0, streak=0.7, photo="white", scale=1.4, tint=(0.68, 0.68, 0.66), grime=0.5),
+    "step": mat_concrete("step", (0.26, 0.26, 0.26), moss=0.9, wet=0.3, streak=0.3, photo="concmoss", scale=1.0, tint=(0.8, 0.8, 0.78), grime=0.3),
     "metal": mat_metal("metal", (0.40, 0.40, 0.42), rust=0.55, rough=0.35, photo="rustw", scale=1.5),
     "metal_dark": mat_metal("metal_dark", (0.16, 0.16, 0.17), rust=0.7, rough=0.5, photo="rustd", scale=1.2),
-    "rim": mat_concrete("rim", (0.36, 0.35, 0.33), moss=0.75, wet=0.5, streak=0.6, photo="dmgfloor", scale=2.2, tint=(0.7, 0.7, 0.68), grime=0.6, leaves=0.4),
+    "rim": mat_concrete("rim", (0.36, 0.35, 0.33), moss=0.75, wet=0.5, streak=0.6, photo="dmgfloor", scale=1.6, tint=(0.72, 0.72, 0.70), grime=0.5, leaves=0.4),
     "glass": mat_glass("glass", 0.0), "glass_broken": mat_glass("glass_broken", 0.6), "roof_glass": mat_glass("roof_glass", 0.35, (0.8, 0.85, 0.9)),
     "shutter": mat_shutter("shutter"), "water": mat_water("water"), "ghost": mat_ghost("ghost"), "spray": mat_spray("spray"),
 }
 SIGNM = [mat_sign("sign%d" % k, c) for k, c in enumerate(SIGN_COLS)]
-LEDM = mat_sign("led", (0.3, 0.7, 1.0), 4.0)
+LEDM = mat_sign("led", (0.55, 0.78, 0.9), 1.2)
 stage("materials")
+if os.environ.get("UU_MINI") == "1":   # v5.1：材質のミニ試し。床・壁・段・金属・シャッターの箱を近くに置いて1コマだけ描く
+    MESH_ACC = {}
+    def _box(mk, lo, hi):
+        v = [(lo[0], lo[1], lo[2]), (hi[0], lo[1], lo[2]), (hi[0], hi[1], lo[2]), (lo[0], hi[1], lo[2]), (lo[0], lo[1], hi[2]), (hi[0], lo[1], hi[2]), (hi[0], hi[1], hi[2]), (lo[0], hi[1], hi[2])]
+        f = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+        me = bpy.data.meshes.new("mini_" + mk); me.from_pydata(v, [], f); me.update(); me.materials.append(MAT[mk]); o = bpy.data.objects.new("mini_" + mk, me); sc.collection.objects.link(o)
+    _box("floor", (-6, -6, -0.2), (6, 6, 0)); _box("wall", (-6, 3.0, 0), (6, 3.4, 4)); _box("panel", (-6, -0.2, 2.4), (6, 0.2, 2.9))
+    _box("step", (-2, 0.5, 0), (2, 1.5, 0.4)); _box("metal", (2.5, 0.5, 0), (3.0, 1.5, 1.2)); _box("shutter", (-5.5, 2.9, 0), (-2.5, 2.95, 3.0)); _box("rim", (3.5, -2, 0), (5.5, 2, 0.3))
+    sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = 4.2; sun.color = (1.0, 0.85, 0.66); so = bpy.data.objects.new("sun", sun); sc.collection.objects.link(so); so.rotation_euler = (math.radians(52), 0.0, math.radians(-30))
+    wd = bpy.data.worlds.new("w"); sc.world = wd; wd.use_nodes = True; wd.node_tree.nodes["Background"].inputs[0].default_value = (0.5, 0.55, 0.7, 1); wd.node_tree.nodes["Background"].inputs[1].default_value = 0.3
+    cam = bpy.data.cameras.new("cam"); cam.lens = 24; co = bpy.data.objects.new("cam", cam); sc.collection.objects.link(co); sc.camera = co
+    co.location = (0, -5.5, 2.2); co.rotation_euler = (math.radians(72), 0, 0)
+    sc.render.resolution_x, sc.render.resolution_y = 720, 720; sc.render.resolution_percentage = 60; EV.taa_render_samples = 4; sc.view_settings.exposure = -0.45
+    for i in range(1, 3): sc.frame_set(i)
+    sc.render.filepath = os.path.join(OUT, "mini.jpg"); bpy.ops.render.render(write_still=True); print("MINI DONE", flush=True); sys.exit(0)
 
 # ---------------- 形：箱を材質ごとにまとめて1つのメッシュに ----------------
 MESH_ACC = {}
@@ -896,7 +911,7 @@ for ld in M["landings"]:
 stage("unko")
 
 # ---------------- 光：天窓からの太陽（光の筋）・曇った空の光・霧 ----------------
-sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = float(os.environ.get("UU_SUN", "5.2")); sun.color = (1.0, 0.85, 0.66); sun.angle = math.radians(1.5)
+sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = float(os.environ.get("UU_SUN", "4.2")); sun.color = (1.0, 0.85, 0.66); sun.angle = math.radians(1.5)
 try: sun.use_contact_shadow = True; sun.shadow_cascade_max_distance = 120; sun.shadow_cascade_count = 4
 except Exception: pass
 so = bpy.data.objects.new("sun", sun); sc.collection.objects.link(so); so.rotation_euler = (math.radians(52), 0.0, math.radians(-30))
@@ -907,14 +922,14 @@ sky_tc = wn.nodes.new("ShaderNodeTexCoord"); sky_sep = wn.nodes.new("ShaderNodeS
 sky_ramp = wn.nodes.new("ShaderNodeValToRGB"); sky_ramp.color_ramp.elements[0].position = 0.45; sky_ramp.color_ramp.elements[0].color = (0.62, 0.66, 0.72, 1)
 sky_ramp.color_ramp.elements[1].position = 0.9; sky_ramp.color_ramp.elements[1].color = (0.30, 0.42, 0.68, 1)
 wn.links.new(sky_sep.outputs[2], sky_ramp.inputs[0]); wn.links.new(sky_ramp.outputs[0], bg.inputs[0])
-vol = wn.nodes.new("ShaderNodeVolumeScatter"); vol.inputs["Density"].default_value = 0.006; vol.inputs["Anisotropy"].default_value = 0.6
+vol = wn.nodes.new("ShaderNodeVolumeScatter"); vol.inputs["Density"].default_value = 0.004; vol.inputs["Anisotropy"].default_value = 0.6
 wn.links.new(vol.outputs[0], wn.nodes["World Output"].inputs["Volume"])
 # 大通りの弱い非常灯（緑がかった冷たい光）と、吹き抜けの冷たい補助光
 for k, y in enumerate((-46.0, -34.0, -22.0)):
-    l = bpy.data.lights.new("exit%d" % k, 'POINT'); l.energy = 60; l.color = (0.6, 1.0, 0.75); l.shadow_soft_size = 0.3
+    l = bpy.data.lights.new("exit%d" % k, 'POINT'); l.energy = 170; l.color = (0.6, 1.0, 0.75); l.shadow_soft_size = 0.3
     o = bpy.data.objects.new("exit%d" % k, l); sc.collection.objects.link(o); o.location = (4.5 if k % 2 else -4.5, y, H - 0.9)
 for k, (x, y, z) in enumerate(((0, 0, 28.0), (-14, 0, 20.0), (14, 0, 12.0))):
-    l = bpy.data.lights.new("fill%d" % k, 'POINT'); l.energy = 500; l.color = (0.7, 0.8, 1.0); l.shadow_soft_size = 4.0
+    l = bpy.data.lights.new("fill%d" % k, 'POINT'); l.energy = 300; l.color = (0.7, 0.8, 1.0); l.shadow_soft_size = 4.0
     o = bpy.data.objects.new("fill%d" % k, l); sc.collection.objects.link(o); o.location = (x, y, z)
 # ほこりの粒（光の筋の中に浮く小さな球）
 dm = bpy.data.meshes.new("dust"); vs = []; fs = []
@@ -948,9 +963,9 @@ def volbox(name, center, size, mat):
     o.data.materials.append(mat); return o
 FOG = float(os.environ.get("UU_FOG", "1.0"))
 if os.environ.get("UU_NOVOL") == "1": FOG = 0.0
-if FOG > 0: volbox("fog_floor", (0, 0, 1.3), (VOID[1] - VOID[0] + 6, VOID[3] - VOID[2] + 6, 2.6), mat_volume("fog_floor", 0.045 * FOG, (0.8, 0.86, 0.9), 0.45, (0.06, (6, 2, 0), 0.15, 1.0)))
-if FOG > 0: volbox("fog_mid", (0, 0, ROOF * 0.55), (VOID[1] - VOID[0] + 2, VOID[3] - VOID[2] + 2, ROOF * 0.8), mat_volume("fog_mid", 0.010 * FOG, (0.85, 0.9, 0.95), 0.65, (0.04, (4, 1, 1), 0.3, 1.0)))
-if FOG > 0: volbox("fog_conc", (0, (CONC[2] + CONC[3]) / 2, 1.2), (12, CONC[3] - CONC[2], 2.4), mat_volume("fog_conc", 0.05 * FOG, (0.75, 0.85, 0.82), 0.4, (0.08, (3, 5, 0), 0.1, 1.0)))
+if FOG > 0: volbox("fog_floor", (0, 0, 1.3), (VOID[1] - VOID[0] + 6, VOID[3] - VOID[2] + 6, 2.6), mat_volume("fog_floor", 0.014 * FOG, (0.8, 0.86, 0.9), 0.45, (0.06, (6, 2, 0), 0.15, 1.0)))
+if FOG > 0: volbox("fog_mid", (0, 0, ROOF * 0.55), (VOID[1] - VOID[0] + 2, VOID[3] - VOID[2] + 2, ROOF * 0.8), mat_volume("fog_mid", 0.0035 * FOG, (0.85, 0.9, 0.95), 0.7, (0.04, (4, 1, 1), 0.3, 1.0)))
+if FOG > 0: volbox("fog_conc", (0, (CONC[2] + CONC[3]) / 2, 1.2), (12, CONC[3] - CONC[2], 2.4), mat_volume("fog_conc", 0.018 * FOG, (0.75, 0.85, 0.82), 0.4, (0.08, (3, 5, 0), 0.1, 1.0)))
 # 月（NASA CGI Moon Kit：色＝LROC・高さ＝LOLA）：天窓の向こう、昼の空に薄く
 mimg = None if os.environ.get("UU_NOMOON") == "1" else load_cc0("moon_color.jpg"); mh = load_cc0("moon_height.png", True)
 if mimg is not None:
