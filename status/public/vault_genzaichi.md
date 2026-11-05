@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-11-05 22:17:31・hash=5e32ebae99ea -->
+<!-- 自動生成・genzaichi_sync.py・2026-11-05 22:37:41・hash=64e09816909c -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -162,13 +162,10 @@
 - 2026-10-11 名カバーの棚を許可制に（台帳 src/lib/meiCoverLedger.ts＝たまごさん指定だけ表示・prebuild点検 check-meicover-gate）。25件を外し（1語で戻せる：MEI_COVER_UNDO_20261011）、風をあつめて(Josh Turner)を追加。ハートは全サイト一時非表示（HEARTS_VISIBLE）。文字マークは左下・英語、グッドカバーだけ左上。added_by列のmigrationは未適用なら台帳だけで動く。
 
 <!-- 自動まとめ:始 -->
-## 今日までに届いた更新（自動まとめ・1日1回／2026-11-03 22:07）
+## 今日までに届いた更新（自動まとめ・1日1回／2026-11-05 22:22）
 
-- **178606号 仕入れて原曲と接続（触る検品はね返し）**（11-02 04:21）完了。はね返し『コンソールエラー1件』の正体は既知React#418の数え方不一致。検品器JSONに既知/未知内訳＋工場側は未知だけで判定＋CDP送信30秒上限（origin/main 40b35d6・兄弟セッション61a34fb6がpush、本セッションは独立検証・Pages配信・逆テスト担当）。確認ページ https://tamago2022.github.［除去］.html 200。次：なし
-- **178606号 触る検品差し戻し解消**（11-02 04:09）verify_click.mjsのJSONに既知/未知内訳＋CDP送信30秒上限、auto_launcher.collect_touch_checkは未知エラーだけで判定。本番2ページ触る検品PASS。main 40b35d6bd。次：harvest側の独立検品待ち
-- **Fable宣伝S1 月に吠える（204041）完了**（11-01 23:43）納品済み Drive AI制作物/Claude/Fable/261101_宣伝_月に吠える.mp4（19.5秒・82点）。型 status/fable_senden_1101/kata.md・記録 kiroku.jsonl。次：S2〜S5 の便が kata.md を読んで足す
-- **宇宙うんこ v4 夜の香港クレーン 直し（204018・Fable）**（11-01 23:16）曲を楽譜のように分解し、着地を音符に置き直した v4b を Drive（AI制作物/Claude/Fable）に納品・確認ページ公開。自己採点68点（奥の水が白い板・看板の繰り返し）。直した v4c を GitHub Actions で描画中、終わり次第 ★最新 で上げ直す。次：v4c 組み立て→納品→Dispatch 報告
-- **Fable宣伝S1 月に吠える**（11-01 22:15）台本 status/fable_senden_1101/src/s1_tsuki.py・型 kata.md 書き出し済み。描画中（/private/tmp/204041_s1）。次：納品・記録・確認ページ・報告
+- **宇宙うんこ 滝のv3（206316・Fable）**（11-05 14:56）後半760コマを描き直し（オーロラを山の上の空へ・雲海に起伏の陰影）→組み立て済み status/uchu_unko/261105_宇宙うんこv3滝_写真質感_b.mp4。自己採点70点で未納品。次に直すこと6つは v3_taki/README.md。同じ便の続きとして列へ戻す
+- **206316 宇宙うんこ 滝のv3（Fable）**（11-05 06:42）状態：写真質感（CC0）・NASA月・泡・壁画なしで scene_v3t.py を作成、GitHub Actions で試し描き2回目を実行中。決まったこと：v3 の道・音はそのまま、質感だけ差し替え。次の一手：試し6コマを見て直し→全1302コマ→Mac で組み立て→採点→80点以上なら Drive 納品。
 
 （子セッションは Vault に直接書かない。status/genzaichi_kouho.md に追記→夜にここへ1回だけ反映）
 <!-- 自動まとめ:終 -->
