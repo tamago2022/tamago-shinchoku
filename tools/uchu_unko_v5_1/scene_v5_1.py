@@ -42,6 +42,10 @@ tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.35, motion_blur_steps=1,
        shadow_cube_size='512', shadow_cascade_size='1024', use_shadow_high_bitdepth=False, sss_samples=4)
 sc.render.use_persistent_data = True
+# v5.1e：llvmpipe の画像ユニット上限（16）対策。EEVEE 自身が SSR・AO・体積で多くのユニットを使い、材質の写真が黒（定数）になる疑い → 切り分け用に切れるようにする
+if os.environ.get("UU_NOSSR") == "1": tryset(EV, use_ssr=False, use_ssr_refraction=False)
+if os.environ.get("UU_NOAO") == "1": tryset(EV, use_gtao=False)
+if os.environ.get("UU_NOVOLS") == "1": tryset(EV, use_volumetric_shadows=False, use_volumetric_lights=False)
 sc.render.resolution_x, sc.render.resolution_y = 720, 1280
 sc.render.resolution_percentage = int(os.environ.get("UU_PCT", "100"))
 sc.render.fps = FPS; sc.frame_start = 1; sc.frame_end = NF
@@ -334,7 +338,7 @@ def mat_concrete_slim(name, photo="plaster", scale=2.4, tint=(0.7, 0.7, 0.68), m
     pcol, phgt, prgh = pbr(nt, photo, scale)
     c = tintc(nt, pcol, tint) if pcol is not None else mixrgb(nt, 0.0, (tint[0], tint[1], tint[2], 1), (0, 0, 0, 1))
     up = node(nt, "ShaderNodeSeparateXYZ"); link(nt, O(g, "Normal"), up.inputs[0])
-    mcol, mhgt, mrgh = pbr(nt, "moss", 0.9)
+    mcol, mhgt, mrgh = (None, None, None) if os.environ.get("UU_NOMOSS") == "1" else pbr(nt, "moss", 0.9)
     upf = math_(nt, 'MULTIPLY', ramp(nt, up.outputs[2], [(0.3, (0, 0, 0, 1)), (0.9, (1, 1, 1, 1))]), noise(nt, 1.6, 4, 0.6, O(g, "Position"), 3.0))
     upf = math_(nt, 'MULTIPLY', ramp(nt, upf, [(0.22, (0, 0, 0, 1)), (0.42, (1, 1, 1, 1))]), moss)
     if mcol is not None: c = mixrgb(nt, upf, c, tintc(nt, mcol, (0.55, 0.62, 0.38)))
