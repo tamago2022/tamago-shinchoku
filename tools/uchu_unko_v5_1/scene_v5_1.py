@@ -208,6 +208,8 @@ def pbr(nt, prefix, scale=3.0, second=None, blend_=0.3, coord=None):
     """<prefix>_diff/_rough(/_disp).jpg を箱投影（UVの無い箱にも貼れる）。second=(prefix2, scale2) で2つの大きさを半々に混ぜ、繰り返しの目を消す。
     返り：(色, 高さ 0..1, 粗さ)。無い面は None"""
     tc = node(nt, "ShaderNodeTexCoord"); TEXCO = os.environ.get("UU_TEXCO", "obj_box")   # 切り分け4：座標の作り方
+    scale = scale * float(os.environ.get("UU_TEXSCALE", "1.0"))   # v5.1g：写真の1繰り返しの大きさを一括で倍にする（1.6m では距離と解像度で模様が潰れて「平均色」に見えた）
+    if second: second = (second[0], second[1] * float(os.environ.get("UU_TEXSCALE", "1.0")))
     def one(pref, sc_):
         proj = PROJ
         if TEXCO.startswith("uv_"):
@@ -1127,7 +1129,7 @@ if os.environ.get("UU_SAVE"): bpy.ops.wm.save_as_mainfile(filepath=os.path.join(
 if os.environ.get("UU_ENGINE", "EEVEE").upper() == "CYCLES":
     sc.render.engine = 'CYCLES'; cy = sc.cycles; cy.device = 'CPU'
     cy.samples = int(os.environ.get("UU_SAMPLES", "12")); cy.use_adaptive_sampling = True; cy.adaptive_threshold = float(os.environ.get("UU_ATHR", "0.08")); cy.adaptive_min_samples = 4
-    cy.use_denoising = True
+    cy.use_denoising = os.environ.get("UU_NODENOISE") != "1"
     tryset(cy, denoiser='OPENIMAGEDENOISE', denoising_input_passes='RGB_ALBEDO_NORMAL', denoising_prefilter='ACCURATE', denoising_use_gpu=False)
     tryset(cy, max_bounces=4, diffuse_bounces=2, glossy_bounces=2, transmission_bounces=3, volume_bounces=0, transparent_max_bounces=12,
            caustics_reflective=False, caustics_refractive=False, blur_glossy=1.0, sample_clamp_direct=0.0, sample_clamp_indirect=4.0,
