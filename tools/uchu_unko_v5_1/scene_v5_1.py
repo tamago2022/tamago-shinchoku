@@ -125,7 +125,7 @@ for s in range(NSLOT):
     d = dist.outputs["Value"]
     # 輪：exp(-((d - r)/w)^2)、w は r と共に少し太る
     sub_ = RIP.nodes.new("ShaderNodeMath"); sub_.operation = 'SUBTRACT'; RIP.links.new(d, sub_.inputs[0]); RIP.links.new(r.outputs[0], sub_.inputs[1])
-    wdt = RIP.nodes.new("ShaderNodeMath"); wdt.operation = 'MULTIPLY_ADD'; RIP.links.new(r.outputs[0], wdt.inputs[0]); wdt.inputs[1].default_value = 0.12; wdt.inputs[2].default_value = 2.2
+    wdt = RIP.nodes.new("ShaderNodeMath"); wdt.operation = 'MULTIPLY_ADD'; RIP.links.new(r.outputs[0], wdt.inputs[0]); wdt.inputs[1].default_value = 0.05; wdt.inputs[2].default_value = 0.6   # v5.1h：輪を細く（旧 0.12r+2.2 は最大5mの帯が常時4本＝全域が『輪の中』になり、材質の発光が全面に出て粘土に見えた真因）
     dv = RIP.nodes.new("ShaderNodeMath"); dv.operation = 'DIVIDE'; RIP.links.new(sub_.outputs[0], dv.inputs[0]); RIP.links.new(wdt.outputs[0], dv.inputs[1])
     sq = RIP.nodes.new("ShaderNodeMath"); sq.operation = 'MULTIPLY'; RIP.links.new(dv.outputs[0], sq.inputs[0]); RIP.links.new(dv.outputs[0], sq.inputs[1])
     neg = RIP.nodes.new("ShaderNodeMath"); neg.operation = 'MULTIPLY'; RIP.links.new(sq.outputs[0], neg.inputs[0]); neg.inputs[1].default_value = -1.0
@@ -167,7 +167,7 @@ for f in range(1, NF + 1):
     for s in range(NSLOT):
         sl = SLOT[s]
         if s < len(al):
-            rp, r, hold_m = al[s]; vals = {"cx": rp["p"][0], "cy": rp["p"][1], "cz": rp["p"][2], "r": r, "hold": max(0.5, hold_m), "rmax": rp["rmax"], "amp": min(1.0, 0.45 + 0.7 * rp["vel"])}
+            rp, r, hold_m = al[s]; vals = {"cx": rp["p"][0], "cy": rp["p"][1], "cz": rp["p"][2], "r": r, "hold": max(0.5, hold_m * 0.35), "rmax": rp["rmax"], "amp": min(1.0, 0.45 + 0.7 * rp["vel"])}
         else: vals = {"cx": 0, "cy": 0, "cz": -999, "r": 0, "hold": 1, "rmax": 0, "amp": 0}
         for k, v in vals.items():
             sl[k].outputs[0].default_value = v; sl[k].outputs[0].keyframe_insert("default_value", frame=f)
@@ -340,7 +340,7 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     hh = math_(nt, 'ADD', math_(nt, 'MULTIPLY', hsel, 0.8), math_(nt, 'MULTIPLY', mottle, 0.2)) if mottle is not None else hsel
     bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.55; I(bump, "Distance").default_value = 0.06; link(nt, hh, I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
     # 波紋の輪そのものは、淡く光る
-    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.2
+    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.08   # v5.1h：0.2→0.08
     return finish(m, nt, out, p)
 def mat_concrete_slim(name, photo="plaster", scale=2.4, tint=(0.7, 0.7, 0.68), moss=0.4, **kw):
     """切り分け用：写真＋色味＋苔（上向き）＋凹凸だけの軽い材質（mat_plant と同じ規模）"""
@@ -379,7 +379,7 @@ def mat_metal(name, col=(0.55, 0.55, 0.56), rust=0.5, rough=0.4, photo="rustw", 
         link(nt, desat(nt, c, mask, 0.15), I(p, "Base Color")); link(nt, math_(nt, 'SUBTRACT', 1.0, math_(nt, 'MULTIPLY', rs, 0.9)), I(p, "Metallic"))
         link(nt, mixrgb(nt, rs, (rough, rough, rough, 1), (0.85, 0.85, 0.85, 1)), I(p, "Roughness"))
         bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.3; link(nt, rs, I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
-    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.3
+    link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.12   # v5.1h：0.3→0.12
     return finish(m, nt, out, p)
 def mat_glass(name, broken=0.0, tint=(0.85, 0.9, 0.9)):
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position")
@@ -392,7 +392,11 @@ def mat_glass(name, broken=0.0, tint=(0.85, 0.9, 0.9)):
         link(nt, math_(nt, 'MULTIPLY', crack, miss), I(p, "Alpha"))
         link(nt, mixrgb(nt, crack, (0.9, 0.9, 0.9, 1), (0.0, 0.0, 0.0, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.6
     blend(m, 'BLEND', 'HASHED'); tryset(m, use_screen_refraction=True, show_transparent_back=False)
-    return finish(m, nt, out, p)
+    # v5.1h：Cycles では Transmission のガラスが影の光線を遮り、天窓の下が真っ暗になる（Mac 実測 work/mac_hikari4.jpg）→ Is Shadow Ray のときだけ透明
+    # 　さらに、ガラス越しの間接光は『拡散→屈折→光源』＝コースティクス扱いで捨てられ、手すり板で屈折回数の上限も尽きる→カメラ光線だけ本物のガラス、それ以外は素通し（建築CGの定石）
+    lp = node(nt, "ShaderNodeLightPath"); tr = node(nt, "ShaderNodeBsdfTransparent"); mx = node(nt, "ShaderNodeMixShader")
+    link(nt, O(lp, "Is Camera Ray"), mx.inputs[0]); link(nt, tr.outputs[0], mx.inputs[1]); link(nt, p.outputs[0], mx.inputs[2])
+    return finish(m, nt, out, mx)
 def mat_shutter(name, col=(0.40, 0.40, 0.38)):
     """v5.1：錆びたシャッターの写真（横のスラット）を箱投影。雨だれと錆のむらを重ねる"""
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); Pw = O(g, "Position"); mask, ring = add_ripple(nt)
@@ -999,25 +1003,26 @@ for ld in M["landings"]:
 stage("unko")
 
 # ---------------- 光：天窓からの太陽（光の筋）・曇った空の光・霧 ----------------
-sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = float(os.environ.get("UU_SUN", "4.2")); sun.color = (1.0, 0.85, 0.66); sun.angle = math.radians(1.5)
+IS_CY = os.environ.get("UU_ENGINE", "EEVEE").upper() == "CYCLES"
+sun = bpy.data.lights.new("sun", 'SUN'); sun.energy = float(os.environ.get("UU_SUN", "7.0" if IS_CY else "4.2")); sun.color = (1.0, 0.85, 0.66); sun.angle = math.radians(1.5)
 try: sun.use_contact_shadow = True; sun.shadow_cascade_max_distance = 120; sun.shadow_cascade_count = 4
 except Exception: pass
 so = bpy.data.objects.new("sun", sun); sc.collection.objects.link(so); so.rotation_euler = (math.radians(52), 0.0, math.radians(-30))
 wd = bpy.data.worlds.new("w"); sc.world = wd; wd.use_nodes = True; wn = wd.node_tree
-bg = wn.nodes["Background"]; bg.inputs[1].default_value = 0.14
+bg = wn.nodes["Background"]; bg.inputs[1].default_value = float(os.environ.get("UU_SKY", "18.0" if IS_CY else "0.14"))   # v5.1h：Cycles では曇天の実放射に近い値（背景色 0.6×18≒11）
 # v5.1：空は上が青・地平が白っぽい（天窓越しに見える）
 sky_tc = wn.nodes.new("ShaderNodeTexCoord"); sky_sep = wn.nodes.new("ShaderNodeSeparateXYZ"); wn.links.new(sky_tc.outputs["Generated"], sky_sep.inputs[0])
 sky_ramp = wn.nodes.new("ShaderNodeValToRGB"); sky_ramp.color_ramp.elements[0].position = 0.45; sky_ramp.color_ramp.elements[0].color = (0.62, 0.66, 0.72, 1)
 sky_ramp.color_ramp.elements[1].position = 0.9; sky_ramp.color_ramp.elements[1].color = (0.30, 0.42, 0.68, 1)
 wn.links.new(sky_sep.outputs[2], sky_ramp.inputs[0]); wn.links.new(sky_ramp.outputs[0], bg.inputs[0])
 vol = wn.nodes.new("ShaderNodeVolumeScatter"); vol.inputs["Density"].default_value = 0.004; vol.inputs["Anisotropy"].default_value = 0.6
-wn.links.new(vol.outputs[0], wn.nodes["World Output"].inputs["Volume"])
+if os.environ.get("UU_ENGINE", "EEVEE").upper() != "CYCLES": wn.links.new(vol.outputs[0], wn.nodes["World Output"].inputs["Volume"])   # v5.1h：Cycles では付けない（空の光が距離∞で全部吸われる）
 # 大通りの弱い非常灯（緑がかった冷たい光）と、吹き抜けの冷たい補助光
 for k, y in enumerate((-46.0, -34.0, -22.0)):
-    l = bpy.data.lights.new("exit%d" % k, 'POINT'); l.energy = 170; l.color = (0.6, 1.0, 0.75); l.shadow_soft_size = 0.3
+    l = bpy.data.lights.new("exit%d" % k, 'POINT'); l.energy = 600 if IS_CY else 170; l.color = (0.6, 1.0, 0.75); l.shadow_soft_size = 0.3
     o = bpy.data.objects.new("exit%d" % k, l); sc.collection.objects.link(o); o.location = (4.5 if k % 2 else -4.5, y, H - 0.9)
 for k, (x, y, z) in enumerate(((0, 0, 28.0), (-14, 0, 20.0), (14, 0, 12.0))):
-    l = bpy.data.lights.new("fill%d" % k, 'POINT'); l.energy = 300; l.color = (0.7, 0.8, 1.0); l.shadow_soft_size = 4.0
+    l = bpy.data.lights.new("fill%d" % k, 'POINT'); l.energy = 900 if IS_CY else 300; l.color = (0.7, 0.8, 1.0); l.shadow_soft_size = 4.0
     o = bpy.data.objects.new("fill%d" % k, l); sc.collection.objects.link(o); o.location = (x, y, z)
 # ほこりの粒（光の筋の中に浮く小さな球）
 dm = bpy.data.meshes.new("dust"); vs = []; fs = []
@@ -1051,9 +1056,9 @@ def volbox(name, center, size, mat):
     o.data.materials.append(mat); return o
 FOG = float(os.environ.get("UU_FOG", "1.0"))
 if os.environ.get("UU_NOVOL") == "1": FOG = 0.0
-if FOG > 0: volbox("fog_floor", (0, 0, 1.3), (VOID[1] - VOID[0] + 6, VOID[3] - VOID[2] + 6, 2.6), mat_volume("fog_floor", 0.014 * FOG, (0.8, 0.86, 0.9), 0.45, (0.06, (6, 2, 0), 0.15, 1.0)))
+if FOG > 0: volbox("fog_floor", (0, 0, 1.3), (VOID[1] - VOID[0] + 6, VOID[3] - VOID[2] + 6, 2.6), mat_volume("fog_floor", (0.006 if IS_CY else 0.014) * FOG, (0.8, 0.86, 0.9), 0.45, (0.06, (6, 2, 0), 0.15, 1.0)))
 if FOG > 0: volbox("fog_mid", (0, 0, ROOF * 0.55), (VOID[1] - VOID[0] + 2, VOID[3] - VOID[2] + 2, ROOF * 0.8), mat_volume("fog_mid", 0.0035 * FOG, (0.85, 0.9, 0.95), 0.7, (0.04, (4, 1, 1), 0.3, 1.0)))
-if FOG > 0: volbox("fog_conc", (0, (CONC[2] + CONC[3]) / 2, 1.2), (12, CONC[3] - CONC[2], 2.4), mat_volume("fog_conc", 0.018 * FOG, (0.75, 0.85, 0.82), 0.4, (0.08, (3, 5, 0), 0.1, 1.0)))
+if FOG > 0: volbox("fog_conc", (0, (CONC[2] + CONC[3]) / 2, 1.2), (12, CONC[3] - CONC[2], 2.4), mat_volume("fog_conc", (0.009 if IS_CY else 0.018) * FOG, (0.75, 0.85, 0.82), 0.4, (0.08, (3, 5, 0), 0.1, 1.0)))
 # 月（NASA CGI Moon Kit：色＝LROC・高さ＝LOLA）：天窓の向こう、昼の空に薄く
 mimg = None if os.environ.get("UU_NOMOON") == "1" else load_cc0("moon_color.jpg"); mh = load_cc0("moon_height.png", True)
 if mimg is not None:
@@ -1099,7 +1104,7 @@ anim_lin(co)
 sc.use_nodes = True; cn = sc.node_tree
 for n in list(cn.nodes): cn.nodes.remove(n)
 rl = cn.nodes.new("CompositorNodeRLayers"); ld = cn.nodes.new("CompositorNodeLensdist"); ld.inputs["Distort"].default_value = 0.03; ld.inputs["Dispersion"].default_value = 0.012; ld.use_fit = True
-gl = cn.nodes.new("CompositorNodeGlare"); gl.glare_type = 'FOG_GLOW'; gl.threshold = 0.9; gl.size = 7; gl.mix = -0.3
+gl = cn.nodes.new("CompositorNodeGlare"); gl.glare_type = 'FOG_GLOW'; gl.threshold = 1.0; gl.size = 7; gl.mix = -0.6   # v5.1h：-0.3→-0.6（被りを減らす）
 el = cn.nodes.new("CompositorNodeEllipseMask"); el.width = 1.25; el.height = 1.35
 bl = cn.nodes.new("CompositorNodeBlur"); bl.size_x = 200; bl.size_y = 200; bl.filter_type = 'FAST_GAUSS'; bl.use_relative = False
 mm = cn.nodes.new("CompositorNodeMath"); mm.operation = 'MULTIPLY_ADD'; mm.inputs[1].default_value = 0.55; mm.inputs[2].default_value = 0.45
@@ -1121,7 +1126,6 @@ if os.environ.get("UU_DEPTH") == "1":
     try: sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
     except Exception: pass
     sc.view_settings.exposure = 0.0; EV.taa_render_samples = 1; tryset(EV, use_bloom=False, use_motion_blur=False)
-if os.environ.get("UU_SAVE"): bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "scene_v5.blend"))
 
 # ---------------- v5.1f：Cycles（CPU）経路 ----------------
 # GitHub の llvmpipe EEVEE は大きい材質を黙って灰色に落とす（切り分け1〜6・8時間）。Cycles は同じノードで写真が乗る（mini_cycles.jpg）ので本線を Cycles に替える。
@@ -1131,8 +1135,8 @@ if os.environ.get("UU_ENGINE", "EEVEE").upper() == "CYCLES":
     cy.samples = int(os.environ.get("UU_SAMPLES", "12")); cy.use_adaptive_sampling = True; cy.adaptive_threshold = float(os.environ.get("UU_ATHR", "0.08")); cy.adaptive_min_samples = 4
     cy.use_denoising = os.environ.get("UU_NODENOISE") != "1"
     tryset(cy, denoiser='OPENIMAGEDENOISE', denoising_input_passes='RGB_ALBEDO_NORMAL', denoising_prefilter='ACCURATE', denoising_use_gpu=False)
-    tryset(cy, max_bounces=4, diffuse_bounces=2, glossy_bounces=2, transmission_bounces=3, volume_bounces=0, transparent_max_bounces=12,
-           caustics_reflective=False, caustics_refractive=False, blur_glossy=1.0, sample_clamp_direct=0.0, sample_clamp_indirect=4.0,
+    tryset(cy, max_bounces=8, diffuse_bounces=4, glossy_bounces=2, transmission_bounces=4, volume_bounces=0, transparent_max_bounces=24,
+           caustics_reflective=False, caustics_refractive=False, blur_glossy=1.0, sample_clamp_direct=0.0, sample_clamp_indirect=10.0,
            volume_step_rate=float(os.environ.get("UU_VSTEP", "4.0")), volume_max_steps=64, light_sampling_threshold=0.05, use_light_tree=True, tile_size=2048,
            use_auto_tile=False, time_limit=float(os.environ.get("UU_TLIM", "0")))
     tryset(sc.render, use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.35)
@@ -1141,6 +1145,7 @@ if os.environ.get("UU_ENGINE", "EEVEE").upper() == "CYCLES":
     except Exception as e_: print("skip vl denoise", e_)
     print("ENGINE", sc.render.engine, "samples", cy.samples, flush=True)
 
+if os.environ.get("UU_SAVE"): bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "scene_v5.blend"))   # v5.1h：Cycles 切替の後に保存
 # ---------------- 描画 ----------------
 STEP = int(os.environ.get("UU_STEP", "1"))
 if FR == "all": frames = range(1, NF + 1, STEP)
