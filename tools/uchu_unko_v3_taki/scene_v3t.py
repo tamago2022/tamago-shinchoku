@@ -693,9 +693,11 @@ def build_kumo_no_yoru():
     bpy.ops.mesh.primitive_grid_add(x_subdivisions=420, y_subdivisions=420, size=900, location=(cx, cy + 200, ct - 3.6))
     cl = bpy.context.object
     tx = bpy.data.textures.new("kumo", 'CLOUDS'); tx.noise_scale = 11.0; tx.noise_depth = 3
-    dm = cl.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = 3.0; dm.mid_level = 0.0; dm.texture_coords = 'GLOBAL'
+    dm = cl.modifiers.new("d", 'DISPLACE'); dm.texture = tx; dm.strength = 4.2; dm.mid_level = 0.0; dm.texture_coords = 'GLOBAL'
     tx2 = bpy.data.textures.new("kumo2", 'CLOUDS'); tx2.noise_scale = 2.5; tx2.noise_depth = 2
     dm2 = cl.modifiers.new("d2", 'DISPLACE'); dm2.texture = tx2; dm2.strength = 1.3; dm2.mid_level = 0.0; dm2.texture_coords = 'GLOBAL'
+    tx3 = bpy.data.textures.new("kumo3", 'CLOUDS'); tx3.noise_scale = 0.9; tx3.noise_depth = 2
+    dm3 = cl.modifiers.new("d3", 'DISPLACE'); dm3.texture = tx3; dm3.strength = 0.5; dm3.mid_level = 0.0; dm3.texture_coords = 'GLOBAL'
     bpy.ops.object.shade_smooth()
     mc, ntc, pc = newmat("kumoM"); pin(pc, "Roughness", 1.0)
     tcc = node(ntc, "ShaderNodeTexCoord"); nzc = node(ntc, "ShaderNodeTexNoise"); I(nzc, "Scale").default_value = 0.045; I(nzc, "Detail").default_value = 6; link(ntc, tcc.outputs["Object"], I(nzc, "Vector"))
@@ -754,13 +756,13 @@ def build_kumo_no_yoru():
     trh = node(hnt, "ShaderNodeBsdfTransparent"); adh = node(hnt, "ShaderNodeAddShader")
     link(hnt, emh.outputs[0], adh.inputs[0]); link(hnt, trh.outputs[0], adh.inputs[1]); link(hnt, adh.outputs[0], I(hout, "Surface"))
     blend(hm); halo.data.materials.append(hm); bpy.data.objects.remove(halo, do_unlink=True)
-    ld = bpy.data.lights.new("moonB", 'SUN'); ld.energy = 2.4; ld.color = (0.74, 0.80, 1.0); ld.angle = math.radians(1.5)
+    ld = bpy.data.lights.new("moonB", 'SUN'); ld.energy = 5.5; ld.color = (0.82, 0.84, 1.0); ld.angle = math.radians(1.5)
     lo = bpy.data.objects.new("moonB", ld); bpy.context.collection.objects.link(lo)
     dirm = (MOON - PE).normalized(); lo.rotation_euler = (-dirm).to_track_quat('-Z', 'Y').to_euler()
     ld2 = bpy.data.lights.new("rimB", 'AREA'); ld2.energy = 380; ld2.size = 10; ld2.color = (0.85, 0.55, 1.0)
     lo2 = bpy.data.objects.new("rimB", ld2); bpy.context.collection.objects.link(lo2)
     lo2.location = (cx - 3, cy + 10, ct + 7); lo2.rotation_euler = (math.radians(-110), 0, 0)
-    ld3 = bpy.data.lights.new("fillB", 'AREA'); ld3.energy = 160; ld3.size = 12; ld3.color = (0.55, 0.62, 1.0)
+    ld3 = bpy.data.lights.new("fillB", 'AREA'); ld3.energy = 70; ld3.size = 12; ld3.color = (0.55, 0.62, 1.0)
     lo3 = bpy.data.objects.new("fillB", ld3); bpy.context.collection.objects.link(lo3)
     lo3.location = (cx, cy - 12, ct + 8); lo3.rotation_euler = (math.radians(65), 0, 0)
     ld4 = bpy.data.lights.new("yama_sun", 'SUN'); ld4.energy = 1.1; ld4.color = (0.50, 0.58, 0.98); ld4.angle = math.radians(4)
@@ -771,12 +773,12 @@ def build_kumo_no_yoru():
     curtain("hoshi_taki", PE.x + 34, PE.x + 40, cy + 40, ct + 46, ct - 2, wB, 0.8, 20, 0.0)
     curtain("hoshi_taki2", PE.x - 34, PE.x - 29, cy + 48, ct + 52, ct - 2, wB, 0.6, 16, 0.0)
     # オーロラ（近く・明るく：下は緑、上はすみれ、縦の筋がゆっくり流れる）
-    for k, (x0, x1, yy, z0, z1, bend, st_) in enumerate(((PE.x - 140, PE.x - 6, PE.y + 205, ct + 10, ct + 80, 22, 7.5), (PE.x + 40, PE.x + 170, PE.y + 225, ct + 14, ct + 90, 18, 6.5))):
+    for k, (x0, x1, yy, z0, z1, bend, st_) in enumerate(((PE.x - 175, PE.x + 12, PE.y + 205, ct + 40, ct + 175, 26, 6.5), (PE.x + 28, PE.x + 205, PE.y + 225, ct + 48, ct + 190, 20, 5.5))):
         ma, nta, pa_ = newmat("aurora%d" % k); blend(ma)
         tc_ = node(nta, "ShaderNodeTexCoord"); sep = node(nta, "ShaderNodeSeparateXYZ"); link(nta, tc_.outputs["Generated"], sep.inputs[0])
         bump = node(nta, "ShaderNodeValToRGB"); el = bump.color_ramp.elements
         el[0].position = 0.0; el[0].color = (0, 0, 0, 1); el[1].position = 1.0; el[1].color = (0, 0, 0, 1)
-        e2 = el.new(0.15); e2.color = (1, 1, 1, 1); e3 = el.new(0.5); e3.color = (0.45, 0.45, 0.45, 1)
+        e2 = el.new(0.28); e2.color = (1, 1, 1, 1); e3 = el.new(0.52); e3.color = (0.30, 0.30, 0.30, 1); e4 = el.new(0.80); e4.color = (0.06, 0.06, 0.06, 1)
         link(nta, sep.outputs["Z"], I(bump, "Fac"))
         mp_ = node(nta, "ShaderNodeMapping"); I(mp_, "Scale").default_value = (30, 1, 0.5)
         link(nta, tc_.outputs["Generated"], I(mp_, "Vector"))
@@ -787,6 +789,10 @@ def build_kumo_no_yoru():
         cn = node(nta, "ShaderNodeMapRange"); I(cn, "From Min").default_value = 0.35; I(cn, "From Max").default_value = 0.75
         link(nta, O(nz, "Fac"), I(cn, "Value"))
         al = math_(nta, 'MULTIPLY', bump.outputs["Color"], cn.outputs[0])
+        nz2 = node(nta, "ShaderNodeTexNoise"); I(nz2, "Scale").default_value = 0.22; I(nz2, "Detail").default_value = 2
+        mp2 = node(nta, "ShaderNodeMapping"); I(mp2, "Scale").default_value = (5, 1, 1.2); link(nta, tc_.outputs["Generated"], I(mp2, "Vector")); link(nta, mp2.outputs[0], I(nz2, "Vector"))
+        cn2 = node(nta, "ShaderNodeMapRange"); I(cn2, "From Min").default_value = 0.30; I(cn2, "From Max").default_value = 0.72; link(nta, O(nz2, "Fac"), I(cn2, "Value"))
+        al = math_(nta, 'MULTIPLY', al, cn2.outputs[0])
         link(nta, math_(nta, 'MULTIPLY', al, vb=0.95), I(pa_, "Alpha"))
         cr = node(nta, "ShaderNodeValToRGB"); cr.color_ramp.elements[0].color = (0.25, 1.0, 0.62, 1); cr.color_ramp.elements[1].color = (0.70, 0.38, 1.0, 1)
         cr.color_ramp.elements[0].position = 0.12; cr.color_ramp.elements[1].position = 0.65
