@@ -169,7 +169,7 @@ for f in range(1, NF + 1):
             sl[k].outputs[0].default_value = v; sl[k].outputs[0].keyframe_insert("default_value", frame=f)
 for fc in RIP.animation_data.action.fcurves:
     for kp in fc.keyframe_points: kp.interpolation = 'LINEAR'
-stage("ripple group")
+stage("ripple group"); print("FLAGS", {k: v for k, v in os.environ.items() if k.startswith("UU_")}, flush=True)
 def add_ripple(nt):
     g = node(nt, "ShaderNodeGroup"); g.node_tree = RIP
     tc = node(nt, "ShaderNodeTexCoord"); link(nt, O(tc, "Object"), g.inputs[0])
@@ -182,6 +182,7 @@ CC0 = os.path.join(W, "sozai_cc0")
 KEEP_SAT = float(os.environ.get("UU_KEEP", "0.22"))   # 白黒基調の「残す彩度」。v5 の 0.06 は粘土に見えたので、退色した写真くらいに上げる
 def load_cc0(name, noncolor=False):
     p = os.path.join(CC0, name)
+    if os.environ.get("UU_NOPHOTO") == "1": return None   # 切り分け用：写真無し
     if not os.path.exists(p): print("skip cc0", name, flush=True); return None
     im = bpy.data.images.load(p, check_existing=True)
     if noncolor:
@@ -678,6 +679,8 @@ def leaf_card(c, sz, ang, tilt, mat="plant"):
     """v5.1：1枚の葉（四角のカード）。根元 c から向き ang・傾き tilt へ長さ sz"""
     dx, dy = math.cos(ang), math.sin(ang); ux, uy = -dy, dx; w = sz * 0.55; ct, stt = math.cos(tilt), math.sin(tilt)
     tip = (c[0] + dx * sz * ct, c[1] + dy * sz * ct, c[2] + sz * stt)
+    if os.environ.get("UU_NOLEAF") == "1":   # 切り分け用：v5 の三角形
+        acc_tris("grass", [c, (c[0] + ux * w * 0.5, c[1] + uy * w * 0.5, c[2]), tip], [(0, 1, 2)]); return
     v0 = (c[0] - ux * w * 0.5, c[1] - uy * w * 0.5, c[2]); v1 = (c[0] + ux * w * 0.5, c[1] + uy * w * 0.5, c[2])
     v2 = (tip[0] + ux * w * 0.5, tip[1] + uy * w * 0.5, tip[2]); v3 = (tip[0] - ux * w * 0.5, tip[1] - uy * w * 0.5, tip[2])
     acc_quad_uv(mat, [v0, v1, v2, v3], (rnd.uniform(0, 0.8), rnd.uniform(0, 0.8), rnd.uniform(0.12, 0.22)))
@@ -944,11 +947,12 @@ def volbox(name, center, size, mat):
     bpy.ops.mesh.primitive_cube_add(size=1, location=center); o = bpy.context.object; o.name = name; o.scale = size; o.display_type = 'WIRE'
     o.data.materials.append(mat); return o
 FOG = float(os.environ.get("UU_FOG", "1.0"))
-volbox("fog_floor", (0, 0, 1.3), (VOID[1] - VOID[0] + 6, VOID[3] - VOID[2] + 6, 2.6), mat_volume("fog_floor", 0.045 * FOG, (0.8, 0.86, 0.9), 0.45, (0.06, (6, 2, 0), 0.15, 1.0)))
-volbox("fog_mid", (0, 0, ROOF * 0.55), (VOID[1] - VOID[0] + 2, VOID[3] - VOID[2] + 2, ROOF * 0.8), mat_volume("fog_mid", 0.010 * FOG, (0.85, 0.9, 0.95), 0.65, (0.04, (4, 1, 1), 0.3, 1.0)))
-volbox("fog_conc", (0, (CONC[2] + CONC[3]) / 2, 1.2), (12, CONC[3] - CONC[2], 2.4), mat_volume("fog_conc", 0.05 * FOG, (0.75, 0.85, 0.82), 0.4, (0.08, (3, 5, 0), 0.1, 1.0)))
+if os.environ.get("UU_NOVOL") == "1": FOG = 0.0
+if FOG > 0: volbox("fog_floor", (0, 0, 1.3), (VOID[1] - VOID[0] + 6, VOID[3] - VOID[2] + 6, 2.6), mat_volume("fog_floor", 0.045 * FOG, (0.8, 0.86, 0.9), 0.45, (0.06, (6, 2, 0), 0.15, 1.0)))
+if FOG > 0: volbox("fog_mid", (0, 0, ROOF * 0.55), (VOID[1] - VOID[0] + 2, VOID[3] - VOID[2] + 2, ROOF * 0.8), mat_volume("fog_mid", 0.010 * FOG, (0.85, 0.9, 0.95), 0.65, (0.04, (4, 1, 1), 0.3, 1.0)))
+if FOG > 0: volbox("fog_conc", (0, (CONC[2] + CONC[3]) / 2, 1.2), (12, CONC[3] - CONC[2], 2.4), mat_volume("fog_conc", 0.05 * FOG, (0.75, 0.85, 0.82), 0.4, (0.08, (3, 5, 0), 0.1, 1.0)))
 # 月（NASA CGI Moon Kit：色＝LROC・高さ＝LOLA）：天窓の向こう、昼の空に薄く
-mimg = load_cc0("moon_color.jpg"); mh = load_cc0("moon_height.png", True)
+mimg = None if os.environ.get("UU_NOMOON") == "1" else load_cc0("moon_color.jpg"); mh = load_cc0("moon_height.png", True)
 if mimg is not None:
     bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=24, radius=2.2, location=(-8.0, 46.0, 215.0)); moon = bpy.context.object; moon.name = "moon"
     bpy.ops.object.shade_smooth(); moon.rotation_euler = (math.radians(70), 0, math.radians(40))

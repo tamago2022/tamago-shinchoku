@@ -21,7 +21,7 @@ jobs:
         id: s
         run: |
           set -a; . tools/uchu_unko_v5_1/render_go.txt; set +a
-          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT; echo "gi=${GI:-0}" >> $GITHUB_OUTPUT; echo "expo=${EXPO:--0.55}" >> $GITHUB_OUTPUT
+          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT; echo "gi=${GI:-0}" >> $GITHUB_OUTPUT; echo "bisect=${BISECT:-0}" >> $GITHUB_OUTPUT; echo "tmo=${TMO:-0}" >> $GITHUB_OUTPUT; echo "expo=${EXPO:--0.55}" >> $GITHUB_OUTPUT
           echo "$FRAMES $PCT $SAMPLES"
       - name: deps
         run: |
@@ -41,9 +41,16 @@ jobs:
           else SPEC=$(python3 -c "l='$FR'.split(',');print(','.join(x for i,x in enumerate(l) if i%$N==$C))"); WANT=$(python3 -c "print(len([x for x in '$SPEC'.split(',') if x]))"); fi
           echo "frames $SPEC"
           if [ -z "$SPEC" ]; then exit 0; fi
+          if [ "${{ steps.s.outputs.bisect }}" = "1" ]; then   # 切り分け：chunk ごとに1つずつ機能を切る
+            case $C in 1) export UU_NOPHOTO=1;; 2) export UU_NOLEAF=1;; 3) export UU_NOVOL=1;; 4) export UU_NOMOON=1;; 5) export UU_NOPHOTO=1 UU_NOLEAF=1 UU_NOVOL=1 UU_NOMOON=1;; esac
+          fi
+          TMO="${{ steps.s.outputs.tmo }}"; PRE=""; [ "$TMO" != "0" ] && PRE="timeout $TMO"
           for k in 1 2 3; do
-            xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v5_1.py -- $W $OUT "$SPEC" 2>&1 | grep -E "ENGINE|STAGE|^FRAME|Error|error|Traceback|File \"|kubire|DONE|skip|pin " | head -200 || true
+            date
+            $PRE xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v5_1.py -- $W $OUT "$SPEC" 2>&1 | grep --line-buffered -E "ENGINE|STAGE|^FRAME|FLAGS|GI |Error|error|Traceback|File \"|kubire|DONE|skip|pin " || true
+            date
             [ $(ls $OUT/*.jpg 2>/dev/null | wc -l) -ge $WANT ] && break
+            [ "$TMO" != "0" ] && break
           done
           ls $OUT | wc -l
       - uses: actions/upload-artifact@v4
