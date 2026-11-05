@@ -1,9 +1,9 @@
 {
- "totalChecked": 1813,
+ "totalChecked": 1816,
  "totalPassed": 425,
- "totalFailed": 365,
- "totalErrors": 1023,
- "totalCostUsd": 280.5337,
+ "totalFailed": 366,
+ "totalErrors": 1025,
+ "totalCostUsd": 281.377,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -359,33 +359,10 @@
   "本番で対象20曲すべてnoteが空のまま（反映0/20）、完了条件を満たしていな": 1,
   "mainへの実装は正しいが本番(chef-ryuji)は20曲全件note:\"\"": 1,
   "本番(chef-kasahara-masahiro)で対象20曲すべて未反映、「": 1,
-  "本番URL(chef-george-yoshida)を実際に取得確認したところ新": 1
+  "本番URL(chef-george-yoshida)を実際に取得確認したところ新": 1,
+  "本番で対象20曲の1つ(kasahara-masahiro-thmduxzo38": 1
  },
  "history": [
-  {
-   "ts": "2026-11-04T16:45:50+09:00",
-   "n": 205301,
-   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=robert-glasper](https://joy-relief-station.lovable.app/cover-guide?artist=robert-glasper",
-   "verdict": "fail",
-   "reason": "本番は未反映（20曲全てnote=\"\"のまま、カードに文が出ていない）で完了条件を満たしていない",
-   "costUsd": 0.36201240000000007
-  },
-  {
-   "ts": "2026-11-04T17:10:35+09:00",
-   "n": 205302,
-   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=robert-glasper](https://joy-relief-station.lovable.app/cover-guide?artist=robert-glasper",
-   "verdict": "fail",
-   "reason": "本番URLを実測した結果、対象7曲（例：experiment-calls-ft-jill-scott等）のカードに文章が反映されておらず、hanei.jsonlにも【反映】ではなく【公開未反映】としか記録されておらず、依頼の完了条件（本番で文が出ている）を満たしていない",
-   "costUsd": 0.3068674
-  },
-  {
-   "ts": "2026-11-04T17:15:58+09:00",
-   "n": 205300,
-   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=great-3",
-   "verdict": "fail",
-   "reason": "本番URLの7曲全てnote:\"\"のまま未反映。依頼の完了条件（カードに文が出ている）を満たさず、hanei.jsonlにも【反映】行が無い。",
-   "costUsd": 0.20345039999999998
-  },
   {
    "ts": "2026-11-04T17:37:14+09:00",
    "n": 205302,
@@ -761,7 +738,31 @@
    "verdict": "fail",
    "reason": "本番URL(chef-george-yoshida)を実際に取得確認したところ新note文は0件で旧文言「ここから旅をする」が残存、かつhanei.jsonlに204238号の記録も無く完了条件未達",
    "costUsd": 0.5249634000000001
+  },
+  {
+   "ts": "2026-11-05T20:51:14+09:00",
+   "n": 204233,
+   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=chef-kasahara-masahiro",
+   "verdict": "fail",
+   "reason": "本番で対象20曲の1つ(kasahara-masahiro-thmduxzo38i)が実機確認で「ここから旅をする」のまま。noteはorigin/mainにコミット済みだが本番に未反映（報告自身も認める既知障害で継続ブロック中）。",
+   "costUsd": 0.8432812000000003
+  },
+  {
+   "ts": "2026-11-05T21:01:35+09:00",
+   "n": 204236,
+   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=chef-ryuji",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-11-05T21:03:11+09:00",
+   "n": 204236,
+   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=chef-ryuji",
+   "verdict": "error",
+   "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
+   "costUsd": null
   }
  ],
- "updatedAt": "2026-11-05 20:37"
+ "updatedAt": "2026-11-05 21:03"
 }
