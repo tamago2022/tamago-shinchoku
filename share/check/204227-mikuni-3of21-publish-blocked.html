@@ -52,7 +52,7 @@
 <div class="date">2026-11-05 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-mainには実装が完全に合流済み（commit f230c7d67・45f139b73。coverGuide.tsの対象20曲全てにnote/memo/srcが入り、placeholderは0件）。本番URLを実測した結果、20曲とも未反映でplaceholder「ここから旅をする」が12件残存。原因は工場全体のLovable公開障害（Chrome起動は1186号で機械的に禁止・OAuthトークンはneed_consentで403）で、今回もlovable-publish.mjs（5回連続失敗で本日停止中）と98403_lovable_publish_mcp.py（403）の両経路を実測して再確認した。AI側に公開を押す手段が無い。
+mainには実装が完全に合流済み（対象20曲全てにnote/memo/srcが入り、空カードのplaceholderは0件）。本番URLを実測した結果、20曲とも未反映でplaceholder「ここから旅をする」が12件残存。原因は工場全体のLovable公開障害（Chrome起動は機械的に禁止・OAuthトークンはneed_consentで403）で、今回も公開便を実測して再確認した。AI側に公開を押す手段が無い。
 </div>
 
 <h2>② 数字</h2>
@@ -75,12 +75,12 @@ mainには実装が完全に合流済み（commit f230c7d67・45f139b73。coverG
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>mainへの合流</td><td class="yes">OK</td></tr>
 <tr><td>本番URLへの反映</td><td class="no">NG(未反映)</td></tr>
-<tr><td>Lovable公開(lovable-publish.mjs)</td><td class="no">5回連続失敗で本日停止中</td></tr>
+<tr><td>Lovable公開(公開便)</td><td class="no">本日連続失敗で停止中</td></tr>
 <tr><td>Lovable公開(OAuth経路)</td><td class="no">need_consentで403</td></tr>
 </table>
 
 <footer>
-店主が①Chromeを自分でCDP付きで開いてLovable再ログイン、②Lovable画面で直接「公開」を押す、③status/1186_chrome_kidou.jsonで公開作業を解除、のいずれかを行えば本件含め未反映分がまとめて本番に出る見込み。コード側の追加作業は不要。
+店主が①Chromeを自分でCDP付きで開いてLovable再ログイン、②Lovable画面で直接「公開」を押す、③公開作業の解除フラグを立てる、のいずれかを行えば本件含め未反映分がまとめて本番に出る見込み。コード側の追加作業は不要。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
