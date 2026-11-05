@@ -276,8 +276,9 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     colm = mixrgb(nt, upf, colr, tintc(nt, mcol, (0.55, 0.62, 0.38)) if mcol is not None else (0.10, 0.16, 0.07, 1))
     if mhgt is not None: hsel = mixrgb(nt, upf, hsel, mhgt)
     # 隅・接する所は暗く（AO）
-    ao = node(nt, "ShaderNodeAmbientOcclusion"); I(ao, "Distance").default_value = 1.5; link(nt, colm, I(ao, "Color"))
-    colf = mixrgb(nt, 0.7, colm, O(ao, "Color"))
+    # v5.1c：AO ノードを使わない。GitHub の Mesa（llvmpipe）の EEVEE では AO ノード入りの材質が丸ごと既定の灰色に落ち、写真もノイズも全部消えていた
+    # （v5 の「粘土」の正体。Cycles のミニ試し mini_cycles.jpg では同じノードで写真が出る）。隅の暗さは床際の汚れ（low）と写真の陰で足りる
+    colf = colm
     # 床際の汚れ：各階の床から 0.8m までを暗く（高さの端数）
     zz = node(nt, "ShaderNodeSeparateXYZ"); link(nt, Pw, zz.inputs[0]); fz = math_(nt, 'MODULO', zz.outputs[2], 6.0)
     low = ramp(nt, math_(nt, 'MULTIPLY', fz, 1 / 0.8, clamp=True), [(0.0, (1, 1, 1, 1)), (1.0, (0, 0, 0, 1))])
@@ -469,6 +470,9 @@ if os.environ.get("UU_MINI") == "1":   # v5.1：材質のミニ試し。床・�
     cam = bpy.data.cameras.new("cam"); cam.lens = 24; co = bpy.data.objects.new("cam", cam); sc.collection.objects.link(co); sc.camera = co
     co.location = (0, -5.5, 2.2); co.rotation_euler = (math.radians(72), 0, 0)
     sc.render.resolution_x, sc.render.resolution_y = 720, 720; sc.render.resolution_percentage = 60; EV.taa_render_samples = 4; sc.view_settings.exposure = -0.45
+    if os.environ.get("UU_MINI_CYCLES") == "1":   # Cycles（CPU）で素早く：ノードの組み方が合っているかだけ確かめる
+        sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = 8; sc.cycles.use_denoising = False; sc.render.resolution_percentage = 40
+        sc.cycles.max_bounces = 2; sc.cycles.volume_bounces = 0
     for i in range(1, 3): sc.frame_set(i)
     sc.render.filepath = os.path.join(OUT, "mini.jpg"); bpy.ops.render.render(write_still=True); print("MINI DONE", flush=True); sys.exit(0)
 
