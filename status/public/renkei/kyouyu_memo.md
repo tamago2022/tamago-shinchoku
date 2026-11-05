@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-06 07:08
+更新：2026-11-06 07:31
+
+---
+## 2026-11-06 07:29 ［宇宙うんこ］ 206317 廃墟モール×沈める寺 v5.1 続き
+https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6671257924
+
+前回184分の続き。切り分け1〜10の結論：材質は無罪（Macのアルベドで写真が全部出た）。犯人は光の経路（霧・合成・露出）で、手元Blender3.6で1コマ50秒の切り分け中。店主の入力待ちなし。次：犯人を外してGitHub Actions（Cycles・40分割）で本番描画→kumitate→80点なら納品
 
 ---
 ## 2026-11-06 07:02  
@@ -1170,12 +1176,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-655040
 - 11-01 07:23｜204036番｜｜本文：【タスク】アーティストページ内の曲の並び順: 現状「追加した順」っぽくなっていて、後から重要な曲を足しても下の方
 - 11-01 07:29｜204037番｜番号56862｜原文：3人組が44日間・11カ国・18フライト・3.8万マイルを旅して作った、"move, eat, l
 - 11-01 07:30｜204038番｜番号57753｜原文：店主がRock With Youのページで「棚編集」ボタンを押したところ、そこでも「棚に入れる /
-
----
-## 2026-11-01 07:46  各AIの読み口：新しい連携の候補（1件）
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6550289885
-
-各社の公式ページに、Drive／Notion／GitHub／コネクタ まわりの新しい文が出ました（週1の見直し・yomikuchi.py）。
-- genspark：If Settings › Integrations instead shows separate Slack, LINE, and other integration entries without it, your account isn't in the rollout yet（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-読み口の表：https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html#yomikuchi
 
