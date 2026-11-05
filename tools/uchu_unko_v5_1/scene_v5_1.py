@@ -191,6 +191,7 @@ def load_cc0(name, noncolor=False):
         except Exception: pass
     return im
 PROJ = os.environ.get("UU_PROJ", "BOX")
+FEAT = set(os.environ.get("UU_FEAT", "all").replace("all", "grime,streak,wet,leaves,patch,crack,dust,low,mottle").split(","))   # mat_concrete の追加機能。llvmpipe は材質が大きいと丸ごと灰色に落ちるので、切り分けで効く分だけ残す
 def pbr(nt, prefix, scale=3.0, second=None, blend_=0.3, coord=None):
     """<prefix>_diff/_rough(/_disp).jpg を箱投影（UVの無い箱にも貼れる）。second=(prefix2, scale2) で2つの大きさを半々に混ぜ、繰り返しの目を消す。
     返り：(色, 高さ 0..1, 粗さ)。無い面は None"""
@@ -238,11 +239,13 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     pcol, phgt, prgh = pbr(nt, photo, scale, second=second)
     if pcol is None: pcol = (col[0], col[1], col[2], 1); phgt = noise(nt, 0.35, 5, 0.6, Pw); prgh = None
     base = tintc(nt, pcol, tint)
-    mottle = noise(nt, 0.35, 5, 0.6, Pw)
-    # 大きな明暗のむら（写真の繰り返しを崩す）
-    mot = mixrgb(nt, math_(nt, 'MULTIPLY', mottle, 0.35), base, mixrgb(nt, 1.0, base, (0.6, 0.6, 0.6, 1), 'MULTIPLY'))
+    mot = base
+    if "mottle" in FEAT:   # 大きな明暗のむら（写真の繰り返しを崩す）
+        mottle = noise(nt, 0.35, 5, 0.6, Pw)
+        mot = mixrgb(nt, math_(nt, 'MULTIPLY', mottle, 0.35), base, mixrgb(nt, 1.0, base, (0.6, 0.6, 0.6, 1), 'MULTIPLY'))
+    else: mottle = None
     # 剥がれ：下地（レンガ・コンクリ）が見える所
-    if patch:
+    if patch and "patch" in FEAT:
         qcol, qhgt, qrgh = pbr(nt, patch[0], scale * 0.9)
         pm = ramp(nt, noise(nt, 0.18, 3, 0.55, Pw, 31.0), [(0.56 - patch[1] * 0.12, (0, 0, 0, 1)), (0.60 - patch[1] * 0.12, (1, 1, 1, 1))])
         zz0 = node(nt, "ShaderNodeSeparateXYZ"); link(nt, Pw, zz0.inputs[0]); fz0 = math_(nt, 'MODULO', zz0.outputs[2], 6.0)
@@ -250,23 +253,25 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
         if qcol is not None: mot = mixrgb(nt, pm, mot, tintc(nt, qcol, (0.8, 0.78, 0.75)))
         phgt = mixrgb(nt, pm, phgt, mixrgb(nt, 1.0, qhgt if qhgt is not None else (0.5, 0.5, 0.5, 1), (0.6, 0.6, 0.6, 1), 'MULTIPLY'))
     # 汚れの写真（ほこり・煤・雨の跡）：ノイズの所だけ掛ける
-    if grime > 0:
+    if grime > 0 and "grime" in FEAT:
         gcol, ghgt, grgh = pbr(nt, "grime", scale * 1.7)
         gm = math_(nt, 'MULTIPLY', ramp(nt, noise(nt, 0.3, 4, 0.6, Pw, 41.0), [(0.40, (0, 0, 0, 1)), (0.62, (1, 1, 1, 1))]), grime)
         if gcol is not None: mot = mixrgb(nt, gm, mot, mixrgb(nt, 1.0, mot, tintc(nt, gcol, (0.9, 0.9, 0.9)), 'MULTIPLY'))
     # 雨だれ：縦にのばしたノイズ（上から垂れる）
-    mp = node(nt, "ShaderNodeMapping"); link(nt, Pw, I(mp, "Vector")); I(mp, "Scale").default_value = (1.0, 1.0, 0.08)
-    st = noise(nt, 2.5, 3, 0.7, O(mp, "Vector")); st = ramp(nt, st, [(0.40, (1, 1, 1, 1)), (0.68, (0.35, 0.35, 0.35, 1))])
-    colr = mixrgb(nt, streak, mot, mixrgb(nt, st, (0.12, 0.11, 0.10, 1), mot), 'MIX')
-    # ひび：ボロノイの縁
-    cr = voronoi(nt, 0.3, Pw); crk = ramp(nt, cr, [(0.0, (0.25, 0.25, 0.25, 1)), (0.004, (0.25, 0.25, 0.25, 1)), (0.009, (1, 1, 1, 1))])
-    crmask = ramp(nt, noise(nt, 0.12, 2, 0.5, Pw, 21.0), [(0.5, (0, 0, 0, 1)), (0.62, (1, 1, 1, 1))])
-    colr = mixrgb(nt, crmask, colr, mixrgb(nt, 0.9, colr, crk, 'MULTIPLY'))
+    colr = mot; st = None
+    if "streak" in FEAT:
+        mp = node(nt, "ShaderNodeMapping"); link(nt, Pw, I(mp, "Vector")); I(mp, "Scale").default_value = (1.0, 1.0, 0.08)
+        st = noise(nt, 2.5, 3, 0.7, O(mp, "Vector")); st = ramp(nt, st, [(0.40, (1, 1, 1, 1)), (0.68, (0.35, 0.35, 0.35, 1))])
+        colr = mixrgb(nt, streak, mot, mixrgb(nt, st, (0.12, 0.11, 0.10, 1), mot), 'MIX')
+    if "crack" in FEAT:   # ひび：ボロノイの縁
+        cr = voronoi(nt, 0.3, Pw); crk = ramp(nt, cr, [(0.0, (0.25, 0.25, 0.25, 1)), (0.004, (0.25, 0.25, 0.25, 1)), (0.009, (1, 1, 1, 1))])
+        crmask = ramp(nt, noise(nt, 0.12, 2, 0.5, Pw, 21.0), [(0.5, (0, 0, 0, 1)), (0.62, (1, 1, 1, 1))])
+        colr = mixrgb(nt, crmask, colr, mixrgb(nt, 0.9, colr, crk, 'MULTIPLY'))
     up = node(nt, "ShaderNodeSeparateXYZ"); link(nt, O(g, "Normal"), up.inputs[0])
     upface = ramp(nt, up.outputs[2], [(0.3, (0, 0, 0, 1)), (0.9, (1, 1, 1, 1))])
     # 落ち葉の写真（床の上向きの面に、まだらの島で）
     hsel = phgt
-    if leaves > 0:
+    if leaves > 0 and "leaves" in FEAT:
         lcol, lhgt, lrgh = pbr(nt, "leaves", 1.6); dcol, dhgt, drgh = pbr(nt, "dryleaf", 1.1)
         lm = math_(nt, 'MULTIPLY', upface, ramp(nt, noise(nt, 0.16, 3, 0.6, Pw, 51.0), [(0.56 - leaves * 0.1, (0, 0, 0, 1)), (0.64 - leaves * 0.1, (1, 1, 1, 1))]))
         dm_ = math_(nt, 'MULTIPLY', upface, ramp(nt, noise(nt, 0.22, 3, 0.6, Pw, 61.0), [(0.58 - leaves * 0.08, (0, 0, 0, 1)), (0.65 - leaves * 0.08, (1, 1, 1, 1))]))
@@ -283,27 +288,31 @@ def mat_concrete(name, col=(0.46, 0.45, 0.43), moss=0.5, wet=0.35, streak=0.8, t
     # （v5 の「粘土」の正体。Cycles のミニ試し mini_cycles.jpg では同じノードで写真が出る）。隅の暗さは床際の汚れ（low）と写真の陰で足りる
     colf = colm
     # 床際の汚れ：各階の床から 0.8m までを暗く（高さの端数）
-    zz = node(nt, "ShaderNodeSeparateXYZ"); link(nt, Pw, zz.inputs[0]); fz = math_(nt, 'MODULO', zz.outputs[2], 6.0)
-    low = ramp(nt, math_(nt, 'MULTIPLY', fz, 1 / 0.8, clamp=True), [(0.0, (1, 1, 1, 1)), (1.0, (0, 0, 0, 1))])
-    colf = mixrgb(nt, math_(nt, 'MULTIPLY', low, 0.45), colf, (0.10, 0.09, 0.08, 1))
-    # ほこり（白っぽい粉）
-    dust = math_(nt, 'MULTIPLY', ramp(nt, up.outputs[2], [(0.5, (0, 0, 0, 1)), (1.0, (1, 1, 1, 1))]), noise(nt, 0.6, 3, 0.5, Pw, 7.0))
-    colf = mixrgb(nt, math_(nt, 'MULTIPLY', dust, 0.28), colf, (0.62, 0.60, 0.56, 1))
+    if "low" in FEAT:
+        zz = node(nt, "ShaderNodeSeparateXYZ"); link(nt, Pw, zz.inputs[0]); fz = math_(nt, 'MODULO', zz.outputs[2], 6.0)
+        low = ramp(nt, math_(nt, 'MULTIPLY', fz, 1 / 0.8, clamp=True), [(0.0, (1, 1, 1, 1)), (1.0, (0, 0, 0, 1))])
+        colf = mixrgb(nt, math_(nt, 'MULTIPLY', low, 0.45), colf, (0.10, 0.09, 0.08, 1))
+    if "dust" in FEAT:   # ほこり（白っぽい粉）
+        dust = math_(nt, 'MULTIPLY', ramp(nt, up.outputs[2], [(0.5, (0, 0, 0, 1)), (1.0, (1, 1, 1, 1))]), noise(nt, 0.6, 3, 0.5, Pw, 7.0))
+        colf = mixrgb(nt, math_(nt, 'MULTIPLY', dust, 0.28), colf, (0.62, 0.60, 0.56, 1))
     if tile > 0:   # 目地（写真のタイルに加えて、大きな割付）
         br = node(nt, "ShaderNodeTexBrick"); link(nt, Pw, I(br, "Vector")); I(br, "Scale").default_value = tile; I(br, "Mortar Size").default_value = 0.012
         I(br, "Color1").default_value = (1, 1, 1, 1); I(br, "Color2").default_value = (0.96, 0.96, 0.96, 1); I(br, "Mortar").default_value = (0.7, 0.7, 0.7, 1)
         colf = mixrgb(nt, 0.6, colf, O(br, "Color"), 'MULTIPLY')
     link(nt, desat(nt, colf, mask), I(p, "Base Color"))
     # 濡れ：低い所（ノイズ）→ 粗さを下げ・暗く
-    wetm = math_(nt, 'MULTIPLY', ramp(nt, noise(nt, 0.22, 3, 0.5, Pw, 11.0), [(0.52, (0, 0, 0, 1)), (0.6, (1, 1, 1, 1))]), wet)
-    wetm = math_(nt, 'MULTIPLY', wetm, ramp(nt, up.outputs[2], [(0.6, (0, 0, 0, 1)), (0.95, (1, 1, 1, 1))]))
     r0 = node(nt, "ShaderNodeMapRange"); I(r0, "To Min").default_value = 0.45; I(r0, "To Max").default_value = 0.95
     if prgh is not None: link(nt, prgh, I(r0, "Value"))
     else: I(r0, "Value").default_value = 0.7
-    rough = mixrgb(nt, wetm, r0.outputs[0], (0.04, 0.04, 0.04, 1)); rough = mixrgb(nt, math_(nt, 'MULTIPLY', st, 0.3), rough, (0.5, 0.5, 0.5, 1))
+    rough = r0.outputs[0]
+    if "wet" in FEAT and wet > 0:
+        wetm = math_(nt, 'MULTIPLY', ramp(nt, noise(nt, 0.22, 3, 0.5, Pw, 11.0), [(0.52, (0, 0, 0, 1)), (0.6, (1, 1, 1, 1))]), wet)
+        wetm = math_(nt, 'MULTIPLY', wetm, ramp(nt, up.outputs[2], [(0.6, (0, 0, 0, 1)), (0.95, (1, 1, 1, 1))]))
+        rough = mixrgb(nt, wetm, rough, (0.04, 0.04, 0.04, 1))
+    if st is not None: rough = mixrgb(nt, math_(nt, 'MULTIPLY', st, 0.3), rough, (0.5, 0.5, 0.5, 1))
     rough = mixrgb(nt, upf, rough, (0.9, 0.9, 0.9, 1))
     link(nt, rough, I(p, "Roughness")); I(p, "Specular").default_value = 0.45
-    hh = math_(nt, 'ADD', math_(nt, 'MULTIPLY', hsel, 0.8), math_(nt, 'MULTIPLY', mottle, 0.2))
+    hh = math_(nt, 'ADD', math_(nt, 'MULTIPLY', hsel, 0.8), math_(nt, 'MULTIPLY', mottle, 0.2)) if mottle is not None else hsel
     bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.55; I(bump, "Distance").default_value = 0.06; link(nt, hh, I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
     # 波紋の輪そのものは、淡く光る
     link(nt, mixrgb(nt, ring, (0, 0, 0, 1), (0.9, 0.8, 0.6, 1)), I(p, "Emission")); I(p, "Emission Strength").default_value = 0.2
@@ -312,7 +321,7 @@ def mat_concrete_slim(name, photo="plaster", scale=2.4, tint=(0.7, 0.7, 0.68), m
     """切り分け用：写真＋色味＋苔（上向き）＋凹凸だけの軽い材質（mat_plant と同じ規模）"""
     m, nt, out = newmat(name); p = principled(nt); g, tc = geo(nt); mask, ring = add_ripple(nt)
     pcol, phgt, prgh = pbr(nt, photo, scale)
-    c = tintc(nt, pcol, tint) if pcol is not None else (tint[0], tint[1], tint[2], 1)
+    c = tintc(nt, pcol, tint) if pcol is not None else mixrgb(nt, 0.0, (tint[0], tint[1], tint[2], 1), (0, 0, 0, 1))
     up = node(nt, "ShaderNodeSeparateXYZ"); link(nt, O(g, "Normal"), up.inputs[0])
     mcol, mhgt, mrgh = pbr(nt, "moss", 0.9)
     upf = math_(nt, 'MULTIPLY', ramp(nt, up.outputs[2], [(0.3, (0, 0, 0, 1)), (0.9, (1, 1, 1, 1))]), noise(nt, 1.6, 4, 0.6, O(g, "Position"), 3.0))
@@ -462,7 +471,7 @@ def mat_cloth(name, col):
 MAT = {
     "plant": mat_plant("plant"), "grass": mat_grass("grass"), "cloth0": mat_cloth("cloth0", (0.7, 0.15, 0.2)), "cloth1": mat_cloth("cloth1", (0.15, 0.3, 0.7)), "cloth2": mat_cloth("cloth2", (0.8, 0.6, 0.15)),
     # v5.1：写真素材の割り当て（CREDITS.txt）
-    "floor": mat_concrete("floor", (0.34, 0.33, 0.31), moss=0.55, wet=0.55, streak=0.35, tile=0.0, photo="tile", scale=1.6, tint=(0.72, 0.72, 0.70), grime=0.6, leaves=0.6),
+    "floor": mat_concrete("floor", (0.34, 0.33, 0.31), moss=0.35, wet=0.55, streak=0.35, tile=0.0, photo="tile", scale=1.6, tint=(0.72, 0.72, 0.70), grime=0.6, leaves=0.6),
     "wall": mat_concrete("wall", (0.36, 0.35, 0.33), moss=0.3, wet=0.0, streak=0.9, photo="plaster", scale=2.4, tint=(0.62, 0.60, 0.56), grime=0.5, patch=("brickpl", 0.6)),
     "panel": mat_concrete("panel", (0.46, 0.46, 0.45), moss=0.15, wet=0.0, streak=0.7, photo="white", scale=1.4, tint=(0.68, 0.68, 0.66), grime=0.5),
     "step": mat_concrete("step", (0.26, 0.26, 0.26), moss=0.9, wet=0.3, streak=0.3, photo="concmoss", scale=1.0, tint=(0.8, 0.8, 0.78), grime=0.3),
