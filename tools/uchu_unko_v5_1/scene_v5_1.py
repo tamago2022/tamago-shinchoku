@@ -189,7 +189,15 @@ def load_cc0(name, noncolor=False):
     p = os.path.join(CC0, name)
     if os.environ.get("UU_NOPHOTO") == "1": return None   # 切り分け用：写真無し
     if not os.path.exists(p): print("skip cc0", name, flush=True); return None
+    if os.environ.get("UU_IMGSWAP") == "1" and name.endswith("_diff.jpg"): p = os.path.join(CC0, "leafcard_diff.jpg")   # 切り分け7：葉で効いた画像に差し替え
     im = bpy.data.images.load(p, check_existing=True)
+    if os.environ.get("UU_IMGPACK") == "1":
+        try: im.pack()
+        except Exception as e_: print("pack fail", e_)
+    if os.environ.get("UU_IMGRELOAD") == "1": im.reload()
+    if os.environ.get("UU_IMGALPHA") == "1":
+        try: im.alpha_mode = 'NONE'; im.colorspace_settings.name = 'sRGB' if not noncolor else 'Non-Color'
+        except Exception as e_: print("alpha fail", e_)
     if noncolor:
         try: im.colorspace_settings.name = 'Non-Color'
         except Exception: pass
@@ -343,6 +351,7 @@ def mat_concrete_slim(name, photo="plaster", scale=2.4, tint=(0.7, 0.7, 0.68), m
     upf = math_(nt, 'MULTIPLY', ramp(nt, upf, [(0.22, (0, 0, 0, 1)), (0.42, (1, 1, 1, 1))]), moss)
     if mcol is not None: c = mixrgb(nt, upf, c, tintc(nt, mcol, (0.55, 0.62, 0.38)))
     link(nt, desat(nt, c, mask), I(p, "Base Color")); I(p, "Roughness").default_value = 0.7; I(p, "Specular").default_value = 0.4
+    if os.environ.get("UU_SLIMCLIP") == "1": I(p, "Alpha").default_value = 1.0; blend(m, 'CLIP', 'CLIP')   # 切り分け7：葉と同じ CLIP 描画
     if phgt is not None:
         bump = node(nt, "ShaderNodeBump"); I(bump, "Strength").default_value = 0.5; I(bump, "Distance").default_value = 0.06; link(nt, phgt, I(bump, "Height")); link(nt, bump.outputs[0], I(p, "Normal"))
     return finish(m, nt, out, p)
@@ -1087,6 +1096,24 @@ if os.environ.get("UU_DEPTH") == "1":
     except Exception: pass
     sc.view_settings.exposure = 0.0; EV.taa_render_samples = 1; tryset(EV, use_bloom=False, use_motion_blur=False)
 if os.environ.get("UU_SAVE"): bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "scene_v5.blend"))
+
+# ---------------- v5.1f：Cycles（CPU）経路 ----------------
+# GitHub の llvmpipe EEVEE は大きい材質を黙って灰色に落とす（切り分け1〜6・8時間）。Cycles は同じノードで写真が乗る（mini_cycles.jpg）ので本線を Cycles に替える。
+# 速さ：適応サンプリング＋OpenImageDenoise・跳ね返り少なめ・体積は歩幅を粗く。EEVEE の bloom は合成ノードの glare が代わり。
+if os.environ.get("UU_ENGINE", "EEVEE").upper() == "CYCLES":
+    sc.render.engine = 'CYCLES'; cy = sc.cycles; cy.device = 'CPU'
+    cy.samples = int(os.environ.get("UU_SAMPLES", "12")); cy.use_adaptive_sampling = True; cy.adaptive_threshold = float(os.environ.get("UU_ATHR", "0.08")); cy.adaptive_min_samples = 4
+    cy.use_denoising = True
+    tryset(cy, denoiser='OPENIMAGEDENOISE', denoising_input_passes='RGB_ALBEDO_NORMAL', denoising_prefilter='ACCURATE', denoising_use_gpu=False)
+    tryset(cy, max_bounces=4, diffuse_bounces=2, glossy_bounces=2, transmission_bounces=3, volume_bounces=0, transparent_max_bounces=12,
+           caustics_reflective=False, caustics_refractive=False, blur_glossy=1.0, sample_clamp_direct=0.0, sample_clamp_indirect=4.0,
+           volume_step_rate=float(os.environ.get("UU_VSTEP", "4.0")), volume_max_steps=64, light_sampling_threshold=0.05, use_light_tree=True, tile_size=2048,
+           use_auto_tile=False, time_limit=float(os.environ.get("UU_TLIM", "0")))
+    tryset(sc.render, use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.35)
+    tryset(cy, motion_blur_position='CENTER')
+    try: sc.view_layers[0].cycles.use_denoising = True
+    except Exception as e_: print("skip vl denoise", e_)
+    print("ENGINE", sc.render.engine, "samples", cy.samples, flush=True)
 
 # ---------------- 描画 ----------------
 STEP = int(os.environ.get("UU_STEP", "1"))

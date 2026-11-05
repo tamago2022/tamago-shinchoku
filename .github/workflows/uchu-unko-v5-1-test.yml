@@ -21,7 +21,7 @@ jobs:
         id: s
         run: |
           set -a; . tools/uchu_unko_v5_1/render_go_test.txt; set +a
-          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT; echo "gi=${GI:-0}" >> $GITHUB_OUTPUT; echo "bisect=${BISECT:-0}" >> $GITHUB_OUTPUT; echo "tmo=${TMO:-0}" >> $GITHUB_OUTPUT; echo "expo=${EXPO:--0.55}" >> $GITHUB_OUTPUT
+          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT; echo "gi=${GI:-0}" >> $GITHUB_OUTPUT; echo "bisect=${BISECT:-0}" >> $GITHUB_OUTPUT; echo "tmo=${TMO:-0}" >> $GITHUB_OUTPUT; echo "expo=${EXPO:--0.55}" >> $GITHUB_OUTPUT; echo "engine=${ENGINE:-EEVEE}" >> $GITHUB_OUTPUT; echo "vstep=${VSTEP:-4.0}" >> $GITHUB_OUTPUT
           echo "$FRAMES $PCT $SAMPLES"
       - name: deps
         run: |
@@ -31,7 +31,7 @@ jobs:
             || curl -sSL --retry 5 -o b.tar.xz https://download.blender.org/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz
           mkdir bl && tar -xf b.tar.xz -C bl --strip-components=1 && rm b.tar.xz
       - name: render
-        env: { UU_PCT: "${{ steps.s.outputs.pct }}", UU_SAMPLES: "${{ steps.s.outputs.samples }}", UU_MB: "${{ steps.s.outputs.mb }}", UU_GI: "${{ steps.s.outputs.gi }}", UU_EXPO: "${{ steps.s.outputs.expo }}" }
+        env: { UU_PCT: "${{ steps.s.outputs.pct }}", UU_SAMPLES: "${{ steps.s.outputs.samples }}", UU_MB: "${{ steps.s.outputs.mb }}", UU_GI: "${{ steps.s.outputs.gi }}", UU_EXPO: "${{ steps.s.outputs.expo }}", UU_ENGINE: "${{ steps.s.outputs.engine }}", UU_VSTEP: "${{ steps.s.outputs.vstep }}" }
         run: |
           W=$PWD/tools/uchu_unko_v5_1; OUT=$PWD/out; mkdir -p $OUT
           NF=$(python3 -c "import json;print(json.load(open('$W/hits.json'))['nf'])")
@@ -42,7 +42,8 @@ jobs:
           echo "frames $SPEC"
           if [ -z "$SPEC" ]; then exit 0; fi
           if [ "${{ steps.s.outputs.bisect }}" != "0" ]; then   # 切り分け：chunk ごとに1つずつ機能を切る
-            if [ "${{ steps.s.outputs.bisect }}" = "6" ]; then case $C in 0) export UU_SLIM=1 UU_NOSSR=1;; 1) export UU_SLIM=1 UU_NOSSR=1 UU_NOAO=1;; 2) export UU_SLIM=1 UU_NOSSR=1 UU_NOAO=1 UU_NOVOLS=1;; 3) export UU_SLIM=1 UU_NOMOSS=1;; 4) export UU_FEAT=grime,streak,wet,crack,low,dust UU_NOSSR=1 UU_NOAO=1;; 5) export UU_FEAT=all UU_NOSSR=1 UU_NOAO=1 UU_NOVOLS=1;; esac
+            if [ "${{ steps.s.outputs.bisect }}" = "7" ]; then export UU_SLIM=1 UU_NOMOSS=1; case $C in 0) export UU_SLIMCLIP=1;; 1) export UU_IMGSWAP=1;; 2) export UU_IMGPACK=1;; 3) export UU_IMGRELOAD=1;; 4) export UU_IMGALPHA=1;; 5) export UU_SLIMCLIP=1 UU_IMGSWAP=1;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "6" ]; then case $C in 0) export UU_SLIM=1 UU_NOSSR=1;; 1) export UU_SLIM=1 UU_NOSSR=1 UU_NOAO=1;; 2) export UU_SLIM=1 UU_NOSSR=1 UU_NOAO=1 UU_NOVOLS=1;; 3) export UU_SLIM=1 UU_NOMOSS=1;; 4) export UU_FEAT=grime,streak,wet,crack,low,dust UU_NOSSR=1 UU_NOAO=1;; 5) export UU_FEAT=all UU_NOSSR=1 UU_NOAO=1 UU_NOVOLS=1;; esac
             elif [ "${{ steps.s.outputs.bisect }}" = "5" ]; then case $C in 0) export UU_SLIM=1 UU_TEXCO=obj_box;; 1) export UU_SLIM=1 UU_TEXCO=uv_flat;; 2) export UU_FEAT=grime,streak,wet,crack,low,dust;; 3) export UU_SLIM=1 UU_TEXCO=pos_box;; 4) export UU_FEAT=all;; 5) export UU_SLIM=1 UU_TEXCO=obj_box UU_FRACT=0;; esac
             elif [ "${{ steps.s.outputs.bisect }}" = "4" ]; then export UU_SLIM=1; case $C in 0) export UU_TEXCO=obj_box;; 1) export UU_TEXCO=gen_flat;; 2) export UU_TEXCO=pos_box;; 3) export UU_TEXCO=obj_nomap_box;; 4) export UU_TEXCO=uv_flat;; 5) export UU_TEXCO=obj_box_closest;; esac
             elif [ "${{ steps.s.outputs.bisect }}" = "3" ]; then case $C in 0) export UU_FEAT=all;; 1) export UU_FEAT=grime,streak,wet;; 2) export UU_FEAT=leaves,patch,mottle;; 3) export UU_FEAT=grime,streak,wet,leaves,patch,mottle,low;; 4) export UU_FEAT=grime,streak,wet,leaves,patch,mottle,low,dust;; 5) export UU_FEAT=grime,streak,wet,crack,low,dust;; esac
