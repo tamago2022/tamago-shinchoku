@@ -52,14 +52,14 @@
 <div class="date">2026-11-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-対象20曲のうち、新規に6曲へnote文を追加、12曲は事実が確認できずtabiCopy.tsへ事実なし一行コピーとして退避、残り2曲(lover-boy/hello-anxiety)は元から埋まっていた。実装はcommit 5271ce3ce としてorigin/mainへ合流済み(git merge-baseで確認済み)。しかし本番(Lovable)への公開は、工場全体で2026-10-14から続くLovable OAuth認証切れ(invalid_grant)により実行できず、本番は旧ビルドのまま未反映。
+対象20曲のうち、新規に6曲へ説明文を追加、12曲は裏付けとなる事実が見つからず別の短い一言に置き換え、残り2曲は元から説明文が入っていた。この作業自体は完了し本体のmainへ合流済み。しかし本番(Lovable)への公開は、工場全体で続いているLovableの認証切れにより実行できず、本番は旧ビルドのまま未反映。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>20</b><span>対象曲数</span></div>
-  <div class="num"><b>6</b><span>新規でnote追加(実装済)</span></div>
-  <div class="num"><b>12</b><span>tabiCopy退避(実装済)</span></div>
+  <div class="num"><b>6</b><span>新規で説明文を追加(作業済)</span></div>
+  <div class="num"><b>12</b><span>短い一言に置き換え(作業済)</span></div>
   <div class="num"><b>0</b><span>本番で反映されている曲数(実測)</span></div>
 </div>
 
@@ -73,14 +73,14 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>lover-boy(既存note)</td><td class="no">本番HTML実測: note=空文字のまま</td></tr>
-<tr><td>hello-anxiety(既存note)</td><td class="no">本番HTML実測: note=空文字のまま</td></tr>
-<tr><td>long-gone(今回新規note)</td><td class="no">コードには追加済み、本番HTMLには出ていない</td></tr>
-<tr><td>mainへの合流(commit 5271ce3ce)</td><td class="yes">origin/mainの祖先であることをgit merge-baseで確認済み</td></tr>
+<tr><td>lover-boy(元から説明文があった曲)</td><td class="no">本番実測: 説明文が空のまま</td></tr>
+<tr><td>hello-anxiety(元から説明文があった曲)</td><td class="no">本番実測: 説明文が空のまま</td></tr>
+<tr><td>long-gone(今回新規追加した曲)</td><td class="no">作業は済んでいるが本番には出ていない</td></tr>
+<tr><td>本体(main)への合流</td><td class="yes">完了済み</td></tr>
 </table>
 
 <footer>
-原因はこのセッション固有の不具合ではなく、工場全体のLovable OAuth認証切れ(2026-10-14以降継続、lastOkAt固定、needConsent:true)。Issue#1138等に既記録の既知障害のため重複エスカレーションはしない。承認URLを開く操作にはブラウザツールが必要だが、このセッションには搭載されていない。
+原因はこの案件固有の不具合ではなく、工場全体で続いているLovableの認証切れ(2026-10-14以降継続)。既知の障害のため重複して騒がない。認証をやり直す操作にはブラウザが必要だが、このセッションには搭載されていない。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
