@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-06 09:17
+更新：2026-11-06 09:39
+
+---
+## 2026-11-06 09:26 ［宇宙うんこ］ 206317 ★訂正：本番便は 42134791855
+https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6673234678
+
+最初の便（同時20本）が GitHub Pages のビルドを止めたので中止し、36分割・同時18本で出し直し（約4時間）。確認ページ https://tamago2022.github.io/tamago-shinchoku/share/check/206317-uchu-unko-v51h-haikyo-mall.html 。店主の入力待ちなし。次の便：status/fpv_haikyo_mall_1101/frames_v51h2 の連番→組み立て→採点→納品
 
 ---
 ## 2026-11-06 08:51 ［宇宙うんこ］ 206317 v5.1h 真因修正→本番描画中
@@ -1138,13 +1144,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-655385
 - 11-01 12:44｜204041番｜Fable｜宣伝S1 「月に吠える」特集の告知動画
 - 11-01 13:06｜204042番｜Fable｜宣伝S2 問いかけ「あなたのパワースポットは何ですか？」
 - 11-01 14:17｜204043番｜Fable｜宣伝S3 問いかけ型の別バージョン（その2）
-
----
-## 2026-11-01 11:15  
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6552223233
-
-工場の受付（status/queue.json）に入った新しい指示 2件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
-
-- 11-01 08:11｜204039番｜GH1120 tamago2022さんの返信（11-01 08:10）
-- 11-01 09:12｜204040番｜GH1122 【自動警告】全AI共通の現在地が古くなっています
 
