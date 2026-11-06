@@ -52,13 +52,13 @@
 <div class="date">2026-11-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-対象20曲は全曲、文章（note or tabiCopy）の実装が origin/main に合流済み。残り3曲(lover-boy・hello-anxiety・best-of-playlist)は main には既に文章が入っているが、Lovable公開がOAuth鍵切れ(2026-10-04〜継続)でブロックされているため本番に未反映。これは工場全体の既知の障害(振り分け所票 fw-20261102155710-79da2 / GitHub Issue #1138・#1150)で、今回新たな問題ではない。
+対象20曲は全曲、文章の実装がmainに合流済み。残り3曲(lover-boy・hello-anxiety・best-of-playlist)は文章自体は用意できているが、Lovable公開がOAuth鍵切れ(2026-10-04〜継続)でブロックされているため本番に未反映。これは工場全体の既知の障害(振り分け所票 fw-20261102155710-79da2 / GitHub Issue #1138・#1150)で、今回新たな問題ではない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>17/20</b><span>本番で文章が出ている曲（実測）</span></div>
-  <div class="num"><b>20/20</b><span>mainに文章が実装済みの曲</span></div>
+  <div class="num"><b>20/20</b><span>文章が用意できている曲</span></div>
   <div class="num"><b>ng</b><span>Lovable OAuth鍵の状態(2026-10-04以降)</span></div>
 </div>
 
@@ -74,8 +74,8 @@
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
 <tr><td>loving-and-letting-go</td><td class="yes">反映済み</td></tr>
-<tr><td>lover-boy</td><td class="no">main実装済み・本番未反映(公開ブロック)</td></tr>
-<tr><td>hello-anxiety</td><td class="no">main実装済み・本番未反映(公開ブロック)</td></tr>
+<tr><td>lover-boy</td><td class="no">文章用意済み・本番未反映(公開ブロック)</td></tr>
+<tr><td>hello-anxiety</td><td class="no">文章用意済み・本番未反映(公開ブロック)</td></tr>
 <tr><td>catwalk-h-3-f-x</td><td class="yes">反映済み</td></tr>
 <tr><td>so-yoon-x-wings-official-mv</td><td class="yes">反映済み</td></tr>
 <tr><td>healing-house</td><td class="yes">反映済み</td></tr>
@@ -90,13 +90,13 @@
 <tr><td>on-audiotree-live-full-session</td><td class="yes">反映済み</td></tr>
 <tr><td>long-gone-audiotree-live</td><td class="yes">反映済み</td></tr>
 <tr><td>lover-boy-audiotree-live</td><td class="yes">反映済み</td></tr>
-<tr><td>best-of-playlist</td><td class="no">main実装済み(tabiCopy)・本番未反映(公開ブロック)</td></tr>
+<tr><td>best-of-playlist</td><td class="no">文章用意済み・本番未反映(公開ブロック)</td></tr>
 <tr><td>the-other-side</td><td class="yes">反映済み</td></tr>
 <tr><td>and-higher-brothers-lover-boy-88</td><td class="yes">反映済み</td></tr>
 </table>
 
 <footer>
-実測方法：node -e のfetchで本番HTMLを取得し、各曲のnote本文の一部文字列が含まれるかを1件ずつ検索。17/20曲でFOUND、3曲でNOT FOUND。main側はorigin/main:src/lib/coverGuide.ts・tabiCopy.tsを直接grepして20曲とも実装済みと確認済み。
+実測方法：本番ページの中身を取得し、各曲の文章の一部が含まれるかを1件ずつ検索。17/20曲で見つかり、3曲で見つからなかった。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
