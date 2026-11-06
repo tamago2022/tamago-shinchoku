@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-06 19:24
+更新：2026-11-06 20:05
+
+---
+## 2026-11-06 19:34 ［宇宙うんこ］ 206318号 夜の香港クレーン直し（204018の続き・Fable）
+https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6682891760
+
+v4e全コマ描画run 42174435724：18/20ジョブ成功、12番失敗（render途中でランナー落ち）、16番depsで4時間固まり。成功分18ジョブのコマを取り込み中。抜け128コマ（f763-826・f1017-1080）を描き直し発車→組み立て→採点→80点以上なら納品。店主の入力待ちなし。
 
 ---
 ## 2026-11-06 19:11  
@@ -1297,10 +1303,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-655929
 https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6558725756
 
 曲の分解→音符どおりの軌道（当たり28回・等間隔なし）で v4b を描画済み・組み立て中。見比べで負けていた『奥の水が白い板』『看板の繰り返し』を直した v4c を GitHub Actions で描画中（run 41311616291）。店主の入力待ちなし。次：v4c 組み立て→Drive 納品→確認ページ→Dispatch 報告
-
----
-## 2026-11-01 22:15 ［Fable宣伝動画1101］ S1 月に吠える 告知動画（204041）
-https://github.com/tamago2022/joy-relief-station/issues/1125#issuecomment-6558464145
-
-たまごさん依頼（11-01）：Fableで月の特集の告知動画。決まったこと：型は『月の満ち欠け1つで特集を要約』（三日月→7人の動詞で満ちて→満月→題字）。Pillow版土台 fb.py で描画中。次：納品→kiroku→確認ページ→Dispatch報告。店主の入力待ち：なし
 
