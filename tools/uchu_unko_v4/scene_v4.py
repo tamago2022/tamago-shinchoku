@@ -990,7 +990,7 @@ for f, fr in enumerate(FRM, start=1):
     prevq = q
     cam.location = c; cam.keyframe_insert("location", frame=f)
     cam.rotation_quaternion = q; cam.keyframe_insert("rotation_quaternion", frame=f)
-    cam_d.lens = fr["lens"] * 1.12; cam_d.keyframe_insert("lens", frame=f)
+    cam_d.lens = fr["lens"]; cam_d.keyframe_insert("lens", frame=f)   # v4e: レンズは michi.json にコマごと（切れない範囲で最大 ×1.12・なめらか）
 anim_lin(cam); anim_lin(cam_d)
 try:
     cam_d.dof.use_dof = True; cam_d.dof.focus_object = unko; cam_d.dof.aperture_fstop = 2.8; cam_d.dof.aperture_blades = 6
