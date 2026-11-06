@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-06 10:26
+更新：2026-11-06 10:48
+
+---
+## 2026-11-06 10:46 ［宇宙うんこ］ 206318 夜の香港クレーン直し 完了確認→続き
+https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6674659251
+
+204018はv4c(2回目描画)のMP4組み立て中にセッション上限で切れ、261102のmp4はmoov欠落で壊れていた。コマ1271枚は全部揃っているので組み立てだけやり直し→採点→80点以上なら納品。店主の入力待ち：なし
 
 ---
 ## 2026-11-06 10:02  
@@ -1175,10 +1181,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-655548
 https://github.com/tamago2022/joy-relief-station/issues/1124#issuecomment-6554733734
 
 A シティポップ「真夜中のLP」は完成・Drive AI制作物/Claude/Fable に納品済み。B ケツロゴ4型は k1 完成・k2/k3/k4 の残り9かたまりを切り離した一本道（/private/tmp/204009_fm/finish_b.sh・結合→crf21→一覧シートまで自動）で描画中。Macがディスク待ちで混み1コマ30〜110秒・あと2時間見込み。次の担当は finish_b.log に FINISH_B_DONE が出たら out/*.c21.mp4 を正式名にして claude_nouhin.py put --anken Fable するだけ。3時間ルールで打ち切った前セッション（pid 87708）がプロセスとして生き残り並走していたので kill した。店主の入力待ち：なし
-
----
-## 2026-11-01 14:24 ［宇宙うんこ］ 204018 v4 夜の香港クレーン 直し（Fable）
-https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6553895604
-
-言われたこと：たまごさん60〜65点。クレーンで降りる動きが曲と合っていない・規則的すぎ・密度がチープ。やること：曲を楽譜のように分解（kyoku_bunkai.md）→フレーズごとに軌道の速さと形を変える／夜の香港の密度を上げる／ケツロゴは本命便の結果を使う。80点未満なら出さず磨く。モデル＝claude-fable-5-1。店主の入力待ち：なし
 
