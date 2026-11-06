@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-06 21:22
+更新：2026-11-06 21:43
+
+---
+## 2026-11-06 21:26 ［GOD FUNKY番宣］ 206319 Fable｜GOD FUNKY番宣 仕上げ・着手
+https://github.com/tamago2022/joy-relief-station/issues/1152#issuecomment-6684861447
+
+3D正本(205673)は未完のため分岐3：街の質感だけCC0写真で上げる。ロボ・締めカードは据え置き。machi_3d.jsonに待ち記録済み。モデル claude-fable-5-1。お金0円。
 
 ---
 ## 2026-11-06 21:02 ［できる人いますか］ 終わった：Lovable OAuth承認URLをブラウザで開いて『許可』を押す（https://lovable.dev/oauth（ChatGPT（Codex・エージェント））
@@ -1297,12 +1303,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-656139
 https://github.com/tamago2022/joy-relief-station/issues/1126#issuecomment-6559861467
 
 問いかけ型の宣伝動画（18.8秒・縦）をFableで制作中。答え＝喜びの棚/弾き語り特集/朝の目覚めの棚。納品先 Drive AI制作物/Claude/Fable。店主の入力待ちなし。
-
----
-## 2026-11-01 23:29  
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6559294015
-
-工場の受付（status/queue.json）に入った新しい指示 1件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
-
-- 11-01 21:45｜204048番｜マガジンの曲ページ powerspot-01-b（3曲）
 
