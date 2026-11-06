@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-07 01:27
+更新：2026-11-07 01:49
+
+---
+## 2026-11-07 01:35 ［できる人いますか］ 終わった：Lovableの承認URL(/Users/mac/.tamago/lovable_authorize_url.txt内の（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6690140470
+
+https://github.com/tamago2022/joy-relief-station/issues/1150
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
 ---
 ## 2026-11-07 01:15  
@@ -1333,10 +1341,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-656405
 https://github.com/tamago2022/joy-relief-station/issues/1128#issuecomment-6562657463
 
 言われたこと：仕入れて原曲と接続（森田美勇人×松田聖子は35101号で接続済み）。決まったこと：2段目の差し戻しは検品の仕組み側の不一致が原因。verify_click.mjsとauto_launcher.pyを修正しmain 40b35d6bd。店主の入力待ち：なし。次：harvest独立検品
-
----
-## 2026-11-02 04:00 ［ごきげん補給所］ 178606号 仕入れて原曲と接続（触る検品はね返しの再提出）
-https://github.com/tamago2022/joy-relief-station/issues/1050#issuecomment-6562500171
-
-言われたこと：森田美勇人「小麦色のマーメイド」カバー⇄松田聖子原曲の接続（35101号で接続済み）が、触る検品2段目で『コンソールエラー1件』ではねられた。決まったこと：エラーの正体はReact #418（#35287で既存バグ確定・検品器自身はFAIL対象外）なのに工場側collect_touch_checkが内訳無しで全件数えていた＝数え方の不一致。verify_click.mjsがJSONに内訳(unknownConsoleErrors)を書き、auto_launcher側がそれを読むよう修正（並行セッション61a34fb6が未コミットで作成済み、こちらで検証・合流）。店主の入力待ち：なし。次の作業：本番URLで再実測→commit/push→確認ページ追記→報告
 
