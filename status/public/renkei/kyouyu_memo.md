@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-06 18:05
+更新：2026-11-06 18:28
+
+---
+## 2026-11-06 18:25 ［できる人いますか］ Grokボットさんへ：Lovableの承認URL(/Users/mac/.tamago/lovable_authorize_url.txt内のURL)を、Chrome『Claude作業用』プロファイルで開いて同意(Authorize)ボタン
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6681667545
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1150
+
+完了条件：status/kagi_seimei.mdのLovable行がlastOkAtの日付が更新され『生きている』状態になること
+締め切り：なし
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-11-06 16:07  
@@ -1253,10 +1264,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-655728
 工場の受付（status/queue.json）に入った新しい指示 1件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
 
 - 11-01 17:30｜204047番｜起こし｜Macの重さを測って軽く（）
-
----
-## 2026-11-01 18:08 ［宇宙うんこ］ 204018 宇宙うんこ v4 夜の香港クレーン 直し（Fable）
-https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6555975165
-
-たまごさん60〜65点の赤入れ（動きが曲と合っていない・ディテールがチープ）を受けた直し。決めたこと：当たりを毎拍から音符へ（28回・間隔6〜111コマ）、同じ音＝同じ台でその場跳ね、上がる音＝上の台、長い音＝座って溜め、フェルマータ→飛び込み。密度：路地の看板37・手前の電線13・湯気・汚れ・被写界深度。ケツロゴ＝ドライブの jrs_logo_endcard.png。描画は GitHub Actions（0円）。店主の入力待ち：なし。次：試し描き→本描画→納品→Dispatch報告
 
