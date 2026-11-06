@@ -520,7 +520,7 @@ def build_ledge(L):
         objs.append(cyl("ledge%02d_fan" % i, (x, b["lo"][1] + 0.1, (b["lo"][2] + b["hi"][2]) / 2), (x, b["lo"][1] - 0.005, (b["lo"][2] + b["hi"][2]) / 2), 0.17, M_SIL, 20))
     elif typ == "sign":
         b = L["parts"][0]; o = box("ledge%02d_body" % i, b["lo"], b["hi"], M_METAL_R); objs.append(o)
-        tex = rnd.choice([t for t in SIGN_ALL if open(os.path.join(SOZAI, t + ".txt")).read().strip() == "horizontal"])
+        tex = rnd.choice([t for t in SIGN_ALL if t.startswith("sign_dai")])   # 台専用の店名（壁の看板と重ならない）
         m, st = mat_neon("neon_l%02d" % i, tex + ".png")
         face = plane("ledge%02d_face" % i, ((b["lo"][0] + b["hi"][0]) / 2, b["lo"][1] - 0.005, (b["lo"][2] + b["hi"][2]) / 2), b["hi"][0] - b["lo"][0] - 0.06, b["hi"][2] - b["lo"][2] - 0.06, m, rot=(math.pi / 2, 0, 0))
         objs.append(face)
@@ -647,14 +647,14 @@ for k, st_ in enumerate(M.get("steam", [])):
 M_FAR, _ = mat_emit("far", (1, 1, 1), 1.0)
 ntf = M_FAR.node_tree; pf = ntf.nodes["Principled BSDF"]
 texf = node(ntf, "ShaderNodeTexImage"); texf.image = load_img("far_windows.png"); texf.extension = 'REPEAT'
-tcf = node(ntf, "ShaderNodeTexCoord"); mpf = node(ntf, "ShaderNodeMapping"); I(mpf, "Scale").default_value = (1.2, 1.2, 1.2)
+tcf = node(ntf, "ShaderNodeTexCoord"); mpf = node(ntf, "ShaderNodeMapping"); I(mpf, "Scale").default_value = (0.7, 0.7, 0.7)
 link(ntf, tcf.outputs["Object"], I(mpf, "Vector")); link(ntf, mpf.outputs[0], I(texf, "Vector")); link(ntf, texf.outputs["Color"], I(pf, "Emission Color"))
-pin(pf, "Emission Strength", 0.9); pin(pf, "Base Color", (0.06, 0.07, 0.10, 1))
+pin(pf, "Emission Strength", 0.55); pin(pf, "Base Color", (0.04, 0.05, 0.08, 1))
 for k, f_ in enumerate(M["far"]):
     box("far%d" % k, (f_["x"] - f_["w"] / 2, f_["y"], 0), (f_["x"] + f_["w"] / 2, f_["y"] + f_["d"], f_["h"]), M_FAR)
 # 港の水（塔の裏・月を映す）
 mw_, ntw, pw = newmat("water")
-pin(pw, "Base Color", (0.002, 0.004, 0.009, 1)); pin(pw, "Roughness", 0.10); pin(pw, "Specular IOR Level", 0.14); pin(pw, "Metallic", 0.0)
+pin(pw, "Base Color", (0.002, 0.004, 0.009, 1)); pin(pw, "Roughness", 0.14); pin(pw, "Specular IOR Level", 0.14); pin(pw, "Metallic", 0.0)
 nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 1.0; I(nzw, "Detail").default_value = 8; I(nzw, "Roughness").default_value = 0.7
 mpw2 = node(ntw, "ShaderNodeMapping"); tcw2 = node(ntw, "ShaderNodeTexCoord"); link(ntw, tcw2.outputs["Object"], I(mpw2, "Vector")); link(ntw, mpw2.outputs[0], I(nzw, "Vector"))
 I(mpw2, "Scale").default_value = (0.35, 9.0, 1.0)   # さざ波は横に長く・奥行きに細かく → 月の映りが縦に砕けて「光の道」になる
@@ -916,8 +916,8 @@ else:
     nzm = node(wn, "ShaderNodeTexNoise"); I(nzm, "Scale").default_value = 9.0; I(nzm, "Detail").default_value = 6; link(wn, tcw.outputs["Generated"], I(nzm, "Vector"))
     mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.42; I(mare, "From Max").default_value = 0.6; I(mare, "To Min").default_value = 0.45; I(mare, "To Max").default_value = 1.0
     link(wn, O(nzm, "Fac"), I(mare, "Value")); print("MOON noise", flush=True)
-moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=3.4)
-halo = math_(wn, 'MULTIPLY', math_(wn, 'EXPONENT', math_(wn, 'MULTIPLY', math_(wn, 'POWER', math_(wn, 'DIVIDE', ang, vb=math.radians(9.0)), vb=1.6), vb=-1.0)), vb=0.14)
+moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=2.6)
+halo = math_(wn, 'MULTIPLY', math_(wn, 'EXPONENT', math_(wn, 'MULTIPLY', math_(wn, 'POWER', math_(wn, 'DIVIDE', ang, vb=math.radians(9.0)), vb=1.6), vb=-1.0)), vb=0.10)
 # 空：下ほど街明かりで少し明るい紺、上は黒に近い
 zmap = node(wn, "ShaderNodeMath"); zmap.operation = 'MULTIPLY_ADD'; zmap.inputs[1].default_value = 0.5; zmap.inputs[2].default_value = 0.5; link(wn, sepw.outputs["Z"], zmap.inputs[0])
 rampB = node(wn, "ShaderNodeValToRGB"); rampB.color_ramp.elements[0].position = 0.45; rampB.color_ramp.elements[0].color = (0.035, 0.03, 0.06, 1)
@@ -990,7 +990,7 @@ for f, fr in enumerate(FRM, start=1):
     prevq = q
     cam.location = c; cam.keyframe_insert("location", frame=f)
     cam.rotation_quaternion = q; cam.keyframe_insert("rotation_quaternion", frame=f)
-    cam_d.lens = fr["lens"]; cam_d.keyframe_insert("lens", frame=f)
+    cam_d.lens = fr["lens"] * 1.12; cam_d.keyframe_insert("lens", frame=f)
 anim_lin(cam); anim_lin(cam_d)
 try:
     cam_d.dof.use_dof = True; cam_d.dof.focus_object = unko; cam_d.dof.aperture_fstop = 2.8; cam_d.dof.aperture_blades = 6
