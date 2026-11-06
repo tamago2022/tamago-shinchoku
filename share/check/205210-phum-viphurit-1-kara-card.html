@@ -52,44 +52,51 @@
 <div class="date">2026-11-06 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-対象20曲のうち、未着手だった12曲にWikipedia+Apple Musicの出典付きでnote/memo/srcを追加し、1曲(プレイリスト動画で出典2本が揃わない)はtabiCopy.tsへ。既存ブランチに残っていた6曲(long-gone等)と合わせ、20曲中18曲に文章・1曲はtabiCopy・残り2曲(lover-boy/hello-anxiety)は元から埋まっていたデータ。main合流は完了している。ただしLovable公開はOAuth認証切れ(invalid_grant、2026-10-14以降継続)でブロック中のため、本番にはまだ反映されていない(本番ページを実測して確認済み)。Lovable認証の復旧は別便で振り分け所に依頼済み、重複エスカレーションはしていない。
+対象20曲は全曲、文章（note or tabiCopy）の実装が origin/main に合流済み。残り3曲(lover-boy・hello-anxiety・best-of-playlist)は main には既に文章が入っているが、Lovable公開がOAuth鍵切れ(2026-10-04〜継続)でブロックされているため本番に未反映。これは工場全体の既知の障害(振り分け所票 fw-20261102155710-79da2 / GitHub Issue #1138・#1150)で、今回新たな問題ではない。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>12曲</b><span>今回note/memo/src追加</span></div>
-  <div class="num"><b>1曲</b><span>tabiCopyへ(best-of-playlist)</span></div>
-  <div class="num"><b>20曲中18曲</b><span>対象リストで文章あり</span></div>
-  <div class="num"><b>未反映</b><span>Lovable公開OAuthブロック中</span></div>
+  <div class="num"><b>17/20</b><span>本番で文章が出ている曲（実測）</span></div>
+  <div class="num"><b>20/20</b><span>mainに文章が実装済みの曲</span></div>
+  <div class="num"><b>ng</b><span>Lovable OAuth鍵の状態(2026-10-04以降)</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>本番アーティストページ(反映待ち)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=phum-viphurit" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=phum-viphurit</a></li>
+  <li><b>本番ページ</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=phum-viphurit" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=phum-viphurit</a></li>
+  <li><b>振り分け所票(公開ブロックの原因)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>loving-and-letting-go</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>catwalk-h-3-f-x</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>so-yoon-x-wings-official-mv</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>healing-house</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>stuts-julia-wu-night-drive</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>softly-spoken</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>run</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>welcome-change</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>strangers-in-a-dream</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>sweet-hurricane</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>and-higher-brothers-lover-boy-88</td><td class="yes">note/memo/src追加</td></tr>
-<tr><td>best-of-playlist</td><td class="yes">tabiCopy.tsへ1行(出典2本揃わず)</td></tr>
-<tr><td>本番への反映</td><td class="no">Lovable OAuthブロックで未反映</td></tr>
+<tr><td>loving-and-letting-go</td><td class="yes">反映済み</td></tr>
+<tr><td>lover-boy</td><td class="no">main実装済み・本番未反映(公開ブロック)</td></tr>
+<tr><td>hello-anxiety</td><td class="no">main実装済み・本番未反映(公開ブロック)</td></tr>
+<tr><td>catwalk-h-3-f-x</td><td class="yes">反映済み</td></tr>
+<tr><td>so-yoon-x-wings-official-mv</td><td class="yes">反映済み</td></tr>
+<tr><td>healing-house</td><td class="yes">反映済み</td></tr>
+<tr><td>stuts-julia-wu-night-drive</td><td class="yes">反映済み</td></tr>
+<tr><td>softly-spoken</td><td class="yes">反映済み</td></tr>
+<tr><td>long-gone</td><td class="yes">反映済み</td></tr>
+<tr><td>run</td><td class="yes">反映済み</td></tr>
+<tr><td>paul-vibhavadi-vol-1-live-full-set</td><td class="yes">反映済み</td></tr>
+<tr><td>welcome-change</td><td class="yes">反映済み</td></tr>
+<tr><td>strangers-in-a-dream</td><td class="yes">反映済み</td></tr>
+<tr><td>sweet-hurricane</td><td class="yes">反映済み</td></tr>
+<tr><td>on-audiotree-live-full-session</td><td class="yes">反映済み</td></tr>
+<tr><td>long-gone-audiotree-live</td><td class="yes">反映済み</td></tr>
+<tr><td>lover-boy-audiotree-live</td><td class="yes">反映済み</td></tr>
+<tr><td>best-of-playlist</td><td class="no">main実装済み(tabiCopy)・本番未反映(公開ブロック)</td></tr>
+<tr><td>the-other-side</td><td class="yes">反映済み</td></tr>
+<tr><td>and-higher-brothers-lover-boy-88</td><td class="yes">反映済み</td></tr>
 </table>
 
 <footer>
-このページは #205210 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+実測方法：node -e のfetchで本番HTMLを取得し、各曲のnote本文の一部文字列が含まれるかを1件ずつ検索。17/20曲でFOUND、3曲でNOT FOUND。main側はorigin/main:src/lib/coverGuide.ts・tabiCopy.tsを直接grepして20曲とも実装済みと確認済み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
