@@ -13,6 +13,7 @@ FRM = M["frames"]; H_UNKO = M["h_unko"]; DWELL = M["dwell"]
 ALLEY, FLOOR_H, NFLOOR, TOP = M["alley"], M["floor_h"], M["nfloor"], M["top"]
 BAYS = M["bays"]; WIN_W, WIN_H, SILL = M["win"]
 SOZAI = os.path.join(WORK, "sozai")
+SIGN_ALL = sorted(os.path.basename(f)[:-4] for f in os.listdir(SOZAI) if f.startswith("sign_") and f.endswith(".txt"))
 rnd = random.Random(7)
 T0 = time.time()
 def stage(x): print("STAGE", x, round(time.time() - T0, 1), flush=True)
@@ -238,7 +239,7 @@ def mat_street(name, pond):
     crk = node(nt, "ShaderNodeMixRGB"); crk.blend_type = 'MULTIPLY'; crk.inputs[0].default_value = 0.85
     link(nt, mx.outputs[0], crk.inputs[1]); link(nt, crack, crk.inputs[2])
     link(nt, crk.outputs[0], I(p, "Base Color"))
-    rg = node(nt, "ShaderNodeMixRGB"); link(nt, mask, rg.inputs[0]); rg.inputs[1].default_value = (0.78, 0.78, 0.78, 1); rg.inputs[2].default_value = (0.03, 0.03, 0.03, 1)
+    rg = node(nt, "ShaderNodeMixRGB"); link(nt, mask, rg.inputs[0]); rg.inputs[1].default_value = (0.62, 0.62, 0.62, 1); rg.inputs[2].default_value = (0.03, 0.03, 0.03, 1)
     link(nt, rg.outputs[0], I(p, "Roughness")); pin(p, "Specular IOR Level", 0.35)
     # 波紋：着水から広がる輪（sin）× 減衰。t はコマで動かす
     tval = node(nt, "ShaderNodeValue"); tval.name = "ripple_t"; tval.outputs[0].default_value = -1.0
@@ -256,8 +257,8 @@ def mat_street(name, pond):
     mpw = node(nt, "ShaderNodeMapping"); link(nt, tc.outputs["Object"], I(mpw, "Vector")); link(nt, mpw.outputs[0], I(wob, "Vector"))
     lo_ = I(mpw, "Location"); lo_.default_value = (0, 0, 0); lo_.keyframe_insert("default_value", frame=1); lo_.default_value = (0, 0, 6.0); lo_.keyframe_insert("default_value", frame=NF)
     hgt = math_(nt, 'ADD', math_(nt, 'MULTIPLY', O(wob, "Fac"), vb=0.012), math_(nt, 'MULTIPLY', amp, vb=0.06))
-    hgt = math_(nt, 'MULTIPLY', hgt, mask)
-    bp = node(nt, "ShaderNodeBump"); I(bp, "Strength").default_value = 0.6; link(nt, hgt, I(bp, "Height")); link(nt, bp.outputs[0], I(p, "Normal"))
+    hgt = math_(nt, 'ADD', math_(nt, 'MULTIPLY', hgt, mask), math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', O(fine, "Fac"), vb=0.03), math_(nt, 'SUBTRACT', va=1.0, b=mask)))
+    bp = node(nt, "ShaderNodeBump"); I(bp, "Strength").default_value = 0.8; link(nt, hgt, I(bp, "Height")); link(nt, bp.outputs[0], I(p, "Normal"))
     anim_lin(nt)
     return m
 M_TILE_L = mat_tile("tile_L", (0.50, 0.47, 0.42), (0.34, 0.31, 0.28), 0.8, 9.0)
@@ -519,7 +520,7 @@ def build_ledge(L):
         objs.append(cyl("ledge%02d_fan" % i, (x, b["lo"][1] + 0.1, (b["lo"][2] + b["hi"][2]) / 2), (x, b["lo"][1] - 0.005, (b["lo"][2] + b["hi"][2]) / 2), 0.17, M_SIL, 20))
     elif typ == "sign":
         b = L["parts"][0]; o = box("ledge%02d_body" % i, b["lo"], b["hi"], M_METAL_R); objs.append(o)
-        tex = rnd.choice([t for t in ["sign_%s" % ch_ for ch_ in "abcdefghijklmnop"] if open(os.path.join(SOZAI, t + ".txt")).read().strip() == "horizontal"])
+        tex = rnd.choice([t for t in SIGN_ALL if open(os.path.join(SOZAI, t + ".txt")).read().strip() == "horizontal"])
         m, st = mat_neon("neon_l%02d" % i, tex + ".png")
         face = plane("ledge%02d_face" % i, ((b["lo"][0] + b["hi"][0]) / 2, b["lo"][1] - 0.005, (b["lo"][2] + b["hi"][2]) / 2), b["hi"][0] - b["lo"][0] - 0.06, b["hi"][2] - b["lo"][2] - 0.06, m, rot=(math.pi / 2, 0, 0))
         objs.append(face)
@@ -893,10 +894,29 @@ R_MOON = math.radians(4.8)
 disc = node(wn, "ShaderNodeMapRange"); I(disc, "From Min").default_value = R_MOON - math.radians(0.2); I(disc, "From Max").default_value = R_MOON + math.radians(0.2)
 I(disc, "To Min").default_value = 1.0; I(disc, "To Max").default_value = 0.0; link(wn, ang, I(disc, "Value"))
 # 月の模様（海）
-nzm = node(wn, "ShaderNodeTexNoise"); I(nzm, "Scale").default_value = 9.0; I(nzm, "Detail").default_value = 6; link(wn, tcw.outputs["Generated"], I(nzm, "Vector"))
-mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.42; I(mare, "From Max").default_value = 0.6; I(mare, "To Min").default_value = 0.55; I(mare, "To Max").default_value = 1.0
-link(wn, O(nzm, "Fac"), I(mare, "Value"))
-moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=4.8)
+MOON_IMG = os.path.join(SOZAI, "moon_lroc_1k.jpg")   # NASA CGI Moon Kit（svs.gsfc.nasa.gov/4720・パブリックドメイン）。workflow が取得する
+if os.path.exists(MOON_IMG):
+    upv = V((0.0, 0.0, 1.0)); mdv = V(md); e2 = (upv - mdv * upv.dot(mdv)).normalized(); e1 = e2.cross(mdv).normalized()
+    du = node(wn, "ShaderNodeVectorMath"); du.operation = 'DOT_PRODUCT'; link(wn, tcw.outputs["Generated"], du.inputs[0]); du.inputs[1].default_value = tuple(e1)
+    dv = node(wn, "ShaderNodeVectorMath"); dv.operation = 'DOT_PRODUCT'; link(wn, tcw.outputs["Generated"], dv.inputs[0]); dv.inputs[1].default_value = tuple(e2)
+    sR = math.sin(R_MOON)
+    Uq = math_(wn, 'MAXIMUM', math_(wn, 'MINIMUM', math_(wn, 'DIVIDE', du.outputs["Value"], vb=sR), vb=0.999), vb=-0.999)
+    Vq = math_(wn, 'MAXIMUM', math_(wn, 'MINIMUM', math_(wn, 'DIVIDE', dv.outputs["Value"], vb=sR), vb=0.999), vb=-0.999)
+    lat = math_(wn, 'ARCSINE', Vq); coslat = math_(wn, 'MAXIMUM', math_(wn, 'COSINE', lat), vb=0.001)
+    lon = math_(wn, 'ARCSINE', math_(wn, 'MAXIMUM', math_(wn, 'MINIMUM', math_(wn, 'DIVIDE', Uq, coslat), vb=0.999), vb=-0.999))
+    tx = math_(wn, 'ADD', math_(wn, 'MULTIPLY', lon, vb=1.0 / (2 * math.pi)), vb=0.5); ty = math_(wn, 'ADD', math_(wn, 'MULTIPLY', lat, vb=1.0 / math.pi), vb=0.5)
+    cmb = node(wn, "ShaderNodeCombineXYZ"); link(wn, tx, cmb.inputs[0]); link(wn, ty, cmb.inputs[1])
+    timg = node(wn, "ShaderNodeTexImage"); timg.image = bpy.data.images.load(MOON_IMG, check_existing=True); timg.extension = 'EXTEND'; link(wn, cmb.outputs[0], I(timg, "Vector"))
+    try: timg.image.colorspace_settings.name = 'Non-Color'
+    except Exception as ex: print("skip moon colorspace", ex)
+    mbw = node(wn, "ShaderNodeRGBToBW"); link(wn, timg.outputs["Color"], mbw.inputs[0])
+    mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.12; I(mare, "From Max").default_value = 0.62; I(mare, "To Min").default_value = 0.30; I(mare, "To Max").default_value = 1.0
+    link(wn, mbw.outputs[0], I(mare, "Value")); print("MOON lroc", flush=True)
+else:
+    nzm = node(wn, "ShaderNodeTexNoise"); I(nzm, "Scale").default_value = 9.0; I(nzm, "Detail").default_value = 6; link(wn, tcw.outputs["Generated"], I(nzm, "Vector"))
+    mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.42; I(mare, "From Max").default_value = 0.6; I(mare, "To Min").default_value = 0.45; I(mare, "To Max").default_value = 1.0
+    link(wn, O(nzm, "Fac"), I(mare, "Value")); print("MOON noise", flush=True)
+moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=3.4)
 halo = math_(wn, 'MULTIPLY', math_(wn, 'EXPONENT', math_(wn, 'MULTIPLY', math_(wn, 'POWER', math_(wn, 'DIVIDE', ang, vb=math.radians(9.0)), vb=1.6), vb=-1.0)), vb=0.14)
 # 空：下ほど街明かりで少し明るい紺、上は黒に近い
 zmap = node(wn, "ShaderNodeMath"); zmap.operation = 'MULTIPLY_ADD'; zmap.inputs[1].default_value = 0.5; zmap.inputs[2].default_value = 0.5; link(wn, sepw.outputs["Z"], zmap.inputs[0])
