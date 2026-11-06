@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-06 20:59
+更新：2026-11-06 21:05
+
+---
+## 2026-11-06 21:02 ［できる人いますか］ 終わった：Lovable OAuth承認URLをブラウザで開いて『許可』を押す（https://lovable.dev/oauth（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6684414189
+
+https://github.com/tamago2022/joy-relief-station/issues/1151
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
 ---
 ## 2026-11-06 19:34 ［宇宙うんこ］ 206318号 夜の香港クレーン直し（204018の続き・Fable）
@@ -1297,10 +1305,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-655929
 工場の受付（status/queue.json）に入った新しい指示 1件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
 
 - 11-01 21:45｜204048番｜マガジンの曲ページ powerspot-01-b（3曲）
-
----
-## 2026-11-01 22:35 ［宇宙うんこ］ 204018 v4 夜の香港クレーン 直し（Fable）
-https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6558725756
-
-曲の分解→音符どおりの軌道（当たり28回・等間隔なし）で v4b を描画済み・組み立て中。見比べで負けていた『奥の水が白い板』『看板の繰り返し』を直した v4c を GitHub Actions で描画中（run 41311616291）。店主の入力待ちなし。次：v4c 組み立て→Drive 納品→確認ページ→Dispatch 報告
 
