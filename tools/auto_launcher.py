@@ -2907,6 +2907,24 @@ def launch_one(item, q, alive, safe_max):
             log("二重発車を止めました %s番（いまの状態=%s）" % (item.get("n"), _x.get("status")))
             return False
 
+    # ---- Fable禁止の関所（2026-11-08 たまごさんがプランを下げた・解除はたまごさんの指示のみ）----
+    #   Fable指定の便はSonnetに落とさず、保留(hold)で止める。status/fable_kinshi.json がある間ずっと。
+    try:
+        import fable_week as _fwk
+        if _fwk.kinshi() and _fwk.is_fable_item(item):
+            item["status"] = "hold"
+            item["holdNote"] = _fwk.HORYU_NOTE
+            try:
+                _fwk.horyu([item.get("n")])
+            except Exception as _e2:
+                log("Fable保留の書き込みに失敗 %s番: %s（発車はしない）" % (item.get("n"), _e2))
+            log("🛑 Fable禁止：%s番はFable指定なので保留にしました「%s」" % (item.get("n"), item.get("title")))
+            return False
+    except Exception as _e:
+        if FABLE in str(item.get("fixedModel") or "") + str(item.get("model") or "") or str(item.get("title") or "").startswith("Fable｜"):
+            log("Fable禁止の関所でエラー（Fable指定なので念のため発車しない）%s番: %s" % (item.get("n"), _e))
+            return False
+
     # ---- 棚の関所（2026-10-22 たまごさん「棚に置くのは本当に慎重にしたい」）----
     #   棚に入れる・置く・移す仕事は、たまごさんがその日に曲名と棚名を名指しした票
     #   （tanaMeishi.hi＝今日）だけ発車する。前日以前の言葉では動かさない。止めたら保留(hold)。
