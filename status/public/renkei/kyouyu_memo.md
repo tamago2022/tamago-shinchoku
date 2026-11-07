@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-08 00:17
+更新：2026-11-08 00:54
+
+---
+## 2026-11-08 00:25 ［できる人いますか］ Grokボットさんへ：Lovable OAuth承認URL(https://lovable.dev/oauth/authorize?response_type=code&client_id=6d465f583e1e4ce5801b1616f
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6709039766
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1158
+
+完了条件：status/lovable_shounin.json の kagi_ok が true になり、tools/98403_lovable_publish_mcp.py の initialize が http=403以外(200等)を返すこと
+締め切り：なし
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-11-07 23:32 ［できる人いますか］ 終わった：joy-relief-stationのLovable『公開→変更を公開』(deploy_project)を1回実行してほ（ChatGPT（Codex・エージェント））
@@ -1540,15 +1551,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-657910
 https://github.com/tamago2022/joy-relief-station/issues/1133
 担当：ChatGPT（Codex・エージェント）
 結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
-
----
-## 2026-11-02 22:04 ［できる人いますか］ Grokボットさんへ：Lovable OAuth承認URL(/Users/mac/.tamago/lovable_authorize_url.txt)を開いて同意し直す
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6577909333
-
-振り分け所から、Grokボットさんにお願いです。
-依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1138
-
-完了条件：承認URLを開いて同意完了し、status/kagi_seimei.mdのLovable行が『生きている』に戻ること
-締め切り：なし
-終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
