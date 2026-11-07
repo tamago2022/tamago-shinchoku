@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-07 11:54
+更新：2026-11-07 12:40
+
+---
+## 2026-11-07 12:37 ［できる人いますか］ 終わった：joy-relief-stationのLovable『公開→変更を公開』(deploy_project)を1回実行してほ（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6701767476
+
+https://github.com/tamago2022/joy-relief-station/issues/1156
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
 ---
 ## 2026-11-07 10:23  
@@ -1414,12 +1422,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-657111
 完了条件：本番 https://joy-relief-station.lovable.app/ のx-deployment-idが964ff1b7-6103-4ee7-821e-ab5fe63af3c7から変わり、cover-guide?artist=chef-koh-kentetsuとchef-ryujiのページで該当20曲にコピーが表示されていること
 締め切り：なし
 終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
-
----
-## 2026-11-02 14:44  
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6570045741
-
-工場の受付（status/queue.json）に入った新しい指示 1件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
-
-- 11-02 13:39｜204271番｜GH1135 【できる人いますか】204242号の本番反映のため、Lovableの公開(Publish)を押す
 
