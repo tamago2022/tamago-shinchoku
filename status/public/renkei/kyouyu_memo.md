@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-08 02:16
+更新：2026-11-08 02:35
+
+---
+## 2026-11-08 02:34 ［できる人いますか］ 終わった：消えたX投稿・動画の『同じ場面』の別の投稿を探す（25件）（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6710747374
+
+https://github.com/tamago2022/joy-relief-station/issues/1154
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
 ---
 ## 2026-11-08 01:41  
@@ -1582,12 +1590,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-658421
 - 11-03 02:49｜204472番｜判定日赤｜ほんと勘弁してほしいわ、そういうの。
 - 11-03 02:49｜204473番｜判定日赤｜投稿日までにちゃんと揃っているようにしてね。
 - 11-03 02:50｜204474番｜判定日赤｜サムネイルがない状態で投稿されるのもやめてね。
-
----
-## 2026-11-02 23:48  
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6580113761
-
-工場の受付（status/queue.json）に入った新しい指示 1件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
-
-- 11-02 20:49｜204275番｜差し戻し｜判定日赤｜「じゃあさぁつなげられるものは全部つなげてさぁどう変化するか見たいよあといくらかだね…やる意味がある
 
