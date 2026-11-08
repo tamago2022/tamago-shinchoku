@@ -545,7 +545,12 @@ def tick(q, force=False):
     m = _machi(q)
     tsunda = {}
     try:
-        if m["kara"] < SHITA["kara"]:
+        try:
+            import mudacut as _mc
+            _kara_ok = not _mc.kara_teishi()  # 2026-11-08 無駄カット：空カードの自動補充を止める
+        except Exception:
+            _kara_ok = True
+        if _kara_ok and m["kara"] < SHITA["kara"]:
             tsunda["kara"] = tsumu_kara(TSUMU["kara"], t)
         if m["naoshi"] < SHITA["naoshi"]:
             tsunda["naoshi"] = tsumu_naoshi(TSUMU["naoshi"], t)

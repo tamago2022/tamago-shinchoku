@@ -2246,6 +2246,12 @@ def urgent_lane_safe_max(alive, safe_max, measured_safe_max, items, now=None):
     戻り値: (新しいsafe_max, 横入り対象item or None)"""
     if alive < safe_max:
         return safe_max, None
+    try:
+        import mudacut as _mc
+        if _mc.yokoiri_kaijo():  # 2026-11-08 無駄カット：横入りで上限を上書きしない
+            return safe_max, None
+    except Exception:
+        pass
     long_waiting = urgent_wait_list(items, now)
     if not long_waiting or safe_max >= measured_safe_max:
         return safe_max, None
@@ -2925,6 +2931,16 @@ def launch_one(item, q, alive, safe_max):
             log("Fable禁止の関所でエラー（Fable指定なので念のため発車しない）%s番: %s" % (item.get("n"), _e))
             return False
 
+    # ---- 無駄カット（2026-11-08 週枠100%超え）：同じ便の3回目以降の発車は保留 ----
+    try:
+        import mudacut as _mc
+        if _mc.kinshi(item):
+            _mc.horyu(item)
+            log("🛑 無駄カット：%s番は%d回発車済みなので保留にしました「%s」" % (item.get("n"), _mc.kaisuu(item), item.get("title")))
+            return False
+    except Exception as _e:
+        log("無駄カットの関所でエラー %s番: %s" % (item.get("n"), _e))
+
     # ---- 棚の関所（2026-10-22 たまごさん「棚に置くのは本当に慎重にしたい」）----
     #   棚に入れる・置く・移す仕事は、たまごさんがその日に曲名と棚名を名指しした票
     #   （tanaMeishi.hi＝今日）だけ発車する。前日以前の言葉では動かさない。止めたら保留(hold)。
@@ -3165,6 +3181,11 @@ def launch_one(item, q, alive, safe_max):
     item["startedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
     item["sessionId"] = new_id
     item["pid"] = pid
+    try:
+        import mudacut as _mc2
+        _mc2.kazoeru(item)
+    except Exception:
+        pass
     log("🚀 自動発車 %d番「%s」→ pid %s / session %s（走行%d本→%d本・上限%d本）"
         % (item.get("n"), item.get("title"), pid, new_id[:8], alive, alive + 1, safe_max))
     print("自動発車: %s" % item.get("title"))
