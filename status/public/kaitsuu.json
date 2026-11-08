@@ -1,16 +1,16 @@
 {
- "at": "2026-11-08T22:09:07.445898+09:00",
+ "at": "2026-11-09T00:43:11.283412+09:00",
  "ok": true,
- "generatedAt": "2026-11-08T21:46:58.134531+09:00",
+ "generatedAt": "2026-11-09T00:21:22.495144+09:00",
  "keys": [
   {
    "id": "buffer",
    "what": "Buffer（Xの予約投稿）",
    "status": "unknown",
-   "detail": "400 未実測",
+   "detail": "叩けませんでした（回線かホスト名）",
    "fix": "publish.buffer.com/settings/api で1回だけ鍵を作り、~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す（/Users/mac/tamago/kagi/buffer_token.txt に貼るだけでも自動で写る）",
    "stops": "Xの予約が1本も入らない。毎回「ログインして」に戻る",
-   "measuredMinAgo": 23.3
+   "measuredMinAgo": 22.0
   },
   {
    "id": "claude",
@@ -19,7 +19,7 @@
    "detail": "通った（auth_keeperが実測）",
    "fix": "いつも使っているClaudeのアプリで1回ログインし直す。あとは auth_keeper が自分で戻す",
    "stops": "工場の発車が全部止まる（44時間の実害）",
-   "measuredMinAgo": 27.3
+   "measuredMinAgo": 28.2
   },
   {
    "id": "gmail",
@@ -28,34 +28,34 @@
    "detail": "アプリパスワードのファイルが置かれていません",
    "fix": "Googleアカウントでアプリパスワードを作り、そのファイルに置く",
    "stops": "LINE審査・Anthropic・外部窓口の返信に**誰も気づかない**",
-   "measuredMinAgo": 23.3
+   "measuredMinAgo": 22.0
   },
   {
    "id": "github",
    "what": "GitHub（ghのトークン＝見張り番の目）",
-   "status": "ok",
-   "detail": "200 通った",
+   "status": "unknown",
+   "detail": "叩けませんでした（回線かホスト名）",
    "fix": "gh auth login",
    "stops": "チャッピーがIssueを置いても誰も気づかない（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
-   "measuredMinAgo": 23.3
+   "measuredMinAgo": 21.9
   },
   {
    "id": "openai",
    "what": "OpenAI（外部検品・代行）",
-   "status": "ok",
-   "detail": "200 通った",
+   "status": "unknown",
+   "detail": "叩けませんでした（回線かホスト名）",
    "fix": "platform.openai.com で鍵を作り直して鍵ファイルへ",
    "stops": "鬼監督の外部検品と、詰まった仕事の逃がし先が消える",
-   "measuredMinAgo": 23.3
+   "measuredMinAgo": 21.9
   },
   {
    "id": "gemini",
    "what": "Gemini（外部代行・サーバ側）",
-   "status": "ok",
-   "detail": "200 通った",
+   "status": "unknown",
+   "detail": "叩けませんでした（回線かホスト名）",
    "fix": "Google AI Studio で無料発行して鍵ファイルへ",
    "stops": "安い代行先が消えてClaudeの枠を食う（※ページの「話す」が使うのはブラウザ側の別の鍵 tamago_gemini_key。それは 969_kagi_kanmon.py が見ている）",
-   "measuredMinAgo": 23.2
+   "measuredMinAgo": 21.9
   },
   {
    "id": "xai",
@@ -64,7 +64,7 @@
    "detail": "鍵が置かれていません",
    "fix": "この鍵のチーム(goodvibes)に残高が要る。console.x.ai で入れる。★声は別の鍵で既に通っている（下の行）ので、声のために入れる必要は無い",
    "stops": "Grokへの相談ができない",
-   "measuredMinAgo": 23.2
+   "measuredMinAgo": 21.9
   },
   {
    "id": "xai_koe",
@@ -73,16 +73,16 @@
    "detail": "窓口に届かない（URLError(gaierror(8, 'nodename nor servname provided, or not known'))）",
    "fix": "Lovable→クラウド→Secrets の XAI_API_KEY2 を見る。窓口＝supabase/functions/voice-session",
    "stops": "ごきげん補給所の「話す」と 970号の台が鳴らなくなる",
-   "measuredMinAgo": 23.1
+   "measuredMinAgo": 21.9
   },
   {
    "id": "copilot",
    "what": "GitHub Copilot（実装の代行）",
-   "status": "ng",
-   "detail": "担当者の候補にCopilotが居ません＝Issueを立てても受け取られません（有料プラン／組織の許可が要る形）",
+   "status": "unknown",
+   "detail": "叩けませんでした（URLError）",
    "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
    "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
-   "measuredMinAgo": 23.0
+   "measuredMinAgo": 21.9
   },
   {
    "id": "meta",
@@ -91,7 +91,7 @@
    "detail": "鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）",
    "fix": "developers.facebook.com でアプリを作りトークンを発行 → ~/.tamago/keys/api_keys.env へ",
    "stops": "Meta系への投稿・取得が一切できない。★台帳に無い間は「無い」ことにも気づけなかった",
-   "measuredMinAgo": 23.0
+   "measuredMinAgo": 21.9
   },
   {
    "id": "fal",
@@ -100,25 +100,25 @@
    "detail": "叩けませんでした（回線かホスト名）",
    "fix": "fal.ai で鍵を作り直して鍵ファイルへ",
    "stops": "絵と動画が1枚も作れない",
-   "measuredMinAgo": 22.5
+   "measuredMinAgo": 21.9
   },
   {
    "id": "buffer",
    "what": "Buffer（Xへの予約投稿の口）",
    "status": "unknown",
-   "detail": "400 未実測",
+   "detail": "叩けませんでした（回線かホスト名）",
    "fix": "publish.buffer.com/settings/api で鍵を1回だけ作り、/Users/mac/tamago/kagi/buffer_token.txt に貼って保存する。5分便の buffer_kagi_install.py が拾って鍵ファイルへしまい、平文を消す",
    "stops": "oasisjoyrelief への予約が1本も出せない。★台帳に無い間は、毎回たまごさんに「ログインして」と頼み直していた",
-   "measuredMinAgo": 22.5
+   "measuredMinAgo": 21.9
   },
   {
    "id": "devin",
    "what": "Devin（実装の代行）",
-   "status": "ok",
-   "detail": "200 通った",
+   "status": "unknown",
+   "detail": "叩けませんでした（回線かホスト名）",
    "fix": "app.devin.ai で鍵を作り直す",
    "stops": "Devinへ仕事を出せない",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   },
   {
    "id": "lovable",
@@ -127,43 +127,43 @@
    "detail": "トークンがあります（更新用あり）",
    "fix": "Chromeで同意ボタンを1回押す（受け皿は lovable_auth_keeper が立てている）",
    "stops": "直したものが**本番に出ない**（丸1日の実害）",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   },
   {
    "id": "nagekomi",
    "what": "投げ込み箱（スマホ→棚）",
-   "status": "ok",
-   "detail": "スマホの箱と同じ道で空荷が通りました。棚へ書く鍵もあります",
+   "status": "ng",
+   "detail": "公開されている中継所の場所が読めない（URLError）",
    "fix": "relay_watch がトンネルを張り直す／鍵は lovable_auth_keeper の受け皿で同意を1回",
    "stops": "たまごさんが投げても棚に入らない（黙って失敗していた）",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   },
   {
    "id": "heart",
    "what": "心臓（15秒おきの本体）",
    "status": "ok",
-   "detail": "動いています（5秒前）",
+   "detail": "動いています（3秒前）",
    "fix": "5分便が自分で立て直す。立て直らなければ launchctl kickstart",
    "stops": "着火と受信箱が止まる＝ボタンが効かない",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   },
   {
    "id": "gobun",
    "what": "5分便（立て直す側）",
-   "status": "ok",
-   "detail": "動いています（5分前）",
+   "status": "ng",
+   "detail": "25分前 から止まっています",
    "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
    "stops": "心臓が落ちても誰も立て直さない",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   },
   {
    "id": "hassha",
    "what": "発車（仕事が前に進むか）",
    "status": "ok",
-   "detail": "止め札はありません（最後の発車記録 16秒前）",
+   "detail": "止め札はありません（最後の発車記録 59秒前）",
    "fix": "止め札の理由を読む。認証なら claude、枠なら時間で戻る",
    "stops": "仕事が1本も進まない",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   },
   {
    "id": "relay",
@@ -172,16 +172,16 @@
    "detail": "200 返事があります",
    "fix": "relay_watch が自分で立て直す",
    "stops": "たまごさんがボタンを押しても何も起きない",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   },
   {
    "id": "mac_omosa",
    "what": "Macの重さ（swapと負荷）",
    "status": "ng",
-   "detail": "swap 26.7GB・負荷 14.1（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（6.3GB）",
+   "detail": "swap 26.4GB・負荷 12.4（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（6.0GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   }
  ],
  "karamawari": [
@@ -224,7 +224,7 @@
   {
    "id": "auto:1175_kagi_uketori",
    "label": "1175_kagi_uketori（名簿に無いので自動で台帳入り）",
-   "runs": 1251,
+   "runs": 1254,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -233,7 +233,7 @@
   {
    "id": "auto:aibou_mail",
    "label": "aibou_mail（名簿に無いので自動で台帳入り）",
-   "runs": 862,
+   "runs": 865,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -242,7 +242,7 @@
   {
    "id": "auto:aitara_mawasu",
    "label": "aitara_mawasu（名簿に無いので自動で台帳入り）",
-   "runs": 1269,
+   "runs": 1272,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -251,7 +251,7 @@
   {
    "id": "auto:aki_toko",
    "label": "aki_toko（名簿に無いので自動で台帳入り）",
-   "runs": 225,
+   "runs": 226,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -269,7 +269,7 @@
   {
    "id": "auto:claude_nouhin",
    "label": "claude_nouhin（名簿に無いので自動で台帳入り）",
-   "runs": 743,
+   "runs": 746,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -278,7 +278,7 @@
   {
    "id": "auto:cloud_credit_henji",
    "label": "cloud_credit_henji（名簿に無いので自動で台帳入り）",
-   "runs": 737,
+   "runs": 740,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -305,7 +305,7 @@
   {
    "id": "auto:dojisu_jougen",
    "label": "dojisu_jougen（名簿に無いので自動で台帳入り）",
-   "runs": 1310,
+   "runs": 1313,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -314,7 +314,7 @@
   {
    "id": "auto:fuka_mihari",
    "label": "fuka_mihari（名簿に無いので自動で台帳入り）",
-   "runs": 779,
+   "runs": 782,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -332,7 +332,7 @@
   {
    "id": "auto:gokigen_tane",
    "label": "gokigen_tane（名簿に無いので自動で台帳入り）",
-   "runs": 56,
+   "runs": 57,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -341,7 +341,7 @@
   {
    "id": "auto:haibun",
    "label": "haibun（名簿に無いので自動で台帳入り）",
-   "runs": 1228,
+   "runs": 1231,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -350,7 +350,7 @@
   {
    "id": "auto:haikanzu",
    "label": "haikanzu（名簿に無いので自動で台帳入り）",
-   "runs": 107,
+   "runs": 108,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -359,7 +359,7 @@
   {
    "id": "auto:hyoudai",
    "label": "hyoudai（名簿に無いので自動で台帳入り）",
-   "runs": 1079,
+   "runs": 1082,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -377,7 +377,7 @@
   {
    "id": "auto:kagi_jidou_makinaoshi",
    "label": "kagi_jidou_makinaoshi（名簿に無いので自動で台帳入り）",
-   "runs": 776,
+   "runs": 779,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -395,7 +395,7 @@
   {
    "id": "auto:kaitsuu",
    "label": "kaitsuu（名簿に無いので自動で台帳入り）",
-   "runs": 1323,
+   "runs": 1326,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -404,7 +404,7 @@
   {
    "id": "auto:kakeibo",
    "label": "kakeibo（名簿に無いので自動で台帳入り）",
-   "runs": 812,
+   "runs": 815,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -413,7 +413,7 @@
   {
    "id": "auto:kakunin_machi",
    "label": "kakunin_machi（名簿に無いので自動で台帳入り）",
-   "runs": 107,
+   "runs": 108,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -449,7 +449,7 @@
   {
    "id": "auto:modoseru",
    "label": "modoseru（名簿に無いので自動で台帳入り）",
-   "runs": 1218,
+   "runs": 1221,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -458,7 +458,7 @@
   {
    "id": "auto:nagekomi_list",
    "label": "nagekomi_list（名簿に無いので自動で台帳入り）",
-   "runs": 1287,
+   "runs": 1290,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -467,7 +467,7 @@
   {
    "id": "auto:obsidian_mamoru",
    "label": "obsidian_mamoru（名簿に無いので自動で台帳入り）",
-   "runs": 745,
+   "runs": 748,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -503,7 +503,7 @@
   {
    "id": "auto:okane_ichimai",
    "label": "okane_ichimai（名簿に無いので自動で台帳入り）",
-   "runs": 927,
+   "runs": 930,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -512,7 +512,7 @@
   {
    "id": "auto:okoshi",
    "label": "okoshi（名簿に無いので自動で台帳入り）",
-   "runs": 877,
+   "runs": 880,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -539,7 +539,7 @@
   {
    "id": "auto:shiire_loop",
    "label": "shiire_loop（名簿に無いので自動で台帳入り）",
-   "runs": 42,
+   "runs": 43,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -557,7 +557,7 @@
   {
    "id": "auto:shingou",
    "label": "shingou（名簿に無いので自動で台帳入り）",
-   "runs": 1269,
+   "runs": 1272,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -575,7 +575,7 @@
   {
    "id": "auto:soto_hatarakite",
    "label": "soto_hatarakite（名簿に無いので自動で台帳入り）",
-   "runs": 107,
+   "runs": 108,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -584,7 +584,7 @@
   {
    "id": "auto:sozai_hiroi",
    "label": "sozai_hiroi（名簿に無いので自動で台帳入り）",
-   "runs": 750,
+   "runs": 752,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -593,7 +593,7 @@
   {
    "id": "auto:subsc_calendar",
    "label": "subsc_calendar（名簿に無いので自動で台帳入り）",
-   "runs": 740,
+   "runs": 743,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -602,7 +602,7 @@
   {
    "id": "auto:subsc_shirase",
    "label": "subsc_shirase（名簿に無いので自動で台帳入り）",
-   "runs": 109,
+   "runs": 110,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -611,7 +611,7 @@
   {
    "id": "auto:tekizai",
    "label": "tekizai（名簿に無いので自動で台帳入り）",
-   "runs": 107,
+   "runs": 108,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -620,7 +620,7 @@
   {
    "id": "auto:tokushu",
    "label": "tokushu（名簿に無いので自動で台帳入り）",
-   "runs": 812,
+   "runs": 815,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -629,7 +629,7 @@
   {
    "id": "auto:vault_kanmon",
    "label": "vault_kanmon（名簿に無いので自動で台帳入り）",
-   "runs": 815,
+   "runs": 818,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -638,7 +638,7 @@
   {
    "id": "auto:worktree_taihi",
    "label": "worktree_taihi（名簿に無いので自動で台帳入り）",
-   "runs": 297,
+   "runs": 298,
    "catches": 0,
    "blocked": "skipped=['_stale_cc_205273_1794034926（git status 失敗）']",
    "need": "",
@@ -728,7 +728,7 @@
   {
    "id": "auto:youryou_mihari",
    "label": "youryou_mihari（名簿に無いので自動で台帳入り）",
-   "runs": 844,
+   "runs": 847,
    "catches": 0,
    "blocked": "",
    "need": "",
@@ -773,20 +773,29 @@
   {
    "id": "auto:zaiko_build",
    "label": "zaiko_build（名簿に無いので自動で台帳入り）",
-   "runs": 644,
+   "runs": 647,
    "catches": 0,
    "blocked": "",
    "need": "",
    "why": ""
   },
   {
+   "id": "pages",
+   "label": "本番への公開(GitHub Pages)",
+   "runs": 1,
+   "catches": 0,
+   "blocked": "最後に本番へ出たのが 138分前（2026-11-08 22:25:09）／そのあと push が落ちています（2026-11-09 00:42:10）＝mainに入れても画面は変わっていません",
+   "need": "",
+   "why": "最後に本番へ出たのが 138分前（2026-11-08 22:25:09）／そのあと push が落ちています（2026-11-09 00:42:10）＝mainに入れても画面は変わっていません"
+  },
+  {
    "id": "queue",
    "label": "発車待ち（積んだのに走っていない）",
-   "runs": 5760,
+   "runs": 5811,
    "catches": 14,
-   "blocked": "★積んだのに一度も走っていない件が5524件（3日超え）。古い順に 1番（65.2日）判定日赤｜番号56814｜原文：前回残件送りにした「全画面ピッカーのタイル未／42番（63.6日）アーティストページの無い曲に、アーティストページを作る／598番（60.7日）触っていて楽しいをリサーチして1つ作って出す（常設）／688番（60.6日）falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を／684番（60.6日）鬼監督を復活させて、完了したタスクを毎回チェックさせる。発車待ち全体は5760件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください",
+   "blocked": "★積んだのに一度も走っていない件が5524件（3日超え）。古い順に 1番（65.3日）判定日赤｜番号56814｜原文：前回残件送りにした「全画面ピッカーのタイル未／42番（63.7日）アーティストページの無い曲に、アーティストページを作る／598番（60.8日）触っていて楽しいをリサーチして1つ作って出す（常設）／688番（60.7日）falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を／684番（60.7日）鬼監督を復活させて、完了したタスクを毎回チェックさせる。発車待ち全体は5811件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください",
    "need": "",
-   "why": "止められています：★積んだのに一度も走っていない件が5524件（3日超え）。古い順に 1番（65.2日）判定日赤｜番号56814｜原文：前回残件送りにした「全画面ピッカーのタイル未／42番（63.6日）アーティストページの無い曲に、アーティストページを作る／598番（60.7日）触っていて楽しいをリサーチして1つ作って出す（常設）／688番（60.6日）falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を／684番（60.6日）鬼監督を復活させて、完了したタスクを毎回チェックさせる。発車待ち全体は5760件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください"
+   "why": "止められています：★積んだのに一度も走っていない件が5524件（3日超え）。古い順に 1番（65.3日）判定日赤｜番号56814｜原文：前回残件送りにした「全画面ピッカーのタイル未／42番（63.7日）アーティストページの無い曲に、アーティストページを作る／598番（60.8日）触っていて楽しいをリサーチして1つ作って出す（常設）／688番（60.7日）falの費用を「どの作業でいくら・何が変わったか」まで辿れるようにする＋分を／684番（60.7日）鬼監督を復活させて、完了したタスクを毎回チェックさせる。発車待ち全体は5811件。★列が長すぎて順番が来ていないだけかもしれません。毎日やることは列に積まず、自前の口で走らせてください"
   }
  ],
  "nomikomi": [
@@ -821,15 +830,6 @@
    "catches": 0
   },
   {
-   "who": "1142_fukkyuu（名簿に無いので自動で台帳入り）",
-   "mark": "blocked=順番待ちの幽霊項目 1件（下見だけ）",
-   "words": [
-    "blocked"
-   ],
-   "runs": 308,
-   "catches": 1280
-  },
-  {
    "who": "worktree_taihi（名簿に無いので自動で台帳入り）",
    "mark": "skipped=['_stale_cc_205273_1794034926（git status 失敗）']",
    "words": [
@@ -837,7 +837,7 @@
     "skip",
     "skipped"
    ],
-   "runs": 297,
+   "runs": 298,
    "catches": 0
   }
  ],
@@ -850,7 +850,7 @@
    "detail": "アプリパスワードのファイルが置かれていません",
    "fix": "Googleアカウントでアプリパスワードを作り、そのファイルに置く",
    "stops": "LINE審査・Anthropic・外部窓口の返信に**誰も気づかない**",
-   "measuredMinAgo": 23.3
+   "measuredMinAgo": 22.0
   },
   {
    "id": "xai",
@@ -859,7 +859,7 @@
    "detail": "鍵が置かれていません",
    "fix": "この鍵のチーム(goodvibes)に残高が要る。console.x.ai で入れる。★声は別の鍵で既に通っている（下の行）ので、声のために入れる必要は無い",
    "stops": "Grokへの相談ができない",
-   "measuredMinAgo": 23.2
+   "measuredMinAgo": 21.9
   },
   {
    "id": "xai_koe",
@@ -868,16 +868,7 @@
    "detail": "窓口に届かない（URLError(gaierror(8, 'nodename nor servname provided, or not known'))）",
    "fix": "Lovable→クラウド→Secrets の XAI_API_KEY2 を見る。窓口＝supabase/functions/voice-session",
    "stops": "ごきげん補給所の「話す」と 970号の台が鳴らなくなる",
-   "measuredMinAgo": 23.1
-  },
-  {
-   "id": "copilot",
-   "what": "GitHub Copilot（実装の代行）",
-   "status": "ng",
-   "detail": "担当者の候補にCopilotが居ません＝Issueを立てても受け取られません（有料プラン／組織の許可が要る形）",
-   "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
-   "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
-   "measuredMinAgo": 23.0
+   "measuredMinAgo": 21.9
   },
   {
    "id": "meta",
@@ -886,16 +877,34 @@
    "detail": "鍵がどこにも置かれていません（★隠れているのではなく、まだ作られていません）",
    "fix": "developers.facebook.com でアプリを作りトークンを発行 → ~/.tamago/keys/api_keys.env へ",
    "stops": "Meta系への投稿・取得が一切できない。★台帳に無い間は「無い」ことにも気づけなかった",
-   "measuredMinAgo": 23.0
+   "measuredMinAgo": 21.9
+  },
+  {
+   "id": "nagekomi",
+   "what": "投げ込み箱（スマホ→棚）",
+   "status": "ng",
+   "detail": "公開されている中継所の場所が読めない（URLError）",
+   "fix": "relay_watch がトンネルを張り直す／鍵は lovable_auth_keeper の受け皿で同意を1回",
+   "stops": "たまごさんが投げても棚に入らない（黙って失敗していた）",
+   "measuredMinAgo": 21.9
+  },
+  {
+   "id": "gobun",
+   "what": "5分便（立て直す側）",
+   "status": "ng",
+   "detail": "25分前 から止まっています",
+   "fix": "launchctl kickstart -k gui/$UID/com.tamago.machine-status",
+   "stops": "心臓が落ちても誰も立て直さない",
+   "measuredMinAgo": 21.9
   },
   {
    "id": "mac_omosa",
    "what": "Macの重さ（swapと負荷）",
    "status": "ng",
-   "detail": "swap 26.7GB・負荷 14.1（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（6.3GB）",
+   "detail": "swap 26.4GB・負荷 12.4（しきい値 swap10GB／負荷12を超えています）／一番食っているのは com.apple.Virtualization.VirtualMachine（6.0GB）",
    "fix": "仕事が終わって残っているものだけ畳む（止まったセッション・使い終わった作業場・主の居ないWebContent）。Braveのタブを減らすのが一番効く。壺と金庫には触らない",
    "stops": "**閲覧中にブラウザがリロード・クラッシュする**（09-19・09-20に実害）",
-   "measuredMinAgo": 22.4
+   "measuredMinAgo": 21.9
   }
  ],
  "unknownKeys": [
@@ -903,10 +912,46 @@
    "id": "buffer",
    "what": "Buffer（Xの予約投稿）",
    "status": "unknown",
-   "detail": "400 未実測",
+   "detail": "叩けませんでした（回線かホスト名）",
    "fix": "publish.buffer.com/settings/api で1回だけ鍵を作り、~/.tamago/keys/api_keys.env に BUFFER_TOKEN=（値）を1行足す（/Users/mac/tamago/kagi/buffer_token.txt に貼るだけでも自動で写る）",
    "stops": "Xの予約が1本も入らない。毎回「ログインして」に戻る",
-   "measuredMinAgo": 23.3
+   "measuredMinAgo": 22.0
+  },
+  {
+   "id": "github",
+   "what": "GitHub（ghのトークン＝見張り番の目）",
+   "status": "unknown",
+   "detail": "叩けませんでした（回線かホスト名）",
+   "fix": "gh auth login",
+   "stops": "チャッピーがIssueを置いても誰も気づかない（※進捗表の公開pushは別の鍵なので、ここが赤でも公開は止まらない）",
+   "measuredMinAgo": 21.9
+  },
+  {
+   "id": "openai",
+   "what": "OpenAI（外部検品・代行）",
+   "status": "unknown",
+   "detail": "叩けませんでした（回線かホスト名）",
+   "fix": "platform.openai.com で鍵を作り直して鍵ファイルへ",
+   "stops": "鬼監督の外部検品と、詰まった仕事の逃がし先が消える",
+   "measuredMinAgo": 21.9
+  },
+  {
+   "id": "gemini",
+   "what": "Gemini（外部代行・サーバ側）",
+   "status": "unknown",
+   "detail": "叩けませんでした（回線かホスト名）",
+   "fix": "Google AI Studio で無料発行して鍵ファイルへ",
+   "stops": "安い代行先が消えてClaudeの枠を食う（※ページの「話す」が使うのはブラウザ側の別の鍵 tamago_gemini_key。それは 969_kagi_kanmon.py が見ている）",
+   "measuredMinAgo": 21.9
+  },
+  {
+   "id": "copilot",
+   "what": "GitHub Copilot（実装の代行）",
+   "status": "unknown",
+   "detail": "叩けませんでした（URLError）",
+   "fix": "github.com/settings/copilot で有効にする。★有料。金額は実測していない",
+   "stops": "Issueを立てても永遠に受け取られない（👀も付かない）。気づけないまま待ち続ける",
+   "measuredMinAgo": 21.9
   },
   {
    "id": "fal",
@@ -915,18 +960,27 @@
    "detail": "叩けませんでした（回線かホスト名）",
    "fix": "fal.ai で鍵を作り直して鍵ファイルへ",
    "stops": "絵と動画が1枚も作れない",
-   "measuredMinAgo": 22.5
+   "measuredMinAgo": 21.9
   },
   {
    "id": "buffer",
    "what": "Buffer（Xへの予約投稿の口）",
    "status": "unknown",
-   "detail": "400 未実測",
+   "detail": "叩けませんでした（回線かホスト名）",
    "fix": "publish.buffer.com/settings/api で鍵を1回だけ作り、/Users/mac/tamago/kagi/buffer_token.txt に貼って保存する。5分便の buffer_kagi_install.py が拾って鍵ファイルへしまい、平文を消す",
    "stops": "oasisjoyrelief への予約が1本も出せない。★台帳に無い間は、毎回たまごさんに「ログインして」と頼み直していた",
-   "measuredMinAgo": 22.5
+   "measuredMinAgo": 21.9
+  },
+  {
+   "id": "devin",
+   "what": "Devin（実装の代行）",
+   "status": "unknown",
+   "detail": "叩けませんでした（回線かホスト名）",
+   "fix": "app.devin.ai で鍵を作り直す",
+   "stops": "Devinへ仕事を出せない",
+   "measuredMinAgo": 21.9
   }
  ],
- "redCount": 73,
+ "redCount": 75,
  "red": true
 }
