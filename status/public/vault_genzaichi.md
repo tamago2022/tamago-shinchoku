@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-11-08 21:55:46・hash=fd60cdc4e947 -->
+<!-- 自動生成・genzaichi_sync.py・2026-11-08 22:15:47・hash=6a46b7fd06aa -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -162,15 +162,11 @@
 - 2026-10-11 名カバーの棚を許可制に（台帳 src/lib/meiCoverLedger.ts＝たまごさん指定だけ表示・prebuild点検 check-meicover-gate）。25件を外し（1語で戻せる：MEI_COVER_UNDO_20261011）、風をあつめて(Josh Turner)を追加。ハートは全サイト一時非表示（HEARTS_VISIBLE）。文字マークは左下・英語、グッドカバーだけ左上。added_by列のmigrationは未適用なら台帳だけで動く。
 
 <!-- 自動まとめ:始 -->
-## 今日までに届いた更新（自動まとめ・1日1回／2026-11-07 22:11）
+## 今日までに届いた更新（自動まとめ・1日1回／2026-11-08 22:12）
 
 - **205237号 空カード埋め|五木ひろし2/2**（11-07 12:13）9曲全件にnote/memo/src追加、main合流済み(commit b9c241712/705b83374)。公開はLovable OAuth invalid_grant既知障害でブロック中、本番未反映を実測確認済み。重複エスカレーションなし。
 - **205233号 空カード埋め|マイケル・フランクス(2/2)**（11-07 01:46）対象10曲中9曲は前セッション実装分がorigin/main合流済み・本番で実文言を確認。残り1曲(live-from-tokyo)はtabiCopy.ts経由でmain合流済みだがLovable OAuth公開ブロック(HTTP403)で本番未反映。副次発見:mac_jobs心臓が40分以上停止、振り分け所fw-20261107014610-d74bbへ再起動依頼済み。
 - **206319 GOD FUNKY番宣 仕上げ**（11-06 22:23）街の質感をCC0写真で後がけ（645コマ・音ハメ無改変）。自己採点68点で納品せず。ロボ3体と締めカードの3D差し替えは205673（3D正本）完了後に【続き】。待ち記録 status/itsumo/machi_3d.json。確認 https://tamago2022.github.［除去］.html
-- **宇宙うんこ 夜の香港クレーン直し（206318・Fable）**（11-06 20:29）v4e全1271コマ描画完了（run 42174435724の18ジョブ＋抜け128コマを42205170497で描き直し・0円）。組み立て中。自己採点76点＝納品せず、v4f（光の道の飽和・外壁ののっぺり・台看板の店名）を次の便へ。店主の判断待ちなし。
-- **205223号・カジヒデキ空カード埋め(2/2)**（11-06 14:54）実装・main合流完了(commit bf0006452)。公開のみLovable OAuth(invalid_grant)で停止、振り分け所fw-20261106145427-36d5cへ承認URL開封を依頼済み
-- **206317 宇宙うんこ v5.1h 廃墟モール**（11-06 09:26）★訂正：本番便は run 42134791855（36分割・同時18本）に出し直し。最初の便 42131804856 は同時20本で GitHub Pages を止めたので25分で中止。確認ページ https://tamago2022.github.［除去］.html は 200。見張り toru_v5_1.sh frames_v51h2 稼働中。次：連番→kumitate_v5_1.py→採点→80点なら納品
-- **206317 宇宙うんこ廃墟モール v5.1**（11-06 05:51）GitHub の llvmpipe EEVEE は切り分け6回（SSR/AO/体積を切っても）写真が乗らず打ち止め。本線を Cycles（CPU・適応サンプリング＋OIDN）へ切り替え、試し run 42107094215（6コマ・75%）を送った。次＝1コマの時間を測り、本番20チャンクの分割を決めて描く
 
 （子セッションは Vault に直接書かない。status/genzaichi_kouho.md に追記→夜にここへ1回だけ反映）
 <!-- 自動まとめ:終 -->
