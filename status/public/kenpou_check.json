@@ -1,7 +1,7 @@
 {
- "checkedAt": "2026-11-08T09:11:13+09:00",
+ "checkedAt": "2026-11-09T09:11:52+09:00",
  "overallColor": "red",
- "redCount": 3,
+ "redCount": 4,
  "items": [
   {
    "key": "ctx_1m",
@@ -23,8 +23,8 @@
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
-   "count": 1,
-   "detail": "最終記録から約8.3時間経過（2026-11-08T00:51:25+09:00）／直近24時間の完了17件中、鬼監督の記録が付いているのは16件"
+   "count": 0,
+   "detail": "最終記録から約8.7時間経過（2026-11-09T00:28:29+09:00）／直近24時間に完了した仕事なし（カバー率は計測できず）"
   },
   {
    "key": "done_missing_url",
@@ -36,23 +36,23 @@
   {
    "key": "factory_stalled",
    "label": "工場が止まったまま放置されていないか",
-   "color": "green",
-   "count": 0,
-   "detail": "走行1本／上限1本（枠が埋まっているだけ・正常）"
+   "color": "red",
+   "count": 5713,
+   "detail": "最終発車から32.5時間・発車待ち5713件・空き1枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回211543番 → 今回214666番（減少なし）"
+   "detail": "前回214666番 → 今回219885番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
    "count": 72,
-   "detail": "status/public/verify_log.jsonl(49.4MB)、share/done/index.html(36.0MB)、status/public/dispatch_outbox.jsonl(25.8MB)、share/_deliver/godfunky/2026-11-02_★最新_動画_GODFUNKY番宣_ロボットフェス試作.mp4(19.9MB)、status/public/done_archive.json.gz(12.5MB)"
+   "detail": "status/public/verify_log.jsonl(49.4MB)、share/done/index.html(36.0MB)、status/public/dispatch_outbox.jsonl(25.8MB)、share/_deliver/godfunky/2026-11-02_★最新_動画_GODFUNKY番宣_ロボットフェス試作.mp4(19.9MB)、status/public/done_archive.json.gz(12.6MB)"
   },
   {
    "key": "check_page_404",
@@ -73,21 +73,27 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "green",
-   "count": 6,
-   "detail": "6件（しきい値100件以内）"
+   "count": 4,
+   "detail": "4件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 52375,
-   "detail": "未報告の完了が52375件たまっている（最古は約1083.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 52376,
+   "detail": "未報告の完了が52376件たまっている（最古は約1107.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
    "key": "ctx_1m",
    "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
+   "key": "factory_stalled",
+   "status": "done",
+   "message": "219891番として発車待ちに追加しました（P2）",
+   "n": 219891
   },
   {
    "key": "big_files",
