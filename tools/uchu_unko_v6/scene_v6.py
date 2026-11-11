@@ -107,7 +107,7 @@ L(nt, pw.outputs[0], out.inputs["Surface"])
 WATER_NT = nt
 
 # 和紙（灯籠の紙）：拡散＋透過＋ごく弱い発光、繊維のむら
-def mat_paper(name, tint=(1.0, 0.86, 0.66)):
+def mat_paper(name, tint=(1.0, 0.86, 0.66), sumi=None):
     m, nt, out = node_mat(name)
     tc = N(nt, "ShaderNodeTexCoord")
     nzp = N(nt, "ShaderNodeTexNoise"); nzp.inputs["Scale"].default_value = 60.0; nzp.inputs["Detail"].default_value = 8
@@ -115,13 +115,27 @@ def mat_paper(name, tint=(1.0, 0.86, 0.66)):
     ramp = N(nt, "ShaderNodeValToRGB"); ramp.color_ramp.elements[0].position = 0.35; ramp.color_ramp.elements[1].position = 0.7
     ramp.color_ramp.elements[0].color = (tint[0] * 0.80, tint[1] * 0.74, tint[2] * 0.60, 1); ramp.color_ramp.elements[1].color = (*tint, 1)
     L(nt, nzp.outputs["Fac"], ramp.inputs["Fac"])
-    dif = N(nt, "ShaderNodeBsdfDiffuse"); L(nt, ramp.outputs["Color"], dif.inputs["Color"])
-    tr = N(nt, "ShaderNodeBsdfTranslucent"); L(nt, ramp.outputs["Color"], tr.inputs["Color"])
+    col = ramp.outputs["Color"]
+    if sumi is not None:
+        uvn = N(nt, "ShaderNodeUVMap")
+        it = N(nt, "ShaderNodeTexImage"); it.image = sumi; it.extension = "CLIP"
+        L(nt, uvn.outputs["UV"], it.inputs["Vector"])
+        ink = N(nt, "ShaderNodeMixRGB"); L(nt, it.outputs["Color"], ink.inputs["Fac"]); L(nt, col, ink.inputs["Color1"])
+        ink.inputs["Color2"].default_value = (0.05, 0.025, 0.015, 1)
+        fm = N(nt, "ShaderNodeMath", operation="MULTIPLY"); L(nt, it.outputs["Color"], fm.inputs[0]); fm.inputs[1].default_value = 0.85
+        L(nt, fm.outputs[0], ink.inputs["Fac"])
+        col = ink.outputs["Color"]
+    dif = N(nt, "ShaderNodeBsdfDiffuse"); L(nt, col, dif.inputs["Color"])
+    tr = N(nt, "ShaderNodeBsdfTranslucent"); L(nt, col, tr.inputs["Color"])
     mx = N(nt, "ShaderNodeMixShader"); mx.inputs["Fac"].default_value = 0.62
     L(nt, dif.outputs[0], mx.inputs[1]); L(nt, tr.outputs[0], mx.inputs[2])
     L(nt, mx.outputs[0], out.inputs["Surface"])
     return m
 m_paper = mat_paper("paper", (1.0, 0.66, 0.36))
+M_SUMI = []
+for i in range(6):
+    im_ = bpy.data.images.load(os.path.join(W, "sumi", "sumi%d.png" % i)); im_.colorspace_settings.name = "Non-Color"
+    M_SUMI.append(mat_paper("paper_sumi%d" % i, (1.0, 0.66, 0.36), im_))
 
 m_wood, nt, out = node_mat("wood")
 tc = N(nt, "ShaderNodeTexCoord"); wv = N(nt, "ShaderNodeTexWave"); wv.inputs["Scale"].default_value = 18; wv.inputs["Distortion"].default_value = 6
@@ -199,12 +213,12 @@ def mat_house(name, seed):
     win = N(nt, "ShaderNodeMath", operation="MULTIPLY"); L(nt, sx_.outputs[0], win.inputs[0]); L(nt, sz_.outputs[0], win.inputs[1])
     cmb = N(nt, "ShaderNodeCombineXYZ"); L(nt, flx.outputs[0], cmb.inputs["X"]); L(nt, flz.outputs[0], cmb.inputs["Y"]); cmb.inputs["Z"].default_value = seed * 7.1
     wn = N(nt, "ShaderNodeTexWhiteNoise"); wn.noise_dimensions = "3D"; L(nt, cmb.outputs[0], wn.inputs["Vector"])
-    lit = N(nt, "ShaderNodeMath", operation="GREATER_THAN"); L(nt, wn.outputs["Value"], lit.inputs[0]); lit.inputs[1].default_value = 0.58
+    lit = N(nt, "ShaderNodeMath", operation="GREATER_THAN"); L(nt, wn.outputs["Value"], lit.inputs[0]); lit.inputs[1].default_value = 0.64
     wl = N(nt, "ShaderNodeMath", operation="MULTIPLY"); L(nt, win.outputs[0], wl.inputs[0]); L(nt, lit.outputs[0], wl.inputs[1])
     warm = N(nt, "ShaderNodeMixRGB"); L(nt, wn.outputs["Color"], warm.inputs["Fac"]); warm.inputs["Color1"].default_value = (1.0, 0.50, 0.18, 1); warm.inputs["Color2"].default_value = (1.0, 0.70, 0.36, 1)
     wall = principled(nt, **{"Base Color": (0.035, 0.030, 0.032, 1), "Roughness": 0.8})
     unlit = principled(nt, **{"Base Color": (0.01, 0.012, 0.016, 1), "Roughness": 0.15})
-    em = N(nt, "ShaderNodeEmission"); L(nt, warm.outputs["Color"], em.inputs["Color"]); em.inputs["Strength"].default_value = 5.0
+    em = N(nt, "ShaderNodeEmission"); L(nt, warm.outputs["Color"], em.inputs["Color"]); em.inputs["Strength"].default_value = 3.6
     m1 = N(nt, "ShaderNodeMixShader"); L(nt, win.outputs[0], m1.inputs["Fac"]); L(nt, wall.outputs[0], m1.inputs[1]); L(nt, unlit.outputs[0], m1.inputs[2])
     m2 = N(nt, "ShaderNodeMixShader"); L(nt, wl.outputs[0], m2.inputs["Fac"]); L(nt, m1.outputs[0], m2.inputs[1]); L(nt, em.outputs[0], m2.inputs[2])
     L(nt, m2.outputs[0], out.inputs["Surface"])
@@ -278,6 +292,18 @@ def lantern_mesh():
     bm = bmesh.new()
     box_bm(bm, 0, 0, P.BOX_Z0 + P.BOX_H / 2, P.BOX_W - 0.006, P.BOX_W - 0.006, P.BOX_H - 0.002)
     # 横の桟（紙に影を落とす）
+    uvl = bm.loops.layers.uv.new("UVMap"); hw = (P.BOX_W - 0.006) / 2
+    for fa in bm.faces:
+        n = fa.normal
+        if abs(n.z) > 0.5:
+            for lp in fa.loops: lp[uvl].uv = (-1, -1)
+            continue
+        right = Vector((0, 0, 1)).cross(n)
+        for lp in fa.loops:
+            co = lp.vert.co
+            u = co.dot(right) / (2 * hw) * 1.15 + 0.5
+            v = (co.z - P.BOX_Z0) / P.BOX_H * 1.0
+            lp[uvl].uv = (u, (v - 0.5) * 1.05 + 0.5)
     me2 = bpy.data.meshes.new("lantern_paper"); bm.to_mesh(me2); bm.free(); me2.materials.append(m_paper)
     bm = bmesh.new()
     for z in (P.BOX_Z0 + P.BOX_H * 0.36, P.BOX_Z0 + P.BOX_H * 0.70):
@@ -295,6 +321,10 @@ for l in LANT:
     root = bpy.data.objects.new("L_" + l["id"], None); sc.collection.objects.link(root)
     for me in (me_wood, me_paper, me_bar):
         o = bpy.data.objects.new(me.name + "_" + l["id"], me); sc.collection.objects.link(o); o.parent = root
+        if me is me_paper:
+            k_ = rnd.randrange(10)
+            if k_ < 6:
+                o.material_slots[0].link = "OBJECT"; o.material_slots[0].material = M_SUMI[k_]
     lt = bpy.data.lights.new("lt_" + l["id"], "POINT"); lt.shadow_soft_size = 0.05
     lt.color = (1.0, 0.46 + rnd.uniform(-0.04, 0.05), 0.16 + rnd.uniform(-0.03, 0.03))
     base_w = rnd.uniform(1.0, 1.6)
@@ -549,7 +579,7 @@ rl = ct.nodes.new("CompositorNodeRLayers"); co = ct.nodes.new("CompositorNodeCom
 gl = ct.nodes.new("CompositorNodeGlare"); gl.glare_type = "FOG_GLOW"; gl.quality = "HIGH"; gl.threshold = 0.9; gl.size = 8; gl.mix = -0.72
 bpy.context.view_layer.use_pass_mist = True
 sc.world.mist_settings.start = 2.5; sc.world.mist_settings.depth = 14.0; sc.world.mist_settings.falloff = "QUADRATIC"
-mm = ct.nodes.new("CompositorNodeMath"); mm.operation = "MULTIPLY"; mm.inputs[1].default_value = float(os.environ.get("UU_HAZE", "0.14"))
+mm = ct.nodes.new("CompositorNodeMath"); mm.operation = "MULTIPLY"; mm.inputs[1].default_value = float(os.environ.get("UU_HAZE", "0.20"))
 ct.links.new(rl.outputs["Mist"], mm.inputs[0])
 mx = ct.nodes.new("CompositorNodeMixRGB"); mx.blend_type = "SCREEN"; mx.inputs[2].default_value = (0.03, 0.06, 0.09, 1)
 ct.links.new(mm.outputs[0], mx.inputs[0]); ct.links.new(rl.outputs["Image"], mx.inputs[1])
