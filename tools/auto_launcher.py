@@ -2849,6 +2849,20 @@ def _main_impl():
           for it in waiting[:30]:
               if len(_clean) >= room:
                   break
+              # 2026-11-12 直し：無駄カット（3回目以降は保留）を「選ぶ前」に効かせて台帳に保存する。
+              #   実測：launch_one の中で hold にしても save_queue されず、205276番（urgent・P1）が
+              #   waiting のまま列の先頭に残り続けた → 11-10 18:05〜11-12 02:14 に1469回同じ票を
+              #   保留にしては空振り、上限1本の枠に他の便が1本も入らなかった（発車停止32時間）。
+              try:
+                  import mudacut as _mc0
+                  if _mc0.kinshi(it):
+                      _mc0.horyu(it)
+                      _zumi_hit = True
+                      log("🛑 無駄カット（選ぶ前）：%s番は%d回発車済み→保留にして次の便へ「%s」"
+                          % (it.get("n"), _mc0.kaisuu(it), it.get("title")))
+                      continue
+              except Exception as _e0:
+                  log("無駄カット（選ぶ前）でエラー %s番: %s" % (it.get("n"), _e0))
               _twin = zumi_sekisho.find_done_twin(it, _dones)
               if _twin is None:
                   _clean.append(it)
@@ -2893,6 +2907,13 @@ def _main_impl():
                   f.write(time.strftime("%Y-%m-%dT%H:%M:%S+09:00"))
           except Exception:
               pass
+      elif item.get("status") == "hold":
+          # 2026-11-12：関所で保留にした票は必ず台帳へ保存する（保存しないと次の周回も先頭に居座る）
+          try:
+              save_queue(q, snapshot=_snap)
+              _snap = queue_store.snapshot_items(q)
+          except Exception as _e:
+              log("保留の保存に失敗 %s番: %s" % (item.get("n"), _e))
   return 0
 
 
