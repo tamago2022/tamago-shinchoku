@@ -101,7 +101,7 @@ L(nt, ripple_sum.outputs[0], mixh.inputs[2])
 mixh2 = N(nt, "ShaderNodeMath", operation="MULTIPLY_ADD"); L(nt, nz2.outputs["Fac"], mixh2.inputs[0]); mixh2.inputs[1].default_value = 0.25; L(nt, mixh.outputs[0], mixh2.inputs[2])
 bump = N(nt, "ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.22; bump.inputs["Distance"].default_value = 0.02
 L(nt, mixh2.outputs[0], bump.inputs["Height"])
-pw = principled(nt, **{"Base Color": (0.004, 0.009, 0.012, 1), "Roughness": 0.035, "Specular": 0.5, "IOR": 1.333})
+pw = principled(nt, **{"Base Color": (0.008, 0.024, 0.040, 1), "Roughness": 0.035, "Specular": 0.5, "IOR": 1.333})
 L(nt, bump.outputs["Normal"], pw.inputs["Normal"])
 L(nt, pw.outputs[0], out.inputs["Surface"])
 WATER_NT = nt
@@ -144,7 +144,7 @@ cr.elements[-1].position = 0.75; cr.elements[-1].color = (0.36, 0.08, 0.26, 1)
 L(nt, nb.outputs["Fac"], neb.inputs["Fac"])
 vor = N(nt, "ShaderNodeTexVoronoi"); vor.inputs["Scale"].default_value = 120.0; vor.inputs["Randomness"].default_value = 1.0
 L(nt, tc.outputs["Object"], vor.inputs["Vector"])
-st = N(nt, "ShaderNodeMath", operation="LESS_THAN"); L(nt, vor.outputs["Distance"], st.inputs[0]); st.inputs[1].default_value = 0.045
+st = N(nt, "ShaderNodeMath", operation="LESS_THAN"); L(nt, vor.outputs["Distance"], st.inputs[0]); st.inputs[1].default_value = 0.06
 vor2 = N(nt, "ShaderNodeTexVoronoi"); vor2.inputs["Scale"].default_value = 28.0
 L(nt, tc.outputs["Object"], vor2.inputs["Vector"])
 st2 = N(nt, "ShaderNodeMath", operation="LESS_THAN"); L(nt, vor2.outputs["Distance"], st2.inputs[0]); st2.inputs[1].default_value = 0.022
@@ -161,7 +161,7 @@ nebs = N(nt, "ShaderNodeMixRGB", blend_type="MULTIPLY"); nebs.inputs["Fac"].defa
 emc = N(nt, "ShaderNodeMixRGB", blend_type="MIX"); L(nt, sts.outputs[0], emc.inputs["Fac"])
 L(nt, nebs.outputs["Color"], emc.inputs["Color1"]); L(nt, starcol.outputs["Color"], emc.inputs["Color2"])
 emsum = N(nt, "ShaderNodeMath", operation="ADD"); L(nt, ems2.outputs[0], emsum.inputs[0]); emsum.inputs[1].default_value = 0.0
-neb_strength = N(nt, "ShaderNodeMath", operation="MULTIPLY_ADD"); L(nt, glow.outputs[0], neb_strength.inputs[0]); neb_strength.inputs[1].default_value = 0.45; L(nt, ems2.outputs[0], neb_strength.inputs[2])
+neb_strength = N(nt, "ShaderNodeMath", operation="MULTIPLY_ADD"); L(nt, glow.outputs[0], neb_strength.inputs[0]); neb_strength.inputs[1].default_value = 0.7; L(nt, ems2.outputs[0], neb_strength.inputs[2])
 pu = principled(nt, **{"Roughness": 0.22, "Specular": 0.6, "Clearcoat": 1.0, "Clearcoat Roughness": 0.03, "Subsurface": 0.0})
 ao = N(nt, "ShaderNodeAmbientOcclusion"); ao.inputs["Distance"].default_value = 0.03
 aom = N(nt, "ShaderNodeMixRGB", blend_type="MULTIPLY"); aom.inputs["Fac"].default_value = 1.0
@@ -410,7 +410,7 @@ for (l, root, lt, base_w, ph) in LOBJ:
             dt = (f - lf) / P.FPS
             if dt >= 0: flash += 2.2 * math.exp(-dt / 0.45)
         on = ON[l["id"]]; dt = (f - on) / P.FPS
-        lvl = 0.035 if dt < 0 else min(1.0, 0.035 + (dt / 0.35) ** 1.5) * (1 + 0.5 * math.exp(-dt / 0.25) * (dt > 0.2))
+        lvl = 0.004 if dt < 0 else min(1.0, 0.004 + (dt / 0.35) ** 1.5) * (1 + 0.5 * math.exp(-dt / 0.25) * (dt > 0.2))
         flick *= lvl
         en.append((f, base_w * (flick + flash)))
     kf(root, "location", 0, xs); kf(root, "location", 1, ys); kf(root, "location", 2, zs)
