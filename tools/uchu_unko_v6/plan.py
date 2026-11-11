@@ -232,7 +232,7 @@ def build():
         if "step" not in l:
             for f in range(0, NF + 1, 2):
                 c = cams[f]["loc"]; lx, ly = lantern_xy(l, f)
-                if math.hypot(c[0] - lx, c[1] - ly) < 0.55: bad = True; break
+                if math.hypot(c[0] - lx, c[1] - ly) < 0.95: bad = True; break
         if not bad: keep.append(l)
     return keep
 

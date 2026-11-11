@@ -142,12 +142,12 @@ e = cr.elements.new(0.52); e.color = (0.035, 0.015, 0.075, 1)
 e = cr.elements.new(0.62); e.color = (0.015, 0.06, 0.13, 1)
 cr.elements[-1].position = 0.75; cr.elements[-1].color = (0.30, 0.10, 0.30, 1)
 L(nt, nb.outputs["Fac"], neb.inputs["Fac"])
-vor = N(nt, "ShaderNodeTexVoronoi"); vor.inputs["Scale"].default_value = 140.0; vor.inputs["Randomness"].default_value = 1.0
+vor = N(nt, "ShaderNodeTexVoronoi"); vor.inputs["Scale"].default_value = 120.0; vor.inputs["Randomness"].default_value = 1.0
 L(nt, tc.outputs["Object"], vor.inputs["Vector"])
-st = N(nt, "ShaderNodeMath", operation="LESS_THAN"); L(nt, vor.outputs["Distance"], st.inputs[0]); st.inputs[1].default_value = 0.09
+st = N(nt, "ShaderNodeMath", operation="LESS_THAN"); L(nt, vor.outputs["Distance"], st.inputs[0]); st.inputs[1].default_value = 0.045
 vor2 = N(nt, "ShaderNodeTexVoronoi"); vor2.inputs["Scale"].default_value = 28.0
 L(nt, tc.outputs["Object"], vor2.inputs["Vector"])
-st2 = N(nt, "ShaderNodeMath", operation="LESS_THAN"); L(nt, vor2.outputs["Distance"], st2.inputs[0]); st2.inputs[1].default_value = 0.045
+st2 = N(nt, "ShaderNodeMath", operation="LESS_THAN"); L(nt, vor2.outputs["Distance"], st2.inputs[0]); st2.inputs[1].default_value = 0.022
 sts = N(nt, "ShaderNodeMath", operation="ADD"); L(nt, st.outputs[0], sts.inputs[0]); L(nt, st2.outputs[0], sts.inputs[1])
 stc = N(nt, "ShaderNodeMixRGB", blend_type="MULTIPLY"); stc.inputs["Fac"].default_value = 1.0
 L(nt, vor.outputs["Color"], stc.inputs["Color1"]); stc.inputs["Color2"].default_value = (1, 1, 1, 1)
@@ -162,7 +162,7 @@ emc = N(nt, "ShaderNodeMixRGB", blend_type="MIX"); L(nt, sts.outputs[0], emc.inp
 L(nt, nebs.outputs["Color"], emc.inputs["Color1"]); L(nt, starcol.outputs["Color"], emc.inputs["Color2"])
 emsum = N(nt, "ShaderNodeMath", operation="ADD"); L(nt, ems2.outputs[0], emsum.inputs[0]); emsum.inputs[1].default_value = 0.0
 neb_strength = N(nt, "ShaderNodeMath", operation="MULTIPLY_ADD"); L(nt, glow.outputs[0], neb_strength.inputs[0]); neb_strength.inputs[1].default_value = 0.45; L(nt, ems2.outputs[0], neb_strength.inputs[2])
-pu = principled(nt, **{"Roughness": 0.32, "Specular": 0.6, "Clearcoat": 1.0, "Clearcoat Roughness": 0.03, "Subsurface": 0.0})
+pu = principled(nt, **{"Roughness": 0.22, "Specular": 0.6, "Clearcoat": 1.0, "Clearcoat Roughness": 0.03, "Subsurface": 0.0})
 L(nt, neb.outputs["Color"], pu.inputs["Base Color"])
 L(nt, emc.outputs["Color"], pu.inputs["Emission"])
 L(nt, neb_strength.outputs[0], pu.inputs["Emission Strength"])
@@ -196,7 +196,7 @@ def mat_house(name, seed):
     win = N(nt, "ShaderNodeMath", operation="MULTIPLY"); L(nt, sx_.outputs[0], win.inputs[0]); L(nt, sz_.outputs[0], win.inputs[1])
     cmb = N(nt, "ShaderNodeCombineXYZ"); L(nt, flx.outputs[0], cmb.inputs["X"]); L(nt, flz.outputs[0], cmb.inputs["Y"]); cmb.inputs["Z"].default_value = seed * 7.1
     wn = N(nt, "ShaderNodeTexWhiteNoise"); wn.noise_dimensions = "3D"; L(nt, cmb.outputs[0], wn.inputs["Vector"])
-    lit = N(nt, "ShaderNodeMath", operation="GREATER_THAN"); L(nt, wn.outputs["Value"], lit.inputs[0]); lit.inputs[1].default_value = 0.42
+    lit = N(nt, "ShaderNodeMath", operation="GREATER_THAN"); L(nt, wn.outputs["Value"], lit.inputs[0]); lit.inputs[1].default_value = 0.58
     wl = N(nt, "ShaderNodeMath", operation="MULTIPLY"); L(nt, win.outputs[0], wl.inputs[0]); L(nt, lit.outputs[0], wl.inputs[1])
     warm = N(nt, "ShaderNodeMixRGB"); L(nt, wn.outputs["Color"], warm.inputs["Fac"]); warm.inputs["Color1"].default_value = (1.0, 0.50, 0.18, 1); warm.inputs["Color2"].default_value = (1.0, 0.70, 0.36, 1)
     wall = principled(nt, **{"Base Color": (0.035, 0.030, 0.032, 1), "Roughness": 0.8})
@@ -217,10 +217,10 @@ L(nt, em.outputs[0], out.inputs["Surface"])
 m_moon, nt, out = node_mat("moon")
 tc = N(nt, "ShaderNodeTexCoord"); mn = N(nt, "ShaderNodeTexNoise"); mn.inputs["Scale"].default_value = 3.0; mn.inputs["Detail"].default_value = 8
 L(nt, tc.outputs["Object"], mn.inputs["Vector"])
-mr = N(nt, "ShaderNodeValToRGB"); mr.color_ramp.elements[0].position = 0.4; mr.color_ramp.elements[0].color = (0.55, 0.58, 0.62, 1)
+mr = N(nt, "ShaderNodeValToRGB"); mr.color_ramp.elements[0].position = 0.42; mr.color_ramp.elements[0].color = (0.42, 0.44, 0.48, 1)
 mr.color_ramp.elements[1].position = 0.65; mr.color_ramp.elements[1].color = (1.0, 0.98, 0.92, 1)
 L(nt, mn.outputs["Fac"], mr.inputs["Fac"])
-em = N(nt, "ShaderNodeEmission"); em.inputs["Strength"].default_value = 6.0; L(nt, mr.outputs["Color"], em.inputs["Color"])
+em = N(nt, "ShaderNodeEmission"); em.inputs["Strength"].default_value = 2.4; L(nt, mr.outputs["Color"], em.inputs["Color"])
 L(nt, em.outputs[0], out.inputs["Surface"])
 log("materials")
 
@@ -235,19 +235,26 @@ g.elements[0].position = 0.0; g.elements[0].color = (0.020, 0.040, 0.060, 1)
 g.elements[1].position = 0.45; g.elements[1].color = (0.0035, 0.008, 0.020, 1)
 e = g.elements.new(0.06); e.color = (0.030, 0.055, 0.075, 1)
 L(nt, sxyz.outputs["Z"], grad.inputs["Fac"])
-sv = N(nt, "ShaderNodeTexVoronoi"); sv.inputs["Scale"].default_value = 260.0
-L(nt, tc.outputs["Generated"], sv.inputs["Vector"])
-sl = N(nt, "ShaderNodeMath", operation="LESS_THAN"); L(nt, sv.outputs["Distance"], sl.inputs[0]); sl.inputs[1].default_value = 0.075
-sr = N(nt, "ShaderNodeSeparateColor"); L(nt, sv.outputs["Color"], sr.inputs[0])
-sp = N(nt, "ShaderNodeMath", operation="POWER"); L(nt, sr.outputs[0], sp.inputs[0]); sp.inputs[1].default_value = 3.0
-sm = N(nt, "ShaderNodeMath", operation="MULTIPLY"); L(nt, sl.outputs[0], sm.inputs[0]); L(nt, sp.outputs[0], sm.inputs[1])
-hz = N(nt, "ShaderNodeMath", operation="GREATER_THAN"); L(nt, sxyz.outputs["Z"], hz.inputs[0]); hz.inputs[1].default_value = 0.03
-sm2 = N(nt, "ShaderNodeMath", operation="MULTIPLY"); L(nt, sm.outputs[0], sm2.inputs[0]); L(nt, hz.outputs[0], sm2.inputs[1])
-sm3 = N(nt, "ShaderNodeMath", operation="MULTIPLY"); L(nt, sm2.outputs[0], sm3.inputs[0]); sm3.inputs[1].default_value = 9.0
+import numpy as np
+SW, SH = 4096, 2048
+img = bpy.data.images.new("stars", SW, SH, float_buffer=True)
+buf = np.zeros((SH, SW, 4), np.float32); buf[..., 3] = 1
+rs_ = np.random.default_rng(9)
+ns = 4200
+ys_ = rs_.integers(SH // 2 + 12, SH - 2, ns); xs_ = rs_.integers(1, SW - 1, ns)
+br_ = (rs_.pareto(2.2, ns) + 0.25) * 0.9
+tint = rs_.uniform(0, 1, ns)
+for (yy, xx, bb, tt) in zip(ys_, xs_, br_, tint):
+    c = np.array([0.85 + 0.15 * tt, 0.9, 1.0 - 0.2 * tt]) * min(bb, 25)
+    buf[yy, xx, :3] += c
+    if bb > 2.0:
+        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)): buf[yy + dy, xx + dx, :3] += c * 0.25
+img.pixels.foreach_set(buf.ravel()); img.pack()
+env = N(nt, "ShaderNodeTexEnvironment"); env.image = img; env.interpolation = "Closest"
 add = N(nt, "ShaderNodeMixRGB", blend_type="ADD"); add.inputs["Fac"].default_value = 1.0
 L(nt, grad.outputs["Color"], add.inputs["Color1"])
-starc = N(nt, "ShaderNodeCombineColor"); L(nt, sm3.outputs[0], starc.inputs[0]); L(nt, sm3.outputs[0], starc.inputs[1]); L(nt, sm3.outputs[0], starc.inputs[2])
-L(nt, starc.outputs[0], add.inputs["Color2"])
+smul = N(nt, "ShaderNodeMixRGB", blend_type="MULTIPLY"); smul.inputs["Fac"].default_value = 1.0; smul.inputs["Color2"].default_value = (0.35, 0.35, 0.35, 1)
+L(nt, env.outputs["Color"], smul.inputs["Color1"]); L(nt, smul.outputs["Color"], add.inputs["Color2"])
 bg = N(nt, "ShaderNodeBackground"); bg.inputs["Strength"].default_value = 1.0
 L(nt, add.outputs["Color"], bg.inputs["Color"]); L(nt, bg.outputs[0], wo.inputs["Surface"])
 
@@ -301,9 +308,9 @@ def unko_mesh():
     for i in range(nu + 1):
         u = i / nu
         ang = 2 * math.pi * turns * u
-        R = 0.072 * (1 - u) ** 0.85 + 0.004
-        z = 0.030 + 0.150 * u ** 0.92
-        r = 0.040 * (1 - u) ** 0.7 + 0.008
+        R = 0.074 * (1 - u) ** 0.9 + 0.003
+        z = 0.034 + 0.168 * u
+        r = 0.033 * (1 - u) ** 0.6 + 0.009
         if u > 0.93: r *= max(0.05, (1 - u) / 0.07) ** 0.5
         c = Vector((R * math.cos(ang), R * math.sin(ang), z))
         tng = Vector((-math.sin(ang), math.cos(ang), 0.12)).normalized()
@@ -317,9 +324,9 @@ def unko_mesh():
         for j in range(nv):
             bm.faces.new((rings[i][j], rings[i][(j + 1) % nv], rings[i + 1][(j + 1) % nv], rings[i + 1][j]))
     # 底の丸い台座（つぶれた球）
-    r2 = bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=16, radius=0.088)
+    r2 = bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=16, radius=0.074)
     for v in r2["verts"]:
-        v.co.z = 0.036 + v.co.z * 0.42
+        v.co.z = 0.030 + v.co.z * 0.40
         if v.co.z < 0.004: v.co.z = 0.004 + (v.co.z - 0.004) * 0.15
     # 端のふた
     bmesh.ops.contextual_create(bm, geom=rings[0])
@@ -410,6 +417,40 @@ for f in FR:
 kf(unko, "location", 0, ux); kf(unko, "location", 1, uy); kf(unko, "location", 2, uz)
 kf(unko, "scale", 0, [(f, v * P.US) for f, v in usx]); kf(unko, "scale", 1, [(f, v * P.US) for f, v in usx]); kf(unko, "scale", 2, [(f, v * P.US) for f, v in usz]); kf(unko, "rotation_euler", 2, urz)
 
+# 着地のたびに、うんこから小さな星のかけらが立ちのぼる
+m_spark, nt, out = node_mat("spark")
+em = N(nt, "ShaderNodeEmission"); em.inputs["Strength"].default_value = 14.0
+oi = N(nt, "ShaderNodeObjectInfo"); rmp = N(nt, "ShaderNodeValToRGB")
+rmp.color_ramp.elements[0].color = (0.65, 0.85, 1.0, 1); rmp.color_ramp.elements[1].color = (1.0, 0.78, 0.5, 1)
+L(nt, oi.outputs["Random"], rmp.inputs["Fac"]); L(nt, rmp.outputs["Color"], em.inputs["Color"]); L(nt, em.outputs[0], out.inputs["Surface"])
+bm = bmesh.new(); bmesh.ops.create_icosphere(bm, subdivisions=1, radius=0.0065)
+me_sp = bpy.data.meshes.new("spark"); bm.to_mesh(me_sp); bm.free(); me_sp.materials.append(m_spark)
+rs = random.Random(21)
+for i, (lf, _, _, _) in enumerate(P.LAND):
+    (bx, by, bz), _, _ = P.unko_at(lf, LANT)
+    cnt = 16 if i == len(P.LAND) - 1 else 10
+    for k in range(cnt):
+        o = bpy.data.objects.new("sp%d_%d" % (i, k), me_sp); sc.collection.objects.link(o)
+        o.visible_shadow = False
+        a = rs.uniform(0, 6.28); hv = rs.uniform(0.04, 0.16); vz = rs.uniform(0.22, 0.48); life = rs.uniform(1.4, 2.6)
+        x0 = bx + 0.05 * math.cos(a); y0 = by + 0.05 * math.sin(a); z0 = bz + rs.uniform(0.10, 0.22)
+        sz0 = rs.uniform(0.6, 1.4)
+        xs, ys, zs, ss = [], [], [], []
+        for f in FR:
+            dt = (f - lf) / P.FPS
+            if dt < 0 or dt > life:
+                xs.append((f, x0)); ys.append((f, y0)); zs.append((f, z0)); ss.append((f, 0.0)); continue
+            dmp = (1 - math.exp(-dt / 0.6)) * 0.6
+            x = x0 + hv * math.cos(a) * dmp + 0.03 * math.sin(3 * dt + k)
+            y = y0 + hv * math.sin(a) * dmp + 0.03 * math.cos(2.4 * dt + k)
+            z = z0 + vz * dmp + 0.10 * dt
+            sc_ = sz0 * min(1, dt / 0.08) * max(0, 1 - dt / life) ** 0.7 * (0.8 + 0.2 * math.sin(20 * dt + k))
+            xs.append((f, x)); ys.append((f, y)); zs.append((f, z)); ss.append((f, sc_))
+        kf(o, "location", 0, xs); kf(o, "location", 1, ys); kf(o, "location", 2, zs)
+        for ax in range(3): kf(o, "scale", ax, ss)
+
+rim = bpy.data.lights.new("rim", "AREA"); rim.size = 0.25; rim.energy = 6.0; rim.color = (0.70, 0.82, 1.0)
+rimo = bpy.data.objects.new("rim", rim); sc.collection.objects.link(rimo)
 # カメラ
 cam_d = bpy.data.cameras.new("cam"); cam = bpy.data.objects.new("cam", cam_d); sc.collection.objects.link(cam); sc.camera = cam
 cam_d.sensor_fit = "AUTO"; cam_d.sensor_width = 36
@@ -425,9 +466,17 @@ for f in FR:
     (x, y, z), _, _ = P.unko_at(f, LANT)
     fd.append((f, (Vector((x, y, z + 0.09)) - loc).length))
 for i in range(3): kf(cam, "location", i, cl[i]); kf(cam, "rotation_euler", i, cr[i])
+rl_ = [[], [], []]; rr_ = [[], [], []]
+for f in FR:
+    (x, y, z), _, _ = P.unko_at(f, LANT); u = Vector((x, y, z + 0.13))
+    c = Vector(CAMS[f]["loc"]); d = (u - c); d.z = 0; d.normalize()
+    pos = u + d * 0.55 + Vector((0, 0, 0.32))
+    e = (u - pos).to_track_quat("-Z", "Y").to_euler()
+    for i in range(3): rl_[i].append((f, pos[i])); rr_[i].append((f, e[i]))
+for i in range(3): kf(rimo, "location", i, rl_[i]); kf(rimo, "rotation_euler", i, rr_[i])
 kf(cam_d, "lens", 0, fl); kf(cam_d, "dof.focus_distance", 0, fd)
 # 回転の連続性（オイラーの飛び）を直す
-for fc in cam.animation_data.action.fcurves:
+for fc in list(cam.animation_data.action.fcurves) + list(rimo.animation_data.action.fcurves):
     if fc.data_path == "rotation_euler":
         pts = fc.keyframe_points; prev = None
         for k in pts:
