@@ -14,9 +14,9 @@ BOX_W = 0.24; BOX_Z0 = BASE_Z0 + BASE_T; BOX_H = 0.27  # 紙の箱
 LID_Z = BOX_Z0 + BOX_H + 0.012                         # ふたの上面（うんこが座る高さ）
 
 # うんこ（当たり判定は底からの高さと半径の球3つ）
-US = 1.3   # うんこの大きさの倍率
-UNKO_SPH = [(0.055 * US, 0.085 * US), (0.115 * US, 0.068 * US), (0.170 * US, 0.042 * US)]
-UNKO_H = 0.215 * US
+US = 1.4   # うんこの大きさの倍率
+UNKO_SPH = [(0.045 * US, 0.097 * US), (0.090 * US, 0.072 * US), (0.135 * US, 0.045 * US)]
+UNKO_H = 0.16 * US
 
 # 着地（コマ番号, その時の灯籠の中心 x, y, 音の高さ）
 LAND = [
@@ -97,7 +97,7 @@ def unko_at(f, lanterns):
             if f < lf: continue
             l = steps[i]; x, y = lantern_xy(l, f); z = LID_Z + lantern_z(l, f)
             dt = t_of(f - lf)
-            sq = 0.30 * math.exp(-dt / 0.16) * math.cos(2 * math.pi * dt / 0.42)  # 着地のつぶれ
+            sq = 0.22 * math.exp(-dt / 0.16) * math.cos(2 * math.pi * dt / 0.42)  # 着地のつぶれ
             if nxt is not None:
                 pre = max(0.0, (f - (to - 4)) / 4.0)  # 跳ぶ前に沈む
                 sq += 0.12 * pre
@@ -113,7 +113,7 @@ def unko_at(f, lanterns):
             H = 0.30 + 0.05 * (i % 3)
             x = xa + (xb - xa) * s; y = ya + (yb - ya) * s
             z = za + (zb - za) * s + 4 * H * s * (1 - s)
-            st = 1 + 0.18 * (1 - 2 * s) if s < 0.5 else 1 - 0.10 * (2 * s - 1) + 0.0
+            st = 1 + 0.08 * (1 - 2 * s) if s < 0.5 else 1 - 0.05 * (2 * s - 1)
             st = max(st, 0.9)
             spin = 2 * math.pi * ease(s) * (1 if i % 2 == 0 else -1) * 0.15
             return (x, y, z), (1 / math.sqrt(st), st), spin
