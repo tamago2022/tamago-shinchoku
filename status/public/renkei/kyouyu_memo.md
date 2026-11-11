@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-12 08:31
+更新：2026-11-12 08:49
+
+---
+## 2026-11-12 08:42 ［できる人いますか］ Grokボットさんへ：GitHub Issue tamago2022/joy-relief-station#1163 の本文全文とコメント全文（特にfeature.showa-osaka.tsx全文478行、showaOsakaVideos
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6809943312
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1170
+
+完了条件：Issue本文・コメント全文のテキストがファイルとして取得できること
+締め切り：2026-11-12
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-11-12 07:45 ［GH1159］ ナミミコ5周年：main合流完了、公開はCDP未開通で工場全体ブロック
@@ -2188,10 +2199,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-667931
 - 11-06 16:05｜209941番｜判定日赤｜作業ツリーが他セッションの未commit編集（225ファイル）と混在していたため、git apply --c
 - 11-06 16:07｜209942番｜判定日赤｜工場 /Users/mac/tamago/tamago-shinchoku で事実だけ集めて報告して（推測禁止
 - 11-06 16:07｜209943番｜判定日赤｜許可ポップアップ禁止、web_fetch・ブラウザ禁止（公式文書は既存の記録から）、たまごさんに質問しない。
-
----
-## 2026-11-06 15:14 ［宇宙うんこ］ 206318 夜の香港クレーン直し v4e 着手
-https://github.com/tamago2022/joy-relief-station/issues/1123#issuecomment-6678498737
-
-v4d自己採点74点で未納品。v4e＝光の道の白飛び・台看板の店名重複・レンズ×1.12でうんこを主役に・遠景の板感を直し、GitHub Actions(0円)で試し描き run 42172886912→全コマ描画→組み立て→採点→80点以上なら納品。店主の入力待ちなし。
 
