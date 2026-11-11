@@ -2181,7 +2181,24 @@ def queue_rank_key(it, prio):
     what = str(it.get("what") or "")
     qa_retry = title.startswith("差し戻し（鬼監督）") or "【差し戻し（鬼監督＝Codex）】" in what
     u = -1 if qa_retry else (0 if it.get("urgent") else 1)
+    # 2026-11-12 たまごさん「たまごさん発・Grok発の依頼が優先」。実測：GH1159〜1166 の6件が
+    #   自動で urgent が付いた「空カード埋め」61件・P1 3,600件超の後ろに並び、1〜3日手つかずだった。
+    #   たまごさんのIssue（gh:tamago2022/…。工場が出した【できる人いますか】・見回り報告は除く）と
+    #   tamagoIrai:true の票は、鬼監督の差し戻しと同じ最前列に置く。
+    if u > -1 and is_tamago_irai(it):
+        u = -1
     return (u, p, int(o) if isinstance(o, int) else 10 ** 6, it.get("n") or 99)
+
+
+def is_tamago_irai(it):
+    """たまごさん発・Grok発（GitHub Issue 経由）の依頼か。"""
+    if it.get("tamagoIrai"):
+        return True
+    gk = str(it.get("ghKey") or "")
+    if not gk.startswith("gh:tamago2022/"):
+        return False
+    t = str(it.get("title") or "")
+    return not any(x in t for x in ("【できる人いますか】", "見回り報告"))
 
 
 URGENT_WAIT_MIN = 90  # 1372番：優先度1がqueuedAtからこの分数を超えて待たされたら緊急横入り対象

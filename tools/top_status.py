@@ -668,7 +668,10 @@ if __name__ == "__main__":
     #   実測：pace.json が 05:17→07:35 の2時間18分ぶん止まっていた（取得元は新しかった）。
     #   pace.py は machine_status_push.sh の747行目に相乗りしており、重い日はそこまで到達しない。
     #   → 5分以上古ければここで取り直し、60分以上古ければ status/zanryo_mihari.json を red にする。
-    pass  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 _okosu("1403_zanryo_mihari.py")
+    # 2026-11-12 再開：pace.json が 11-10 23:45 から26時間止まり（machine_status_push.sh が
+    #   factory_status の150秒timeoutで782行目まで届かない）、古い state=over のまま
+    #   launch_cap=1 が戻らず発車が細った。pace.py 自体は0.3秒。取り直し係を戻す。
+    _okosu("1403_zanryo_mihari.py")
 
     # 2026-09-26（1158番）claudeの同時起動の見張り。1分おきに本数を数えて証拠を残す。
     # 関所(1158_kanmon.py)が本当に効いているかを、時刻つきの実測で示すための線。
