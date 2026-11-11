@@ -135,11 +135,11 @@ def camera_track(lanterns):
     for f in range(NF + 1):
         (x, y, z), _, _ = unko_at(f, lanterns)
         ux.append(x); uy.append(y); uz.append(z)
-    ux = smooth(ux, 18); uy = smooth(uy, 18); uz = smooth(uz, 22)
+    ux = smooth(ux, 18); uy = smooth(uy, 18); uz = smooth([min(z, 0.9) for z in uz], 22)
     cams = []
     for f in range(NF + 1):
         s = f / NF
-        th = math.radians(-98 + 52 * ease(s))
+        th = math.radians(-100 + 72 * ease(s))
         R = 1.55 + 0.25 * ease(s) + 0.9 * ease(max(0, (f - 186) / 54.0))
         cx, cy = ux[f] * 0.75 + 0.15, uy[f] * 0.6 + 0.25
         rise = ease(max(0, (f - 180) / 60.0))
@@ -147,6 +147,10 @@ def camera_track(lanterns):
         px = cx + R * math.cos(th); py = cy + R * math.sin(th)
         tz = min(uz[f], 0.9) * 0.55 + 0.22 - 0.05 * rise
         tx = ux[f] * 0.8 + cx * 0.2; ty = uy[f] * 0.8 + cy * 0.2
+        if f < 44:   # 冒頭：空を見上げて、落ちてくる宇宙うんこを追って川へ首を下ろす
+            (rx, ry, rz), _, _ = unko_at(f, lanterns)
+            w = 1 - ease(f / 44.0)
+            tz = tz * (1 - w) + (rz * 0.85 + 0.15) * w
         cams.append({"loc": (px, py, h), "look": (tx, ty, tz), "lens": 30.0 - 3.0 * rise})
     return cams
 
