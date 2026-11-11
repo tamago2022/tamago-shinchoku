@@ -121,7 +121,7 @@ def mat_paper(name, tint=(1.0, 0.86, 0.66)):
     L(nt, dif.outputs[0], mx.inputs[1]); L(nt, tr.outputs[0], mx.inputs[2])
     L(nt, mx.outputs[0], out.inputs["Surface"])
     return m
-m_paper = mat_paper("paper", (1.0, 0.74, 0.46))
+m_paper = mat_paper("paper", (1.0, 0.66, 0.36))
 
 m_wood, nt, out = node_mat("wood")
 tc = N(nt, "ShaderNodeTexCoord"); wv = N(nt, "ShaderNodeTexWave"); wv.inputs["Scale"].default_value = 18; wv.inputs["Distortion"].default_value = 6
@@ -137,10 +137,10 @@ tc = N(nt, "ShaderNodeTexCoord")
 nb = N(nt, "ShaderNodeTexNoise"); nb.inputs["Scale"].default_value = 7.0; nb.inputs["Detail"].default_value = 10; nb.inputs["Distortion"].default_value = 1.2
 L(nt, tc.outputs["Object"], nb.inputs["Vector"])
 neb = N(nt, "ShaderNodeValToRGB"); cr = neb.color_ramp
-cr.elements[0].position = 0.38; cr.elements[0].color = (0.006, 0.006, 0.025, 1)
-e = cr.elements.new(0.52); e.color = (0.035, 0.015, 0.075, 1)
-e = cr.elements.new(0.62); e.color = (0.015, 0.06, 0.13, 1)
-cr.elements[-1].position = 0.75; cr.elements[-1].color = (0.30, 0.10, 0.30, 1)
+cr.elements[0].position = 0.36; cr.elements[0].color = (0.004, 0.006, 0.030, 1)
+e = cr.elements.new(0.50); e.color = (0.012, 0.025, 0.090, 1)
+e = cr.elements.new(0.60); e.color = (0.010, 0.110, 0.170, 1)
+cr.elements[-1].position = 0.75; cr.elements[-1].color = (0.36, 0.08, 0.26, 1)
 L(nt, nb.outputs["Fac"], neb.inputs["Fac"])
 vor = N(nt, "ShaderNodeTexVoronoi"); vor.inputs["Scale"].default_value = 120.0; vor.inputs["Randomness"].default_value = 1.0
 L(nt, tc.outputs["Object"], vor.inputs["Vector"])
@@ -163,7 +163,10 @@ L(nt, nebs.outputs["Color"], emc.inputs["Color1"]); L(nt, starcol.outputs["Color
 emsum = N(nt, "ShaderNodeMath", operation="ADD"); L(nt, ems2.outputs[0], emsum.inputs[0]); emsum.inputs[1].default_value = 0.0
 neb_strength = N(nt, "ShaderNodeMath", operation="MULTIPLY_ADD"); L(nt, glow.outputs[0], neb_strength.inputs[0]); neb_strength.inputs[1].default_value = 0.45; L(nt, ems2.outputs[0], neb_strength.inputs[2])
 pu = principled(nt, **{"Roughness": 0.22, "Specular": 0.6, "Clearcoat": 1.0, "Clearcoat Roughness": 0.03, "Subsurface": 0.0})
-L(nt, neb.outputs["Color"], pu.inputs["Base Color"])
+ao = N(nt, "ShaderNodeAmbientOcclusion"); ao.inputs["Distance"].default_value = 0.03
+aom = N(nt, "ShaderNodeMixRGB", blend_type="MULTIPLY"); aom.inputs["Fac"].default_value = 1.0
+L(nt, neb.outputs["Color"], aom.inputs["Color1"]); L(nt, ao.outputs["AO"], aom.inputs["Color2"])
+L(nt, aom.outputs["Color"], pu.inputs["Base Color"])
 L(nt, emc.outputs["Color"], pu.inputs["Emission"])
 L(nt, neb_strength.outputs[0], pu.inputs["Emission Strength"])
 bz = N(nt, "ShaderNodeBump"); bz.inputs["Strength"].default_value = 0.08; bz.inputs["Distance"].default_value = 0.004
@@ -220,7 +223,7 @@ L(nt, tc.outputs["Object"], mn.inputs["Vector"])
 mr = N(nt, "ShaderNodeValToRGB"); mr.color_ramp.elements[0].position = 0.42; mr.color_ramp.elements[0].color = (0.42, 0.44, 0.48, 1)
 mr.color_ramp.elements[1].position = 0.65; mr.color_ramp.elements[1].color = (1.0, 0.98, 0.92, 1)
 L(nt, mn.outputs["Fac"], mr.inputs["Fac"])
-em = N(nt, "ShaderNodeEmission"); em.inputs["Strength"].default_value = 2.4; L(nt, mr.outputs["Color"], em.inputs["Color"])
+em = N(nt, "ShaderNodeEmission"); em.inputs["Strength"].default_value = 1.5; L(nt, mr.outputs["Color"], em.inputs["Color"])
 L(nt, em.outputs[0], out.inputs["Surface"])
 log("materials")
 
@@ -293,7 +296,7 @@ for l in LANT:
     for me in (me_wood, me_paper, me_bar):
         o = bpy.data.objects.new(me.name + "_" + l["id"], me); sc.collection.objects.link(o); o.parent = root
     lt = bpy.data.lights.new("lt_" + l["id"], "POINT"); lt.shadow_soft_size = 0.05
-    lt.color = (1.0, 0.50 + rnd.uniform(-0.04, 0.05), 0.20 + rnd.uniform(-0.03, 0.04))
+    lt.color = (1.0, 0.46 + rnd.uniform(-0.04, 0.05), 0.16 + rnd.uniform(-0.03, 0.03))
     base_w = rnd.uniform(1.0, 1.6)
     lt.energy = base_w
     lo = bpy.data.objects.new("lt_" + l["id"], lt); sc.collection.objects.link(lo); lo.parent = root
@@ -308,9 +311,9 @@ def unko_mesh():
     for i in range(nu + 1):
         u = i / nu
         ang = 2 * math.pi * turns * u
-        R = 0.074 * (1 - u) ** 0.9 + 0.003
+        R = 0.070 * (1 - u) ** 0.9 + 0.003
         z = 0.034 + 0.168 * u
-        r = 0.033 * (1 - u) ** 0.6 + 0.009
+        r = 0.029 * (1 - u) ** 0.6 + 0.009
         if u > 0.93: r *= max(0.05, (1 - u) / 0.07) ** 0.5
         c = Vector((R * math.cos(ang), R * math.sin(ang), z))
         tng = Vector((-math.sin(ang), math.cos(ang), 0.12)).normalized()
@@ -393,6 +396,7 @@ def kf(obj_or_id, path, idx, values):
     fc.update()
 
 FR = list(range(0, P.NF + 1))
+ON = {l["id"]: P.light_on_frame(l, LANT) for l in LANT}
 for (l, root, lt, base_w, ph) in LOBJ:
     xs, ys, zs, rz, rx, en = [], [], [], [], [], []
     for f in FR:
@@ -405,6 +409,9 @@ for (l, root, lt, base_w, ph) in LOBJ:
         for lf in l.get("lands", []):
             dt = (f - lf) / P.FPS
             if dt >= 0: flash += 2.2 * math.exp(-dt / 0.45)
+        on = ON[l["id"]]; dt = (f - on) / P.FPS
+        lvl = 0.035 if dt < 0 else min(1.0, 0.035 + (dt / 0.35) ** 1.5) * (1 + 0.5 * math.exp(-dt / 0.25) * (dt > 0.2))
+        flick *= lvl
         en.append((f, base_w * (flick + flash)))
     kf(root, "location", 0, xs); kf(root, "location", 1, ys); kf(root, "location", 2, zs)
     kf(root, "rotation_euler", 2, rz); kf(root, "rotation_euler", 0, rx)
@@ -449,7 +456,7 @@ for i, (lf, _, _, _) in enumerate(P.LAND):
         kf(o, "location", 0, xs); kf(o, "location", 1, ys); kf(o, "location", 2, zs)
         for ax in range(3): kf(o, "scale", ax, ss)
 
-rim = bpy.data.lights.new("rim", "AREA"); rim.size = 0.25; rim.energy = 6.0; rim.color = (0.70, 0.82, 1.0)
+rim = bpy.data.lights.new("rim", "AREA"); rim.size = 0.25; rim.energy = 11.0; rim.color = (0.70, 0.82, 1.0)
 rimo = bpy.data.objects.new("rim", rim); sc.collection.objects.link(rimo)
 # カメラ
 cam_d = bpy.data.cameras.new("cam"); cam = bpy.data.objects.new("cam", cam_d); sc.collection.objects.link(cam); sc.camera = cam
@@ -516,7 +523,7 @@ sc.cycles.caustics_reflective = False; sc.cycles.caustics_refractive = False; sc
 sc.cycles.sample_clamp_indirect = 6.0
 try: sc.cycles.use_light_tree = True
 except Exception: pass
-r.use_motion_blur = os.environ.get("UU_NOBLUR", "0") != "1"; r.motion_blur_shutter = 0.45
+r.use_motion_blur = os.environ.get("UU_NOBLUR", "0") != "1"; r.motion_blur_shutter = 0.30
 sc.view_settings.view_transform = "Filmic"; sc.view_settings.look = "Medium High Contrast"; sc.view_settings.exposure = EXPO
 r.image_settings.file_format = "JPEG"; r.image_settings.quality = 93
 r.film_transparent = False

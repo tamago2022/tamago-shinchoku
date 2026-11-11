@@ -115,7 +115,7 @@ def unko_at(f, lanterns):
             z = za + (zb - za) * s + 4 * H * s * (1 - s)
             st = 1 + 0.18 * (1 - 2 * s) if s < 0.5 else 1 - 0.10 * (2 * s - 1) + 0.0
             st = max(st, 0.9)
-            spin = 2 * math.pi * s * (1 if i % 2 == 0 else -1) * 0.5
+            spin = 2 * math.pi * ease(s) * (1 if i % 2 == 0 else -1) * 0.15
             return (x, y, z), (1 / math.sqrt(st), st), spin
     return unko_at(NF, lanterns)
 
@@ -242,3 +242,20 @@ if __name__ == "__main__":
     r = check(L)
     print(len(L), "lanterns")
     print(json.dumps(r, ensure_ascii=False, indent=1))
+
+
+def light_on_frame(l, lanterns):
+    """灯籠に火が灯るコマ（うんこの着地から波のように広がる）。跳ね台は着地の瞬間。"""
+    if "step" in l: return LAND[l["step"]][0]
+    best = 10 ** 9
+    steps = sorted([o for o in lanterns if "step" in o], key=lambda o: o["step"])
+    for i, (lf, _, _, _) in enumerate(LAND):
+        cx, cy = lantern_xy(steps[i], lf)
+        x, y = lantern_xy(l, lf)
+        d = math.hypot(x - cx, y - cy)
+        last = i == len(LAND) - 1
+        rad = 99 if last else 1.05 + 0.25 * i
+        sp = 4.8 if last else 1.5
+        if d <= rad:
+            best = min(best, lf + 4 + d / sp * FPS)
+    return best
