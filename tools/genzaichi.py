@@ -644,6 +644,11 @@ def build():
     red_flags.extend(shikumi_lines)
     stale_lines = run_stale_marker_and_get_red_flags()
     red_flags.extend(stale_lines)
+    try:  # 2026-11-12 空振り止め：同じ便が同じ理由で20回空振り→保留にした便があれば現在地を赤に
+        import karaburi_kanmon
+        red_flags.extend(karaburi_kanmon.red_lines())
+    except Exception:
+        pass
 
     L = []
     A = L.append
