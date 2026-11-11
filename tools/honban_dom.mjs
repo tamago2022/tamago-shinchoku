@@ -21,7 +21,7 @@ const prof = mkdtempSync(tmpdir() + "/honban-dom-");
 const port = 9300 + Math.floor(Math.random() * 500);
 const ch = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`, "--no-first-run", "--mute-audio", `--window-size=${W},900`, "about:blank"], { stdio: "ignore" });
 const done = (code) => { try { ch.kill("SIGKILL"); } catch {} try { rmSync(prof, { recursive: true, force: true }); } catch {} process.exit(code); };
-setTimeout(() => { console.log(JSON.stringify({ error: "timeout" })); done(2); }, 90000);
+setTimeout(() => { console.log(JSON.stringify({ error: "timeout" })); done(2); }, 150000);
 try {
   let page;
   for (let i = 0; i < 160 && !page; i++) { try { page = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === "page"); } catch {} if (!page) await sleep(250); }
