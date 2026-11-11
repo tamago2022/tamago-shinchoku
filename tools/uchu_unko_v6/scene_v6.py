@@ -455,6 +455,22 @@ for i, (lf, _, _, _) in enumerate(P.LAND):
             xs.append((f, x)); ys.append((f, y)); zs.append((f, z)); ss.append((f, sc_))
         kf(o, "location", 0, xs); kf(o, "location", 1, ys); kf(o, "location", 2, zs)
         for ax in range(3): kf(o, "scale", ax, ss)
+# 落ちてくる間の星くずの尾
+for k in range(22):
+    fb = 1 + k * 1.25
+    (bx, by, bz), _, _ = P.unko_at(fb, LANT)
+    o = bpy.data.objects.new("trail%d" % k, me_sp); sc.collection.objects.link(o); o.visible_shadow = False
+    jx, jy, jz = rs.uniform(-0.04, 0.04), rs.uniform(-0.04, 0.04), rs.uniform(0.05, 0.2)
+    life = rs.uniform(0.9, 1.6); sz0 = rs.uniform(0.7, 1.5)
+    xs, ys, zs, ss = [], [], [], []
+    for f in FR:
+        dt = (f - fb) / P.FPS
+        if dt < 0 or dt > life:
+            xs.append((f, bx)); ys.append((f, by)); zs.append((f, bz)); ss.append((f, 0.0)); continue
+        xs.append((f, bx + jx + 0.03 * dt)); ys.append((f, by + jy)); zs.append((f, bz + jz - 0.05 * dt))
+        ss.append((f, sz0 * max(0, 1 - dt / life)))
+    kf(o, "location", 0, xs); kf(o, "location", 1, ys); kf(o, "location", 2, zs)
+    for ax in range(3): kf(o, "scale", ax, ss)
 
 rim = bpy.data.lights.new("rim", "AREA"); rim.size = 0.25; rim.energy = 11.0; rim.color = (0.70, 0.82, 1.0)
 rimo = bpy.data.objects.new("rim", rim); sc.collection.objects.link(rimo)
@@ -504,7 +520,7 @@ def per_frame(f):
         WATER_NT.nodes["RCY%d" % i].outputs[0].default_value = y
         WATER_NT.nodes["RDT%d" % i].outputs[0].default_value = max(dt, 0) + 0.18
         WATER_NT.nodes["RAMP%d" % i].outputs[0].default_value = (0.9 * math.exp(-dt / 1.3)) if dt >= 0 else 0.0
-    g = 1.0
+    g = 1.0 + (2.5 * (1 - f / P.LAND[0][0]) if f < P.LAND[0][0] else 0)
     for (lf, _, _, _) in P.LAND:
         dt = (f - lf) / P.FPS
         if dt >= 0: g += 1.6 * math.exp(-dt / 0.30)
