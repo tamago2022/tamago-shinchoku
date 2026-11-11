@@ -465,10 +465,16 @@ def _mado(jotai):
 
 def _serve_mamoru(jotai, st):
     """Grok からの質問に数秒で答える Claude の常駐（作業場は madoguchi・--full-access なし＝コマンドは打てない）。落ちていたら起こす。"""
+    # 2026-11-01：重いとき ps が10秒で終わらず ps="" →「止まっている」と誤判定し、10分おきに重複起動
+    # （同じ --name tamago-claude が約25本・各々が claude -p を抱えて Mac を圧迫）。測れない時は起こさない。
     try:
-        ps = subprocess.run(["ps", "-axo", "command"], capture_output=True, text=True, timeout=10).stdout
+        ps = subprocess.run(["ps", "-axo", "command"], capture_output=True, text=True, timeout=30).stdout
     except Exception:
-        ps = ""
+        jotai["serve"] = "測れない（起こさない）"
+        return
+    if not ps.strip():
+        jotai["serve"] = "測れない（起こさない）"
+        return
     alive = "network serve claude" in ps
     jotai["serve"] = "動いている" if alive else "止まっている"
     if alive:

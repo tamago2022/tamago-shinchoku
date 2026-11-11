@@ -57,6 +57,9 @@ KEEP = re.compile(
     r"caffeinate|heartbeat|oneshot_runner|1200_tatamu|"
     # 2026-10-16 片付け・容量の係は長くても畳まない（30分で畳まれ、探偵と片付けが途中で死んでいた）
     r"shimau\.py|youryou_|worktree_taihi|chukan_shimau|"
+    # 2026-10-31 Suno の許可の受け皿（127.0.0.1:41998 で最長24時間待つ・RSS数MB）。30分で畳まれ、
+    #   承認URLが 16:20→17:01→17:32→18:03→18:35 と毎回作り直されて前のURLが無効になっていた（実測）
+    r"suno_oauth\.py --signin|"
     r"_server\.py|server\.py|_keeper\.py|_guard\.py|_mihari\.py|_shirabe\.py|_watch\.py|"
     r"relay|tunnel|zunda|lt --port|notion-mcp-server|mcp-server|"
     r"Xcode|Finder|Dock|WindowServer|loginwindow|kernel_task)")

@@ -487,8 +487,8 @@ el("send").addEventListener("click", function(){
         d0.innerHTML = "<b>入りました</b> → "
           + (kk[2] ? '<a class="go g2" href="'+esc(kk[2])+'" target="_blank" rel="noopener">'
                      + esc(kk[1]||"棚")+' の棚を開く</a>' : esc(kk[1]||""));
-      }else if(hai && kk[1] === "ダブり"){
-        say(kk[2] || "もうダブってます", false);
+      }else if(hai && (kk[1] === "もう入っています" || kk[1] === "ダブり")){
+        say(kk[2] || "これはもう入っています", false);
       }else if(hai){
         say("入りませんでした：" + (kk[1]||"失敗") + (kk[2] ? "（"+kk[2]+"）" : ""), false);
       }else if(u){
@@ -518,7 +518,7 @@ function dupCheck(){
     if(n !== DUPSEQ) return;
     var m = j && j.results && j.results[0] ? String(j.results[0].message||"") : "";
     var p = m.split("｜");
-    if(p[0] === "ダブり") dupShow("同じURLがあります：" + (p[1] || ""));
+    if(p[0] === "これはもう入っています" || p[0] === "ダブり") dupShow("これはもう入っています：" + (p[1] || ""));
     else dupShow("");
   }).catch(function(){ if(n === DUPSEQ) dupShow(""); });
 }

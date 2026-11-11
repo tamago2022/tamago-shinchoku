@@ -1484,6 +1484,28 @@ def harvest(q):
             changed = True
             log("⏳ %sを検知。%d番は列に戻し、発車を%sまで止めます" % ("週次利用上限" if _is_weekly else "5時間枠の上限", it.get("n"), _wl_resume))
             continue
+        # ---- 通信障害（APIに届かない）も「仕事の失敗」にしない（2026-11-05 たまごさん「止めるのが最悪」）----
+        # 実測：空カード埋めの47便が "API Error: Can't reach the API server (ENOTFOUND)" で何もできずに終わり、
+        #   やり直し2回を使い切って確認待ちへ落ちていた。上限と同じ扱い：数えずに列へ戻し、
+        #   status/tsuushin_machi.json を立てて、通信が戻るまで新規発車を待つ（戻ったら自動で再開）。
+        try:
+            import itsumo_shigoto as _its
+            _is_net = _its.tsuushin_shougai(_lim_txt, urls)
+        except Exception:
+            _is_net = False
+        if _is_net:
+            try:
+                _its.tsuushin_tateru(it.get("n"))
+            except Exception:
+                pass
+            it["status"] = "waiting"
+            it["netRetry"] = int(it.get("netRetry") or 0) + 1
+            for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+                it.pop(k, None)
+            it.pop("pid", None)
+            changed = True
+            log("📡 通信障害を検知。%s番は失敗に数えず列に戻し、通信が戻るまで新規発車を待ちます" % it.get("n"))
+            continue
         # 2026-09-05 たまごさん「何も動いてない状態は作らないで。クレジット消費最小で」
         #   → 空回し（keepalive）は終わったら台帳から静かに消す。
         #     確認待ちに積むと、判定するものが増えるだけで意味がない（今日それで29件溜めた）。
@@ -1550,6 +1572,10 @@ def harvest(q):
                     it["cutAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
                 _inject_cut_note(it, elapsed_min)  # 894番：「切られた＝最初からやり直し」を無くす
                 it["priority"] = it.get("priority") or 2
+                # 2026-11-05 たまごさん「1つの便が詰まったら、全体を止めずに次の便へ」：
+                #   切られた便がすぐ同じ席に座り直すと、次の便がいつまでも流れない（試験で実測）。
+                #   30分は後ろに回し（retryAfter）、その間はほかの便を流す。30分後に続きから再挑戦。
+                it["retryAfter"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00", time.localtime(time.time() + 30 * 60))
                 for k in ("finishedAt", "result", "urls", "startedAt"):
                     it.pop(k, None)
                 it.pop("pid", None)
@@ -2160,7 +2186,53 @@ def queue_rank_key(it, prio):
     what = str(it.get("what") or "")
     qa_retry = title.startswith("差し戻し（鬼監督）") or "【差し戻し（鬼監督＝Codex）】" in what
     u = -1 if qa_retry else (0 if it.get("urgent") else 1)
+    # 2026-11-12 たまごさん「たまごさん発・Grok発の依頼が優先」。実測：GH1159〜1166 の6件が
+    #   自動で urgent が付いた「空カード埋め」61件・P1 3,600件超の後ろに並び、1〜3日手つかずだった。
+    #   たまごさんのIssue（gh:tamago2022/…。工場が出した【できる人いますか】・見回り報告は除く）と
+    #   tamagoIrai:true の票は、鬼監督の差し戻しと同じ最前列に置く。
+    if u > -1 and is_tamago_irai(it):
+        u = -1
+    # 2026-11-12 追記：最前列の中で priority 2（GitHubの「新しいIssue」経路で積まれた GH1162/1164〜1166）が
+    #   priority 1（【Claude Codeに頼む】経路）の後ろに回らないよう、たまごさん発・Grok発は優先度をそろえ、
+    #   届いた順（番号）で発車する。
+    #   （ghKey だけの古い票＝9月の GH428 など数百件まで上げないよう、tamagoIrai:true の票に限る）
+    #   さらに、届いた時に tamagoIrai も ghKey も付かない経路（claude_uketsuke の【受付】・新しいIssue）で
+    #   積まれた GH1169/1171/1172 が最前列から漏れていた → 本文から店主依頼・Grok発を見分けて同じ扱いにする。
+    if it.get("tamagoIrai") or is_tenshu_grok_irai(it):
+        u = min(u, -1)
+        p = min(p, 1)
     return (u, p, int(o) if isinstance(o, int) else 10 ** 6, it.get("n") or 99)
+
+
+_TENSHU_GROK = re.compile(r"Grok|店主依頼|【Claude Codeに頼む】|店主の指示|店主OK|店主指名|店主推し|店主決定")
+
+
+def is_tenshu_grok_irai(it):
+    """2026-11-12：Grokボット経由の店主依頼（tamago2022 が立てた GitHub Issue）を、印が無くても本文で見分ける。
+    返信・【できる人いますか】・見回り報告・コメント転記は対象外（数百件の古い票を上げないため）。"""
+    t = str(it.get("title") or "")
+    if not re.match(r"GH\d+ ", t):
+        return False
+    if any(x in t for x in ("【できる人いますか】", "見回り報告", "さんの返信", "コメント:",
+                            "【Grokに頼む】", "読むだけ", "[テスト]")):
+        return False
+    w = str(it.get("what") or "")
+    if "投稿者: tamago2022" not in w[:3000] and not str(it.get("ghKey") or "").startswith("gh:tamago2022/"):
+        return False
+    k = w.find("Issue本文")
+    body = w[k:k + 1500] if k >= 0 else ""
+    return bool(_TENSHU_GROK.search(t) or _TENSHU_GROK.search(body))
+
+
+def is_tamago_irai(it):
+    """たまごさん発・Grok発（GitHub Issue 経由）の依頼か。"""
+    if it.get("tamagoIrai"):
+        return True
+    gk = str(it.get("ghKey") or "")
+    if not gk.startswith("gh:tamago2022/"):
+        return False
+    t = str(it.get("title") or "")
+    return not any(x in t for x in ("【できる人いますか】", "見回り報告"))
 
 
 URGENT_WAIT_MIN = 90  # 1372番：優先度1がqueuedAtからこの分数を超えて待たされたら緊急横入り対象
@@ -2182,11 +2254,22 @@ def queued_minutes_ago(it, now=None):
         return None
 
 
+def _ato_de(it):
+    """2026-11-05：詰まって切られた便の「後で再挑戦」の時刻（retryAfter）がまだ来ていなければ True＝今は飛ばす。"""
+    ra = it.get("retryAfter")
+    if not ra:
+        return False
+    try:
+        return datetime.strptime(str(ra)[:19], "%Y-%m-%dT%H:%M:%S") > datetime.now()
+    except Exception:
+        return False
+
+
 def urgent_wait_list(items, now=None):
     """発車待ち(waiting)のうち、優先度1またはurgentで、URGENT_WAIT_MIN分を超えて
     待たされているものを「待たされた時間が長い順」に返す。空きが無ければ[]。"""
     out = [it for it in items
-           if it.get("status") == "waiting"
+           if it.get("status") == "waiting" and not _ato_de(it)
            and (it.get("urgent") or it.get("priority") == 1)
            and (queued_minutes_ago(it, now) or 0) > URGENT_WAIT_MIN]
     out.sort(key=lambda it: queued_minutes_ago(it, now) or 0, reverse=True)
@@ -2214,6 +2297,12 @@ def urgent_lane_safe_max(alive, safe_max, measured_safe_max, items, now=None):
     戻り値: (新しいsafe_max, 横入り対象item or None)"""
     if alive < safe_max:
         return safe_max, None
+    try:
+        import mudacut as _mc
+        if _mc.yokoiri_kaijo():  # 2026-11-08 無駄カット：横入りで上限を上書きしない
+            return safe_max, None
+    except Exception:
+        pass
     long_waiting = urgent_wait_list(items, now)
     if not long_waiting or safe_max >= measured_safe_max:
         return safe_max, None
@@ -2368,6 +2457,20 @@ def _main_impl():
       #   自分が「実際に変更した項目」だけを正確に見分けて重ね書きするため
       #   （渡さないと保守的に「持っている項目は全部変更した」扱いになる）。
       _snap = queue_store.snapshot_items(q)
+      # ---- 2026-11-05 いつもの仕事（itsumo_shigoto.py）----
+      #   ①列が空になる前に「いつもの仕事」（空コピー埋め→コピー直し→Spotify仕入れ）を自分で積み足す
+      #   ②通信障害の旗が立っている間は新規発車を待つ（戻ったら自動で外して再開）
+      #   ③80点以上で納品された便は「完成：名前／Driveリンク」を Dispatch へ1行
+      #   新しい定期タスク・常駐は足さない（この発車係の中で、5分に1回だけ間引いて動く）。
+      try:
+          import itsumo_shigoto as _its
+          if _its.tick(q):
+              save_queue(q, snapshot=_snap)
+              _snap = queue_store.snapshot_items(q)
+          if _its.tsuushin_matsu():
+              return 0
+      except Exception as _e:
+          log("いつもの仕事で例外: %s" % _e)
       # ---- 2026-10-15 Fableレーン（たまごさん「この3本を最優先で今すぐFableで発車。発車できない原因は自分で取り除く」）----
       #   fableLane:true の仕事だけ、ロード比・スワップ%の天井（負荷の番人の旗を含む）を越えて最大 FABLE_LANE_MAX 本まで出す。
       #   ただし本当に危ないとき（メモリ圧が緑でない／空きメモリ15%未満／ディスク20GB未満の旗／ログイン切れ・週枠の旗）は出さない。
@@ -2607,7 +2710,7 @@ def _main_impl():
           save_queue(q, snapshot=_snap)
           _snap = queue_store.snapshot_items(q)
 
-      waiting = sorted([it for it in items if it.get("status") == "waiting"
+      waiting = sorted([it for it in items if it.get("status") == "waiting" and not _ato_de(it)
                         and (not _sen_stop or _isogi(it))], key=rank)
 
       # ---- 759番3回目の重複発車を機に追加した恒久ガード（案件#759・2026-09-13）----
@@ -2797,6 +2900,25 @@ def _main_impl():
           for it in waiting[:30]:
               if len(_clean) >= room:
                   break
+              # 2026-11-12 直し：無駄カット（3回目以降は保留）を「選ぶ前」に効かせて台帳に保存する。
+              #   実測：launch_one の中で hold にしても save_queue されず、205276番（urgent・P1）が
+              #   waiting のまま列の先頭に残り続けた → 11-10 18:05〜11-12 02:14 に1469回同じ票を
+              #   保留にしては空振り、上限1本の枠に他の便が1本も入らなかった（発車停止32時間）。
+              try:
+                  import mudacut as _mc0
+                  if _mc0.kinshi(it):
+                      _mc0.horyu(it)
+                      _zumi_hit = True
+                      log("🛑 無駄カット（選ぶ前）：%s番は%d回発車済み→保留にして次の便へ「%s」"
+                          % (it.get("n"), _mc0.kaisuu(it), it.get("title")))
+                      try:
+                          import karaburi_kanmon as _kb
+                          _kb.after(it, False, "無駄カット（選ぶ前）：%d回発車済み" % _mc0.kaisuu(it))
+                      except Exception:
+                          pass
+                      continue
+              except Exception as _e0:
+                  log("無駄カット（選ぶ前）でエラー %s番: %s" % (it.get("n"), _e0))
               _twin = zumi_sekisho.find_done_twin(it, _dones)
               if _twin is None:
                   _clean.append(it)
@@ -2841,6 +2963,13 @@ def _main_impl():
                   f.write(time.strftime("%Y-%m-%dT%H:%M:%S+09:00"))
           except Exception:
               pass
+      elif item.get("status") == "hold":
+          # 2026-11-12：関所で保留にした票は必ず台帳へ保存する（保存しないと次の周回も先頭に居座る）
+          try:
+              save_queue(q, snapshot=_snap)
+              _snap = queue_store.snapshot_items(q)
+          except Exception as _e:
+              log("保留の保存に失敗 %s番: %s" % (item.get("n"), _e))
   return 0
 
 
@@ -2875,6 +3004,34 @@ def _launch_one_core(item, q, alive, safe_max):
         if _x.get("n") == item.get("n") and _x.get("status") != "waiting":
             log("二重発車を止めました %s番（いまの状態=%s）" % (item.get("n"), _x.get("status")))
             return False
+
+    # ---- Fable禁止の関所（2026-11-08 たまごさんがプランを下げた・解除はたまごさんの指示のみ）----
+    #   Fable指定の便はSonnetに落とさず、保留(hold)で止める。status/fable_kinshi.json がある間ずっと。
+    try:
+        import fable_week as _fwk
+        if _fwk.kinshi() and _fwk.is_fable_item(item):
+            item["status"] = "hold"
+            item["holdNote"] = _fwk.HORYU_NOTE
+            try:
+                _fwk.horyu([item.get("n")])
+            except Exception as _e2:
+                log("Fable保留の書き込みに失敗 %s番: %s（発車はしない）" % (item.get("n"), _e2))
+            log("🛑 Fable禁止：%s番はFable指定なので保留にしました「%s」" % (item.get("n"), item.get("title")))
+            return False
+    except Exception as _e:
+        if FABLE in str(item.get("fixedModel") or "") + str(item.get("model") or "") or str(item.get("title") or "").startswith("Fable｜"):
+            log("Fable禁止の関所でエラー（Fable指定なので念のため発車しない）%s番: %s" % (item.get("n"), _e))
+            return False
+
+    # ---- 無駄カット（2026-11-08 週枠100%超え）：同じ便の3回目以降の発車は保留 ----
+    try:
+        import mudacut as _mc
+        if _mc.kinshi(item):
+            _mc.horyu(item)
+            log("🛑 無駄カット：%s番は%d回発車済みなので保留にしました「%s」" % (item.get("n"), _mc.kaisuu(item), item.get("title")))
+            return False
+    except Exception as _e:
+        log("無駄カットの関所でエラー %s番: %s" % (item.get("n"), _e))
 
     # ---- 棚の関所（2026-10-22 たまごさん「棚に置くのは本当に慎重にしたい」）----
     #   棚に入れる・置く・移す仕事は、たまごさんがその日に曲名と棚名を名指しした票
@@ -3116,6 +3273,11 @@ def _launch_one_core(item, q, alive, safe_max):
     item["startedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
     item["sessionId"] = new_id
     item["pid"] = pid
+    try:
+        import mudacut as _mc2
+        _mc2.kazoeru(item)
+    except Exception:
+        pass
     log("🚀 自動発車 %d番「%s」→ pid %s / session %s（走行%d本→%d本・上限%d本）"
         % (item.get("n"), item.get("title"), pid, new_id[:8], alive, alive + 1, safe_max))
     print("自動発車: %s" % item.get("title"))

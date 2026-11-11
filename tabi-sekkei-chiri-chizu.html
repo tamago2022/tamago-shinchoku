@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>旅の部屋 設計書｜地理の階層・地図から飛ぶ・お金・次に調べること</title>
+<style>
+:root{
+  --bg:var(--t-bg); --bg2:var(--t-bg); --bg3:var(--t-panel);
+  --line:var(--t-line); --line2:var(--t-line);
+  --fg:var(--t-fg); --fg2:var(--t-mute); --fg3:var(--t-mute);
+  --ac:var(--t-warn); --ac2:var(--t-info); --warn:var(--t-ng);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  font-size:16px; line-height:1.75; letter-spacing:.01em;
+}
+.wrap{max-width:860px;margin:0 auto;padding:28px 18px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:34px}
+.kicker{font-size:11px;letter-spacing:.22em;color:var(--ac);font-weight:700;margin:0 0 10px}
+h1{font-size:25px;line-height:1.35;margin:0 0 12px;font-weight:800}
+.lead{color:var(--fg2);font-size:14px;margin:0}
+.meta{color:var(--fg3);font-size:11.5px;margin-top:12px;line-height:1.6}
+
+section{margin:0 0 52px}
+h2{font-size:19px;margin:0 0 6px;font-weight:800;line-height:1.4}
+h2 .n{color:var(--ac);font-size:12px;letter-spacing:.14em;display:block;margin-bottom:6px;font-weight:700}
+h3{font-size:14.5px;margin:26px 0 8px;font-weight:700;color:var(--ac2)}
+p{margin:0 0 12px}
+.sub{color:var(--fg2);font-size:13.5px;margin:0 0 20px;padding-bottom:16px;border-bottom:1px dashed var(--line)}
+a{color:var(--ac2)}
+a:hover{color:var(--ac)}
+small{font-size:11.5px;color:var(--fg3);line-height:1.6;display:block}
+
+/* 階層ツリー */
+.tree{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:16px 14px;font-size:13.5px;margin:0 0 16px}
+.tree ul{list-style:none;margin:0;padding:0 0 0 16px;border-left:1px solid var(--line2)}
+.tree>ul{padding-left:2px;border:0}
+.tree li{margin:3px 0;position:relative}
+.tree li>span.lv{color:var(--fg3);font-size:11px;margin-left:8px}
+.tree code{background:var(--bg3);color:var(--ac);padding:1px 5px;border-radius:3px;font-size:11.5px}
+.mark{color:var(--ac);font-weight:700}
+
+/* 表 */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 10px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:12.5px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--bg3);color:var(--fg2);font-weight:700;font-size:11px;letter-spacing:.06em;white-space:nowrap;position:sticky;top:0}
+tbody tr:nth-child(odd){background:rgba(255,255,255,.015)}
+tbody tr.rec{background:rgba(232,176,75,.08)}
+tbody tr.rec td{border-bottom-color:var(--line2)}
+td.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+.zero{color:var(--ac2);font-weight:700}
+.paid{color:var(--ac)}
+.unk{color:var(--warn)}
+.tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.tag.o{border-color:var(--ac);color:var(--ac)}
+
+/* 推し */
+.push{background:linear-gradient(180deg,rgba(232,176,75,.1),rgba(232,176,75,.03));border:1px solid rgba(232,176,75,.4);border-left:3px solid var(--ac);border-radius:10px;padding:18px 16px}
+.push h3{margin-top:0;color:var(--ac)}
+ol,ul.b{padding-left:1.3em;margin:0 0 12px}
+ol li,ul.b li{margin:5px 0;font-size:13.5px}
+
+/* Gensparkリスト */
+.gs{counter-reset:g;list-style:none;padding:0;margin:0}
+.gs li{counter-increment:g;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:11px 13px 11px 40px;margin:0 0 7px;position:relative;font-size:13px}
+.gs li::before{content:counter(g,decimal-leading-zero);position:absolute;left:12px;top:11px;color:var(--ac);font-size:11px;font-weight:700}
+.gs .why{display:block;color:var(--fg3);font-size:11.5px;margin-top:3px}
+.gs li.pri{border-color:rgba(232,176,75,.45)}
+
+.note{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--fg2);margin:0 0 14px}
+.src{font-size:11.5px;color:var(--fg3);margin:14px 0 0;line-height:1.9}
+.src a{color:var(--fg2)}
+footer{border-top:1px solid var(--line);padding-top:20px;color:var(--fg3);font-size:11.5px}
+@media(max-width:600px){
+  h1{font-size:21px} h2{font-size:17px} body{font-size:15px}
+  .wrap{padding:20px 14px 70px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">旅の部屋 / 設計と調べもの（実装なし）</p>
+  <h1>地理の階層・地図から飛ぶ道・お金・次に調べること</h1>
+  <p class="lead">オリジナルは作らない。国連（UNSD）の正式区分をそのまま使う。地図は「重くなるならやめる」を条件に、軽い順に10案。金額は公式の料金ページからのみ。</p>
+  <p class="meta">調査日 2026-09-27 ／ 為替は 1 USD = 157円で換算（2026-09-25 実勢、出典は末尾）<br>
+  ★実装はしていません。設計と調べものだけです。</p>
+</header>
+
+<!-- ① 階層 -->
+<section>
+  <h2><span class="n">① 地域の階層</span>国連 M49 をそのまま使う</h2>
+  <p class="sub">「ラオスはアジアだけど中央アジアじゃない」— これは国連統計部の <b>M49（Standard Country or Area Codes for Statistical Use）</b> がすでに解いています。アジアは5つに割れていて、ラオスは <b>東南アジア(035)</b>、中央アジアは <b>5カ国だけ(143)</b>。自作の区分はいりません。</p>
+
+  <h3>M49 の実際の中身（アジア部分・公式）</h3>
+  <div class="tree">
+    <ul>
+      <li><code>001</code> 世界
+        <ul>
+          <li><code>142</code> アジア（50）
+            <ul>
+              <li><code>030</code> 東アジア（7）<span class="lv">中国・香港・日本・北朝鮮・韓国・マカオ・モンゴル</span></li>
+              <li class="mark"><code>035</code> 東南アジア（11）<span class="lv">ブルネイ・ミャンマー・カンボジア・インドネシア・<b>ラオス</b>・マレーシア・フィリピン・東ティモール・シンガポール・ベトナム・タイ</span></li>
+              <li><code>034</code> 南アジア（9）<span class="lv">アフガニスタン・バングラデシュ・ブータン・スリランカ・インド・<b>イラン</b>・モルディブ・ネパール・パキスタン</span></li>
+              <li class="mark"><code>143</code> 中央アジア（<b>5だけ</b>）<span class="lv">カザフスタン・キルギス・タジキスタン・トルクメニスタン・ウズベキスタン</span></li>
+              <li><code>145</code> 西アジア（18）<span class="lv">＝いわゆる中東。<b>トルコ</b>・イスラエル・サウジ・UAE・ジョージア・アルメニア・アゼルバイジャン など</span></li>
+            </ul>
+          </li>
+          <li><code>150</code> ヨーロッパ（51）<span class="lv">154 北欧／155 西欧／151 東欧（ロシアはここ）／039 南欧</span></li>
+          <li><code>002</code> アフリカ（60）<span class="lv">015 北アフリカ／011 西／017 中部／014 東／018 南部</span></li>
+          <li><code>019</code> アメリカ大陸（57）<span class="lv">021 北部アメリカ／013 中米／029 カリブ／005 南米</span></li>
+          <li><code>009</code> オセアニア（29）</li>
+          <li><code>010</code> 南極（1）</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <b>M49 の注意点（先に知っておくと後で揉めない）</b><br>
+    ・<b>イランは「南アジア」</b>に入る。中東（西アジア）ではない。<br>
+    ・<b>トルコは「西アジア」</b>。ヨーロッパには入らない。<br>
+    ・<b>ロシアは「東欧」</b>。アジアには入らない。<br>
+    ・M49 に「中東」という枠はない。＝<b>西アジア(145)</b> が事実上それ。<br>
+    ・2021年12月に「先進地域／途上地域」の区分は M49 から削除済み。使わない。
+  </div>
+
+  <h3>それでも M49 だけでは足りない部分 → Wikivoyage の型を借りる</h3>
+  <p>M49 は「国まで」です。その下（地方・都市・村）と、国境をまたぐ場所（ヒマラヤ、ナイアガラ）の扱いは、<b>Wikivoyage の Geographical hierarchy</b> が20年運用して固めた型がそのまま使えます。</p>
+  <div class="tree">
+    <ul>
+      <li>地球
+        <ul><li>大陸 <span class="lv">= M49 の 142 / 150 / 002 / 019 / 009</span>
+          <ul><li>大陸セクション <span class="lv">= M49 のサブ地域（030 / 035 / 034 / 143 / 145 …）</span>
+            <ul><li>国 <span class="lv">= M49 の国コード。<b>この階層は飛ばせない</b></span>
+              <ul><li>地方（リージョン）<span class="lv">中身が増えるまで作らない＝入れ子は後から</span>
+                <ul><li>都市・村
+                  <ul><li>地区（巨大都市だけ）</li></ul>
+                </li></ul>
+              </li></ul>
+            </li></ul>
+          </li></ul>
+        </li></ul>
+      </li>
+    </ul>
+  </div>
+  <ul class="b">
+    <li><b>7±2 の法則</b>｜1階層の子は7個前後（5〜9）。10個を超えたら中間階層を挟むタイミング。</li>
+    <li><b>意味がない階層は飛ばす</b>｜アンドラに「地方」はいらない。国→都市で直結。</li>
+    <li><b>穴を作らない・重ねない</b>｜同じ階層の兄弟は重複禁止。地球上どこでも必ず置き場所がある状態を保つ。</li>
+    <li><b>はみ出す場所は extra-region 扱い</b>｜ヒマラヤのような国境またぎは階層の外に置き、親は1つだけ表示（パン粉は1本道）。</li>
+  </ul>
+
+  <h3>結論（採る案）</h3>
+  <p><b>世界 → 大陸（M49マクロ）→ 地域（M49サブ）→ 国（M49国コード）→ 地方（任意）→ 都市/村 → 地区（任意）</b>。区分の出典は M49、階層の運用ルールは Wikivoyage。<b>どちらも自作なし。</b></p>
+
+  <p class="src">出典：
+    <a href="https://unstats.un.org/unsd/methodology/m49/">UNSD — Standard country or area codes for statistical use (M49)</a> ／
+    <a href="https://en.wikipedia.org/wiki/UN_M49">UN M49 全コード一覧（2021年12月時点）</a> ／
+    <a href="https://en.wikivoyage.org/wiki/Wikivoyage:Geographical_hierarchy">Wikivoyage:Geographical hierarchy</a>
+  </p>
+</section>
+
+<!-- ② 構造 -->
+<section>
+  <h2><span class="n">② バンバン足しても壊れない器</span>今すぐ全部は作らない。持ち方だけ決める</h2>
+  <p class="sub">曲・食べもの・アクティビティが何千件になっても壊れない条件は3つだけです。</p>
+
+  <h3>1｜場所テーブルは1本。親IDと「パス」を持つ</h3>
+  <p>場所（大陸・地域・国・都市）を<b>種類別に分けず1つのテーブル</b>にして、<code>parentId</code> と <code>path</code> を持たせます。</p>
+  <div class="tree" style="font-size:12.5px">
+<pre style="margin:0;white-space:pre-wrap;color:var(--fg2)">{ id:"la",        kind:"country", parent:"035", path:"142/035/la",    name:"ラオス" }
+{ id:"la-lpq",    kind:"city",    parent:"la",  path:"142/035/la/lpq", name:"ルアンパバーン" }</pre>
+  </div>
+  <p><code>path</code> が文字列なので、<b>「東南アジアの全部」も「アジアの全部」も前方一致1発</b>で出ます。何階層深くなっても検索が増えません。これが「バンバン足しても壊れない」の中身です。</p>
+
+  <h3>2｜中身（曲・食・遊び）は種類で分けない</h3>
+  <p>曲テーブル・食べものテーブル…と分けると、種類が増えるたびに構造を壊します。<b>1レコード = 1コンテンツ</b>で、<code>type</code> と <code>placeId</code> だけ持たせる形にします。</p>
+  <div class="tree" style="font-size:12.5px">
+<pre style="margin:0;white-space:pre-wrap;color:var(--fg2)">{ type:"song",     placeId:"la-lpq", ... }
+{ type:"food",     placeId:"la-lpq", ... }
+{ type:"activity", placeId:"la",     ... }</pre>
+  </div>
+  <p>後から「香り」「音」「本」を足すときも、<code>type</code> を1つ増やすだけ。器はそのまま。</p>
+
+  <h3>3｜表示するときは階層ごとに切る（全件読み込まない）</h3>
+  <p>1ページで世界の全件を読むと、件数が増えた瞬間に死にます。<b>そのページに必要な path 配下だけ</b>を配る。地図ページは「国のIDとリンク先」しか持たない。これで件数がいくら増えても地図ページは太りません。</p>
+</section>
+
+<!-- ③ 地図 -->
+<section>
+  <h2><span class="n">③ 地図から飛ぶ道</span>軽い順に10案</h2>
+  <p class="sub">条件は「重くならないこと」。JS の gzip 後サイズが実測で分かっているものは数字を、分からないものは <span class="unk">未確認</span> と書いています（憶測の数字は1つも書いていません）。</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr>
+      <th>#</th><th>やり方</th><th>追加される重さ（gzip後）</th><th>お金</th><th>実例・公式URL</th><th>向き／不向き</th>
+    </tr></thead>
+    <tbody>
+      <tr class="rec">
+        <td class="num">1<br><span class="tag o">推し</span></td>
+        <td><b>SVGを事前生成＋クリックは素の &lt;a&gt;</b><br>ビルド時に TopoJSON→SVGパス化。ページには完成済みSVGが入るだけ。JSライブラリ0。</td>
+        <td class="num"><b>JS：0 KB</b><br>SVG本体：<span class="unk">要実測</span><br><small>元データ countries-110m.json は 108 kB（非圧縮・unpkg表示）。簡略化＋gzipで減る想定だが数字は実測しないと書けない</small></td>
+        <td class="num zero">0円</td>
+        <td><a href="https://unpkg.com/browse/world-atlas@2.0.2/">world-atlas（公式ファイル一覧）</a><br><a href="https://www.naturalearthdata.com/">Natural Earth（パブリックドメイン原データ）</a></td>
+        <td>◎最軽量・オフライン可・追加リクエスト0・JSオフでも動く<br>×パン/ズームは自作</td>
+      </tr>
+      <tr>
+        <td class="num">2</td>
+        <td><b>インラインSVG＋自作JS数行</b><br>1と同じだが hover/選択状態を付ける。<code>addEventListener</code> 1つ。</td>
+        <td class="num">JS：<b>1 KB未満</b>（自作）<br>SVG本体：1と同じ</td>
+        <td class="num zero">0円</td>
+        <td>同上</td>
+        <td>◎ほぼ1と同じ重さで見た目が良くなる</td>
+      </tr>
+      <tr>
+        <td class="num">3</td>
+        <td><b>SVG＋d3-geo / topojson-client</b><br>投影をブラウザ側で計算。図法を切り替えられる。</td>
+        <td class="num">JS：<span class="unk">未確認</span><br>＋TopoJSON 108 kB（非圧縮）</td>
+        <td class="num zero">0円</td>
+        <td><a href="https://github.com/topojson/world-atlas">topojson/world-atlas</a><br><a href="https://datamaps.github.io/">DataMaps（D3+SVGの稼働デモ）</a></td>
+        <td>○図法を変えたい時だけ<br>×ブラウザで計算する分、1・2より必ず重い</td>
+      </tr>
+      <tr>
+        <td class="num">4</td>
+        <td><b>Leaflet ＋ GeoJSON</b><br>ラスタタイル地図。OSMタイルなら無料。</td>
+        <td class="num">JS：<b>約42 KB</b><br>CSS：<b>約4 KB</b><br>＋タイル画像（毎回DL）</td>
+        <td class="num zero">0円<br><small>OSMタイル利用規約の範囲内で</small></td>
+        <td><a href="https://www.npmjs.com/package/leaflet">leaflet（公式npm／42KB記載）</a></td>
+        <td>○地図らしい操作がすぐ手に入る<br>×タイル画像のDLが毎回発生。1・2より確実に重い</td>
+      </tr>
+      <tr>
+        <td class="num">5</td>
+        <td><b>MapLibre GL JS ＋ PMTiles自前ホスト</b><br>ベクタタイル・WebGL。Protomaps系を自分で置けば0円。</td>
+        <td class="num">JS初回：<b>205 KB</b><br><small>MapLibre GL v3.1.0 実測 firstLoadSize（build 737 KB）</small></td>
+        <td class="num zero">0円<br><small>自前ホスト時</small></td>
+        <td><a href="https://labs.maptiler.com/sdk-benchmarks/">MapTiler SDK Benchmarks（実測値の出所）</a></td>
+        <td>○将来ズームして村まで見せたい時の本命<br>×推しの40〜200倍重い。WebGL必須</td>
+      </tr>
+      <tr>
+        <td class="num">6</td>
+        <td><b>MapTiler Cloud（ホスティング任せ）</b></td>
+        <td class="num">5と同じ（205 KB）</td>
+        <td class="num">無料枠：<span class="zero">0円</span><br>5,000セッション/月・API 10万req/月<br><small>ただし<b>MapTilerロゴ必須</b>・テスト／非商用向けと明記</small><br>Flex：<b>$30/月＝約4,700円</b><br>25,000セッション/月・API 50万req<br>超過 $2.50/1,000セッション＝約393円</td>
+        <td><a href="https://www.maptiler.com/cloud/pricing/">MapTiler Cloud 料金（公式）</a></td>
+        <td>○自前ホストしたくないなら最安<br>×無料枠はロゴ必須</td>
+      </tr>
+      <tr>
+        <td class="num">7</td>
+        <td><b>Mapbox GL JS v3</b></td>
+        <td class="num">JS初回：<b>271 KB</b><br><small>v2.7.11 実測 firstLoadSize（build 986 KB）</small></td>
+        <td class="num unk">単価 未確認<br><small>公式料金ページが数値をスライダーでしか出さず、静的テキストに単価・無料枠が載っていない。「Map Loads for Web で課金、無料枠あり」までしか公式に確認できず。<b>憶測の金額は書きません</b>。要ログイン確認</small></td>
+        <td><a href="https://www.mapbox.com/pricing">Mapbox 料金</a><br><a href="https://docs.mapbox.com/mapbox-gl-js/guides/pricing/">GL JS 課金の仕組み</a></td>
+        <td>×一番重く、金額が公式から読めない。今回は見送り</td>
+      </tr>
+      <tr>
+        <td class="num">8</td>
+        <td><b>Google Maps Platform（Dynamic Maps）</b></td>
+        <td class="num unk">未確認<br><small>公式に gzip 後サイズの記載なし</small></td>
+        <td class="num paid">Starter <b>$100/月＝約15,700円</b>（5万呼び出し/月）<br>Essentials <b>$275/月＝約43,200円</b>（10万）<br>Pro <b>$1,200/月＝約188,400円</b>（25万）<br>従量課金制＋新規$300トライアルクレジット</td>
+        <td><a href="https://mapsplatform.google.com/pricing/">Google Maps Platform 料金（公式・日本語）</a></td>
+        <td>×一番高い。世界地図から国へ飛ぶだけには過剰</td>
+      </tr>
+      <tr>
+        <td class="num">9</td>
+        <td><b>amCharts 5: Maps</b><br>SVGベースのクリッカブル世界地図ライブラリ。</td>
+        <td class="num unk">未確認</td>
+        <td class="num paid">Basic 永続 <b>$180/席＝約28,300円</b>（買い切り）<br>SaaS $650／OEM $2,700<br><small>無料版はamChartsのロゴ表示が条件</small></td>
+        <td><a href="https://www.amcharts.com/online-store/">amCharts ストア（公式）</a></td>
+        <td>○ドリルダウンが最初から付いてくる<br>×自分でSVG作れば0円で足りる</td>
+      </tr>
+      <tr>
+        <td class="num">10</td>
+        <td><b>simplemaps World HTML5 Map</b><br>買い切り。完全自己完結・オフライン動作・外部通信なし。</td>
+        <td class="num unk">未確認</td>
+        <td class="num paid"><b>$199＝約31,200円</b>（買い切り・1ドメイン・更新とサポート12ヶ月）<br>全ドメイン Developer $499＝約78,300円<br>延長 $49/年＝約7,700円</td>
+        <td><a href="https://simplemaps.com/pricing">simplemaps 料金（公式）</a></td>
+        <td>○「お金で即解決」の最短。月額なし<br>×自作SVGでできることに3万円</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <small>※重さは「地図のために追加でDLされる量」。1〜3はJSライブラリを足さないので追加リクエストが増えません。4以降はタイル画像やフォントが毎回乗ります。</small>
+</section>
+
+<!-- 推し -->
+<section>
+  <h2><span class="n">③-2 推し（1つだけ）</span>案1＋2：事前生成SVG＋素のリンク</h2>
+  <div class="push">
+    <h3>やること：ビルド時にSVGを1枚作って、国のパスを &lt;a&gt; で包むだけ</h3>
+    <ol>
+      <li>Natural Earth（パブリックドメイン）の国境データを取る</li>
+      <li>mapshaper 等で<b>簡略化</b>（小国は点にならない程度まで残す）</li>
+      <li>SVGパスに変換。各 path に <code>id="la"</code>（ISO/M49コード）を付ける</li>
+      <li>パスを <code>&lt;a href="/asia/035/la"&gt;</code> で包む。これで<b>クリック=ただのリンク</b></li>
+      <li>大陸ごとに切り分けたSVGも同じ手順で用意（アジアだけの図、など）</li>
+    </ol>
+    <p style="margin:14px 0 0"><b>なぜこれか</b></p>
+    <ul class="b" style="margin-bottom:0">
+      <li><b>追加JS 0 KB・追加リクエスト 0</b>。地図ライブラリを一切読まない。他の9案は全部これより重い。</li>
+      <li><b>0円</b>。月額もライセンス費もゼロ。従量課金の事故が原理的に起きない。</li>
+      <li><b>JSが死んでも動く</b>。ただの &lt;a&gt; なので、スマホの回線が細くても・JSが落ちても飛べる。</li>
+      <li><b>データが何千件増えても地図は太らない</b>。地図が持つのは国IDとURLだけ。中身は遷移先で読む。</li>
+      <li><b>後から5（MapLibre）に載せ替えられる</b>。URLの形（<code>/asia/035/la</code>）を今決めておけば、地図の実装だけ差し替えれば済む。</li>
+    </ul>
+    <p style="margin:14px 0 0;font-size:13px"><b>「重くなるならやめる」の判定ライン</b>：SVG本体の gzip 後サイズを実測し、<b>ページ全体で +100 KB を超えたら簡略化をやり直す</b>。それでも超えるなら大陸別に分割する。分割しても超えるなら地図はやめて、リスト（大陸→地域→国）だけにする。<br>
+    <span class="unk">→ この実測がまだ済んでいません。実装便に渡す最初の1手はこれです。</span></p>
+  </div>
+</section>
+
+<!-- ④ お金 -->
+<section>
+  <h2><span class="n">④ お金で解決できるのか</span>結論：買えるが、買う必要がない</h2>
+  <p class="sub">「世界地図から国へ飛ぶ」だけなら、無料で足ります。言い切ります。</p>
+  <ul class="b">
+    <li><b>サクサク買える選択肢は実在する</b>｜simplemaps World HTML5 Map <b>$199（約31,200円）買い切り</b>。1ドメイン永続、オフライン動作、外部サーバーと通信しない。カートに入れて終わり。</li>
+    <li><b>ライブラリを買うなら</b>｜amCharts 5: Maps <b>$180/席（約28,300円）買い切り</b>。ドリルダウン標準装備。無料版もあるがロゴ表示が条件。</li>
+    <li><b>月額が発生するのはタイル地図に行った時だけ</b>｜MapTiler Flex <b>$30/月（約4,700円）</b>／Google Maps Starter <b>$100/月（約15,700円）</b>。これは「村までズームして道を見せる」機能への対価で、国へ飛ぶだけなら払う先がない。</li>
+    <li><b>0円で足りる根拠</b>｜国境データ（Natural Earth）はパブリックドメイン、TopoJSON変換版（world-atlas）も無料、Leafletも無料、MapLibreも無料、自前SVGはライブラリすら不要。<b>この用途で有料が必須になる箇所は1つもない。</b></li>
+  </ul>
+  <div class="note"><b>正直に書いておくこと</b>：Mapbox だけは金額を書けませんでした。公式料金ページが単価と無料枠をJSスライダー内にしか置いておらず、静的テキストから読めません。憶測の数字は書かない方針なので、⑤の調べる候補に回しています。</div>
+</section>
+
+<!-- ⑤ Genspark -->
+<section>
+  <h2><span class="n">⑤ 来月Gensparkに投げる候補</span>1件＝1行。何を知りたいか＋なぜ</h2>
+  <p class="sub">上の★が付いたものから先に。★は「これが分からないと実装の判断ができない」もの。</p>
+  <ol class="gs">
+    <li class="pri">★ 簡略化した世界地図SVG（国境つき）の gzip 後サイズを、簡略化率ごとに実測した事例
+      <span class="why">なぜ：推し案の採否がこの数字1つで決まる。「+100KB超えたらやめる」の判定ができない</span></li>
+    <li class="pri">★ クリック可能な世界地図SVGを実運用しているサイトの、実機スマホ（4G・廉価Android）での表示秒数
+      <span class="why">なぜ：たまごさんの条件は「スマホで軽いこと」。PCの数字では判定にならない</span></li>
+    <li class="pri">★ Mapbox GL JS v3 の Map Loads for Web の無料枠件数と超過単価（公式の確定値）
+      <span class="why">なぜ：今回公式ページから読めなかった唯一の金額。比較表に穴が空いている</span></li>
+    <li class="pri">★ 場所データが数千〜数万件ある旅行サイトが、地図SVGを何分割して配信しているか（世界1枚／大陸別／国別）
+      <span class="why">なぜ：「バンバン足す」前提なので、どこで分割すべきかの分岐点を知りたい</span></li>
+    <li>M49 と ISO 3166-1 と CLDR の地域区分の差分一覧（どの国がどこで食い違うか）
+      <span class="why">なぜ：将来 i18n や外部データと突き合わせた時に、区分の不一致がバグになる</span></li>
+    <li>M49 のサブ地域名の公式日本語訳があるか（総務省統計局・外務省の表記）
+      <span class="why">なぜ：「South-eastern Asia」を「東南アジア」と訳すのは自分の判断になっている。公式訳があるならそれに寄せたい</span></li>
+    <li>Wikivoyage 以外で、世界→地域→国→都市の階層を運用している大規模サイトの構造（Atlas Obscura / Lonely Planet / TripAdvisor のURL設計とパン粉）
+      <span class="why">なぜ：URLの形を今決める必要がある。後から変えると全リンクが死ぬ</span></li>
+    <li>Protomaps / PMTiles を個人サイトで自前ホストした実例の、月あたり転送量と実費（Cloudflare R2 等）
+      <span class="why">なぜ：将来ズーム機能を付ける時の「0円のままいけるか」の上限を知りたい</span></li>
+    <li>SVGの要素数（国境パス数）が何個を超えるとスマホのスクロールが引っかかるか、実測データ
+      <span class="why">なぜ：「数千要素で劣化する」という話は見たが、一次データで確認できていない</span></li>
+    <li>地図から詳細へ飛ぶ時の遷移パターン比較（別ページ遷移／モーダル／部分更新）と、それぞれの体感速度の実測
+      <span class="why">なぜ：「バーンと飛べる」の実現方法が3通りあり、どれが軽いか分からない</span></li>
+    <li>国境が政治的に争われている地域（台湾・パレスチナ・西サハラ・カシミール等）を、旅行サイトがどう表示しているかの実例
+      <span class="why">なぜ：世界地図を出す以上は必ず当たる。先に方針を持っておきたい</span></li>
+    <li>1ページに数千件のカードを持つサイトの配信方法（分割読み込み／静的生成の粒度）の最新事例
+      <span class="why">なぜ：曲・食べもの・アクティビティが増えた後の一覧ページが重くなる問題の答え</span></li>
+    <li>mapshaper 以外の国境簡略化ツールと、それぞれの「小国が消えない」限界値
+      <span class="why">なぜ：シンガポールやモルディブが点にならずに軽くできる上限を知りたい</span></li>
+    <li>Natural Earth 以外のパブリックドメイン／CC0 な国境データ（更新頻度と粒度の比較）
+      <span class="why">なぜ：Natural Earth の world-atlas は最終リリースが7年前。新しい国境変更が反映されているか確認が必要</span></li>
+    <li>amCharts 5 Maps と simplemaps を実際に買って運用した人の、後悔ポイント
+      <span class="why">なぜ：3万円を払う価値があるかは、公式ページには書いていない</span></li>
+  </ol>
+</section>
+
+<footer>
+  <p><b>出典（すべて公式または一次データ）</b></p>
+  <p class="src">
+    <a href="https://unstats.un.org/unsd/methodology/m49/">UNSD M49 公式</a>｜
+    <a href="https://en.wikipedia.org/wiki/UN_M49">UN M49 全コード（2021年12月時点）</a>｜
+    <a href="https://en.wikivoyage.org/wiki/Wikivoyage:Geographical_hierarchy">Wikivoyage:Geographical hierarchy</a>｜
+    <a href="https://unpkg.com/browse/world-atlas@2.0.2/">world-atlas 2.0.2 ファイルサイズ（unpkg）</a>｜
+    <a href="https://github.com/topojson/world-atlas">topojson/world-atlas</a>｜
+    <a href="https://www.naturalearthdata.com/">Natural Earth</a>｜
+    <a href="https://www.npmjs.com/package/leaflet">Leaflet 公式npm（42KB gz記載）</a>｜
+    <a href="https://labs.maptiler.com/sdk-benchmarks/">MapTiler SDK Benchmarks（MapLibre/Mapbox 実測）</a>｜
+    <a href="https://www.maptiler.com/cloud/pricing/">MapTiler Cloud 料金</a>｜
+    <a href="https://mapsplatform.google.com/pricing/">Google Maps Platform 料金</a>｜
+    <a href="https://www.mapbox.com/pricing">Mapbox 料金</a>｜
+    <a href="https://docs.mapbox.com/mapbox-gl-js/guides/pricing/">Mapbox GL JS 課金</a>｜
+    <a href="https://www.amcharts.com/online-store/">amCharts ストア</a>｜
+    <a href="https://simplemaps.com/pricing">simplemaps 料金</a>｜
+    <a href="https://datamaps.github.io/">DataMaps</a>｜
+    <a href="https://tradingeconomics.com/japan/currency">為替 1USD=157.23円（2026-09-25 / Trading Economics）</a>
+  </p>
+  <p style="margin-top:16px">円換算は 1 USD = 157円で計算した参考値です。実際の請求は決済時のレートと消費税（MapboxはリバースチャージでJP法人に納税義務が生じる旨が公式に記載）で変わります。<br>
+  <span class="unk">「未確認」と書いた欄は、公式から数字が取れなかったものです。埋めるまで憶測は入れていません。</span></p>
+</footer>
+
+</div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
+</body>
+</html>

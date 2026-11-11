@@ -299,7 +299,7 @@ while :; do
   tick_every 8 && ( python3 "$REPO/tools/genzaichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 1191番（2026-10-10）入荷した日本語の文を、4言語へ自動で訳して辞書に入れる（Claude Haiku・1時間に1回）。
   #   訳が無いものだけ。かなが残った訳は捨てる。結果 status/1191_nihongo_nokori/jidou.json
-  tick_every 15 && ( python3 "$REPO/tools/1191_honyaku_jidou.py" >> "$REPO/status/1191_nihongo_nokori/jidou.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-11-05 見回りの棚卸し：claudeを呼ぶのに7日で訳した0（status/mihari_tanaoroshi/hyou.md）】 tick_every 15 && ( python3 "$REPO/tools/1191_honyaku_jidou.py" >> "$REPO/status/1191_nihongo_nokori/jidou.log" 2>&1 & ) >/dev/null 2>&1
   # 1192番（2026-10-10）日本語の曲名に海外向け表記（①Apple Music米国ストアの公式→②MusicBrainz→③Haikuのローマ字）を付けて辞書へ。
   #   新しい曲を拾う→ローマ字→公式集め（止まっていれば再開）→変わっていれば1コミット。結果 status/1192_romaji/build.json
   tick_every 15 && ( python3 "$REPO/tools/1192_title_romaji.py" hourly >> "$REPO/status/1192_romaji/hourly.log" 2>&1 & ) >/dev/null 2>&1
@@ -429,7 +429,7 @@ while :; do
   #     あるため（今日07:24〜）、kenpin_gateと同じく心臓側にも置いて二重化する。
   #     待ちが空ならディレクトリを1回見るだけで即座に戻るので、15秒おきでも負荷はほぼゼロ。
   # 起動の間引き（2026-09-18）：外部AI代行。30秒おきで十分（元は15秒）
-  tick_every 2 && ( python3 "$REPO/tools/gaibu_runner.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-11-05 見回りの棚卸し：7日7回とも ok=False（status/mihari_tanaoroshi/hyou.md）】 tick_every 2 && ( python3 "$REPO/tools/gaibu_runner.py" --quiet >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-18（Cowork側から設置）機械の健康診断＋工場が撒いた残骸の回収。
   #   5分便にも sales-watch便にも同じ1行がある（＝経路の三重化）。本体が2分で
   #   間引くので、15秒おきに呼んでも実際に測るのは2分に1回だけ＝負荷は増えない。
@@ -525,7 +525,7 @@ while :; do
   #   ★番号が選ばれていないあいだは、ファイルを1枚読んで即戻る＝**通信0・クレジット0**。
   #     選ばれて初めて流れ始める。中で60秒に間引く＋1日の上限（10/4までの日割り）で止まる。
   #   投げっぱなしにして心臓は待たない。新しい常駐も定期タスクも作らない。
-  tick_every 4 && ( python3 "$REPO/tools/genspark_nagashi.py" --quiet >> "$REPO/status/gsk/nagashi.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-11-05 見回りの棚卸し：7日で流した0・同じ警告724通（status/mihari_tanaoroshi/hyou.md）】 tick_every 4 && ( python3 "$REPO/tools/genspark_nagashi.py" --quiet >> "$REPO/status/gsk/nagashi.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-25（1142番）外の口へ仕入れを1本ずつ絶やさず流す係。たまごさん「デビンは仕入れ含め止まらず回して」
   #   ★サンドボックスからは api.devin.ai / api.github.com に回線が出ない（実測403）。Macのここだけが叩ける。
   #   ★1本ずつ（3本同時は2026-09-20にACUが尽きて3本とも凍った）。走っている1本があれば見るだけで戻る。
@@ -600,6 +600,7 @@ while :; do
   #    作った道具が実際には回っていない「やりっぱなし」の実例そのもの。拾うだけで
   #    GitHub APIを叩くので軽い。ロック済み（二重実行は自分で弾く）。
   tick_every 8  && ( python3 "$REPO/tools/oni_codex.py" hirou >> "$REPO/status/oni_codex/hirou.log" 2>&1 & ) >/dev/null 2>&1
+  # ↑ 2026-11-12 復活：Issue #1031 Codex 見回り再開。停止理由（7日拾った0件）は1週間後に評価。改善策は別途検討
   # ⑤ 紙を1枚だけ書き直す（リポ直下 1152-nankai.html／スマホで開ける）。
   #    ★一番上に出すのは 今週言われた件数／実際に変わった件数／達成率。走らせた本数は出さない。
   tick_every 8  && ( python3 "$REPO/tools/kioku_page.py" >> "$REPO/status/kioku/page.log" 2>&1 & ) >/dev/null 2>&1
@@ -607,7 +608,7 @@ while :; do
   #    launchd（1分おき）が正本。心臓からも呼んでおくのは、launchd が落ちても死なせないため。
   #    中で5分に1回に間引くので、二重に呼んでも二重に積まない。
   #    2026-10-18（120042番）launchd の1分おきと二重だったので、心臓側は10分おき（tick_every 40）に間引いた（保険は残す）。
-  tick_every 40 && ( python3 "$REPO/tools/tomaranai.py" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-11-05 見回りの棚卸し：launchd の1分おきと二重（status/mihari_tanaoroshi/hyou.md）】 tick_every 40 && ( python3 "$REPO/tools/tomaranai.py" >> "$REPO/status/tomaranai.log" 2>&1 & ) >/dev/null 2>&1
   # 1170番（2026-09-27）出荷便（push-queue）の見張り。5分おき（15秒×20）。
   #   09-27 17:07〜18:11 の3周、出荷便が連続で落ちていたのに**どこにも出ていなかった**。
   #   この係は押し出さない（押す係は role-sweep にある＝二重実装しない）。

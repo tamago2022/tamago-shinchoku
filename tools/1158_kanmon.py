@@ -145,6 +145,13 @@ def main():
         sys.stderr.write("1158関所: claude 本体が見つかりません\n")
         return 127
 
+    # ---- Fable全面停止（2026-11-08 たまごさんがプランを下げた・解除はたまごさんの指示のみ）----
+    #   どの道から呼ばれても、Fableでの起動はここで拒否する（Sonnetへ勝手に落とさない）。
+    if any("fable" in a.lower() for a in argv if a.startswith("claude-") or a.startswith("--model")) \
+            and os.path.exists(os.path.join(os.path.dirname(HERE), "status", "fable_kinshi.json")):
+        sys.stderr.write("1158関所: Fable全面停止中（status/fable_kinshi.json）。Fableでは起動しません\n")
+        return 3
+
     # ---- 入れ子は素通しする（2026-09-26）----
     # claude の中からさらに claude が起動される経路（hook・MCP・孫プロセス）が
     # あると、上限1本のとき子が親のスロットを30分待って**必ず詰まる**。

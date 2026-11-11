@@ -8,10 +8,11 @@
                    HowItHolds は棒人間プロジェクトの一部＝HowItHolds 名のフォルダは作らない。
   フォルダは最小限：案件フォルダの下に小分けを作らない（あれば中身を案件フォルダへ移して空にする）。
                    空フォルダは作らない・見つけたら片付ける（中身があるものは消さない）。
-  ファイル名     ：「日付_★最新_種類_中身.拡張子」例「2026-10-15_★最新_動画_EP01男の子_音軽い版_540p.mp4」
-                   種類＝動画／静止画／音声／文書（拡張子で自動）。古い版は★を外す（put --saishin で上げると、
-                   同じフォルダの同じ中身名（種類の次の語）から★を外す）。
-  一覧           ：「Claude/00_一覧_新しい順.csv」（★最新を上にまとめ、その下を新しい順。リンク付き）
+  ファイル名     ：「日付6桁_短い中身.拡張子」例「261031_宇宙うんこv2_滝.mp4」「261031_音ハメ_シティポップ夜.mp4」
+                   （2026-10-31 たまごさん：スマホのDriveで「2026-10-31_★最新…」と並ぶと何の動画か分からない）
+                   ★最新・種類（動画／静止画…）は付けない。ローマ字の仮名や長い説明は KAEMEI で短い日本語にそろえる。
+                   古い形（2026-10-15_★最新_動画_…）は整理（seiri）のたびにこの形へ直す。中身は変えない・消さない。
+  一覧           ：「Claude/00_一覧_新しい順.csv」（新しい順。リンク付き）
   知らせ         ：ドライブに上がった1件ごとに Dispatch へ1行「何を｜ドライブのURL」（status/dispatch_outbox.jsonl）
   使わない置き場 ：Mac本体（~/Documents・デスクトップ）／iCloud Drive
 
@@ -46,6 +47,11 @@ ANKEN = {
     "SNS": ["sns", "x予約", "buffer", "投稿一覧"],   # 2026-10-19 たまごさん「AI生成物/Claude/SNS/ にも置く」
     "ごきげん一粒": ["ごきげん一粒", "飴ちゃん配信", "hitotsubu"],   # 2026-10-21 たまごさん「AI生成物/Claude/ごきげん一粒/」週1配信の見本
     "告知動画の型": ["告知動画の型", "kokuchi_kata"],   # 2026-10-25 たまごさん「AI生成物/Claude/告知動画の型/」
+    "音ハメ文字動画": ["音ハメ", "motion_lab", "kinetic", "kokuchi_ikareru"],   # 2026-10-31 たまごさん（Scenario の音ハメ文字・告知試作）
+    "宇宙うんこ": ["宇宙うんこ", "uchu_unko"],   # 2026-10-31 案件ごとにそろえる（写すだけ）
+    "Fable": [],   # 2026-11-01 たまごさん「AI制作物/Claude/Fable」Fableで作ったもの（--anken Fable で明示して入れる）
+    "月面3D土台": ["月面3d土台", "getsumen3d", "m3d_"],   # 2026-11-02 たまごさん指定。たまご・ロボの正本3Dモデル（.blend・仕様メモ・並べ比較・ターンテーブル）
+    "arafune比較": ["arafune", "荒船"],   # 2026-11-07 たまごさん指定「AI制作物/Claude/arafune比較」（荒船さんBlender×Claude作との並べ比較）
     "その他": [],
 }
 SONOTA = "その他"
@@ -61,6 +67,7 @@ TSUUCHI_MACHI = os.path.join(REPO, "status", "claude_nouhin_tsuuchi_machi.json")
 OUTBOX = os.path.join(REPO, "status", "dispatch_outbox.jsonl")
 
 DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})_")
+DATE6_RE = re.compile(r"^(\d{6})_")
 STAR = "★最新"
 SHURUI = {"動画": (".mp4", ".mov", ".webm", ".m4v"),
           "静止画": (".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic"),
@@ -100,33 +107,54 @@ def shurui_of(name):
     return "文書"
 
 
+# 短い中身にそろえる言い換え（上から順に1回ずつ）。ローマ字の仮名・長い説明 → スマホで一目で分かる日本語
+KAEMEI = [
+    (r"^uchu_unko_v2_taki_still$", "宇宙うんこv2_滝_静止画"), (r"^uchu_unko_v2_taki$", "宇宙うんこv2_滝"),
+    (r"^uchu_unko_shisaku_still$", "宇宙うんこ_試作_静止画"), (r"^uchu_unko_shisaku$", "宇宙うんこ_試作"),
+    (r"^uchu_unko_", "宇宙うんこ_"),
+    (r"citypop_A_neon", "シティポップ_ネオン"), (r"citypop_B_kinetic", "シティポップ_跳ねる文字"),
+    (r"citypop_C_saulbass", "シティポップ_ソールバス風"),
+    (r"^音ハメ変化A_アンビエント_.*$", "音ハメ_アンビエント_旧"), (r"^音ハメ変化B_パンク_.*$", "音ハメ_パンク_旧"),
+    (r"^音ハメ変化C_シティポップの夜_.*$", "音ハメ_シティポップ夜_旧"), (r"^音ハメ変化D_絵本_.*$", "音ハメ_絵本_旧"),
+    (r"^音ハメ変化_自動で選んだ8通りの見本帳$", "音ハメ_自動で選んだ8通り"), (r"^音ハメ変化_4本の説明と型の使い方$", "音ハメ_4本の説明"),
+    (r"_still$", "_静止画"),
+    (r"（[^（）]{6,}）", ""), (r"\([^()]{6,}\)", ""),
+    (r"__+", "_"), (r"^_|_$", ""),
+]
+
+
+def mijikaku(rest):
+    """中身（拡張子なし）を短く分かる名前に"""
+    for pat, rep in KAEMEI:
+        rest = re.sub(pat, rep, rest)
+    return rest.strip(" _") or "無題"
+
+
 def seikei_name(name, path=None, saishin=None):
-    """「日付_[★最新_]種類_中身.ext」にそろえる。saishin=None なら今の★をそのまま、True/False で付け外し。"""
-    m = DATE_RE.match(name)
+    """「YYMMDD_中身.ext」にそろえる（2026-10-31〜）。古い「YYYY-MM-DD_[★最新_][種類_]中身」も同じ形へ。
+    saishin は昔の引数（★の付け外し）。今は★を付けないので受け取って捨てる。何度通しても同じ名前になる。"""
+    import unicodedata
+    base, ext = os.path.splitext(unicodedata.normalize("NFC", name))   # Mac・ドライブの名前は濁点が分かれている（NFD）ことがある
+    m = DATE_RE.match(base); m6 = DATE6_RE.match(base)
     if m:
-        d, rest = m.group(1), name[m.end():]
+        d, rest = m.group(1).replace("-", "")[2:], base[m.end():]
+    elif m6:
+        d, rest = m6.group(1), base[m6.end():]
     else:
         t = os.path.getmtime(path) if path and os.path.exists(path) else time.time()
-        d, rest = time.strftime("%Y-%m-%d", time.localtime(t)), name
-    star = rest.startswith(STAR + "_")
-    if star:
-        rest = rest[len(STAR) + 1:]
-    sh = shurui_of(name)
+        d, rest = time.strftime("%y%m%d", time.localtime(t)), base
+    rest = rest.replace(STAR + "_", "").replace(STAR, "")
     for k in SHURUI:
         if rest.startswith(k + "_"):
             rest = rest[len(k) + 1:]
             break
-    if saishin is not None:
-        star = bool(saishin)
-    return "_".join([d] + ([STAR] if star else []) + [sh, rest])
+    return d + "_" + mijikaku(rest) + ext
 
 
 def nakami_key(name):
-    """★の付け外しで「同じもの」とみなす鍵＝種類の次の語（例：EP01男の子）。"""
-    n = seikei_name(name)
-    parts = n.split("_")
-    i = 2 + (1 if parts[1] == STAR else 0)
-    return parts[i] if len(parts) > i else ""
+    """同じ中身とみなす鍵＝日付の次の語"""
+    parts = os.path.splitext(seikei_name(name))[0].split("_")
+    return parts[1] if len(parts) > 1 else ""
 
 
 def hitokoto_of(name):
@@ -284,13 +312,8 @@ def _mv(p, q):
 
 
 def hoshi_hazusu(folder, keep):
-    """keep と同じ中身名の、ほかのファイルから★を外す。"""
-    key = nakami_key(keep)
-    for f in os.listdir(folder):
-        if f == keep or f.startswith(".") or not key:
-            continue
-        if STAR in f and nakami_key(f) == key:
-            _mv(os.path.join(folder, f), os.path.join(folder, seikei_name(f, saishin=False)))
+    """（2026-10-31 廃止）★最新は付けなくなったので何もしない。古い★は seiri が名前ごと直す。"""
+    return
 
 
 def seiri(base):
@@ -306,9 +329,19 @@ def seiri(base):
                 if f.startswith(".") or f.endswith((".gdoc", ".gsheet", ".gslides")):
                     continue
                 p = os.path.join(dp, f)
-                q = os.path.join(top, seikei_name(f, p))
-                if p != q and _mv(p, q):
-                    log.append(os.path.relpath(q, base))
+                nm = seikei_name(f, p)
+                if dp != top and nm.endswith("_はじめに読んでね.txt"):   # 小分けの中の同じ名前は、元のフォルダ名を足して区別
+                    nm = nm[:-4] + "_" + mijikaku(os.path.basename(dp))[:16] + ".txt"
+                q = os.path.join(top, nm)
+                if p == q:
+                    continue
+                k = 2
+                while os.path.exists(q) and not _same(p, q):          # 同じ名前の別物があれば _2, _3…
+                    q = os.path.join(top, os.path.splitext(nm)[0] + "_%d" % k + os.path.splitext(nm)[1]); k += 1
+                if os.path.exists(q):
+                    continue                                              # 同じ中身がもうある＝動かさない（消さない）
+                if _mv(p, q):
+                    log.append(os.path.relpath(p, base) + " → " + os.path.relpath(q, base))
     root = base   # Claudeフォルダの中だけ
     for dp, ds, fs in sorted(os.walk(root, topdown=False), key=lambda x: -len(x[0])):
         if dp == root:
@@ -339,13 +372,12 @@ def ichiran(base=None):
         for f in os.listdir(top):
             if f.startswith(".") or not os.path.isfile(os.path.join(top, f)):
                 continue
-            m = DATE_RE.match(f)
-            rows.append({"日付": m.group(1) if m else "", "最新": STAR if STAR in f else "",
+            m = DATE6_RE.match(f) or DATE_RE.match(f)
+            rows.append({"日付": m.group(1) if m else "",
                          "種類": shurui_of(f), "案件": a, "名前": f, "ひとこと": hitokoto_of(f),
                          "リンク": drive_url(os.path.join(top, f))})
     rows.sort(key=lambda r: (r["日付"], r["名前"]), reverse=True)
-    rows.sort(key=lambda r: r["最新"] == "")          # ★最新を上にまとめる（中は新しい順のまま）
-    cols = ["最新", "日付", "種類", "案件", "名前", "ひとこと", "リンク"]
+    cols = ["日付", "種類", "案件", "名前", "ひとこと", "リンク"]
     tmp = os.path.join(HDD_ROOT if os.path.isdir(HDD_ROOT) else "/tmp", "." + ICHIRAN)
     with open(tmp, "w", encoding="utf-8-sig", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=cols)
@@ -466,14 +498,20 @@ def self_test():
     assert anken_of("pilot_shizukesa_A_ambient_1080p.mp4") == "棒人間"
     assert anken_of("wae/絵_01.png") == "わえちゃん"
     assert anken_of("なにか.txt") == SONOTA
-    assert seikei_name("2026-10-11_EP01男の子_軽い版.mp4") == "2026-10-11_動画_EP01男の子_軽い版.mp4"
-    assert seikei_name("2026-10-11_EP01男の子_軽い版.mp4", saishin=True) == "2026-10-11_★最新_動画_EP01男の子_軽い版.mp4"
-    assert seikei_name("2026-10-11_★最新_動画_EP01男の子.mp4", saishin=False) == "2026-10-11_動画_EP01男の子.mp4"
-    assert seikei_name("2026-10-11_★最新_動画_EP01男の子.mp4") == "2026-10-11_★最新_動画_EP01男の子.mp4"
-    assert seikei_name("2026-10-14_01_machi.png") == "2026-10-14_静止画_01_machi.png"
-    assert DATE_RE.match(seikei_name("x.m4a")) and "_音声_" in seikei_name("x.m4a")
+    assert seikei_name("2026-10-11_EP01男の子_軽い版.mp4") == "261011_EP01男の子_軽い版.mp4"
+    assert seikei_name("2026-10-11_★最新_動画_EP01男の子.mp4", saishin=True) == "261011_EP01男の子.mp4"
+    assert seikei_name("2026-10-31_動画_uchu_unko_v2_taki.mp4") == "261031_宇宙うんこv2_滝.mp4"
+    assert seikei_name("2026-10-31_★最新_静止画_uchu_unko_v2_taki_still.png") == "261031_宇宙うんこv2_滝_静止画.png"
+    assert seikei_name("2026-10-31_★最新_動画_音ハメ変化C_シティポップの夜_ネオンが灯って流れる_104BPM.mp4") == "261031_音ハメ_シティポップ夜_旧.mp4"
+    assert seikei_name("261031_音ハメ_シティポップ夜.mp4") == "261031_音ハメ_シティポップ夜.mp4"   # 何度通しても同じ
+    assert seikei_name("2026-10-14_01_machi.png") == "261014_01_machi.png"
+    assert seikei_name("2026-10-18_動画_citypop_C_saulbass.mp4") == "261018_シティポップ_ソールバス風.mp4"
+    assert seikei_name("2026-10-14_文書_ピーター・レベルズ｜一人で作って一人で稼ぐ（Lex Fridman 440 日本語要約）_原稿.txt") == "261014_ピーター・レベルズ｜一人で作って一人で稼ぐ_原稿.txt"
+    assert DATE6_RE.match(seikei_name("x.m4a"))
+    assert "★" not in seikei_name("2026-10-11_★最新_動画_a.mp4")
     assert nakami_key("2026-10-11_★最新_動画_EP01男の子_1080p.mp4") == "EP01男の子"
-    assert nakami_key("2026-10-12_動画_EP01男の子_540p.mp4") == "EP01男の子"
+    import unicodedata
+    assert seikei_name(unicodedata.normalize("NFD", "2026-10-31_★最新_動画_音ハメ変化B_パンク_極太.mp4")) == "261031_音ハメ_パンク_旧.mp4"
     assert all(" (" not in os.path.dirname(r) for r in drive_roots())
     print("self-test OK")
 

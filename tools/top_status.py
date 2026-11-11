@@ -604,6 +604,15 @@ if __name__ == "__main__":
     #   作業場が別の枝に乗ったまま・衝突で pull をやめ続ける・README/CLAUDE.md が記録されない、で main が1週間止まった件（tools/kojo_push_mihari.py）
     _okosu("kojo_push_mihari.py", "--tick")
 
+    # 2026-10-31 Suno MCP（ベータ）のサインイン見張り。つながるまで承認URLを出し続け、押されたら残高確認まで自動で続ける。
+    #   つながって確認が済めば何もしない（tools/suno_mcp.py・結果 status/suno_mcp/jotai.json）
+    _okosu("suno_mcp.py", "--tick")
+
+    # 2026-11-02 会話の自動共有（たまごさん「Claude Code も Grok もチャッピーも全部聞いとけよ。コピペして貼るのがもう本当に嫌だ」）。
+    #   Dispatch・Coworkの子・Claude Code の会話を差分だけ読み、伏せ字にして非公開 tamago-dispatch-log/kaiwa/ へ。
+    #   要約1枚は joy-relief-station #1040 の常設コメントを書き換え（Grok Bot が読む）。中で2分に間引く（tools/kaiwa_kyouyuu.py）
+    _okosu("kaiwa_kyouyuu.py", "--tick")
+
     # 2026-10-17 投稿済み曲の見回り（1日1回・中で20時間に間引く）。X・TikTok・YouTubeショートに出た曲の台帳を作り、
     #   曲ページの5点（検索・関連4本以上・メモ/出典・マガジン入口・動画）を点検、落ちた曲は直す仕事を1件積む。
     try:
@@ -659,7 +668,10 @@ if __name__ == "__main__":
     #   実測：pace.json が 05:17→07:35 の2時間18分ぶん止まっていた（取得元は新しかった）。
     #   pace.py は machine_status_push.sh の747行目に相乗りしており、重い日はそこまで到達しない。
     #   → 5分以上古ければここで取り直し、60分以上古ければ status/zanryo_mihari.json を red にする。
-    pass  # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 _okosu("1403_zanryo_mihari.py")
+    # 2026-11-12 再開：pace.json が 11-10 23:45 から26時間止まり（machine_status_push.sh が
+    #   factory_status の150秒timeoutで782行目まで届かない）、古い state=over のまま
+    #   launch_cap=1 が戻らず発車が細った。pace.py 自体は0.3秒。取り直し係を戻す。
+    _okosu("1403_zanryo_mihari.py")
 
     # 2026-09-26（1158番）claudeの同時起動の見張り。1分おきに本数を数えて証拠を残す。
     # 関所(1158_kanmon.py)が本当に効いているかを、時刻つきの実測で示すための線。
@@ -667,7 +679,7 @@ if __name__ == "__main__":
 
     # 2026-09-26（1160番）調べもの常駐ライン。Gensparkに「調べて」を1本ずつ絶やさず流す。
     # 止めたいときは status/genspark.stop を置く。
-    _okosu("1160_shirabe.py")
+    pass  # 【停止 2026-11-05 見回りの棚卸し：お金の栓で7日ずっと「投げない」・同じページの書き直しだけ（status/mihari_tanaoroshi/hyou.md）】 _okosu("1160_shirabe.py")
 
     # 2026-09-26（1162番）LINEスタンプ「ラシコル」の審査の見張り。
     # 3時間おきにLINE STOREの商品ページを見に行き、公開されたら表が変わる。
@@ -683,12 +695,12 @@ if __name__ == "__main__":
     # 2026-09-28（1500番）枠番＝含まれてる枠が空いた瞬間に勝手にDevinへ発車する係。
     #   リセット時刻を狙わない。**空振り（403 out_of_quota・0円）を繰り返して、通った瞬間に乗る。**
     #   同時1本・従量は1円も使わせない。待ち時間中の周回は何も叩かずに即戻る。
-    _okosu("1500_wakuban.py")
+    pass  # 【停止 2026-11-05 見回りの棚卸し：最後の出力が10-15（status/mihari_tanaoroshi/hyou.md）】 _okosu("1500_wakuban.py")
 
     # 2026-09-28（1501番）Devin成績表を機械で付ける係。10/16の更新判定の材料。
     #   1本ごとに「たまごさんの何が変わるか／PR／merge／本番の重さ」を自動で並べる。手書き0。
     #   中で30分に1回に間引く。→ share/check/1500-devin-seiseki.html
-    _okosu("1501_devin_seiseki.py")
+    pass  # 【停止 2026-11-05 見回りの棚卸し：7日で出力0（status/mihari_tanaoroshi/hyou.md）】 _okosu("1501_devin_seiseki.py")
 
     # 2026-09-27（1166番）「次に何がいつ出るか」の1枚を毎周回つくり直す。
     # Bufferから取り直した実測だけを載せる（自己申告を載せない）。鍵が無い周回は即戻る。
@@ -730,7 +742,7 @@ if __name__ == "__main__":
 
     # 2026-09-27（1166番）待機列を自分で積む係。候補1本を15分に1つだけ進める。
     # YouTubeの検索枠が尽きた日はその場で退き、翌日また続きから。止めたいときは status/1166.stop。
-    _okosu("1166_machi_tsumu.py")
+    pass  # 【停止 2026-11-05 見回りの棚卸し：最後に動いたのが9-27（status/mihari_tanaoroshi/hyou.md）】 _okosu("1166_machi_tsumu.py")
 
     # 2026-10-17 Claude Code 受付係（たまごさん「Gensparkとの間で水汲みはしたくない」）。
     #   joy-relief-station / tamago-shinchoku の open Issue でタイトルに【Claude Codeに頼む】の新着を
@@ -768,3 +780,7 @@ if __name__ == "__main__":
     #   毎時本番を採点→点の低い順（X・LINE・マガジン優先）に直し便を積む→直ったら採点し直し、下がったら自動で戻す→同じ失敗2回で関所を足す
     #   →30分止まりを検知して再点火→毎日4つの見方で案→日曜朝に週報。中で間引く（採点55分・積む10分・止まり5分・案20時間）。
     _okosu("kaizen_loop.py", "--tick")
+
+    # 2026-10-31 YouTube 限定公開を Grokボットに頼んだ分の返事を拾う（たまごさん「Grokボットは普通に限定公開で上げてくる」）。
+    #   Issue のコメントから YouTube URL を拾って status/yt_gentei/grok_irai.json と Dispatch へ。中で10分に間引く・そろうか7日で止まる。
+    _okosu("yt_grok_irai.py", "--tick")

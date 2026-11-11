@@ -366,8 +366,14 @@ def main():
         line_target = _sen["line"]
     over = round(all_pct - line_target, 1)
 
+    # 2026-11-12 直し：リセット直後など「今日の線の伸び＝0」の日は budget_today=0 になり、
+    #   used_today=0 でも 0>=0 で over と判定 → launch_cap が1本に落ちたまま戻らなかった
+    #   （実測：pace.json 11-10 23:45 usedToday=0/budgetToday=0/state=over）。
+    #   予算0の日は「実際に1%以上使った」時だけ over にする。
     if used_today is None:
         state = "unknown"
+    elif budget_today <= 0:
+        state = "over" if used_today >= 1.0 else "ok"
     elif used_today >= budget_today:
         state = "over"
     elif used_today >= budget_today * 0.8:

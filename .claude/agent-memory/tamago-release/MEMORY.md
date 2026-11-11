@@ -1,0 +1,4 @@
+- [Bashのネットワーク系コマンドが権限拒否される](project_bash_network_denied.md) — curl/gh apiは使えない。外部URL確認はWebFetchを使う
+- [34975番確認ページのデプロイ遅延事例](project_34975_sql_apply_check_deploy_lag.md) — main合流済みでもGitHub Pages反映に時間がかかった実例、再検品時の判別手順
+- [35130番：Pages公開サイクルの確定診断手順](project_35130_pages_publish_cadence_diagnosis.md) — gh-pages未反映はtools/pages_publish.shの定期サイクル待ちと判明。gh未インストールでもWebFetchでActions履歴が見られる
+- [Lovable公開自動化とChrome起動禁止関所の構造的衝突](project_lovable_publish_chrome_gate_conflict.md) — status/lovable_publish_state.json等で一瞬判定可、35024/35022/35025で反復確認
