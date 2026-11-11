@@ -1,0 +1,57 @@
+# 宇宙うんこ v6「灯籠の川」：Blender 3.6 Cycles CPU で連番を分けて描く。成果物は1日で消える。
+# 描き直しは status/uchu_unko/v6/push_v6.sh "<説明>" go（設定は tools/uchu_unko_v6/render_go.txt）
+name: uchu-unko-v6-render
+on:
+  workflow_dispatch:
+concurrency: { group: uchu-unko-v6-render, cancel-in-progress: true }
+jobs:
+  render:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 18
+      matrix: { chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/uchu_unko_v6
+          sparse-checkout-cone-mode: false
+      - name: settings
+        id: s
+        run: |
+          set -a; . tools/uchu_unko_v6/render_go.txt; set +a
+          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "expo=${EXPO:-0}" >> $GITHUB_OUTPUT; echo "fstop=${FSTOP:-1.8}" >> $GITHUB_OUTPUT; echo "noblur=${NOBLUR:-0}" >> $GITHUB_OUTPUT
+          echo "$FRAMES $PCT $SAMPLES"
+      - name: deps
+        run: |
+          getent hosts download.blender.org || true
+          curl -sSL --retry 8 --retry-all-errors --connect-timeout 20 -o b.tar.xz https://mirrors.ocf.berkeley.edu/blender/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz \
+            || curl -sSL --retry 8 --retry-all-errors --connect-timeout 20 -o b.tar.xz https://download.blender.org/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz
+          mkdir bl && tar -xf b.tar.xz -C bl --strip-components=1 && rm b.tar.xz
+      - name: render
+        env: { UU_PCT: "${{ steps.s.outputs.pct }}", UU_SAMPLES: "${{ steps.s.outputs.samples }}", UU_EXPO: "${{ steps.s.outputs.expo }}", UU_FSTOP: "${{ steps.s.outputs.fstop }}", UU_NOBLUR: "${{ steps.s.outputs.noblur }}" }
+        run: |
+          W=$PWD/tools/uchu_unko_v6; OUT=$PWD/out; mkdir -p $OUT
+          N=20; C=${{ matrix.chunk }}; FR="${{ steps.s.outputs.frames }}"
+          if [ "$FR" = "all" ]; then FR=$(python3 -c "print(','.join(str(i) for i in range(0,241)))"); fi
+          SPEC=$(python3 -c "
+          l=[]
+          for p in '$FR'.split(','):
+              p=p.strip()
+              if not p: continue
+              if '-' in p:
+                  a,b=p.split('-'); l+=list(range(int(a),int(b)+1))
+              else: l.append(int(p))
+          print(','.join(str(x) for i,x in enumerate(l) if i%$N==$C))")
+          echo "frames $SPEC"
+          if [ -z "$SPEC" ]; then exit 0; fi
+          for k in 1 2; do
+            ./bl/blender -b -P $W/scene_v6.py -- $W $OUT "$SPEC" 2>&1 | grep --line-buffered -E "STAGE|^FRAME|Error|error|Traceback|File \"|DONE" || true
+            WANT=$(python3 -c "print(len('$SPEC'.split(',')))"); [ $(ls $OUT/*.jpg 2>/dev/null | wc -l) -ge $WANT ] && break
+          done
+          ls $OUT | wc -l
+          ldd ./bl/blender | grep "not found" || true
+      - uses: actions/upload-artifact@v4
+        with: { name: "frames-${{ matrix.chunk }}", path: out/, retention-days: 1, if-no-files-found: ignore }

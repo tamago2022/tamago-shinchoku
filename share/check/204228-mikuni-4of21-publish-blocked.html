@@ -52,7 +52,7 @@
 <div class="date">2026-11-05 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-タスク票の完了条件URL(artist=mikuni-kiyomi)は対象外。対象20曲の実際の帰属はchef-babish(6)/chef-matsuo-kozo(10)/media-bon-appetit(4)。全20曲にnote/memo/src実装済み、commit 45f139b73でorigin/mainへ合流済み(merge-base --is-ancestorで確認)。触る検品(2段目)で指摘された「懐かしい」ボタン無反応は、このセッションで3回verify_click.mjsを再実行して再現せず(CLICK_VERDICT: PASS、既知issue React#418のみ)。本番は未反映——node httpsで新規note本文を直接検索した結果6件中0件がFOUND:false。原因はLovable OAuth invalid_grant構造障害(2026-10-14以降継続、x-deployment-id固定psr2.83ba3ae8-...)。公開スクリプト(98403_lovable_publish_mcp.py)実行しHTTP403で失敗を再確認。Chrome起動は1186号で全面禁止のため承認URLを開く迂回は行わない。既存の振り分け(fw-20261102155710-79da2/Issue#1138)と同根本原因のため重複エスカレーションはしない。
+タスク票の完了条件URL(artist=mikuni-kiyomi)は対象外。対象20曲の実際の帰属はchef-babish(6)/chef-matsuo-kozo(10)/media-bon-appetit(4)。全20曲にnote/memo/srcを実装し、本体の更新履歴へ合流済み。触る検品(2段目)で指摘された「懐かしい」ボタン無反応は、このセッションで3回押す検品を再実行して再現せず(全件反応あり、既知issueのコンソールエラーのみ)。本番は未反映——新規note本文を直接検索した結果6件中0件が本番に出ていない。原因はLovable側の認証切れによる公開ブロック(2026-10-14以降継続)。公開操作を試みたが認証エラーで失敗を再確認。ブラウザ起動は憲法で全面禁止のため承認画面を開く迂回は行わない。既存の振り分け済み案件と同根本原因のため重複エスカレーションはしない。
 </div>
 
 <h2>② 数字</h2>
@@ -74,7 +74,7 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainへの合流(45f139b73)</td><td class="yes">OK</td></tr>
+<tr><td>本体への合流</td><td class="yes">OK</td></tr>
 <tr><td>本番への反映(note本文)</td><td class="no">未反映(0/6件サンプル)</td></tr>
 <tr><td>触る検品「懐かしい」ボタン無反応の再現</td><td class="yes">再現せず(3回ともPASS)</td></tr>
 <tr><td>公開スクリプト実行</td><td class="no">HTTP403(OAuth invalid_grant)</td></tr>

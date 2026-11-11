@@ -13,6 +13,7 @@ FRM = M["frames"]; H_UNKO = M["h_unko"]; DWELL = M["dwell"]
 ALLEY, FLOOR_H, NFLOOR, TOP = M["alley"], M["floor_h"], M["nfloor"], M["top"]
 BAYS = M["bays"]; WIN_W, WIN_H, SILL = M["win"]
 SOZAI = os.path.join(WORK, "sozai")
+SIGN_ALL = sorted(os.path.basename(f)[:-4] for f in os.listdir(SOZAI) if f.startswith("sign_") and f.endswith(".txt"))
 rnd = random.Random(7)
 T0 = time.time()
 def stage(x): print("STAGE", x, round(time.time() - T0, 1), flush=True)
@@ -39,11 +40,11 @@ for e in ("BLENDER_EEVEE", "BLENDER_EEVEE_NEXT"):
     except Exception: pass
 print("ENGINE", sc.render.engine, bpy.app.version_string, flush=True)
 EV = sc.eevee
-tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom=True, bloom_intensity=0.06,
-       bloom_threshold=0.9, bloom_radius=6.0, bloom_knee=0.5, use_gtao=True, gtao_distance=0.6, gtao_factor=1.0,
-       use_ssr=True, use_ssr_refraction=False, use_ssr_halfres=True, ssr_quality=0.5, ssr_thickness=0.2, ssr_max_roughness=0.5,
+tryset(EV, taa_render_samples=int(os.environ.get("UU_SAMPLES", "16")), use_bloom=True, bloom_intensity=0.085,
+       bloom_threshold=0.85, bloom_radius=6.5, bloom_knee=0.5, use_gtao=True, gtao_distance=0.6, gtao_factor=1.0,
+       use_ssr=True, use_ssr_refraction=False, use_ssr_halfres=True, ssr_quality=0.7, ssr_thickness=0.2, ssr_max_roughness=0.5,
        use_soft_shadows=False, use_volumetric_shadows=True, use_volumetric_lights=True,
-       volumetric_tile_size='16', volumetric_samples=24, volumetric_start=0.5, volumetric_end=120.0, volumetric_light_clamp=4.0,
+       volumetric_tile_size='16', volumetric_samples=32, volumetric_start=0.5, volumetric_end=120.0, volumetric_light_clamp=4.0,
        use_motion_blur=os.environ.get("UU_MB", "1") == "1", motion_blur_shutter=0.3, motion_blur_steps=1,
        shadow_cube_size='512', shadow_cascade_size='1024', use_shadow_high_bitdepth=False, sss_samples=4)
 sc.render.use_persistent_data = True
@@ -202,12 +203,14 @@ def mat_sil(name="sil"):
 def mat_neon(name, img):
     m, nt, p = newmat(name); blend(m, 'BLEND')
     tex = node(nt, "ShaderNodeTexImage"); tex.image = load_img(img); tex.extension = 'CLIP'
+    tcn = node(nt, "ShaderNodeTexCoord"); link(nt, tcn.outputs["Generated"], I(tex, "Vector"))
     link(nt, tex.outputs["Color"], I(p, "Emission Color")); link(nt, tex.outputs["Color"], I(p, "Base Color"))
     pin(p, "Emission Strength", 6.0); pin(p, "Roughness", 0.5)
     return m, I(p, "Emission Strength")
 def mat_cloth(name, img):
     m, nt, p = newmat(name)
     tex = node(nt, "ShaderNodeTexImage"); tex.image = load_img(img)
+    tcc = node(nt, "ShaderNodeTexCoord"); link(nt, tcc.outputs["Generated"], I(tex, "Vector"))
     link(nt, tex.outputs["Color"], I(p, "Base Color")); pin(p, "Roughness", 0.95); pin(p, "Specular IOR Level", 0.1)
     try: link(nt, tex.outputs["Color"], I(p, "Subsurface Color")); pin(p, "Subsurface Weight", 0.1)
     except Exception: pass
@@ -236,7 +239,7 @@ def mat_street(name, pond):
     crk = node(nt, "ShaderNodeMixRGB"); crk.blend_type = 'MULTIPLY'; crk.inputs[0].default_value = 0.85
     link(nt, mx.outputs[0], crk.inputs[1]); link(nt, crack, crk.inputs[2])
     link(nt, crk.outputs[0], I(p, "Base Color"))
-    rg = node(nt, "ShaderNodeMixRGB"); link(nt, mask, rg.inputs[0]); rg.inputs[1].default_value = (0.78, 0.78, 0.78, 1); rg.inputs[2].default_value = (0.03, 0.03, 0.03, 1)
+    rg = node(nt, "ShaderNodeMixRGB"); link(nt, mask, rg.inputs[0]); rg.inputs[1].default_value = (0.62, 0.62, 0.62, 1); rg.inputs[2].default_value = (0.03, 0.03, 0.03, 1)
     link(nt, rg.outputs[0], I(p, "Roughness")); pin(p, "Specular IOR Level", 0.35)
     # 波紋：着水から広がる輪（sin）× 減衰。t はコマで動かす
     tval = node(nt, "ShaderNodeValue"); tval.name = "ripple_t"; tval.outputs[0].default_value = -1.0
@@ -254,8 +257,8 @@ def mat_street(name, pond):
     mpw = node(nt, "ShaderNodeMapping"); link(nt, tc.outputs["Object"], I(mpw, "Vector")); link(nt, mpw.outputs[0], I(wob, "Vector"))
     lo_ = I(mpw, "Location"); lo_.default_value = (0, 0, 0); lo_.keyframe_insert("default_value", frame=1); lo_.default_value = (0, 0, 6.0); lo_.keyframe_insert("default_value", frame=NF)
     hgt = math_(nt, 'ADD', math_(nt, 'MULTIPLY', O(wob, "Fac"), vb=0.012), math_(nt, 'MULTIPLY', amp, vb=0.06))
-    hgt = math_(nt, 'MULTIPLY', hgt, mask)
-    bp = node(nt, "ShaderNodeBump"); I(bp, "Strength").default_value = 0.6; link(nt, hgt, I(bp, "Height")); link(nt, bp.outputs[0], I(p, "Normal"))
+    hgt = math_(nt, 'ADD', math_(nt, 'MULTIPLY', hgt, mask), math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', O(fine, "Fac"), vb=0.03), math_(nt, 'SUBTRACT', va=1.0, b=mask)))
+    bp = node(nt, "ShaderNodeBump"); I(bp, "Strength").default_value = 0.8; link(nt, hgt, I(bp, "Height")); link(nt, bp.outputs[0], I(p, "Normal"))
     anim_lin(nt)
     return m
 M_TILE_L = mat_tile("tile_L", (0.50, 0.47, 0.42), (0.34, 0.31, 0.28), 0.8, 9.0)
@@ -506,6 +509,7 @@ LEDGE_OBJS = {}
 def build_ledge(L):
     i = L["i"]; typ = L["type"]; x, z = L["x"], L["z"]
     objs = []
+    if L.get("same_as") is not None: return      # その場の跳ね（同じ台）
     if typ == "ac":
         b = L["parts"][0]; o = box("ledge%02d_body" % i, b["lo"], b["hi"], M_METAL); objs.append(o)
         # 前面の格子（薄い帯）と、壁への腕
@@ -516,7 +520,7 @@ def build_ledge(L):
         objs.append(cyl("ledge%02d_fan" % i, (x, b["lo"][1] + 0.1, (b["lo"][2] + b["hi"][2]) / 2), (x, b["lo"][1] - 0.005, (b["lo"][2] + b["hi"][2]) / 2), 0.17, M_SIL, 20))
     elif typ == "sign":
         b = L["parts"][0]; o = box("ledge%02d_body" % i, b["lo"], b["hi"], M_METAL_R); objs.append(o)
-        tex = rnd.choice([t for t in ["sign_a", "sign_b", "sign_c", "sign_d", "sign_e", "sign_f", "sign_g", "sign_h"] if open(os.path.join(SOZAI, t + ".txt")).read().strip() == "horizontal"])
+        tex = rnd.choice([t for t in SIGN_ALL if t.startswith("sign_dai")])   # 台専用の店名（壁の看板と重ならない）
         m, st = mat_neon("neon_l%02d" % i, tex + ".png")
         face = plane("ledge%02d_face" % i, ((b["lo"][0] + b["hi"][0]) / 2, b["lo"][1] - 0.005, (b["lo"][2] + b["hi"][2]) / 2), b["hi"][0] - b["lo"][0] - 0.06, b["hi"][2] - b["lo"][2] - 0.06, m, rot=(math.pi / 2, 0, 0))
         objs.append(face)
@@ -610,22 +614,52 @@ for k, c in enumerate(M["cables"]):
     for j in range(13):
         u = j / 12; x = -ALLEY + 2 * ALLEY * u; pts.append((x, c["y"], c["z"] - c["sag"] * 4 * u * (1 - u)))
     for j in range(12): cyl("cable%d_%d" % (k, j), pts[j], pts[j + 1], 0.012, M_SIL, 6)
+# 手前（カメラと壁の間）を横切る電線
+for k, c in enumerate(M.get("fcables", [])):
+    pts = c["pts"]
+    for j in range(len(pts) - 1): cyl("cablef%d_%d" % (k, j), pts[j], pts[j + 1], 0.014, M_SIL, 6)
+# 室外機の下の黒いたれ（透明の勾配＋縦の筋）
+M_GRIME, ntg, pg = newmat("grime"); blend(M_GRIME, 'BLEND')
+tcg = node(ntg, "ShaderNodeTexCoord"); sepg = node(ntg, "ShaderNodeSeparateXYZ"); link(ntg, tcg.outputs["Generated"], sepg.inputs[0])
+nzg = node(ntg, "ShaderNodeTexNoise"); I(nzg, "Scale").default_value = 4.0; I(nzg, "Detail").default_value = 4
+mpg = node(ntg, "ShaderNodeMapping"); I(mpg, "Scale").default_value = (6.0, 0.25, 1.0); link(ntg, tcg.outputs["Generated"], I(mpg, "Vector")); link(ntg, mpg.outputs[0], I(nzg, "Vector"))
+streak = node(ntg, "ShaderNodeMapRange"); I(streak, "From Min").default_value = 0.35; I(streak, "From Max").default_value = 0.7; link(ntg, O(nzg, "Fac"), I(streak, "Value"))
+top_ = math_(ntg, 'POWER', sepg.outputs["Y"], vb=1.6)
+alg = math_(ntg, 'MULTIPLY', math_(ntg, 'MULTIPLY', top_, streak.outputs[0]), vb=0.8)
+link(ntg, alg, I(pg, "Alpha")); pin(pg, "Base Color", (0.02, 0.018, 0.016, 1)); pin(pg, "Roughness", 0.55); pin(pg, "Specular IOR Level", 0.3)
+for k, g_ in enumerate(M.get("grime", [])):
+    plane("grime%d" % k, (g_["x"], -0.004, g_["z"] - g_["h"] / 2), g_["w"], g_["h"], M_GRIME, rot=(math.pi / 2, 0, 0))
+# 湯気（室外機の上）：ノイズで透ける面が上へ流れる
+M_STEAM, nts, ps = newmat("steam"); blend(M_STEAM, 'BLEND')
+tcs = node(nts, "ShaderNodeTexCoord"); seps = node(nts, "ShaderNodeSeparateXYZ"); link(nts, tcs.outputs["Generated"], seps.inputs[0])
+mps = node(nts, "ShaderNodeMapping"); link(nts, tcs.outputs["Object"], I(mps, "Vector"))
+nzs = node(nts, "ShaderNodeTexNoise"); I(nzs, "Scale").default_value = 2.2; I(nzs, "Detail").default_value = 5; I(nzs, "Roughness").default_value = 0.6; link(nts, mps.outputs[0], I(nzs, "Vector"))
+los = I(mps, "Location"); los.default_value = (0, 0, 0); los.keyframe_insert("default_value", frame=1); los.default_value = (0.4, 0, -7.0); los.keyframe_insert("default_value", frame=NF)
+puff = node(nts, "ShaderNodeMapRange"); I(puff, "From Min").default_value = 0.48; I(puff, "From Max").default_value = 0.72; link(nts, O(nzs, "Fac"), I(puff, "Value"))
+vf = math_(nts, 'MULTIPLY', math_(nts, 'SINE', math_(nts, 'MULTIPLY', seps.outputs["Y"], vb=math.pi)), vb=1.0)          # 下で生まれ上で消える
+hf = math_(nts, 'SINE', math_(nts, 'MULTIPLY', seps.outputs["X"], vb=math.pi))
+als = math_(nts, 'MULTIPLY', math_(nts, 'MULTIPLY', math_(nts, 'MULTIPLY', puff.outputs[0], vf), hf), vb=0.55)
+link(nts, als, I(ps, "Alpha")); pin(ps, "Base Color", (0.55, 0.52, 0.5, 1)); pin(ps, "Emission Color", (0.9, 0.8, 0.7, 1)); pin(ps, "Emission Strength", 0.35); pin(ps, "Roughness", 1.0)
+anim_lin(nts)
+for k, st_ in enumerate(M.get("steam", [])):
+    plane("steam%d" % k, (st_["x"], st_["y"], st_["z"]), st_["w"], st_["h"], M_STEAM, rot=(math.pi / 2, 0, 0))
 # 遠くの街（路地の奥）：窓の点々＋霞
 M_FAR, _ = mat_emit("far", (1, 1, 1), 1.0)
 ntf = M_FAR.node_tree; pf = ntf.nodes["Principled BSDF"]
 texf = node(ntf, "ShaderNodeTexImage"); texf.image = load_img("far_windows.png"); texf.extension = 'REPEAT'
-tcf = node(ntf, "ShaderNodeTexCoord"); mpf = node(ntf, "ShaderNodeMapping"); I(mpf, "Scale").default_value = (1.2, 1.2, 1.2)
+tcf = node(ntf, "ShaderNodeTexCoord"); mpf = node(ntf, "ShaderNodeMapping"); I(mpf, "Scale").default_value = (0.7, 0.7, 0.7)
 link(ntf, tcf.outputs["Object"], I(mpf, "Vector")); link(ntf, mpf.outputs[0], I(texf, "Vector")); link(ntf, texf.outputs["Color"], I(pf, "Emission Color"))
-pin(pf, "Emission Strength", 0.9); pin(pf, "Base Color", (0.06, 0.07, 0.10, 1))
+pin(pf, "Emission Strength", 0.55); pin(pf, "Base Color", (0.04, 0.05, 0.08, 1))
 for k, f_ in enumerate(M["far"]):
     box("far%d" % k, (f_["x"] - f_["w"] / 2, f_["y"], 0), (f_["x"] + f_["w"] / 2, f_["y"] + f_["d"], f_["h"]), M_FAR)
 # 港の水（塔の裏・月を映す）
 mw_, ntw, pw = newmat("water")
-pin(pw, "Base Color", (0.003, 0.005, 0.010, 1)); pin(pw, "Roughness", 0.08); pin(pw, "Specular IOR Level", 0.25); pin(pw, "Metallic", 0.0)
-nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 2.5; I(nzw, "Detail").default_value = 6
+pin(pw, "Base Color", (0.002, 0.004, 0.009, 1)); pin(pw, "Roughness", 0.14); pin(pw, "Specular IOR Level", 0.14); pin(pw, "Metallic", 0.0)
+nzw = node(ntw, "ShaderNodeTexNoise"); I(nzw, "Scale").default_value = 1.0; I(nzw, "Detail").default_value = 8; I(nzw, "Roughness").default_value = 0.7
 mpw2 = node(ntw, "ShaderNodeMapping"); tcw2 = node(ntw, "ShaderNodeTexCoord"); link(ntw, tcw2.outputs["Object"], I(mpw2, "Vector")); link(ntw, mpw2.outputs[0], I(nzw, "Vector"))
+I(mpw2, "Scale").default_value = (0.35, 9.0, 1.0)   # さざ波は横に長く・奥行きに細かく → 月の映りが縦に砕けて「光の道」になる
 low_ = I(mpw2, "Location"); low_.default_value = (0, 0, 0); low_.keyframe_insert("default_value", frame=1); low_.default_value = (0, 3.0, 1.5); low_.keyframe_insert("default_value", frame=NF)
-bpw = node(ntw, "ShaderNodeBump"); I(bpw, "Strength").default_value = 0.35; link(ntw, O(nzw, "Fac"), I(bpw, "Height")); link(ntw, bpw.outputs[0], I(pw, "Normal"))
+bpw = node(ntw, "ShaderNodeBump"); I(bpw, "Strength").default_value = 1.0; I(bpw, "Distance").default_value = 0.6; link(ntw, O(nzw, "Fac"), I(bpw, "Height")); link(ntw, bpw.outputs[0], I(pw, "Normal"))
 anim_lin(ntw)
 plane("water", (0, 300, -0.15), 800, 600, mw_)
 box("quay", (-8, 6.35, -0.2), (8, 7.0, 0.05), M_CONC_D)
@@ -762,7 +796,7 @@ for k, fl in enumerate(M["flashes"]):
     # 閃光
     lt = bpy.data.lights.new("flash%02d" % k, 'POINT'); lt.color = col; lt.shadow_soft_size = 0.35; lt.use_shadow = True; lt.energy = 0.0
     lo = bpy.data.objects.new("flash%02d" % k, lt); bpy.context.collection.objects.link(lo); lo.location = fl["p"]
-    peak = 1400 if fl["kind"] in ("mel", "final") else (900 if fl["kind"] == "bass" else 650)
+    peak = (1500 if fl["kind"] in ("call", "pop", "top", "up", "down", "final") else 900) * (0.45 + 0.75 * fl.get("w", 0.7))
     for ff, vv in ((f0 - 1, 0.0), (f0, peak), (f0 + 2, peak * 0.7), (f0 + 10, peak * 0.12), (f0 + 26, 0.0)):
         lt.energy = vv; lt.keyframe_insert("energy", frame=ff)
     anim_lin(lt)
@@ -860,11 +894,30 @@ R_MOON = math.radians(4.8)
 disc = node(wn, "ShaderNodeMapRange"); I(disc, "From Min").default_value = R_MOON - math.radians(0.2); I(disc, "From Max").default_value = R_MOON + math.radians(0.2)
 I(disc, "To Min").default_value = 1.0; I(disc, "To Max").default_value = 0.0; link(wn, ang, I(disc, "Value"))
 # 月の模様（海）
-nzm = node(wn, "ShaderNodeTexNoise"); I(nzm, "Scale").default_value = 9.0; I(nzm, "Detail").default_value = 6; link(wn, tcw.outputs["Generated"], I(nzm, "Vector"))
-mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.42; I(mare, "From Max").default_value = 0.6; I(mare, "To Min").default_value = 0.55; I(mare, "To Max").default_value = 1.0
-link(wn, O(nzm, "Fac"), I(mare, "Value"))
-moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=7.0)
-halo = math_(wn, 'MULTIPLY', math_(wn, 'EXPONENT', math_(wn, 'MULTIPLY', math_(wn, 'POWER', math_(wn, 'DIVIDE', ang, vb=math.radians(9.0)), vb=1.6), vb=-1.0)), vb=0.14)
+MOON_IMG = os.path.join(SOZAI, "moon_lroc_1k.jpg")   # NASA CGI Moon Kit（svs.gsfc.nasa.gov/4720・パブリックドメイン）。workflow が取得する
+if os.path.exists(MOON_IMG):
+    upv = V((0.0, 0.0, 1.0)); mdv = V(md); e2 = (upv - mdv * upv.dot(mdv)).normalized(); e1 = e2.cross(mdv).normalized()
+    du = node(wn, "ShaderNodeVectorMath"); du.operation = 'DOT_PRODUCT'; link(wn, tcw.outputs["Generated"], du.inputs[0]); du.inputs[1].default_value = tuple(e1)
+    dv = node(wn, "ShaderNodeVectorMath"); dv.operation = 'DOT_PRODUCT'; link(wn, tcw.outputs["Generated"], dv.inputs[0]); dv.inputs[1].default_value = tuple(e2)
+    sR = math.sin(R_MOON)
+    Uq = math_(wn, 'MAXIMUM', math_(wn, 'MINIMUM', math_(wn, 'DIVIDE', du.outputs["Value"], vb=sR), vb=0.999), vb=-0.999)
+    Vq = math_(wn, 'MAXIMUM', math_(wn, 'MINIMUM', math_(wn, 'DIVIDE', dv.outputs["Value"], vb=sR), vb=0.999), vb=-0.999)
+    lat = math_(wn, 'ARCSINE', Vq); coslat = math_(wn, 'MAXIMUM', math_(wn, 'COSINE', lat), vb=0.001)
+    lon = math_(wn, 'ARCSINE', math_(wn, 'MAXIMUM', math_(wn, 'MINIMUM', math_(wn, 'DIVIDE', Uq, coslat), vb=0.999), vb=-0.999))
+    tx = math_(wn, 'ADD', math_(wn, 'MULTIPLY', lon, vb=1.0 / (2 * math.pi)), vb=0.5); ty = math_(wn, 'ADD', math_(wn, 'MULTIPLY', lat, vb=1.0 / math.pi), vb=0.5)
+    cmb = node(wn, "ShaderNodeCombineXYZ"); link(wn, tx, cmb.inputs[0]); link(wn, ty, cmb.inputs[1])
+    timg = node(wn, "ShaderNodeTexImage"); timg.image = bpy.data.images.load(MOON_IMG, check_existing=True); timg.extension = 'EXTEND'; link(wn, cmb.outputs[0], I(timg, "Vector"))
+    try: timg.image.colorspace_settings.name = 'Non-Color'
+    except Exception as ex: print("skip moon colorspace", ex)
+    mbw = node(wn, "ShaderNodeRGBToBW"); link(wn, timg.outputs["Color"], mbw.inputs[0])
+    mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.12; I(mare, "From Max").default_value = 0.62; I(mare, "To Min").default_value = 0.30; I(mare, "To Max").default_value = 1.0
+    link(wn, mbw.outputs[0], I(mare, "Value")); print("MOON lroc", flush=True)
+else:
+    nzm = node(wn, "ShaderNodeTexNoise"); I(nzm, "Scale").default_value = 9.0; I(nzm, "Detail").default_value = 6; link(wn, tcw.outputs["Generated"], I(nzm, "Vector"))
+    mare = node(wn, "ShaderNodeMapRange"); I(mare, "From Min").default_value = 0.42; I(mare, "From Max").default_value = 0.6; I(mare, "To Min").default_value = 0.45; I(mare, "To Max").default_value = 1.0
+    link(wn, O(nzm, "Fac"), I(mare, "Value")); print("MOON noise", flush=True)
+moon = math_(wn, 'MULTIPLY', math_(wn, 'MULTIPLY', disc.outputs[0], mare.outputs[0]), vb=2.6)
+halo = math_(wn, 'MULTIPLY', math_(wn, 'EXPONENT', math_(wn, 'MULTIPLY', math_(wn, 'POWER', math_(wn, 'DIVIDE', ang, vb=math.radians(9.0)), vb=1.6), vb=-1.0)), vb=0.10)
 # 空：下ほど街明かりで少し明るい紺、上は黒に近い
 zmap = node(wn, "ShaderNodeMath"); zmap.operation = 'MULTIPLY_ADD'; zmap.inputs[1].default_value = 0.5; zmap.inputs[2].default_value = 0.5; link(wn, sepw.outputs["Z"], zmap.inputs[0])
 rampB = node(wn, "ShaderNodeValToRGB"); rampB.color_ramp.elements[0].position = 0.45; rampB.color_ramp.elements[0].color = (0.035, 0.03, 0.06, 1)
@@ -879,10 +932,11 @@ link(wn, rampB.outputs["Color"], mcol.inputs[1]); link(wn, moonc.outputs[0], mco
 link(wn, mcol.outputs["Color"], I(bg, "Color")); I(bg, "Strength").default_value = 1.0
 # 霧（世界の体積）：薄く、街の底ほど濃い
 vol = node(wn, "ShaderNodeVolumePrincipled"); I(vol, "Color").default_value = (0.55, 0.62, 0.75, 1); I(vol, "Anisotropy").default_value = 0.45
-I(vol, "Density").default_value = 0.005
+I(vol, "Density").default_value = 0.0075
 link(wn, vol.outputs[0], I(outw, "Volume"))
 # 月明かり（太陽ランプ・青白い・路地を抜けて差す）
 sun_d = bpy.data.lights.new("moon_sun", 'SUN'); sun_d.energy = 1.3; sun_d.color = (0.75, 0.82, 1.0); sun_d.angle = math.radians(1.5)
+tryset(sun_d, volume_factor=0.22)
 sun = bpy.data.objects.new("moon_sun", sun_d); bpy.context.collection.objects.link(sun)
 sun.rotation_euler = (-V(md)).to_track_quat('-Z', 'Y').to_euler()
 # 街全体の薄い環境光（ネオンの照り返し）
@@ -890,12 +944,13 @@ amb_d = bpy.data.lights.new("amb", 'SUN'); amb_d.energy = 0.10; amb_d.color = (1
 amb = bpy.data.objects.new("amb", amb_d); bpy.context.collection.objects.link(amb); amb.rotation_euler = (math.radians(60), 0, math.radians(180))
 # 街明かりの照り返し（カメラ側の斜め上から・青灰色・影あり＝台の影が壁に落ちる）
 key_d = bpy.data.lights.new("city_key", 'SUN'); key_d.energy = 0.45; key_d.color = (0.72, 0.78, 0.95); key_d.angle = math.radians(6)
+tryset(key_d, volume_factor=0.5)
 keyo = bpy.data.objects.new("city_key", key_d); bpy.context.collection.objects.link(keyo)
 kd = V((math.sin(math.radians(-35)) * math.cos(math.radians(28)), math.cos(math.radians(-35)) * math.cos(math.radians(28)), -math.sin(math.radians(28))))   # 光の進む向き（カメラ側から壁へ）
 keyo.rotation_euler = kd.to_track_quat('-Z', 'Y').to_euler()
 # 漂う埃（小さな光る粒・ゆっくり）
 M_DUST, _ = mat_emit("dust", (1.0, 0.95, 0.85), 2.0); blend(M_DUST, 'BLEND'); pin(M_DUST.node_tree.nodes["Principled BSDF"], "Alpha", 0.6)
-for k in range(140):
+for k in range(240):
     x = rnd.uniform(-3.3, 3.3); y = rnd.uniform(-6.5, -0.3); z = rnd.uniform(0.2, TOP + 6)
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=rnd.uniform(0.006, 0.012), location=(x, y, z)); d = bpy.context.object; d.name = "dust%d" % k; d.data.materials.append(M_DUST)
     for ff in (1, NF):
@@ -911,6 +966,7 @@ for o in list(bpy.data.objects):
     if o.type != 'MESH' or o.animation_data is not None or o.parent is not None: continue
     if o.name in ("unko", "ground") or o.name.startswith(("ring", "spark", "splash", "dust", "ledge")): continue
     key_ = o.data.materials[0].name if o.data.materials else "none"
+    if key_.startswith(("cloth", "steam", "grime")): continue
     groups.setdefault(key_, []).append(o)
 for key_, objs in groups.items():
     if len(objs) < 2: continue
@@ -934,8 +990,11 @@ for f, fr in enumerate(FRM, start=1):
     prevq = q
     cam.location = c; cam.keyframe_insert("location", frame=f)
     cam.rotation_quaternion = q; cam.keyframe_insert("rotation_quaternion", frame=f)
-    cam_d.lens = fr["lens"]; cam_d.keyframe_insert("lens", frame=f)
+    cam_d.lens = fr["lens"]; cam_d.keyframe_insert("lens", frame=f)   # v4e: レンズは michi.json にコマごと（切れない範囲で最大 ×1.12・なめらか）
 anim_lin(cam); anim_lin(cam_d)
+try:
+    cam_d.dof.use_dof = True; cam_d.dof.focus_object = unko; cam_d.dof.aperture_fstop = 2.8; cam_d.dof.aperture_blades = 6
+except Exception as ex: print("skip dof", ex)
 # レンズの前の雨粒（薄い・少し）は入れない（忙しくなる）。
 if os.environ.get("UU_SAVE"): bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "_scene.blend"))
 stage("ready")
@@ -949,7 +1008,7 @@ def kensa():
     from mathutils.bvhtree import BVHTree
     dg = bpy.context.evaluated_depsgraph_get()
     pre = ("ledge", "deco", "sign", "pipe", "pier", "band", "slab", "tower", "side_", "shutter", "cable", "parapet", "ground", "bag", "swf", "w", "static_")
-    names = [o.name for o in bpy.data.objects if o.type == 'MESH' and o.name.startswith(pre) and o.name != "unko" and not o.name.startswith(("ring", "spark", "splash", "dust"))]
+    names = [o.name for o in bpy.data.objects if o.type == 'MESH' and o.name.startswith(pre) and o.name != "unko" and not o.name.startswith(("ring", "spark", "splash", "dust", "steam", "grime", "static_steam", "static_grime"))]
     def bvh_of(o):
         ev = o.evaluated_get(dg); me_ = ev.to_mesh(); bm = bmesh.new(); bm.from_mesh(me_); bm.transform(ev.matrix_world)
         t = BVHTree.FromBMesh(bm); c = sum((v.co for v in bm.verts), Vector()) / max(1, len(bm.verts)); r = max(((v.co - c).length for v in bm.verts), default=0)
@@ -974,11 +1033,12 @@ def kensa():
                 n_check += 1
                 mine = None
                 for L in M["ledges"]:
-                    if n == "ledge%02d_body" % L["i"] and (L["fr"] - 3 <= f <= L["fr"] + DWELL + 3): mine = L
+                    if n == L.get("body", "ledge%02d_body" % L["i"]) and (L["fr"] - 3 <= f <= L["fr"] + L.get("sit", DWELL) + 3): mine = L
                 if n == "ground" and f >= FINAL: mine = {"z": M["pond"][2] - 0.06}
                 if mine is not None:
+                    if mine.get("same_as") is not None: mine = {**mine, "dz": M["ledges"][mine["same_as"]]["dz"]}
                     # 乗っている台：上面より 1cm 以上沈んでいたら、めり込み
-                    if "dz" in mine:
+                    if "dz" in mine and mine["dz"]:
                         a0 = mine["dz"].get(str(f), 0.0); a1 = mine["dz"].get(str(f + 1), a0 if str(f) in mine["dz"] else 0.0)
                         ks_ = sorted(int(k) for k in mine["dz"])
                         if not (ks_[0] <= f <= ks_[-1]): a0 = a1 = 0.0
