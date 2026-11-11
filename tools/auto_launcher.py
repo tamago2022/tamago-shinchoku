@@ -157,7 +157,12 @@ def _lane_env(item):
     return env
 
 
+_LAST_LOG = ""
+
+
 def log(msg):
+    global _LAST_LOG
+    _LAST_LOG = str(msg)   # 空振り止め（karaburi_kanmon）が「いま何で空振りしたか」を知るため
     try:
         with io.open(LOG, "a", encoding="utf-8") as f:
             f.write("%s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), msg))
@@ -2840,6 +2845,21 @@ def _main_impl():
 
 
 def launch_one(item, q, alive, safe_max):
+    """発車を1本試す。空振り（False）が同じ理由で連続20回になったら列から外す（2026-11-12・karaburi_kanmon）。"""
+    global _LAST_LOG
+    _LAST_LOG = ""
+    ok = _launch_one_core(item, q, alive, safe_max)
+    try:
+        import karaburi_kanmon
+        if karaburi_kanmon.after(item, ok, _LAST_LOG):
+            log("🛑 空振り止め：%s番は同じ理由で連続%d回空振りしたので保留にしました（理由：%s）"
+                % (item.get("n"), karaburi_kanmon.LIMIT, _LAST_LOG[:80]))
+    except Exception as _ke:
+        log("空振り止めでエラー %s番: %s" % (item.get("n"), _ke))
+    return ok
+
+
+def _launch_one_core(item, q, alive, safe_max):
     # 防衛ライン（2026-10-28）：緊急停止（シャッター）中は1本も発車しない。解除は店主だけ。
     try:
         import kinkyu_shutter
@@ -3175,6 +3195,8 @@ def harvest_only():
 
 
 if __name__ == "__main__":
+    if "--self-test" in sys.argv[1:]:
+        sys.exit(subprocess.run([sys.executable, os.path.join(HERE, "karaburi_kanmon.py"), "--self-test"]).returncode)
     if "--harvest-only" in sys.argv[1:]:
         sys.exit(harvest_only())
     try:
