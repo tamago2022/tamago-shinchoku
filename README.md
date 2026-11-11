@@ -863,3 +863,12 @@ Chromeのタブを増やさない／Lovableのエージェントを使わない 
 - 下げても走っている子は殺さない（新規発車を止めるだけ）。使う命令は sysctl・vm_stat・memory_pressure -Q だけ（osascript等は使わない）。
 - 見える所：`status/health.json` の「発車本数判定」、進捗表の「同時本数」行（`status/public/fuka_hassha.json`）、履歴 `status/fuka_hassha.jsonl`、`status/auto_launch.log` の「負荷判定:」行。
 - **1語で戻す：「固定2本」**＝ `python3 tools/fuka_hassha.py --kotei2`（`status/dojisu_kotei2.flag` を置く）。自動に戻すのは `--jidou`。
+
+## 同じ空振りが20回続いたら列から外す「空振り止め」（2026-11-12）
+
+- 事故：205276番が「無駄カット」で保留にされるのに台帳へ保存されず、11-10 18:05〜11-12 00:44に1,469回選び直されて空振り（上限1本の枠が塞がり、発車が約32時間止まった）。原因（選ぶ前に hold を保存していなかった）は auto_launcher.py の「無駄カット（選ぶ前）」で直済み。ここはその再発を**理由を問わず**止める保険。
+- 正本：`tools/karaburi_kanmon.py` の `after(item, ok, reason)`。`auto_launcher.launch_one()` が毎回これを呼ぶ（本体は `_launch_one_core`）。便ごと・理由ごとの連続回数を `status/karaburi_state.json` に持つ。発車成功・別の理由でリセット。工場全体の緊急停止は数えない。
+- **連続20回**で：①その便を `hold` にして列から外す ②現在地（`genzaichi.py` の redFlags＝進捗表の一番上）を赤にする ③`status/dispatch_outbox.jsonl` へ `n:"<番号>-karaburi"`・`type:"karaburi"` を1行。19回では何もしない。
+- 赤を消す：`python3 tools/karaburi_kanmon.py --kaijo <番号>`（便の保留解除は台帳側）。逆テスト：`python3 tools/karaburi_kanmon.py --self-test`（`auto_launcher.py --self-test` からも呼ぶ。20回目で外れる／19回では外れない／別理由でリセット／成功でリセット／便ごと／緊急停止は数えない）。
+- 台帳：`tools/jidou_daicho.json` の `karaburi_kanmon.py`。
+- 調査結果：1,469回の空振りでAIは起動していない（`launch_one` が `claude -p` を起こす手前の関所で return する）。根拠は `status/auto_launch.log` に 11-10 18:05〜11-12 00:44 の 🚀 自動発車が0行、同期間に新しい `status/auto-launch-*.log`（子の出力ファイル）が0本、`status/cost_by_task.json` の finishedAt が同期間0件（205276番の最後の費用記録は11-07 19:51、累計 hasshaKaisuu=10 のまま）。

@@ -1,0 +1,58 @@
+# 宇宙うんこ v5.1：Blender 3.6 EEVEE（画面なし＝xvfb＋Mesa）で連番を分けて描く。成果物は1日で消える。
+# 描き直しは tools/uchu_unko_v5_1/render_go.txt を書き換えて status/fpv_haikyo_mall_1101/stage/push_v5_1.sh go（FRAMES=all か 1,60,300 のような並び）。
+name: uchu-unko-v5-1-render
+on:
+  workflow_dispatch:      # push では走らせない（工場の自動 push で、走っている描画が止められたため）。push_v5_1.sh が API で起こす
+concurrency: { group: uchu-unko-v5-1-render, cancel-in-progress: true }
+jobs:
+  render:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 18   # v5.1h：無料枠の同時20本を使い切ると GitHub Pages のビルド等が列の後ろで2時間待たされる（206317・実測）→ 2本空けておく
+      matrix: { chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35] }   # v5.1h：36分割（75コマ/本・同時18本で2波）
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/uchu_unko_v5_1
+          sparse-checkout-cone-mode: false
+      - name: settings
+        id: s
+        run: |
+          set -a; . tools/uchu_unko_v5_1/render_go.txt; set +a
+          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT; echo "gi=${GI:-0}" >> $GITHUB_OUTPUT; echo "bisect=${BISECT:-0}" >> $GITHUB_OUTPUT; echo "tmo=${TMO:-0}" >> $GITHUB_OUTPUT; echo "expo=${EXPO:--0.55}" >> $GITHUB_OUTPUT; echo "engine=${ENGINE:-EEVEE}" >> $GITHUB_OUTPUT; echo "vstep=${VSTEP:-4.0}" >> $GITHUB_OUTPUT
+          echo "$FRAMES $PCT $SAMPLES"
+      - name: deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglu1-mesa libxi6 libxxf86vm1 libxfixes3 libxrender1 libsm6 libxkbcommon0 libegl1 >/dev/null
+          curl -sSL --retry 5 -o b.tar.xz https://mirrors.ocf.berkeley.edu/blender/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz \
+            || curl -sSL --retry 5 -o b.tar.xz https://download.blender.org/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz
+          mkdir bl && tar -xf b.tar.xz -C bl --strip-components=1 && rm b.tar.xz
+      - name: render
+        env: { UU_PCT: "${{ steps.s.outputs.pct }}", UU_SAMPLES: "${{ steps.s.outputs.samples }}", UU_MB: "${{ steps.s.outputs.mb }}", UU_GI: "${{ steps.s.outputs.gi }}", UU_EXPO: "${{ steps.s.outputs.expo }}", UU_ENGINE: "${{ steps.s.outputs.engine }}", UU_VSTEP: "${{ steps.s.outputs.vstep }}" }
+        run: |
+          W=$PWD/tools/uchu_unko_v5_1; OUT=$PWD/out; mkdir -p $OUT
+          NF=$(python3 -c "import json;print(json.load(open('$W/hits.json'))['nf'])")
+          if [ "${{ steps.s.outputs.nfr }}" != "0" ]; then NF=${{ steps.s.outputs.nfr }}; fi   # ケツロゴの分（最後の66コマ）は描かない
+          N=36; C=${{ matrix.chunk }}; FR="${{ steps.s.outputs.frames }}"
+          if [ "$FR" = "all" ]; then A=$(( C*NF/N + 1 )); B=$(( (C+1)*NF/N )); SPEC="$A-$B"; WANT=$(( B-A+1 ))
+          else SPEC=$(python3 -c "l='$FR'.split(',');print(','.join(x for i,x in enumerate(l) if i%$N==$C))"); WANT=$(python3 -c "print(len([x for x in '$SPEC'.split(',') if x]))"); fi
+          echo "frames $SPEC"
+          if [ -z "$SPEC" ]; then exit 0; fi
+          if [ "${{ steps.s.outputs.bisect }}" = "1" ]; then   # 切り分け：chunk ごとに1つずつ機能を切る
+            case $C in 1) export UU_NOPHOTO=1;; 2) export UU_NOLEAF=1;; 3) export UU_NOVOL=1;; 4) export UU_NOMOON=1;; 5) export UU_NOPHOTO=1 UU_NOLEAF=1 UU_NOVOL=1 UU_NOMOON=1;; esac
+          fi
+          TMO="${{ steps.s.outputs.tmo }}"; PRE=""; [ "$TMO" != "0" ] && PRE="timeout $TMO"
+          for k in 1 2 3; do
+            date
+            $PRE xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v5_1.py -- $W $OUT "$SPEC" 2>&1 | grep --line-buffered -E "ENGINE|STAGE|^FRAME|FLAGS|GI |Error|error|Traceback|File \"|kubire|DONE|skip|pin |^Fra:" | awk 'BEGIN{n=0} /^Fra:/{n++; if(n%20!=1) next} {print strftime("%H:%M:%S"), $0; fflush()}' || true
+            date
+            [ $(ls $OUT/*.jpg 2>/dev/null | wc -l) -ge $WANT ] && break
+            [ "$TMO" != "0" ] && break
+          done
+          ls $OUT | wc -l
+      - uses: actions/upload-artifact@v4
+        with: { name: "frames-${{ matrix.chunk }}", path: out/, retention-days: 1, if-no-files-found: ignore }

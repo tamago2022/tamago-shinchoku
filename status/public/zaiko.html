@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ごきげん補給所 曲の在庫一覧</title>
+<style>
+:root{--ink:#1d1b18;--sub:#6b655c;--line:#e4ded3;--bg:#faf7f1;--acc:#b5482a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:860px;margin:0 auto;padding:28px 18px 80px}
+h1{font-size:22px;margin:0 0 4px;letter-spacing:.02em}
+.meta{color:var(--sub);font-size:13px;margin-bottom:18px}
+.rule{background:#fff;border:1px solid var(--line);border-left:4px solid var(--acc);padding:10px 14px;margin:0 0 18px;font-size:14px}
+input{width:100%;font-size:17px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff}
+button{font:inherit;padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;margin-top:10px}
+.hint{color:var(--sub);font-size:13px;margin:8px 0 0}
+.art{margin:22px 0 0}
+.art h2{font-size:16px;margin:0 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.art h2 small{color:var(--sub);font-weight:normal;margin-left:6px}
+.song{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px dotted var(--line)}
+.song a{color:var(--ink);text-decoration:none}
+.song a:hover{color:var(--acc);text-decoration:underline}
+.yt{color:var(--sub);font:12px ui-monospace,Menlo,monospace;margin-left:auto;white-space:nowrap}
+.tag{display:inline-block;font-size:11px;color:var(--acc);border:1px solid #e9c9bd;border-radius:4px;padding:0 5px;margin-left:6px}
+details{margin:18px 0 0}
+summary{cursor:pointer;font-weight:600}
+ul{padding-left:18px}
+</style>
+</head>
+<body>
+<main>
+<h1>ごきげん補給所　曲の在庫一覧</h1>
+<div class="meta" id="meta">読み込み中…</div>
+<div class="rule">原稿で使う曲は、まずここで在庫確認。無い曲は原稿内に<b>『新規入荷候補』</b>と明記。入荷は Claude 側で関所（sekisho-artist-song）を通してから。<br>機械向け：<a href="zaiko.json">zaiko.json</a>（名簿＋使い方）→ 棚ファイル <code>zaiko/&lt;名&gt;.json</code></div>
+<input id="q" placeholder="アーティスト名・曲名（例：山下達郎、Plastic Love）" autocomplete="off">
+<div class="hint" id="hint">アーティスト名はすぐ出ます。曲名で探すときは下のボタン（全曲を読み込みます）。</div>
+<button id="all" hidden>曲名でも探す（全曲を読み込む）</button>
+<div id="out"></div>
+<details id="feat"><summary>特集（マガジン）と出てくる曲</summary><div id="featBody"></div></details>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+let IDX=null,ALL=null;const cache={};
+const norm=s=>(s||"").normalize("NFKC").toLowerCase().replace(/[\s'’`\-_.,!?\/()（）「」『』・:;"]+/g,"");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+async function shard(n){return cache[n]??=fetch("zaiko/"+n+".json").then(r=>r.json())}
+function songRow(r){
+  const tags=(r[3]||[]).map(s=>`<span class="tag">棚 ${esc(s.split("（")[0])}</span>`).join("")+(r[4]||[]).map(f=>`<span class="tag">特集 ${esc(f.split("（")[0])}</span>`).join("");
+  return `<div class="song"><a href="${esc(r[1])}" target="_blank" rel="noopener">${esc(r[0])}</a>${tags}<span class="yt">${esc(r[2])}</span></div>`}
+function artBlock(a,rows){return `<div class="art"><h2>${esc(a.name)}<small>${a.songs.length}曲</small></h2>${(rows||a.songs).map(songRow).join("")}</div>`}
+async function search(){
+  const q=norm($("#q").value);$("#all").hidden=!q||!!ALL;
+  if(!q){$("#out").innerHTML="";return}
+  const hits=IDX.artists.filter(x=>norm(x[0]).includes(q)||x[1].some(al=>norm(al).includes(q))).slice(0,15);
+  let html="";
+  for(const h of hits){const d=await shard(h[3]);const a=d.artists.find(z=>z.name===h[0]);if(a)html+=artBlock(a)}
+  if(ALL){const sh=[];for(const a of ALL){const rows=a.songs.filter(r=>norm(r[0]).includes(q));if(rows.length&&!hits.some(h=>h[0]===a.name))sh.push(artBlock(a,rows));if(sh.length>40)break}html+=sh.join("")}
+  $("#out").innerHTML=html||`<p class="hint">見つかりません。在庫に無ければ原稿内に『新規入荷候補』と明記してください。</p>`}
+$("#all").onclick=async()=>{$("#all").textContent="読み込み中…";const parts=await Promise.all(IDX.shards.map(s=>shard(s.file.split("/").pop().replace(".json",""))));ALL=parts.flatMap(p=>p.artists);$("#all").hidden=true;search()};
+let t;$("#q").addEventListener("input",()=>{clearTimeout(t);t=setTimeout(search,200)});
+fetch("zaiko.json").then(r=>r.json()).then(d=>{IDX=d;
+  $("#meta").textContent=`${d.counts.songs.toLocaleString()}曲・${d.counts.artists.toLocaleString()}アーティスト　｜　更新 ${d.generated_at.slice(0,16).replace("T"," ")}（サイトの版 ${d.source.commit}）`;
+  $("#featBody").innerHTML=d.features.map(f=>`<p><a href="${esc(f.url)}" target="_blank" rel="noopener"><b>${esc(f.title)}</b></a>　${esc(f.kicker)}</p><ul>${f.songs.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`).join("");
+  if($("#q").value)search()});
+</script>
+</body>
+</html>

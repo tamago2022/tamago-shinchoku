@@ -1,0 +1,66 @@
+# 宇宙うんこ v5.1：Blender 3.6 EEVEE（画面なし＝xvfb＋Mesa）で連番を分けて描く。成果物は1日で消える。
+# 描き直しは tools/uchu_unko_v5_1/render_go_test.txt を書き換えて status/fpv_haikyo_mall_1101/stage/push_v5_1.sh go（FRAMES=all か 1,60,300 のような並び）。
+name: uchu-unko-v5-1-test
+on:
+  workflow_dispatch:      # push では走らせない（工場の自動 push で、走っている描画が止められたため）。push_v5_1.sh が API で起こす
+concurrency: { group: uchu-unko-v5-1-test, cancel-in-progress: true }
+jobs:
+  render:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix: { chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/uchu_unko_v5_1
+          sparse-checkout-cone-mode: false
+      - name: settings
+        id: s
+        run: |
+          set -a; . tools/uchu_unko_v5_1/render_go_test.txt; set +a
+          echo "frames=$FRAMES" >> $GITHUB_OUTPUT; echo "pct=$PCT" >> $GITHUB_OUTPUT; echo "samples=$SAMPLES" >> $GITHUB_OUTPUT; echo "mb=${MB:-1}" >> $GITHUB_OUTPUT; echo "nfr=${NFR:-0}" >> $GITHUB_OUTPUT; echo "gi=${GI:-0}" >> $GITHUB_OUTPUT; echo "bisect=${BISECT:-0}" >> $GITHUB_OUTPUT; echo "tmo=${TMO:-0}" >> $GITHUB_OUTPUT; echo "expo=${EXPO:--0.55}" >> $GITHUB_OUTPUT; echo "engine=${ENGINE:-EEVEE}" >> $GITHUB_OUTPUT; echo "vstep=${VSTEP:-4.0}" >> $GITHUB_OUTPUT
+          echo "$FRAMES $PCT $SAMPLES"
+      - name: deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglu1-mesa libxi6 libxxf86vm1 libxfixes3 libxrender1 libsm6 libxkbcommon0 libegl1 >/dev/null
+          curl -sSL --retry 5 -o b.tar.xz https://mirrors.ocf.berkeley.edu/blender/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz \
+            || curl -sSL --retry 5 -o b.tar.xz https://download.blender.org/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz
+          mkdir bl && tar -xf b.tar.xz -C bl --strip-components=1 && rm b.tar.xz
+      - name: render
+        env: { UU_PCT: "${{ steps.s.outputs.pct }}", UU_SAMPLES: "${{ steps.s.outputs.samples }}", UU_MB: "${{ steps.s.outputs.mb }}", UU_GI: "${{ steps.s.outputs.gi }}", UU_EXPO: "${{ steps.s.outputs.expo }}", UU_ENGINE: "${{ steps.s.outputs.engine }}", UU_VSTEP: "${{ steps.s.outputs.vstep }}" }
+        run: |
+          W=$PWD/tools/uchu_unko_v5_1; OUT=$PWD/out; mkdir -p $OUT
+          NF=$(python3 -c "import json;print(json.load(open('$W/hits.json'))['nf'])")
+          if [ "${{ steps.s.outputs.nfr }}" != "0" ]; then NF=${{ steps.s.outputs.nfr }}; fi   # ケツロゴの分（最後の66コマ）は描かない
+          N=20; C=${{ matrix.chunk }}; FR="${{ steps.s.outputs.frames }}"
+          if [ "$FR" = "all" ]; then A=$(( C*NF/N + 1 )); B=$(( (C+1)*NF/N )); SPEC="$A-$B"; WANT=$(( B-A+1 ))
+          else SPEC=$(python3 -c "l='$FR'.split(',');print(','.join(x for i,x in enumerate(l) if i%$N==$C))"); WANT=$(python3 -c "print(len([x for x in '$SPEC'.split(',') if x]))"); fi
+          echo "frames $SPEC"
+          if [ -z "$SPEC" ]; then exit 0; fi
+          if [ "${{ steps.s.outputs.bisect }}" != "0" ]; then   # 切り分け：chunk ごとに1つずつ機能を切る
+            if [ "${{ steps.s.outputs.bisect }}" = "10" ]; then case $C in 1) export UU_TEXSCALE=2.5;; 2) export UU_TEXSCALE=2.5 UU_NODENOISE=1;; 3) export UU_TEXSCALE=4;; 4) export UU_DEBUGTEX=map UU_TEXSCALE=3;; 5) export UU_TEXSCALE=2.5 UU_NOVOL=1;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "9" ]; then export UU_NOVOL=1; case $C in 0) export UU_DEBUGTEX=raw;; 1) export UU_DEBUGTEX=rawflat;; 2) export UU_DEBUGTEX=gen;; 3) export UU_DEBUGTEX=map;; 4) export UU_DEBUGTEX=mapfract;; 5) export UU_DEBUGTEX=pbr;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "8" ]; then case $C in 1) export UU_NOVOL=1;; 2) export UU_FRACT=0;; 3) export UU_SLIM=1;; 4) export UU_NOVOL=1 UU_FEAT=grime,low;; 5) export UU_NOVOL=1 UU_NOHSV=1 UU_FRACT=0;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "7" ]; then export UU_SLIM=1 UU_NOMOSS=1; case $C in 0) export UU_SLIMCLIP=1;; 1) export UU_IMGSWAP=1;; 2) export UU_IMGPACK=1;; 3) export UU_IMGRELOAD=1;; 4) export UU_IMGALPHA=1;; 5) export UU_SLIMCLIP=1 UU_IMGSWAP=1;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "6" ]; then case $C in 0) export UU_SLIM=1 UU_NOSSR=1;; 1) export UU_SLIM=1 UU_NOSSR=1 UU_NOAO=1;; 2) export UU_SLIM=1 UU_NOSSR=1 UU_NOAO=1 UU_NOVOLS=1;; 3) export UU_SLIM=1 UU_NOMOSS=1;; 4) export UU_FEAT=grime,streak,wet,crack,low,dust UU_NOSSR=1 UU_NOAO=1;; 5) export UU_FEAT=all UU_NOSSR=1 UU_NOAO=1 UU_NOVOLS=1;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "5" ]; then case $C in 0) export UU_SLIM=1 UU_TEXCO=obj_box;; 1) export UU_SLIM=1 UU_TEXCO=uv_flat;; 2) export UU_FEAT=grime,streak,wet,crack,low,dust;; 3) export UU_SLIM=1 UU_TEXCO=pos_box;; 4) export UU_FEAT=all;; 5) export UU_SLIM=1 UU_TEXCO=obj_box UU_FRACT=0;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "4" ]; then export UU_SLIM=1; case $C in 0) export UU_TEXCO=obj_box;; 1) export UU_TEXCO=gen_flat;; 2) export UU_TEXCO=pos_box;; 3) export UU_TEXCO=obj_nomap_box;; 4) export UU_TEXCO=uv_flat;; 5) export UU_TEXCO=obj_box_closest;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "3" ]; then case $C in 0) export UU_FEAT=all;; 1) export UU_FEAT=grime,streak,wet;; 2) export UU_FEAT=leaves,patch,mottle;; 3) export UU_FEAT=grime,streak,wet,leaves,patch,mottle,low;; 4) export UU_FEAT=grime,streak,wet,leaves,patch,mottle,low,dust;; 5) export UU_FEAT=grime,streak,wet,crack,low,dust;; esac
+            elif [ "${{ steps.s.outputs.bisect }}" = "2" ]; then case $C in 0) export UU_SLIM=1;; 1) export UU_SLIM=1 UU_PROJ=FLAT;; 2) export UU_SLIM=1 UU_NORIP=1;; 3) export UU_SLIM=1 UU_NOHSV=1;; 4) export UU_SLIM=1 UU_NORIP=1 UU_NOHSV=1 UU_PROJ=FLAT;; 5) export UU_NOPHOTO=1 UU_SLIM=1;; esac
+            else case $C in 1) export UU_NOPHOTO=1;; 2) export UU_NOLEAF=1;; 3) export UU_NOVOL=1;; 4) export UU_NOMOON=1;; 5) export UU_NOPHOTO=1 UU_NOLEAF=1 UU_NOVOL=1 UU_NOMOON=1;; esac; fi
+          fi
+          TMO="${{ steps.s.outputs.tmo }}"; PRE=""; [ "$TMO" != "0" ] && PRE="timeout $TMO"
+          for k in 1 2 3; do
+            date
+            $PRE xvfb-run -a -s "-screen 0 1280x1024x24" ./bl/blender -b -P $W/scene_v5_1.py -- $W $OUT "$SPEC" 2>&1 | grep --line-buffered -E "ENGINE|STAGE|^FRAME|FLAGS|GI |Error|error|Traceback|File \"|kubire|DONE|skip|pin |DEBUGTEX|^Fra:" | awk 'BEGIN{n=0} /^Fra:/{n++; if(n%20!=1) next} {print strftime("%H:%M:%S"), $0; fflush()}' || true
+            date
+            [ $(ls $OUT/*.jpg 2>/dev/null | wc -l) -ge $WANT ] && break
+            [ "$TMO" != "0" ] && break
+          done
+          ls $OUT | wc -l
+      - uses: actions/upload-artifact@v4
+        with: { name: "frames-${{ matrix.chunk }}", path: out/, retention-days: 1, if-no-files-found: ignore }

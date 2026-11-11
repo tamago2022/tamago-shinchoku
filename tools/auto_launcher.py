@@ -2192,7 +2192,36 @@ def queue_rank_key(it, prio):
     #   tamagoIrai:true の票は、鬼監督の差し戻しと同じ最前列に置く。
     if u > -1 and is_tamago_irai(it):
         u = -1
+    # 2026-11-12 追記：最前列の中で priority 2（GitHubの「新しいIssue」経路で積まれた GH1162/1164〜1166）が
+    #   priority 1（【Claude Codeに頼む】経路）の後ろに回らないよう、たまごさん発・Grok発は優先度をそろえ、
+    #   届いた順（番号）で発車する。
+    #   （ghKey だけの古い票＝9月の GH428 など数百件まで上げないよう、tamagoIrai:true の票に限る）
+    #   さらに、届いた時に tamagoIrai も ghKey も付かない経路（claude_uketsuke の【受付】・新しいIssue）で
+    #   積まれた GH1169/1171/1172 が最前列から漏れていた → 本文から店主依頼・Grok発を見分けて同じ扱いにする。
+    if it.get("tamagoIrai") or is_tenshu_grok_irai(it):
+        u = min(u, -1)
+        p = min(p, 1)
     return (u, p, int(o) if isinstance(o, int) else 10 ** 6, it.get("n") or 99)
+
+
+_TENSHU_GROK = re.compile(r"Grok|店主依頼|【Claude Codeに頼む】|店主の指示|店主OK|店主指名|店主推し|店主決定")
+
+
+def is_tenshu_grok_irai(it):
+    """2026-11-12：Grokボット経由の店主依頼（tamago2022 が立てた GitHub Issue）を、印が無くても本文で見分ける。
+    返信・【できる人いますか】・見回り報告・コメント転記は対象外（数百件の古い票を上げないため）。"""
+    t = str(it.get("title") or "")
+    if not re.match(r"GH\d+ ", t):
+        return False
+    if any(x in t for x in ("【できる人いますか】", "見回り報告", "さんの返信", "コメント:",
+                            "【Grokに頼む】", "読むだけ", "[テスト]")):
+        return False
+    w = str(it.get("what") or "")
+    if "投稿者: tamago2022" not in w[:3000] and not str(it.get("ghKey") or "").startswith("gh:tamago2022/"):
+        return False
+    k = w.find("Issue本文")
+    body = w[k:k + 1500] if k >= 0 else ""
+    return bool(_TENSHU_GROK.search(t) or _TENSHU_GROK.search(body))
 
 
 def is_tamago_irai(it):
