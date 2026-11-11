@@ -599,7 +599,8 @@ while :; do
   #    （oni_codex.py 冒頭コメント）に書かれていたのに、心臓に一度も登録されていなかった。
   #    作った道具が実際には回っていない「やりっぱなし」の実例そのもの。拾うだけで
   #    GitHub APIを叩くので軽い。ロック済み（二重実行は自分で弾く）。
-  # 【停止 2026-11-05 見回りの棚卸し：7日で拾った0・Codex自動依頼は10-18廃止（status/mihari_tanaoroshi/hyou.md）】 tick_every 8  && ( python3 "$REPO/tools/oni_codex.py" hirou >> "$REPO/status/oni_codex/hirou.log" 2>&1 & ) >/dev/null 2>&1
+  tick_every 8  && ( python3 "$REPO/tools/oni_codex.py" hirou >> "$REPO/status/oni_codex/hirou.log" 2>&1 & ) >/dev/null 2>&1
+  # ↑ 2026-11-12 復活：Issue #1031 Codex 見回り再開。停止理由（7日拾った0件）は1週間後に評価。改善策は別途検討
   # ⑤ 紙を1枚だけ書き直す（リポ直下 1152-nankai.html／スマホで開ける）。
   #    ★一番上に出すのは 今週言われた件数／実際に変わった件数／達成率。走らせた本数は出さない。
   tick_every 8  && ( python3 "$REPO/tools/kioku_page.py" >> "$REPO/status/kioku/page.log" 2>&1 & ) >/dev/null 2>&1
