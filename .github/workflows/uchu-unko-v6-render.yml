@@ -26,8 +26,7 @@ jobs:
           echo "$FRAMES $PCT $SAMPLES"
       - name: deps
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq libgl1-mesa-dri libglu1-mesa libxi6 libxxf86vm1 libxfixes3 libxrender1 libsm6 libxkbcommon0 libegl1 >/dev/null
+          for k in 1 2 3; do sudo apt-get update -qq && sudo apt-get install -y -qq libgl1-mesa-dri libglu1-mesa libxi6 libxxf86vm1 libxfixes3 libxrender1 libsm6 libxkbcommon0 libegl1 >/dev/null && break; sleep 20; done || true
           curl -sSL --retry 5 -o b.tar.xz https://mirrors.ocf.berkeley.edu/blender/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz \
             || curl -sSL --retry 5 -o b.tar.xz https://download.blender.org/release/Blender3.6/blender-3.6.23-linux-x64.tar.xz
           mkdir bl && tar -xf b.tar.xz -C bl --strip-components=1 && rm b.tar.xz
