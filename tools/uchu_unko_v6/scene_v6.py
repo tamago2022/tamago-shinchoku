@@ -152,9 +152,9 @@ nb = N(nt, "ShaderNodeTexNoise"); nb.inputs["Scale"].default_value = 7.0; nb.inp
 L(nt, tc.outputs["Object"], nb.inputs["Vector"])
 neb = N(nt, "ShaderNodeValToRGB"); cr = neb.color_ramp
 cr.elements[0].position = 0.36; cr.elements[0].color = (0.004, 0.006, 0.030, 1)
-e = cr.elements.new(0.50); e.color = (0.012, 0.025, 0.090, 1)
-e = cr.elements.new(0.60); e.color = (0.010, 0.110, 0.170, 1)
-cr.elements[-1].position = 0.75; cr.elements[-1].color = (0.36, 0.08, 0.26, 1)
+e = cr.elements.new(0.50); e.color = (0.012, 0.018, 0.060, 1)
+e = cr.elements.new(0.60); e.color = (0.012, 0.055, 0.090, 1)
+cr.elements[-1].position = 0.75; cr.elements[-1].color = (0.22, 0.06, 0.17, 1)
 L(nt, nb.outputs["Fac"], neb.inputs["Fac"])
 vor = N(nt, "ShaderNodeTexVoronoi"); vor.inputs["Scale"].default_value = 120.0; vor.inputs["Randomness"].default_value = 1.0
 L(nt, tc.outputs["Object"], vor.inputs["Vector"])
@@ -176,7 +176,7 @@ emc = N(nt, "ShaderNodeMixRGB", blend_type="MIX"); L(nt, sts.outputs[0], emc.inp
 L(nt, nebs.outputs["Color"], emc.inputs["Color1"]); L(nt, starcol.outputs["Color"], emc.inputs["Color2"])
 emsum = N(nt, "ShaderNodeMath", operation="ADD"); L(nt, ems2.outputs[0], emsum.inputs[0]); emsum.inputs[1].default_value = 0.0
 neb_strength = N(nt, "ShaderNodeMath", operation="MULTIPLY_ADD"); L(nt, glow.outputs[0], neb_strength.inputs[0]); neb_strength.inputs[1].default_value = 0.7; L(nt, ems2.outputs[0], neb_strength.inputs[2])
-pu = principled(nt, **{"Roughness": 0.22, "Specular": 0.6, "Clearcoat": 1.0, "Clearcoat Roughness": 0.03, "Subsurface": 0.0})
+pu = principled(nt, **{"Roughness": 0.42, "Specular": 0.45, "Clearcoat": 0.35, "Clearcoat Roughness": 0.12, "Subsurface": 0.0})
 ao = N(nt, "ShaderNodeAmbientOcclusion"); ao.inputs["Distance"].default_value = 0.03
 aom = N(nt, "ShaderNodeMixRGB", blend_type="MULTIPLY"); aom.inputs["Fac"].default_value = 1.0
 L(nt, neb.outputs["Color"], aom.inputs["Color1"]); L(nt, ao.outputs["AO"], aom.inputs["Color2"])
@@ -322,7 +322,7 @@ for l in LANT:
     for me in (me_wood, me_paper, me_bar):
         o = bpy.data.objects.new(me.name + "_" + l["id"], me); sc.collection.objects.link(o); o.parent = root
         if me is me_paper:
-            k_ = rnd.randrange(10)
+            k_ = (len(LOBJ) * 5) % 9
             if k_ < 6:
                 o.material_slots[0].link = "OBJECT"; o.material_slots[0].material = M_SUMI[k_]
     lt = bpy.data.lights.new("lt_" + l["id"], "POINT"); lt.shadow_soft_size = 0.05
@@ -335,36 +335,42 @@ for l in LANT:
 
 # 宇宙うんこ（ソフトクリーム型のうず：円を螺旋に沿って掃く）
 def unko_mesh():
+    """巻きが3段に見えるうんこ：太さを半径に比例させ、1周で太さの1.5倍だけ上がる。先はつまんで少し倒す。"""
     bm = bmesh.new()
-    turns = 2.55; nu = 180; nv = 20
-    rings = []
+    turns = 2.6; nu = 240; nv = 22
+    rings = []; z = 0.0; prev_u = 0.0
+    def Rr(u): return 0.058 * (1 - 0.80 * u)
+    def rr(u):
+        r = 0.52 * Rr(u) + 0.005
+        if u > 0.80: r *= max(0.05, (1 - u) / 0.20) ** 0.55
+        return r
+    z = rr(0) * 0.92
     for i in range(nu + 1):
         u = i / nu
+        if i > 0: z += 1.80 * rr(u) * turns * (1.0 / nu) * (1.0 if u < 0.80 else 3.4)
         ang = 2 * math.pi * turns * u
-        R = 0.070 * (1 - u) ** 0.9 + 0.003
-        z = 0.034 + 0.168 * u
-        r = 0.029 * (1 - u) ** 0.6 + 0.009
-        if u > 0.93: r *= max(0.05, (1 - u) / 0.07) ** 0.5
+        R = Rr(u); r = rr(u)
+        if u > 0.80: R *= (1 - (u - 0.80) / 0.20 * 0.9)
         c = Vector((R * math.cos(ang), R * math.sin(ang), z))
-        tng = Vector((-math.sin(ang), math.cos(ang), 0.12)).normalized()
+        tng = Vector((-math.sin(ang), math.cos(ang), 0.10)).normalized()
         nrm = Vector((math.cos(ang), math.sin(ang), 0)); bnm = tng.cross(nrm).normalized(); nrm = bnm.cross(tng).normalized()
         ring = []
         for j in range(nv):
-            a = 2 * math.pi * j / nv
-            ring.append(bm.verts.new(c + nrm * (r * math.cos(a)) + bnm * (r * 1.05 * math.sin(a))))
+            a_ = 2 * math.pi * j / nv
+            ring.append(bm.verts.new(c + nrm * (r * 1.06 * math.cos(a_)) + bnm * (r * 0.86 * math.sin(a_))))
         rings.append(ring)
     for i in range(nu):
         for j in range(nv):
             bm.faces.new((rings[i][j], rings[i][(j + 1) % nv], rings[i + 1][(j + 1) % nv], rings[i + 1][j]))
-    # 底の丸い台座（つぶれた球）
-    r2 = bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=16, radius=0.074)
-    for v in r2["verts"]:
-        v.co.z = 0.030 + v.co.z * 0.40
-        if v.co.z < 0.004: v.co.z = 0.004 + (v.co.z - 0.004) * 0.15
-    # 端のふた
     bmesh.ops.contextual_create(bm, geom=rings[0])
+    # 底の詰め物（巻きの内側の穴を埋める平たい饅頭）
+    r2 = bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=16, radius=Rr(0) * 0.92)
+    for v in r2["verts"]:
+        v.co.z = rr(0) * 0.95 + v.co.z * 0.45
+        if v.co.z < 0.003: v.co.z = 0.003
     me = bpy.data.meshes.new("unko"); bm.to_mesh(me); bm.free()
     for p in me.polygons: p.use_smooth = True
+    print("UNKO_H", round(max(v.co.z for v in me.vertices), 3), "R", round(max(v.co.x for v in me.vertices), 3), flush=True)
     return me
 unko = bpy.data.objects.new("unko", unko_mesh()); sc.collection.objects.link(unko); unko.data.materials.append(m_unko)
 sub = unko.modifiers.new("sub", "SUBSURF"); sub.levels = 1; sub.render_levels = 2
@@ -538,6 +544,12 @@ for fc in list(cam.animation_data.action.fcurves) + list(rimo.animation_data.act
                 while k.co[1] - prev < -math.pi: k.co[1] += 2 * math.pi
             prev = k.co[1]
         fc.update()
+
+if os.environ.get("UU_CLOSE"):
+    fc_ = int(os.environ["UU_CLOSE"]); cam.animation_data_clear(); cam_d.animation_data_clear()
+    (x, y, z), _, _ = P.unko_at(fc_, LANT); cam_d.lens = 50
+    cam.location = (x + 0.25, y - 0.80, z + 0.10); cam.rotation_euler = (Vector((x, y, z + 0.11)) - cam.location).to_track_quat("-Z", "Y").to_euler()
+    cam_d.dof.focus_distance = (Vector((x, y, z + 0.11)) - cam.location).length
 
 def per_frame(f):
     """シェーダーの値（波紋の中心・経過・強さ、うんこの光）をコマごとに入れる"""
