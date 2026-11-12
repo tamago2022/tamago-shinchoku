@@ -474,6 +474,24 @@ async function main() {
       return;
     }
 
+    // 205536号の確認用（1184_kanmon tsukaenai: hyo-1794485812）：ページ送り「次へ」等の
+    // テキスト完全一致ボタンをVC_CLICK_TEXT回クリックしてからVC_DUMP_TEXTを取りたい時だけ使う。
+    // 既定(未設定)では何もしない＝既存の検品動作には一切影響しない。
+    if (process.env.VC_CLICK_TEXT) {
+      const times = Number(process.env.VC_CLICK_TIMES || "1");
+      for (let i = 0; i < times; i++) {
+        await send("Runtime.evaluate", {
+          expression: `(() => {
+            const btns = Array.from(document.querySelectorAll('button'));
+            const t = btns.find(b => (b.innerText||'').trim() === ${JSON.stringify(process.env.VC_CLICK_TEXT)});
+            if (t) { t.scrollIntoView({block:'center'}); t.click(); return true; }
+            return false;
+          })()`,
+        });
+        await sleep(1200);
+      }
+    }
+
     if (process.env.VC_DUMP_TEXT) {
       const textRes = await send("Runtime.evaluate", {
         expression: "document.body.innerText",
@@ -489,7 +507,7 @@ async function main() {
     if (process.env.VC_DUMP_SELECTOR) {
       const sel = process.env.VC_DUMP_SELECTOR;
       const selRes = await send("Runtime.evaluate", {
-        expression: `JSON.stringify({count: document.querySelectorAll(${JSON.stringify(sel)}).length, html: Array.from(document.querySelectorAll(${JSON.stringify(sel)})).slice(0,5).map(el => el.outerHTML.slice(0,300))})`,
+        expression: `JSON.stringify({count: document.querySelectorAll(${JSON.stringify(sel)}).length, html: Array.from(document.querySelectorAll(${JSON.stringify(sel)})).slice(0, Number(${JSON.stringify(process.env.VC_DUMP_SELECTOR_N || "5")})).map(el => el.outerHTML.slice(0,300))})`,
         returnByValue: true,
       });
       console.error("---DUMP_SELECTOR_START---");
