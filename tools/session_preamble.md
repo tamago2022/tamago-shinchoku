@@ -76,6 +76,7 @@
 
 - **チャット／エージェント／「修正を試みる」／「ビルドを修正」／コード編集は使わない。**クレジットが飛ぶ。
 - **「公開」は聞かずに押してよい。**押すまでが1セット。
+- **【2026-11-13】工場の Lovable の鍵（10-14から同意切れ）で公開が通らない時は、公開を自分で何度も試さない・Chromeを起動しない・たまごさんに鍵を頼まない。** main に入れたら `status/itsumo/koukai_machi.jsonl` に `{"at":時刻,"n":便の番号,"gh":Issue番号,"url":本番URL,"kakunin":"本番で何があれば確認済みか（例：/data/shelf/6b.json に sleep-namimiko-ofuton-radio-5th）","commit":main のコミット}` を1行足し、その便は「main合流・公開は Dispatch の Lovable 口へ依頼済み」で完了にする。Dispatch が自分の Lovable コネクタ（deploy_project）で公開し、本番の中身で確かめて Issue と outbox に返す（2026-11-13 実測：Dispatch の deploy_project は通る）。
 
 ### 5. 定期タスク（scheduled task）は作らない
 

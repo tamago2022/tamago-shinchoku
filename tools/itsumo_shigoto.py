@@ -172,7 +172,8 @@ def _machi(q):
 KOUKAI_GYOU = ("【公開の鍵が切れていたら】公開（98403_lovable_publish_mcp.py）が通らなくても止まらない。"
                "書く・関所・main に入れるところまでやって完了にし、status/itsumo/koukai_machi.jsonl に "
                "{\"at\":時刻,\"n\":この便の番号,\"url\":本番URL,\"commit\":main のコミット} を1行。"
-               "鍵が戻ったら工場がまとめて本番に出す。たまごさんに鍵を頼まない。\n")
+               "Dispatch が自分の Lovable コネクタ（deploy_project）でまとめて本番に出し、中身で確かめる"
+               "（2026-11-13・鍵の再発行は頼まない）。たまごさんに鍵を頼まない。\n")
 KYOUTSUU = ("ブラウザ・web_fetch・Lovableのチャットとエージェントは使わない。有料APIは使わない（0円）。"
             "棚（worlds.ts・admin_shelf_picks）は触らない。たまごさんに質問しない。\n")
 
