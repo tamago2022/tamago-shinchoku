@@ -1,9 +1,9 @@
 {
- "totalChecked": 1942,
- "totalPassed": 429,
- "totalFailed": 414,
+ "totalChecked": 1945,
+ "totalPassed": 430,
+ "totalFailed": 416,
  "totalErrors": 1099,
- "totalCostUsd": 304.0701,
+ "totalCostUsd": 305.4855,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -405,33 +405,11 @@
   "main合流は確認できたが本番URLは未反映（実測：ONE LIFE等7曲が「こ": 1,
   "本番URL確認で対象7曲全てnote:\"\"（空）のままで、カードに文が出ていない": 1,
   "本番URLで対象9曲(one-life等)が実測でnote:\"\"のまま、文が一切": 1,
-  "本番の対象20曲カードが全て note空のまま（実機確認済み）で、hanei.j": 1
+  "本番の対象20曲カードが全て note空のまま（実機確認済み）で、hanei.j": 1,
+  "対象20曲の一つ plastikman-disconnect が本番で依然「ここ": 1,
+  "対象7曲すべて本番で note:\"\" のまま未反映（curlで実データ確認済み、": 1
  },
  "history": [
-  {
-   "ts": "2026-11-07T14:55:22+09:00",
-   "n": 205245,
-   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=tokimeki-records",
-   "verdict": "fail",
-   "reason": "本番URL(https://joy-relief-station.lovable.app/cover-guide?artist=tokimeki-records)を実測した結果、対象9曲全てのnoteが依然`note:\"\"`（「ここから旅をする」のまま、15件残存）で未反映。報告側も自ら「公開のみブロック中・未反映」と認めており、完了条件（本番カードに文が出ている）を満たしていない。",
-   "costUsd": 0.32569760000000003
-  },
-  {
-   "ts": "2026-11-07T14:55:22+09:00",
-   "n": 205246,
-   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=michel-legrand",
-   "verdict": "fail",
-   "reason": "対象20曲のnoteが本番で全て空文字（note:\"\"）のままで、文章が1曲も反映されていない（例：windmills-of-your-mind、umbrellas-of-cherbourg等すべてnote:\"\"）",
-   "costUsd": 0.1948134
-  },
-  {
-   "ts": "2026-11-07T15:41:10+09:00",
-   "n": 205271,
-   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=michel-legrand",
-   "verdict": "error",
-   "reason": "検品AIの結果が読み取れませんでした（技術的な失敗として素通しします）",
-   "costUsd": null
-  },
   {
    "ts": "2026-11-07T15:41:37+09:00",
    "n": 205245,
@@ -807,7 +785,31 @@
    "verdict": "fail",
    "reason": "本番の対象20曲カードが全て note空のまま（実機確認済み）で、hanei.jsonlも【反映】ではなく【main合流のみ・未反映】のため、依頼の完了条件（本番にカードの文が出ている）を満たしていない",
    "costUsd": 0.3110908
+  },
+  {
+   "ts": "2026-11-12T21:43:01+09:00",
+   "n": 205536,
+   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=the-pillows",
+   "verdict": "pass",
+   "reason": "本番URLをヘッドレスブラウザで2/3・3/3ページ送りまで実測し、対象7曲全てにカード文言（4曲はnote/memo/src、残り3曲はtabiCopy.tsの一行コピー）が表示されていることを確認。コードはorigin/mainに取り込み済み（53326e84f）で本番と一致、hanei.jsonlの【反映】記録も実測と整合。",
+   "costUsd": 0.8588324000000002
+  },
+  {
+   "ts": "2026-11-12T21:43:27+09:00",
+   "n": 205537,
+   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=richie-hawtin",
+   "verdict": "fail",
+   "reason": "対象20曲の一つ plastikman-disconnect が本番で依然「ここから旅をする」のままで、報告の「対象外13曲」分類と実機状態が矛盾している",
+   "costUsd": 0.2641878
+  },
+  {
+   "ts": "2026-11-12T21:46:11+09:00",
+   "n": 205538,
+   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=richie-hawtin",
+   "verdict": "fail",
+   "reason": "対象7曲すべて本番で note:\"\" のまま未反映（curlで実データ確認済み、作業側もLovable公開403で未反映と自己申告しており一致）",
+   "costUsd": 0.2924214
   }
  ],
- "updatedAt": "2026-11-12 21:02"
+ "updatedAt": "2026-11-12 21:46"
 }
