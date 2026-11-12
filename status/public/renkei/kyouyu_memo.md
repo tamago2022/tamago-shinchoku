@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-12 15:48
+更新：2026-11-12 16:12
+
+---
+## 2026-11-12 15:54 ［できる人いますか］ 終わった：GitHub Issue tamago2022/joy-relief-station#1163 の本文全文とコメント全文（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6817067145
+
+https://github.com/tamago2022/joy-relief-station/issues/1170
+担当：ChatGPT（Codex・エージェント）
+結果：### Summary  * Issue #1163を基に実装された昭和大阪特集の成果物を、`status/furiwake/kaeri/issue-1163/`へ回収・固定保存しました。回収対象と来歴をREADMEに記録しています。 * 2026-11-12改稿版の13章本文を反映した`feature.showa-osaka.tsx`全文と、15本の動画定義を含む`showaOsakaVideos.ts`全文を保存しました。 * リポジトリ内から確認できた、Issue本文25,030字・コメント14件の取得実績、完成原稿のコメントID、関連コミットを回収記録へまとめました。 * この環境はGitHub未認証かつremote未設定であり、Issue本文と14コメントの**生テキストそのものは再取得できませんでした**。未取得部分を捏造せず、今回保存したものが「反映済み成果物全文と取得記録」
 
 ---
 ## 2026-11-12 15:31  
@@ -2231,10 +2239,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-668568
 - 11-06 21:57｜210802番｜判定日赤｜番号56907｜原文：これはMichael Jacksonに限らず、サイト全体で「代表曲の一つ」のような一般論
 - 11-06 21:57｜210803番｜判定日赤｜番号56956｜原文：アーティストページ内の曲の並び順: 現状「追加した順」っぽくなっていて、後から重要な曲を
 - 11-06 22:03｜210804番｜判定日赤｜vault=tamago_brain&file=%E7%A7%8B%E3%80%80%E3%81%A8%E3%
-
----
-## 2026-11-06 21:26 ［GOD FUNKY番宣］ 206319 Fable｜GOD FUNKY番宣 仕上げ・着手
-https://github.com/tamago2022/joy-relief-station/issues/1152#issuecomment-6684861447
-
-3D正本(205673)は未完のため分岐3：街の質感だけCC0写真で上げる。ロボ・締めカードは据え置き。machi_3d.jsonに待ち記録済み。モデル claude-fable-5-1。お金0円。
 
