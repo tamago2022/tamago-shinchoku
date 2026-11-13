@@ -9,6 +9,15 @@
 - 週枠の線・同時2本・Macの負荷は auto_launcher（shuwaku_sen）が守る（ループは積むだけ）。棚・見た目・有料API・Lovableのチャット・ブラウザ・web_fetch は使わない。並行の子の受け持ちは `status/kaizen/heikou.json`（同じ仕事を積まない）。
 - **機械の裏付け：** `tools/kaizen_loop.py --tick`（top_status の相乗り・中で間引く。`--self-test`）。結果 `status/kaizen/score.json`・写し `status/public/kaizen.json`・進捗表の1行「改善ループ」→ `status/public/kaizen.html`。
 
+## 再生テストは必ず無音（憲法・2026-11-14・店主「Macのスピーカーから曲が鳴った。音が出るテストは二度とやらない」）
+- 本番ページの再生を確かめる時は `node tools/iphone_kakunin.mjs <URL> <出力の頭> [--tap SEL] [--link 文字]` だけを使う（iPhone 14 の WebKit・headless・全フレームに消音の初期スクリプト・YouTube埋め込みに mute=1・消音でない media を見つけたら止めて exit 3）。再生の判定は音ではなく currentTime。Chromium 系を使う時は `--mute-audio`。自作の再生テストは書かない。逆テスト：`--self-test`。
+
+## ベーシストの型（2026-11-14 店主「ベーシストもどんどん入れていく」）
+- **棚：** 音楽の扉の「ベース」＝DBの棚 `255997cd-000f-4673-b3bb-e48841086c16`（本番 `/shelf/music/db-255997cd-000f-4673-b3bb-e48841086c16`）。X投稿はそのまま `admin_stock(kind=x)`、曲ページがある動画は `kind=cover-guide, ref=<artistId>/<songId>`＋YouTubeのサムネで入れ、`admin_shelf_picks` に1行（同じカードは作り直さない）。
+- **アーティストページ：** joy-relief-station `src/lib/coverGuide.ts`。紹介文1〜2行（出典 `sources`）、本人の公式・本人出演のYouTubeを3〜5本 `entry: 1..5`（再生数の多い順・転載の切り抜きは使わない）。紹介文の中の人名をリンクにする時は `aboutLinks: [{ text, artistId }]`。
+- **ベーシスト同士の関連：** `similarArtistsMap` に `reason: "越境同ポジ", axis: "horizontal-cross"` で**両方向**に1行ずつ。`copy` は事実で言える繋がり1行（例：Marcus Miller⇔Kate Curly＝ラリー・グラハム／Sly & The Family Stone）。名前の一致や推測で繋がない。
+- **出す前：** `npm run prebuild`（関所全部）→ `ingest:map`＋`split-ytid-buckets`（動画IDの索引）→ push → `deploy_project` → `node tools/iphone_kakunin.mjs`（無音）で本番を確かめる。
+
 ## 工場の変更は毎日 GitHub の main へ（2026-10-29）
 - 実測：作業場が 10-22 から作業の枝に乗ったままで、自動pushの係（`tools/machine_status_push.sh`）は枝に commit し続け、`push origin main` は古い手元の main を押すだけ、pull は台帳の衝突で毎回やめていた → main が1週間止まった。
 - **機械の裏付け：** `tools/kojo_push_mihari.py`（top_status から1時間に1回。別の枝なら main に戻す・README/CLAUDE.md/AGENTS.md の未記録を commit・3時間以上上がらなければぶつかるファイル名つきで Dispatch へ1行。`--self-test`）。衝突は台帳＝両方残す、確認ページ＝新しい方。
