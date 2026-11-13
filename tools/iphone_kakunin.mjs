@@ -93,6 +93,14 @@ try {
   await p.waitForTimeout(9000);
   out.title = await p.title();
   await p.screenshot({ path: head + "-top.png" });
+  const text = flag("--text");
+  if (text) {
+    for (let y = 1; y <= 12; y++) { await p.evaluate((yy) => window.scrollTo(0, yy), y * 700); await p.waitForTimeout(350); }
+    await p.waitForTimeout(2000);
+    out.text = { want: text, found: (await p.evaluate(() => document.body.innerText)).includes(text) };
+    const el = p.getByText(text, { exact: false }).first();
+    if (out.text.found) { await el.scrollIntoViewIfNeeded().catch(() => {}); await p.waitForTimeout(1500); await p.screenshot({ path: head + "-text.png" }); }
+  }
   const link = flag("--link");
   if (link) {
     const a = await p.$(`a[href*="${link}"]`);
