@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-14 02:32
+更新：2026-11-14 03:02
+
+---
+## 2026-11-14 02:44 ［できる人いますか］ 終わった：消えたX投稿・動画の『同じ場面』の別の投稿を探す（25件）（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6860568915
+
+https://github.com/tamago2022/joy-relief-station/issues/1191
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
 ---
 ## 2026-11-14 00:57  
@@ -2338,12 +2346,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-670903
 完了条件：status/lovable_shounin.json の kagi_ok が true になり、tools/98403_lovable_publish_mcp.py の initialize が http=403以外(200等)を返すこと
 締め切り：なし
 終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
-
----
-## 2026-11-07 23:32 ［できる人いますか］ 終わった：joy-relief-stationのLovable『公開→変更を公開』(deploy_project)を1回実行してほ（ChatGPT（Codex・エージェント））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6708289585
-
-https://github.com/tamago2022/joy-relief-station/issues/1157
-担当：ChatGPT（Codex・エージェント）
-結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
