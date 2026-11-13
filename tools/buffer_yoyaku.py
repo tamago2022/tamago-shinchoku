@@ -13,7 +13,11 @@
     "channel_handle": "oasisjoyrelief",
     "forbid": ["eggypop2014"],
     "due_jst": "2026-09-24 21:00",
-    "text": "本文（1文字も変えない）"
+    "text": "本文（1文字も変えない）",
+    "image_url": "https://.../og-image.jpg",   # 省略可（店主決定2026-10-20・GH#1034：ジャケット画像を1枚）
+    "song_url": "https://joy-relief-station.lovable.app/cover-guide?artist=...&song=..."  # 省略可。
+    #   image_url が無いときはここの曲ページから og:image を自動で取りに行く。
+    #   本文には入れない（店主決定：本文にリンクなし）。最初のリプライで使う分は別の口（まだ無い）。
   }
 
 ★即時投稿はしない（mode は customScheduled 固定）。
@@ -174,6 +178,21 @@ query GetScheduledPosts($orgId: OrganizationId!, $channelIds: [ChannelId!]) {
 }
 """
 
+# ★1034番：Bufferは posts を1回で最大10件しか返さない（確認済み・2026-11-14実測）。
+#   after はトップレベル引数（input の中ではない）。pageInfo で全件たどる版。
+Q_POSTS_PAGE = """
+query GetScheduledPostsPage($orgId: OrganizationId!, $channelIds: [ChannelId!], $after: String) {
+  posts(after: $after, input: {
+    organizationId: $orgId,
+    sort: [{ field: dueAt, direction: asc }],
+    filter: { status: [scheduled], channelIds: $channelIds }
+  }) {
+    pageInfo { hasNextPage endCursor }
+    edges { node { id text dueAt channelId status } }
+  }
+}
+"""
+
 
 def norm(s):
     """比較用。Bufferが前後の空白を落とすことがあるので、そこだけ揃える。"""
@@ -199,6 +218,19 @@ def names_of(c):
         if v:
             out.append(v)
     return out
+
+
+OGIMG_RE = re.compile(r'property="og:image" content="([^"]+)"')
+
+
+def og_image_of(song_url, timeout=20):
+    """★1034番：曲ページの og:image（ジャケット画像）を読むだけ（0円・ブラウザ不使用）。
+    既存のページの関所（buffer_page_kanmon.py）と同じ考え方（Twitterbot UA でHTMLを取る）。"""
+    req = urllib.request.Request(song_url, headers={"User-Agent": "Twitterbot/1.0"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        html = r.read(2_500_000).decode("utf-8", "ignore")
+    m = OGIMG_RE.search(html)
+    return m.group(1) if m else None
 
 
 def pick_channel(channels, handle, forbid):
@@ -264,8 +296,12 @@ def run_one(job_path):
     except Exception as e:
         out["kata_naoshita"] = "型の係が読めなかった：%s" % str(e)[:80]
 
+    # ★1034番（店主決定2026-10-20）：本文にリンクを入れないので、うちのURLは
+    #   本文ではなく job["song_url"] に乗ってくる。関所に見せる対象はその両方を合わせる。
+    kanmon_text = (job.get("text") or "") + ("\n" + job["song_url"] if job.get("song_url") else "")
+
     # ★1076番：本番に出す前に覆面客の関所を通す（鍵を見に行くより前に止める）
-    ok, why = fukumen_kanmon(job.get("text") or "")
+    ok, why = fukumen_kanmon(kanmon_text)
     out["fukumen"] = why
     if not ok:
         out["result"] = "覆面客の関所で止めた"
@@ -276,7 +312,7 @@ def run_one(job_path):
     #   通らない投稿はBufferに入れない（補填もこの入口を通る）。
     try:
         import buffer_page_kanmon
-        ok, why = buffer_page_kanmon.kanmon(job.get("text") or "")
+        ok, why = buffer_page_kanmon.kanmon(kanmon_text)
     except Exception as e:  # 道具が壊れても投稿は止めない…ではなく、安全側＝止める
         ok, why = False, "ページの関所の道具が読めません：%s" % str(e)[:120]
     out["page_kanmon"] = why
@@ -284,6 +320,21 @@ def run_one(job_path):
         out["result"] = "ページの関所で止めた（HOLD）"
         out["fix"] = why
         return out
+
+    # ★1034番：ジャケット画像を1枚（店主決定）。image_url が無ければ song_url の
+    #   og:image を自動で取りに行く。どちらも無ければ画像なしで続行（止めない）。
+    assets = []
+    img_url = job.get("image_url")
+    if not img_url and job.get("song_url"):
+        try:
+            img_url = og_image_of(job["song_url"])
+        except Exception as e:
+            out["image_pick"] = "og:image が取れなかった：%s" % str(e)[:100]
+    if img_url:
+        assets = [{"image": {"url": img_url}}]
+        out["image_pick"] = img_url
+    elif "image_pick" not in out:
+        out["image_pick"] = "画像なし（image_url・song_urlのどちらも無い）"
 
     tok = token()
     if not tok:
@@ -336,7 +387,7 @@ def run_one(job_path):
     res = gql(tok, M_CREATE, {"input": {
         "text": job["text"],
         "channelId": ch["id"],
-        "assets": [],                    # ★必須。文字だけの投稿なので空でよい
+        "assets": assets,                # ★1034番：ジャケット画像があればここに乗る。無ければ[]
         "needsApproval": False,          # ★必須
         "schedulingType": "automatic",
         "mode": "customScheduled",       # ★即時投稿にしない
