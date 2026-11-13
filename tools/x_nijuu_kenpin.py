@@ -67,6 +67,12 @@ JST = datetime.timezone(datetime.timedelta(hours=9))
 
 URL_RE = re.compile(r"https?://\S+")
 TAG_RE = re.compile(r"(?:^|\s)#\S+")
+# ★1034番（店主決定 2026-10-20）：本文にリンクなし／絵文字なし／タグ1〜2個。
+#   絵文字専用レンジだけを拾う（CJK漢字と重ならないように絵文字ブロックに絞る）。
+EMOJI_RE = re.compile(
+    "[\U0001F000-\U0001FAFF\U00002600-\U000027BF\U00002B00-\U00002BFF"
+    "\U0001F1E6-\U0001F1FF\U0000FE0F\U0000200D]"
+)
 
 
 def _now():
@@ -253,6 +259,19 @@ def kikai(text, mae=None, ato=None, post_id=None, src=None):
     """①機械。戻り値: {"ok":bool, "ng":[...], "check":[...]}"""
     ng, check = [], []
     title, body = bunkai(text)
+    # 0. 店主決定（2026-10-20・GH#1034）：本文にリンクなし／絵文字なし／タグ1〜2個。
+    #    bunkai() は URL行・タグ行を既に本文から除いているので、ここだけは text そのもので見る。
+    urls = URL_RE.findall(text or "")
+    if urls:
+        ng.append("本文にリンクが入っている（店主決定2026-10-20：本文にリンクなし。"
+                  "最初のリプライへ回す）：%s" % urls[0][:70])
+    emo = EMOJI_RE.findall(text or "")
+    if emo:
+        ng.append("絵文字が入っている（店主決定2026-10-20：絵文字なし）：%s" % "".join(sorted(set(emo))[:5]))
+    tags = TAG_RE.findall(text or "")
+    if len(tags) > 2:
+        ng.append("ハッシュタグが多い（店主決定2026-10-20：1〜2個）：%d個 %s"
+                  % (len(tags), " ".join(t.strip() for t in tags[:4])))
     try:
         import x_kata
         lok, lwhy = x_kata.nagasa_ok(text)
@@ -585,8 +604,23 @@ def _buffer():
         ch = by.pick_channel(chans, "oasisjoyrelief", ["eggypop2014"])
 
     def yoyaku():
-        q = by.gql(tok, by.Q_POSTS, {"orgId": ch["_org"], "channelIds": [ch["id"]]})
-        return [e["node"] for e in ((q.get("data") or {}).get("posts") or {}).get("edges") or []]
+        # ★1034番で発覚：Q_POSTS はページネーション無しだと最初の10件しか返らない
+        #   （Bufferのデフォルト上限）。naosu() の before 辞書に後ろの予約が無く
+        #   「予約に無い（もう出た・消えた）」と誤判定していた。after で全件たどる。
+        out, after = [], None
+        for _ in range(30):
+            vars_ = {"orgId": ch["_org"], "channelIds": [ch["id"]]}
+            if after:
+                vars_["after"] = after
+            q = by.gql(tok, by.Q_POSTS_PAGE, vars_)
+            d = (q.get("data") or {}).get("posts") or {}
+            edges = d.get("edges") or []
+            out += [e["node"] for e in edges]
+            info = d.get("pageInfo") or {}
+            if not info.get("hasNextPage") or not edges:
+                break
+            after = info.get("endCursor")
+        return out
     return by, tok, ch, yoyaku
 
 
