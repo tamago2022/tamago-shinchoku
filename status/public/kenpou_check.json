@@ -1,30 +1,30 @@
 {
- "checkedAt": "2026-11-12T09:10:47+09:00",
+ "checkedAt": "2026-11-13T09:12:26+09:00",
  "overallColor": "red",
- "redCount": 3,
+ "redCount": 4,
  "items": [
   {
    "key": "ctx_1m",
    "label": "1Mコンテキストで走った子セッション",
    "color": "red",
-   "count": 15,
-   "sample": 16,
-   "detail": "直近16本の子セッション中15本が標準200kを超えるコンテキスト窓（実測1M）で走っていた（CLAUDE.md/AGENTS.mdの『1M context/extended contextは使わない』に違反）"
+   "count": 25,
+   "sample": 25,
+   "detail": "直近25本の子セッション中25本が標準200kを超えるコンテキスト窓（実測1M）で走っていた（CLAUDE.md/AGENTS.mdの『1M context/extended contextは使わない』に違反）"
   },
   {
    "key": "fable_model",
    "label": "Fableモデルの混入（Sonnet固定違反）",
    "color": "green",
    "count": 0,
-   "sample": 16,
-   "detail": "直近16本はすべてSonnet固定で走っていた"
+   "sample": 25,
+   "detail": "直近25本はすべてSonnet固定で走っていた"
   },
   {
    "key": "oni_kantoku_alive",
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
-   "count": 0,
-   "detail": "最終記録から約1.1時間経過（2026-11-12T08:06:32+09:00）／直近24時間の完了1件中、鬼監督の記録が付いているのは1件"
+   "count": 1,
+   "detail": "最終記録から約4.8時間経過（2026-11-13T04:23:31+09:00）／直近24時間の完了8件中、鬼監督の記録が付いているのは7件"
   },
   {
    "key": "done_missing_url",
@@ -36,31 +36,31 @@
   {
    "key": "factory_stalled",
    "label": "工場が止まったまま放置されていないか",
-   "color": "green",
-   "count": 0,
-   "detail": "走行1本／上限1本（枠が埋まっているだけ・正常）"
+   "color": "red",
+   "count": 5759,
+   "detail": "最終発車から3.7時間・発車待ち5759件・空き1枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回231022番 → 今回234066番（減少なし）"
+   "detail": "前回234066番 → 今回239949番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
    "count": 82,
-   "detail": "status/public/verify_log.jsonl(55.7MB)、share/done/index.html(38.1MB)、status/public/dispatch_outbox.jsonl(26.0MB)、share/_deliver/godfunky/2026-11-02_★最新_動画_GODFUNKY番宣_ロボットフェス試作.mp4(19.9MB)、status/public/done_archive.json.gz(13.7MB)"
+   "detail": "status/public/verify_log.jsonl(55.7MB)、share/done/index.html(39.7MB)、status/public/dispatch_outbox.jsonl(26.0MB)、share/_deliver/godfunky/2026-11-02_★最新_動画_GODFUNKY番宣_ロボットフェス試作.mp4(19.9MB)、status/public/done_archive.json.gz(13.8MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
    "color": "green",
    "count": 0,
-   "sample": 4,
-   "detail": "直近4件の確認ページはすべて200だった"
+   "sample": 3,
+   "detail": "直近3件の確認ページはすべて200だった"
   },
   {
    "key": "orphan_sessions",
@@ -73,21 +73,27 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "green",
-   "count": 7,
-   "detail": "7件（しきい値100件以内）"
+   "count": 4,
+   "detail": "4件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
-   "count": 52378,
-   "detail": "未報告の完了が52378件たまっている（最古は約1179.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "count": 52390,
+   "detail": "未報告の完了が52390件たまっている（最古は約1203.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
   {
    "key": "ctx_1m",
    "skipped": "既存の714番と同じ内容のためスキップ"
+  },
+  {
+   "key": "factory_stalled",
+   "status": "done",
+   "message": "239968番として発車待ちに追加しました（P2）",
+   "n": 239968
   },
   {
    "key": "big_files",
@@ -98,11 +104,5 @@
    "skipped": "既にこの点検が積んだ1118番が未解決のため積み直さない"
   }
  ],
- "autoClosedRecovered": [
-  {
-   "n": 231023,
-   "key": "factory_stalled",
-   "label": "工場が止まったまま放置されていないか"
-  }
- ]
+ "autoClosedRecovered": []
 }
