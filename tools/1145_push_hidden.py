@@ -9,7 +9,7 @@
 データは1件も消していない。隠しているだけ。動画が戻れば次の生成で自動的に表から外れる。
 """
 from __future__ import annotations
-import importlib.util, io, json, os, sys, time
+import importlib.util, io, json, os, re, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -77,6 +77,11 @@ def run_job(payload=None):
         log.append("保護曲 %d件を隠す表から外しました: %s" % (len(dropped), ", ".join(dropped)))
 
     # いま main に入っているものと同じなら押さない
+    # ★「最終生成」の時刻だけが違う場合はpushしない（2026-10-14〜11-14・鬼監督GH390で指摘。
+    #   4日間で32コミット中20件が時刻だけの空振りだった実測）。scripts/kansei/kansei-count.mjs の
+    #   stable() と同じ考え方：時刻行を無視した内容が一致していれば「変化なし」とみなす。
+    def _stable(text):
+        return re.sub(r"^// 最終生成: .*$", "// 最終生成: <ignored>", text, flags=re.M)
     try:
         tree = m._req("GET", "%s/repos/%s/git/trees/%s?recursive=1"
                       % (api, repo, base_commit["tree"]["sha"]), token)
@@ -85,8 +90,8 @@ def run_job(payload=None):
             blob = m._req("GET", "%s/repos/%s/git/blobs/%s" % (api, repo, cur[0]["sha"]), token)
             import base64
             old = base64.b64decode(blob["content"]).decode("utf-8", "ignore")
-            if old.strip() == body.strip():
-                log.append("main と同じでした。押しません")
+            if _stable(old.strip()) == _stable(body.strip()):
+                log.append("main と同じでした（最終生成の時刻だけ無視して比較）。押しません")
                 return {"ok": True, "log": log, "alreadyIn": True, "totalYen": 0.0}
             log.append("いま main にある行数 %d → 押す行数 %d"
                        % (old.count("\n"), body.count("\n")))
