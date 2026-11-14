@@ -1,0 +1,16 @@
+{
+  "n": 52257,
+  "checked_at": "2026-11-14T00:00:00+09:00",
+  "issue": "GH390 (tamago2022/joy-relief-station, 2026-10-04 鬼監督報告)",
+  "subject": "scripts/patrol/nagekomi-hold-daily-codex.mjs の管理合言葉固定値事故",
+  "fix_commit": "fad5b58daa942bc2651ea737d2448888df9a16e2",
+  "fix_commit_is_ancestor_of_origin_main": true,
+  "checks": {
+    "no_fixed_password_literal": true,
+    "requires_env_GOKIGEN_ADMIN_PASSWORD": true,
+    "exits_1_if_env_unset": true,
+    "sends_via_post_body_not_get_query": true
+  },
+  "method": "git fetch origin main && git merge-base --is-ancestor <fix_commit> origin/main && git show origin/main:<file> | grep",
+  "note": "画面の見た目は変わらない裏側のセキュリティ修正のため、本番URLの代わりにこの公開JSONとIssueコメントを証拠として報告する"
+}
