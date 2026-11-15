@@ -347,6 +347,24 @@ _GHOST_34621_FINGERPRINT = (
     "で自分のリアのノートから拾ってそれも足してやってるっていうのは素晴らしいアイディアだと思うよ"
 )
 
+# 35308番実例（2026-11-16）：2026-08-13 15:50の依頼本文の末尾に付いていた
+# 「完了したらURL付きで報告してください。投げただけ・調査しただけの報告は禁止、
+# 本番反映+確認リンクまで揃って1セットです。」という報告作法の注意書きが、
+# tools/kioku.py の句点分割で本体の依頼（①TASK_BOARD直リンク追記／②PRマージ待ち
+# 原因調査）から切り離され、2つの別々の「発言」(79ffcac26b79 / f6c71f8ef7d8)として
+# hatsugen.jsonlへ登録された。どちらも「投げ(る)」「出し(て)」等が_TASKISHに
+# 部分一致し、34589/34628/34645/34621と同じ「活用語尾の部分文字列誤検知」で
+# actionable=Trueのまま判定日赤へ3ヶ月以上繰り上げ・再発車され続けていた
+# （35308号として再発車された時点で、本体の実行対象だった案件番号(#7/#8/#18)は
+# TASK_BOARD.mdの再編で既に失効していた）。「完了したら報告してください」
+# 「投げただけ・調査しただけの報告は禁止」は報告の作法そのものを述べているだけで、
+# 常に単独では実行対象を持たない（本体の依頼は別の発言断片に残っている）ため、
+# 文型として先に弾く。
+_GHOST_35308_REPORT_FORMAT_REMINDERS = (
+    "完了したらURL付きで報告してください。",
+    "投げただけ・調査しただけの報告は禁止、本番反映+確認リンクまで揃って1セットです。",
+)
+
 # 34829番実例（2026-10-09）：たまごさんの「不可逆な操作(公開・削除・APIキー)だけ
 # 止めて報告、それ以外は進めてOKです。」という発言は、CLAUDE.md 第一条・0条
 # （判断委任v1）そのものの口頭版＝権限委譲・運用方針の「宣言」であって、実装対象を
@@ -371,6 +389,7 @@ _NOT_TASK = re.compile(
     + re.escape(_GHOST_34645_FINGERPRINT) + r"|"
     + re.escape(_GHOST_34621_FINGERPRINT) + r"|"
     + "|".join(re.escape(s) for s in _GHOST_34628_MONOLOGUE) + r"|"
+    + "|".join(re.escape(s) for s in _GHOST_35308_REPORT_FORMAT_REMINDERS) + r"|"
     + _KENGEN_IJOU_SENGEN + r")")
 
 # 34672番実例（2026-10-09）：「1-7. フォルダをひとつ作っておく」という、イケハヤ氏の
@@ -1055,6 +1074,16 @@ def self_test():
           actionable({"source": "queue", "title": "判定日赤｜これは今後の判断軸に入れておきます。"}) is False)
     check("35054番再発防止：兄弟案件（水が吹き出している。）もactionable=False",
           actionable({"source": "kioku", "title": "水が吹き出している。"}) is False)
+    check("35308番再発防止：「投げただけ・調査しただけの報告は禁止」はactionable=False",
+          actionable({"source": "kioku",
+                      "title": "投げただけ・調査しただけの報告は禁止、"
+                               "本番反映+確認リンクまで揃って1セットです。"}) is False)
+    check("35308番再発防止：判定日赤プレフィックス付きでもactionable=False",
+          actionable({"source": "queue",
+                      "title": "判定日赤｜投げただけ・調査しただけの報告は禁止、"
+                               "本番反映+確認リンクまで揃って1セットです。"}) is False)
+    check("35308番再発防止：兄弟断片「完了したらURL付きで報告してください。」もactionable=False",
+          actionable({"source": "kioku", "title": "完了したらURL付きで報告してください。"}) is False)
     check("箇条書きを拾う", bool(_ITEM.match("1. Devinを1本測る（採用が付かなければ止める）")))
     check("見出し判定", bool(_NEXT_HEAD.match("## 次の人がやること")) and
           not _NEXT_HEAD.match("## 作ったもの"))
