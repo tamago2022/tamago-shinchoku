@@ -1,0 +1,35 @@
+# 宇宙服シリーズ：Three.js のシーンを headless Chrome（SwiftShader・音なし）で連番に撮る。成果物は1日で消える。
+name: uchufuku-render
+on:
+  workflow_dispatch:
+    inputs:
+      total: { description: "frames", default: "2745" }
+concurrency: { group: uchufuku-render, cancel-in-progress: true }
+jobs:
+  render:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: { chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/uchufuku
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: render
+        run: |
+          cd tools/uchufuku && npm install --no-audit --no-fund --silent
+          N=20; C=${{ matrix.chunk }}; T=${{ inputs.total }}; K=$(( (T+N-1)/N )); A=$((C*K)); B=$((A+K)); [ $B -gt $T ] && B=$T
+          echo "frames $A..$B"
+          export CHROME_PATH=$(which google-chrome || which chromium)
+          for k in 1 2; do
+            node capture.mjs data=$PWD/data scene=uchufuku w=1280 h=720 fps=30 gpu=0 out=$GITHUB_WORKSPACE/out from=$A to=$B && break
+          done
+          ls $GITHUB_WORKSPACE/out | wc -l
+      - uses: actions/upload-artifact@v4
+        with: { name: "frames-${{ matrix.chunk }}", path: out/, retention-days: 1, if-no-files-found: ignore }
