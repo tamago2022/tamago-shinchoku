@@ -169,6 +169,19 @@ def main():
                 True,
             ),
             ("ログインが必要です。確認してください。", False, True),
+            # 35302号：「店主がPRをマージする」「店主がリンクを開く」という
+            # 前提の提案そのものを、4カテゴリ外として機械的に弾けるか。
+            (
+                "このPRをマージしてください。"
+                "https://github.com/example/repo/pull/1 を開いてご確認ください。",
+                False,
+                True,
+            ),
+            (
+                "このリンクを開いて中身を確認してください。https://example.com/preview",
+                False,
+                True,
+            ),
         ]
         ok_all = True
         for text, want_ok, want_furu in cases:
