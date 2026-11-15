@@ -52,13 +52,13 @@
 <div class="date">2026-11-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-判定日赤35301号の対象（全カードコンポーネントの操作ボタンを1つの共通コンポーネントへ統一）は、既に別セッションでCardActionCluster.tsx(src/components/CardActionCluster.tsx)として実装済み・main合流済みだった。今回は新規実装ではなく、実在と本番反映を実測で確認した。
+判定日赤35301号の対象（全カードコンポーネントの操作ボタンを1つの共通コンポーネントへ統一）は、既に別セッションで共通部品(CardActionCluster)として実装済みで、本体の最新コードにも入っていた。今回は新規実装ではなく、実在と本番反映を実測で確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>17</b><span>CardActionCluster経由で描画している.tsxファイル数（origin/main実測）</span></div>
-  <div class="num"><b>0</b><span>BadgeQuickPicker/ShelfCardPriorityMenuを直接呼ぶ漏れ（import以外で0件）</span></div>
+  <div class="num"><b>17</b><span>共通部品経由で描画しているファイル数（本体コード実測）</span></div>
+  <div class="num"><b>0</b><span>個別のボタンを直接呼ぶ漏れ（import以外で0件）</span></div>
   <div class="num"><b>200</b><span>本番トップページのHTTPステータス</span></div>
 </div>
 
@@ -73,9 +73,9 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>本番の曲ページSSR HTMLに「Spotifyでこの曲を探す」が実在する</td><td class="yes">yes</td></tr>
-<tr><td>CardActionClusterがVideoCard/ShelfCardView/NextUpCard等17箇所から使われている</td><td class="yes">yes</td></tr>
-<tr><td>直接BadgeQuickPicker/ShelfCardPriorityMenuを呼ぶ未統一箇所が残っている</td><td class="yes">no</td></tr>
+<tr><td>本番の曲ページの中身に「Spotifyでこの曲を探す」が実在する</td><td class="yes">yes</td></tr>
+<tr><td>共通部品が動画カード・棚カード・次のおすすめカード等17箇所から使われている</td><td class="yes">yes</td></tr>
+<tr><td>個別のボタンを直接呼ぶ未統一箇所が残っている</td><td class="yes">no</td></tr>
 </table>
 
 <footer>
