@@ -21,7 +21,7 @@
   数字を生成時にそのままHTMLへ焼き込む形へ直した。
 -->
 <style>
-:root{ --ink:#1c1a17; --sub:#6d675f; --line:#ddd7cd; --paper:#f7f4ee; --card:#fffdf9; --green:#3a6b3a; }
+:root{ --ink:var(--t-fg2); --sub:var(--t-mute); --line:var(--t-line); --paper:var(--t-panel); --card:var(--t-panel); --green:var(--t-ok); }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0; padding:14px 14px 56px; background:var(--paper); color:var(--ink);
@@ -38,10 +38,10 @@ h1{font-size:20px; margin:0 0 4px; font-weight:600}
 .wv{font-size:24px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.2}
 .wv.small{font-size:18px}
 .note{font-size:12.5px; color:var(--sub); margin-top:8px; line-height:1.6}
-.bar{height:10px; border-radius:6px; background:#eee7dc; overflow:hidden; margin-top:6px}
-.bar > i{display:block; height:100%; background:var(--green)}
+.bar{height:10px; border-radius:6px; background:var(--t-panel); overflow:hidden; margin-top:6px}
+.bar > i{display:block; height:100%; background:var(--green);color:var(--t-on-accent)}
 ul{list-style:none; margin:0; padding:0}
-li{padding:7px 0; border-top:1px solid #eee7dc; font-size:14.5px; display:flex; justify-content:space-between; gap:8px}
+li{padding:7px 0; border-top:1px solid var(--t-line); font-size:14.5px; display:flex; justify-content:space-between; gap:8px}
 li:first-child{border-top:0}
 </style>
 </head>
@@ -98,5 +98,7 @@ li:first-child{border-top:0}
     <div class="note">このページは <a href="../status/public/shiire_shinchoku.json">status/public/shiire_shinchoku.json</a> を毎日読み直して書き直している。生の数字をそのまま見たい時はそちらを開く。</div>
   </div>
 </div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../theme/tamago-dark.css">
 </body>
 </html>
