@@ -52,32 +52,38 @@
 <div class="date">2026-11-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主が2026-08-13に『1セッション1シングルタスクにしよう。全く違うものが放り込まれると俺が探せなくなる』と指示した内容は、同日のうちに joy-relief-station の憲法『第五条：1セッション1ミッション・タイトルと中身を一致させる』として CLAUDE.md と .claude/rules/00-shared-brain.md に全文掲載済みだった。今回の調査で AGENTS.md だけが1行の要約のみで『全く無関係な新規案件を既存セッションへ流し込む禁止』という明文が欠けていたため、3ファイルの趣旨を揃える追記を行い main へ反映した。
+<p>joy-relief-station の憲法3ファイルのうち <code>AGENTS.md</code> だけ『全く無関係な新規案件を既存の稼働中セッションに流し込むことを禁止する』の明文が欠けていたため、1行を拡張して <code>CLAUDE.md</code>／<code>.claude/rules/00-shared-brain.md</code> と同じ趣旨に揃え、origin/main へ反映した（コミット 0052423・origin/main の祖先として実在確認済み）。</p><p>本体リポは非公開のため github.com のリンクは店主が押すと404になる。代わりに差分の全文をこのページへ転記する（実測＝origin/main を直接 git show で確認した生データ）。</p><pre>--- a/AGENTS.md
++++ b/AGENTS.md
+@@
+- 1セッション1ミッション。無関係な仕事を混ぜない。
++- 1セッション1ミッション。**全く無関係な新規案件を、既存の稼働中セッションに流し込むことを禁止する。**直前までの作業と無関係な依頼が来たら必ず新規セッションを立てる。セッションタイトルは常に実際の作業内容と一致させる（正本`CLAUDE.md`第五条）。</pre>
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+  <div class="num"><b>3件中1件</b><span>対象ファイル(AGENTS.md/CLAUDE.md/00-shared-brain.md)中、明文が欠けていたファイル数</span></div>
+  <div class="num"><b>1行</b><span>AGENTS.mdで拡張した行数</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>どう直したか(AGENTS.mdの追記)</b><a href="https://github.com/tamago2022/joy-relief-station/commit/00524232bce31d7deda193252cc2f14dd9ab1ce5" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/00524232bce31d7deda193252cc2f14dd9ab1ce5</a></li>
+  <li><b>この確認ページ自身（差分全文を掲載・押せば今これを開いている場所）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35320-session-mission-isolation.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35320-session-mission-isolation.html</a></li>
+  <li><b>進捗表トップ（この工場の公開ページ一覧）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>既存の実装(CLAUDE.md第五条・2026-08-13)</td><td class="yes">OK</td></tr>
-<tr><td>既存の実装(00-shared-brain.md第五条)</td><td class="yes">OK</td></tr>
-<tr><td>AGENTS.mdの欠落を追記してmainへ反映</td><td class="yes">OK</td></tr>
-<tr><td>GitHub main上で実在確認済み</td><td class="yes">OK</td></tr>
+<tr><td>AGENTS.md（修正前・origin/main旧HEAD時点）</td><td class="no">「無関係な仕事を混ぜない」のみで禁止の明文なし</td></tr>
+<tr><td>AGENTS.md（修正後・origin/main実測）</td><td class="yes">「全く無関係な新規案件を、既存の稼働中セッションに流し込むことを禁止する」と明記</td></tr>
+<tr><td>CLAUDE.md 第五条（origin/main実測）</td><td class="yes">同趣旨が既に明記済み（変更不要）</td></tr>
+<tr><td>.claude/rules/00-shared-brain.md 第五条（origin/main実測）</td><td class="yes">同趣旨が既に明記済み（変更不要）</td></tr>
 </table>
 
 <footer>
-このページは #35320 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+本体リポ joy-relief-station は非公開のため、個別コミットへのgithub.comリンクは店主が押すと404になる。そのため証拠（差分全文）はこのページ本文に直接転記した。origin/main へ git fetch した上で git show origin/main:AGENTS.md で実測済み（2026-11-16）。このページは tools/make_check_page.py で自動生成。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
