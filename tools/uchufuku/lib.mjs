@@ -52,7 +52,7 @@ export function chromeArgs(gpu) {
   return [...common, "--enable-gpu", `--use-angle=${angle}`];
 }
 
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json" };
+const TYPES = { ".png": "image/png", ".glb": "model/gltf-binary", ".jpg": "image/jpeg", ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json" };
 
 /** Serve a scene folder at /, the pinned three package at /vendor/three/, and the render's data dir at /data/. */
 export function serve(webDir, dataDir) {
