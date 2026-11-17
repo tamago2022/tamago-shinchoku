@@ -955,6 +955,13 @@ def check_repo(repo, token, st, budget):
             if _skip_body(it.get("body")):
                 seen.add(key)
                 continue
+            # ★233213番（GH1171）：labelが"muse"のIssueはMuse（別AI・Blender/Drive/動画生成担当）
+            #   宛の依頼で、工場のClaude Codeには実行手段（Drive直アクセス・Blender・画像生成AI）が
+            #   無い。積んでも毎回「できません」で終わるだけなので、工場発車待みへは積まない。
+            _labels = [(l.get("name") or "").lower() for l in (it.get("labels") or []) if isinstance(l, dict)]
+            if "muse" in _labels:
+                seen.add(key)
+                continue
             # 基準線より前に置かれた号は拾わない（昔から開いている棚卸し待ちを掘り返さない）
             if _iso_to_epoch(it.get("created_at") or "") < cutoff:
                 seen.add(key)
