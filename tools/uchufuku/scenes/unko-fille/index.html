@@ -8,10 +8,11 @@
       canvas { display: block; }
       .txt { position: absolute; color: #f1ebe0; font-family: Georgia, "Times New Roman", "DejaVu Serif", serif; pointer-events: none;
         text-shadow: 0 0 1.2em rgba(4,8,24,0.85), 0 0 0.25em rgba(4,8,24,0.9); }
-      #title { left: 5.2vh; top: 5.0vh; opacity: 0; }
-      #title .k { font-size: 1.7vh; letter-spacing: 0.42em; text-transform: uppercase; color: #f4b8c8; }
-      #title .a { font-size: 4.6vh; margin-top: 1.1vh; letter-spacing: 0.01em; font-style: italic; }
-      #title .b { font-size: 2.1vh; margin-top: 0.9vh; letter-spacing: 0.08em; opacity: 0.9; }
+      #title { left: 6vh; top: 6vh; opacity: 0; }
+      #shade { position: absolute; left: 0; top: 0; width: 70vw; height: 42vh; opacity: 0; pointer-events: none; background: radial-gradient(ellipse 60% 70% at 18% 25%, rgba(3,6,20,0.55), rgba(3,6,20,0) 100%); }
+      #title .k { font-size: 2.3vh; letter-spacing: 0.42em; text-transform: uppercase; color: #f4b8c8; }
+      #title .a { font-size: 7.2vh; margin-top: 1.2vh; letter-spacing: 0.01em; font-style: italic; }
+      #title .b { font-size: 3.0vh; margin-top: 1.0vh; letter-spacing: 0.08em; opacity: 0.9; }
       #credit { left: 0; right: 0; bottom: 4.5vh; text-align: center; font-size: 2.3vh; letter-spacing: 0.1em; opacity: 0; line-height: 1.7; }
       #card { position: absolute; inset: 0; opacity: 0; background: linear-gradient(180deg, #11152d 0%, #1a1436 100%);
         display: flex; align-items: center; justify-content: center; }
@@ -20,6 +21,7 @@
     </style>
   </head>
   <body>
+    <div id="shade"></div>
     <div id="title" class="txt"><div class="k">The Space Unko Series</div><div class="a">La fille aux cheveux de lin</div><div class="b">Claude Debussy &nbsp;·&nbsp; Préludes, Book I, No. 8</div></div>
     <div id="card"><img id="logo" src="data/logo.png" /></div>
     <div id="credit" class="txt">Score: Satoshi Nakajima (CC BY 4.0) &nbsp;·&nbsp; Piano: VCSL (CC0) &nbsp;·&nbsp; Made with JingleScript</div>
@@ -48,7 +50,7 @@
 
       // ---------- data ----------
       const [T, ND] = await Promise.all([fetch("data/timing.json").then((r) => r.json()), fetch("data/notes.json").then((r) => r.json())]);
-      const DUR = (window.DURATION = T.duration);
+      const DUR = (window.DURATION = 138); // audio is trimmed to 138 s (last note 129 s + reverb)
       // onsets: notes within 25 ms are one event
       const ON = [];
       for (const n of [...ND.notes].sort((a, b) => a.t - b.t)) {
@@ -76,22 +78,20 @@
       const pathXZ = (s, out) => out.set(1.7 * Math.sin(s * 0.16) + 0.6 * Math.sin(s * 0.41 + 1.3), 0, s);
       // altitude: hover, rise at the climax, low during the quiet section
       const baseY = (t) => {
-        let y = 0.36;
-        y += 2.9 * smooth(60.5, 67.5, t) * (1 - smooth(74.5, 84, t));
-        y -= 0.16 * smooth(88, 93, t) * (1 - smooth(118, 124, t));
-        y += 0.18 * Math.sin(t * 0.55) * (0.4 + 0.6 * smooth(88, 95, t));
-        y += 0.5 * smooth(LAST + 0.5, LAST + 7, t);
+        let y = -0.10; // floats in the water (a waterline, like a buoy)
+        y += 2.7 * smooth(61.0, 67.0, t) * (1 - smooth(75.0, 83.5, t));
+        y += 0.035 * Math.sin(t * 1.3) + 0.025 * Math.sin(t * 0.47 + 1.0);
         return y;
       };
       // touch (dip) impulse response per onset: anticipate, touch at t_note, spring back
-      const dipK = (dt) => (dt < 0 ? Math.exp(-((dt / 0.11) ** 2)) : Math.exp(-dt * 5.5) * Math.cos(dt * 7.0));
+      const dipK = (dt) => (dt < 0 ? 0 : Math.exp(-dt * 4.0) * Math.sin(dt * 9.0)); // reacts AT the note, never before
       const dipAt = (t) => { let d = 0; for (const o of ON) { const dt = t - o.t; if (dt < -0.35) break; if (dt > 1.6) continue; d += o.w * dipK(dt); } return d; };
       const _p = new THREE.Vector3();
       const charAt = (t, out) => {
         pathXZ(sAt(t), out);
         const by = baseY(t), dip = dipAt(t);
-        const dipAmp = 0.30 * (1 - smooth(1.0, 2.0, by));
-        out.y = Math.max(0.04, by - Math.min(by - 0.04, dip * dipAmp));
+        const dipAmp = 0.10 + 0.10 * smooth(0.5, 2.0, by);
+        out.y = by - Math.max(-0.12, Math.min(0.16, dip * dipAmp));
         return out;
       };
 
@@ -153,7 +153,7 @@
       })();
       const water = new Water(new THREE.PlaneGeometry(4000, 4000), {
         textureWidth: Math.round(W * C.mirror), textureHeight: Math.round(H * C.mirror), waterNormals: normTex,
-        sunDirection: MOON_DIR.clone(), sunColor: 0xffd9a8, waterColor: 0x061226, distortionScale: C.wdist ?? 0.9, fog: true, alpha: 1,
+        sunDirection: MOON_DIR.clone(), sunColor: 0xffd9a8, waterColor: 0x061226, distortionScale: C.wdist ?? 0.55, fog: true, alpha: 1,
       });
       water.material.fragmentShader = water.material.fragmentShader
         .replace("( sunColor * diffuseLight * 0.3 + scatter )", "( sunColor * diffuseLight * 0.02 + scatter * 0.6 )")
@@ -161,11 +161,11 @@
       water.rotation.x = -Math.PI / 2; water.material.uniforms.size.value = C.wsize ?? 5.0; scene.add(water);
 
       // ---------- lights (moon key, pink rim, ambient, touch glow) ----------
-      scene.add(new THREE.HemisphereLight(0x6f86c8, 0x1a2140, C.amb));
-      const key = new THREE.DirectionalLight(0xcfdcff, C.key); scene.add(key, key.target);   // cool moon-ish key from front-left
-      const rim = new THREE.DirectionalLight(0xff7fb0, C.rim); scene.add(rim, rim.target);   // pink rim from behind
-      const rim2 = new THREE.DirectionalLight(0xbfd2ff, 1.0); scene.add(rim2, rim2.target);  // cool kicker, other side
-      const touch = new THREE.PointLight(0xff8fbf, 0, 3.5, 2); scene.add(touch);           // light bouncing up from the touched water
+      scene.add(new THREE.HemisphereLight(0x6f86c8, 0x101830, C.amb * 0.8));
+      const key = new THREE.DirectionalLight(0xbfd0ff, C.key * 0.55); scene.add(key, key.target);   // soft cool fill from the front (sky)
+      const rim = new THREE.DirectionalLight(0xfff0d8, C.rim * 1.35); scene.add(rim, rim.target);    // THE MOON: back/rim light from the moon's side
+      const rim2 = new THREE.DirectionalLight(0xff86b8, 1.3); scene.add(rim2, rim2.target);          // pink kicker, opposite side
+      const touch = new THREE.PointLight(0xff9ac6, 0, 4.0, 2); scene.add(touch);                    // bounce from the touched water (flashes on notes)
 
       // env map for the gloss (sky + moon only)
       const pm = new THREE.PMREMGenerator(renderer);
@@ -203,18 +203,20 @@
         map: baseMap, roughness: 0.42, roughnessMap: maskTex, metalness: 0, clearcoat: 0.85, clearcoatMap: maskTex, clearcoatRoughness: 0.12,
         envMap: envRT.texture, envMapIntensity: C.env,
       });
-      const U = { uMask: { value: maskTex }, uPink: { value: new THREE.Color(1.0, 0.42, 0.62) }, uTrans: { value: C.trans ?? 0.22 }, uRimDir: { value: new THREE.Vector3() } };
+      const U = { uMask: { value: maskTex }, uPink: { value: new THREE.Color(1.0, 0.42, 0.62) }, uTrans: { value: C.trans ?? 0.12 }, uRimDir: { value: new THREE.Vector3() }, uPulse: { value: 0 } };
       mat.onBeforeCompile = (sh) => {
         Object.assign(sh.uniforms, U);
-        sh.fragmentShader = "uniform sampler2D uMask; uniform vec3 uPink; uniform float uTrans; uniform vec3 uRimDir;\n" + sh.fragmentShader.replace(
+        sh.fragmentShader = "uniform sampler2D uMask; uniform vec3 uPink; uniform float uTrans; uniform vec3 uRimDir; uniform float uPulse;\n" + sh.fragmentShader.replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
+           { vec3 wN = inverseTransformDirection(normal, viewMatrix); float under = smoothstep(-0.05, -0.55, wN.y);
+             diffuseColor.rgb *= 1.0 - 0.85 * under; } // underside (seen in the mirror) stays in the black base, no smeared projection
            { float pm = texture2D(uMask, vMapUv).b;
              vec3 V = normalize(vViewPosition);
              float fr = pow(1.0 - clamp(abs(dot(normal, V)), 0.0, 1.0), 2.2);
              float back = pow(clamp(dot(-normal, uRimDir) * 0.5 + 0.5, 0.0, 1.0), 3.0);
              vec3 base = texture2D(map, vMapUv).rgb;
-             totalEmissiveRadiance += pm * uTrans * (fr * 0.55 + back * 0.25 + 0.06) * mix(uPink, base * 1.4, 0.45); }`);
+             totalEmissiveRadiance += pm * (uTrans * (fr * 0.55 + back * 0.30 + 0.03) + uPulse * (0.10 + 0.35 * fr)) * mix(uPink, base * 1.4, 0.45); }`);
       };
       unkoMesh.material = mat;
       const unko = new THREE.Group(); unko.add(gltf.scene); scene.add(unko);
@@ -225,7 +227,7 @@
         g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
 
       // ---------- touch rings (ripples of pink light) ----------
-      const RINGS = 48;
+      const RINGS = 96;
       const ringMat = new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
         uniforms: {},
@@ -236,7 +238,7 @@
             float ring = exp(-pow((r - 0.86)/0.035, 2.0)) + 0.45*exp(-pow((r - 0.62)/0.05, 2.0))*(1.0-age);
             float inner = 0.10 * (1.0 - smoothstep(0.0, 0.9, r)) * (1.0-age);
             float a = (ring + inner) * pow(1.0-age, 1.6) * vA.y;
-            vec3 col = mix(vec3(1.0,0.45,0.70), vec3(1.0,0.78,0.55), vA.z);
+            vec3 col = vA.z < 0.0 ? vec3(0.70,0.80,1.0) : mix(vec3(1.0,0.45,0.70), vec3(1.0,0.78,0.55), vA.z);
             gl_FragColor = vec4(col * a, 1.0); }`,
       });
       const ringGeo = new THREE.PlaneGeometry(2, 2); ringGeo.rotateX(-Math.PI / 2);
@@ -244,7 +246,11 @@
       const rings = new THREE.InstancedMesh(ringGeo, ringMat, RINGS); rings.frustumCulled = false; rings.position.y = 0.012; scene.add(rings);
 
       // ---------- lights left on the sea (the "healed" traces) ----------
-      const TR = ON.map((o) => { const v = new THREE.Vector3(); charAt(o.t, v); return { t: o.t, x: v.x, z: v.z, w: o.w, hue: (o.top % 12) / 11, top: o.top }; });
+      const TR = ON.map((o) => { const v = new THREE.Vector3(); charAt(o.t, v); return { t: o.t, x: v.x, z: v.z, y: v.y, w: o.w, hue: (o.top % 12) / 11, top: o.top }; });
+      // ring events = every note (pink, strong) + a quiet wake while the body moves through the water (pale, weak)
+      const EV = TR.map((d) => ({ t: d.t, x: d.x, z: d.z, y: d.y, w: d.w, hue: smooth(55, 88, d.top), note: 1 }));
+      for (let t = 0.2; t < DUR; t += 0.55) { const v = new THREE.Vector3(); charAt(t, v); if (v.y < 0.15) EV.push({ t, x: v.x, z: v.z, y: v.y, w: 0.22, hue: -1, note: 0 }); }
+      EV.sort((a, b) => a.t - b.t);
       const trGeo = new THREE.BufferGeometry();
       const trPos = new Float32Array(TR.length * 3), trB = new Float32Array(TR.length * 4);
       TR.forEach((d, i) => { trPos[i * 3] = d.x + Math.sin(i * 12.9) * 0.55; trPos[i * 3 + 1] = 0.05; trPos[i * 3 + 2] = d.z + Math.cos(i * 7.3) * 0.45;
@@ -256,9 +262,9 @@
         vertexShader: `attribute vec4 aB; uniform float uT; uniform float uH; uniform float uBoost; varying float vA; varying float vHue;
           void main(){ vec4 mv = modelViewMatrix*vec4(position,1.0); gl_Position = projectionMatrix*mv;
             float age = uT - aB.x; float on = step(0.0, age);
-            float flash = exp(-max(age,0.0)*1.6);
+            float flash = exp(-max(age,0.0)*6.0) + 0.3*exp(-max(age,0.0)*1.2);
             float tw = 0.78 + 0.22*sin(uT*1.3 + aB.w*2.1);
-            vA = on * (0.42*tw*uBoost + 1.6*flash) * (0.55 + 0.45*aB.y);
+            vA = on * (0.42*tw*uBoost + 2.0*flash) * (0.55 + 0.45*aB.y);
             vHue = aB.z;
             gl_PointSize = on * uH * (0.05 + 0.06*flash) * (0.6+0.4*aB.y) * (1.0 + 0.6*(uBoost-1.0)) / max(-mv.z, 0.5) * 10.0; }`,
         fragmentShader: `varying float vA; varying float vHue;
@@ -272,43 +278,59 @@
       const contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
         new THREE.MeshBasicMaterial({ map: glowTex, color: 0xff7fb5, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
       contact.position.y = 0.015; scene.add(contact);
+      // foam / waterline ring around the body where it meets the water
+      const foam = new THREE.Mesh(new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uT: { value: 0 }, uA: { value: 0 }, uF: { value: 0 } },
+        vertexShader: `varying vec2 vUv; void main(){ vUv = uv*2.0-1.0; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+        fragmentShader: `varying vec2 vUv; uniform float uT; uniform float uA; uniform float uF;
+          float h(float x){ return fract(sin(x*91.7)*43758.5); }
+          void main(){ float r = length(vUv)*1.5; float an = atan(vUv.y, vUv.x);
+            float n = 0.55 + 0.25*sin(an*7.0 + uT*1.7) + 0.2*sin(an*13.0 - uT*2.3 + 1.0);
+            float band = smoothstep(0.90, 1.0, r) * (1.0 - smoothstep(1.0, 1.32 + 0.12*n, r));
+            float lace = smoothstep(0.6, 1.0, sin(an*23.0 + r*30.0 - uT*3.0)*0.5+0.5) * smoothstep(1.0,1.1,r) * (1.0-smoothstep(1.1,1.45,r));
+            vec3 col = mix(vec3(0.62,0.72,0.95), vec3(1.0,0.60,0.80), uF);
+            gl_FragColor = vec4(col * (band*0.55*n + lace*0.18) * uA * (1.0 + 1.2*uF), 1.0); }`,
+      }));
+      foam.position.y = 0.02; scene.add(foam);
       // moonlight halo at the climax (billboard behind the body)
       const halo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
-        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uA: { value: 0 }, uP: { value: 0 } },
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uA: { value: 0 }, uP: { value: 0 }, uAge: { value: new Array(6).fill(9) }, uStr: { value: new Array(6).fill(0) } },
         vertexShader: `varying vec2 vUv; void main(){ vUv = uv*2.0-1.0; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-        fragmentShader: `varying vec2 vUv; uniform float uA; uniform float uP;
-          void main(){ float r = length(vUv);
+        fragmentShader: `varying vec2 vUv; uniform float uA; uniform float uP; uniform float uAge[6]; uniform float uStr[6];
+          void main(){ float r = length(vUv)*2.0;
+            float em = 0.0; for (int i=0;i<6;i++){ float rr = 0.72 + 0.85*sqrt(uAge[i]); em += exp(-pow((r-rr)/(0.018+0.03*uAge[i]),2.0)) * exp(-uAge[i]*1.6) * uStr[i]; }
             float ring = exp(-pow((r-0.70)/0.012,2.0))*0.55 + exp(-pow((r-0.70)/0.10,2.0))*0.28 + exp(-pow((r-0.84 - 0.08*uP)/0.015,2.0))*0.5*uP;
             float fill = (1.0-smoothstep(0.0,0.72,r))*0.10;
             vec3 col = mix(vec3(1.0,0.90,0.74), vec3(1.0,0.62,0.80), smoothstep(0.6,0.9,r));
-            gl_FragColor = vec4(col*(ring+fill)*uA, 1.0); }`,
+            gl_FragColor = vec4(col*(ring+fill+em*0.9)*uA, 1.0); }`,
       }));
       scene.add(halo);
 
-      // ---------- camera choreography (keys interpolated with Catmull-Rom = no stops) ----------
-      // [t, dist, yawDeg, camH(rel. water), lookY(rel. body), fov]
-      const KEYS = [ // [t, dist, yawDeg, camH, lookY(rel. body), fov, lookX(lateral, +: body sits left)]
-        [0, 15.0, -9, 0.95, 1.30, 34, 2.2],
-        [8, 13.0, -7, 0.85, 1.20, 34, 2.0],
-        [15, 11.0, -3, 0.75, 1.10, 34, 1.6],
-        [27, 9.0, 6, 0.55, 1.00, 33, -1.6],
-        [40, 8.0, 11, 0.90, 0.95, 33, -1.8],
-        [52, 8.6, 4, 0.75, 1.00, 34, -1.0],
-        [60, 9.6, -2, 0.55, 1.00, 35, 0.0],
-        [67, 11.0, 0, 0.70, 0.75, 36, 0.0],
-        [73, 10.5, -4, 1.20, 0.70, 36, 0.4],
-        [80, 9.4, -10, 1.50, 0.80, 35, 1.4],
-        [88, 8.6, -8, 1.00, 0.95, 34, 1.8],
-        [96, 8.4, -4, 0.75, 1.00, 33, 1.6],
-        [106, 8.0, 3, 0.70, 1.00, 33, -1.4],
-        [116, 7.6, 6, 0.90, 0.95, 33, -1.6],
-        [122, 9.0, 4, 2.40, 0.60, 35, 0.0],
+      // ---------- camera: shots cut on phrase boundaries (cut lands on a note), smooth Catmull-Rom moves inside each shot ----------
+      const cutAt = (tt) => { let best = tt, bw = 0; for (const o of ON) if (Math.abs(o.t - tt) < 1.6 && o.w > bw) { bw = o.w; best = o.t; } return best; };
+      const c15 = cutAt(15), c27 = cutAt(27.5), c40 = cutAt(40), c52 = cutAt(52), c60 = cutAt(60), c88 = cutAt(88), c97 = cutAt(97), c108 = cutAt(108);
+      // key = [t, dist, yawDeg, camH, lookY(rel. body), fov, lookX(lateral, +: body sits left)]
+      const SHOTS = [
+        [[0, 15.0, -9, 0.90, 1.30, 34, 2.2], [c15, 11.5, -5, 0.80, 1.15, 34, 1.6]],                      // wide, slow push (melody alone)
+        [[c15, 6.6, 13, 0.30, 0.70, 32, -1.0], [c27, 7.6, 6, 0.38, 0.75, 32, -1.4]],                     // low on the water, reflections
+        [[c27, 9.0, -12, 2.7, 0.25, 35, 0.8], [c40, 8.2, -6, 2.1, 0.35, 35, 0.5]],                      // high three-quarter: the rings from above
+        [[c40, 8.6, 7, 1.00, 0.90, 33, -1.6], [c52, 6.2, -6, 0.85, 0.85, 33, -1.2]],                     // push-in with a sweep
+        [[c52, 13.0, -4, 0.55, 1.20, 35, 2.0], [c60, 11.0, -2, 0.50, 1.10, 35, 1.4]],                     // wide, moon (breath before the climax)
+        [[c60, 9.5, -8, 0.60, 1.00, 35, 0.8], [65, 8.4, -3, 0.22, 1.00, 38, 0], [70, 7.0, 9, 1.30, 0.62, 38, 0],
+         [74.5, 6.8, 13, 2.60, 0.35, 37, 0], [80, 8.4, 5, 2.40, 0.60, 35, 0.6], [c88, 8.5, -8, 1.00, 0.95, 34, 1.6]], // climax: low -> arc up and over
+        [[c88, 7.0, -7, 0.30, 0.65, 32, 1.2], [c97, 6.4, -2, 0.30, 0.65, 32, 1.0]],                      // quiet: close, by the water
+        [[c97, 15.0, 7, 2.20, 0.60, 34, -2.2], [c108, 13.0, 4, 2.00, 0.60, 34, -1.8]],                   // lonely wide
+        [[c108, 8.5, -5, 0.70, 0.95, 33, 1.4], [118, 8.0, 3, 0.80, 0.95, 33, 0.8], [124, 9.0, 4, 1.40, 0.80, 34, 0]], // home stretch
       ];
       const cr = (p0, p1, p2, p3, u) => 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u);
       const camKey = (t) => {
-        let i = 0; while (i < KEYS.length - 2 && KEYS[i + 1][0] <= t) i++;
-        const k1 = KEYS[i], k2 = KEYS[Math.min(KEYS.length - 1, i + 1)], k0 = KEYS[Math.max(0, i - 1)], k3 = KEYS[Math.min(KEYS.length - 1, i + 2)];
-        const u = Math.min(1, Math.max(0, (t - k1[0]) / Math.max(1e-3, k2[0] - k1[0])));
+        let si = 0; while (si < SHOTS.length - 1 && SHOTS[si + 1][0][0] <= t) si++;
+        const K = SHOTS[si];
+        if (K.length === 1) return K[0].slice(1);
+        let i = 0; while (i < K.length - 2 && K[i + 1][0] <= t) i++;
+        const k1 = K[i], k2 = K[i + 1], k0 = i > 0 ? K[i - 1] : k1.map((v, j) => (j ? 2 * k1[j] - k2[j] : v)), k3 = i + 2 < K.length ? K[i + 2] : k2.map((v, j) => (j ? 2 * k2[j] - k1[j] : v));
+        let u = Math.min(1, Math.max(0, (t - k1[0]) / Math.max(1e-3, k2[0] - k1[0])));
+        if (K.length === 2) u = u * u * (3 - 2 * u) * 0.35 + u * 0.65; // ease, but never stop dead
         return [1, 2, 3, 4, 5, 6].map((j) => cr(k0[j], k1[j], k2[j], k3[j], u));
       };
       const ENDC = (() => { // final crane: look down the trail toward the moon
@@ -318,16 +340,16 @@
       const placeCamera = (t, body) => {
         const [d, yawD, h, ly, fov, lx] = camKey(t);
         const yaw = THREE.MathUtils.degToRad(yawD);
-        tmpA.set(body.x + Math.sin(yaw) * d, h + (body.y - 0.36) * 0.55, body.z + Math.cos(yaw) * d);
+        tmpA.set(body.x + Math.sin(yaw) * d, h + Math.max(0, body.y) * 0.55, body.z + Math.cos(yaw) * d);
         tmpB.set(body.x + Math.cos(yaw) * lx, body.y + ly, body.z - Math.sin(yaw) * lx);
         // tiny hand-held breathing (very small, slow)
         tmpA.x += 0.05 * Math.sin(t * 0.37) + 0.03 * Math.sin(t * 0.91 + 1.0); tmpA.y += 0.03 * Math.sin(t * 0.53 + 2.0);
         // crane up at the end
-        const c = smooth(LAST - 4.5, LAST + 9.5, t);
+        const c = smooth(LAST - 3.0, LAST + 5.5, t);
         if (c > 0) {
           const ce = c * c * (3 - 2 * c);
-          const top = new THREE.Vector3(body.x + 2.5, 15, body.z + 12);
-          const lk = new THREE.Vector3(lerp(body.x, ENDC.x, 0.4), 0, body.z - 11);
+          const top = new THREE.Vector3(body.x + 1.6, 6.2, body.z + 11.5);
+          const lk = new THREE.Vector3(lerp(body.x, ENDC.x, 0.25), 0, body.z - 9.0);
           tmpA.lerp(top, ce); tmpB.lerp(lk, ce);
           camera.fov = lerp(fov, 42, ce);
         } else camera.fov = fov;
@@ -350,7 +372,7 @@
       });
       composer.addPass(finish);
 
-      const elTitle = document.getElementById("title"), elCredit = document.getElementById("credit"), elCard = document.getElementById("card"), elVeil = document.getElementById("veil");
+      const elShade = document.getElementById("shade"), elTitle = document.getElementById("title"), elCredit = document.getElementById("credit"), elCard = document.getElementById("card"), elVeil = document.getElementById("veil");
       const body = new THREE.Vector3(), bodyPrev = new THREE.Vector3();
 
       window.renderFrame = function (t) {
@@ -363,44 +385,51 @@
         const sq = Math.max(0, dip) * 0.06 * (1 - smooth(1.2, 2.2, body.y));
         unko.scale.set(0.62 * (1 + sq * 0.5), 0.62 * (1 - sq), 0.62 * (1 + sq * 0.5));
         // lights follow the body
-        key.position.set(body.x - 5, body.y + 6, body.z + 7); key.target.position.copy(body);
-        key.intensity = C.key * (1 + 0.7 * smooth(62, 67, t) * (1 - smooth(76, 84, t)));
-        rim.position.set(body.x + 3.5, body.y + 3.0, body.z - 6); rim.target.position.copy(body);
-        rim2.position.set(body.x - 4.5, body.y + 1.2, body.z - 4); rim2.target.position.copy(body);
+        key.position.set(body.x - 4, body.y + 4, body.z + 8); key.target.position.copy(body);
+        key.intensity = C.key * 0.55 * (1 + 0.6 * smooth(62, 67, t) * (1 - smooth(76, 84, t)));
+        rim.position.copy(body).addScaledVector(MOON_DIR, 10); rim.position.y = body.y + 3.2; rim.target.position.copy(body);
+        rim2.position.set(body.x - 5.0, body.y + 1.0, body.z - 3.5); rim2.target.position.copy(body);
         U.uRimDir.value.copy(rim.position).sub(body).normalize().transformDirection(camera.matrixWorldInverse);
         // rings: last onsets
         let r = 0, flash = 0;
-        for (let k = ON.length - 1; k >= 0 && r < RINGS; k--) {
-          const o = ON[k], age = t - o.t; if (age < 0) continue; if (age > 4.2) break;
-          const d = TR[k], u = age / 4.2, rad = 0.35 + 2.6 * Math.sqrt(u) * (0.6 + 0.4 * o.w);
-          const hy = charAt(o.t, tmpA).y, near = 1 - 0.65 * smooth(1.0, 2.6, hy);
-          const m = new THREE.Matrix4().makeScale(rad, 1, rad).setPosition(d.x, 0, d.z); rings.setMatrixAt(r, m);
-          ringA[r * 4] = u; ringA[r * 4 + 1] = 0.85 * o.w * near; ringA[r * 4 + 2] = smooth(55, 88, o.top); r++;
-          flash += o.w * Math.exp(-age * 4.0) * near;
+        let lo = 0, hi = EV.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (EV[mid].t <= t) lo = mid + 1; else hi = mid; }
+        for (let k = lo - 1; k >= 0 && r < RINGS; k--) {
+          const o = EV[k], age = t - o.t; if (age > 4.2) break;
+          const u = age / 4.2, rad = (o.note ? 0.75 : 0.85) + (o.note ? 2.6 : 1.6) * Math.sqrt(u) * (0.6 + 0.4 * o.w);
+          const near = 1 - 0.45 * smooth(1.0, 2.6, o.y);
+          const m = new THREE.Matrix4().makeScale(rad, 1, rad).setPosition(o.x, 0, o.z); rings.setMatrixAt(r, m);
+          ringA[r * 4] = u; ringA[r * 4 + 1] = (o.note ? 0.95 : 0.55) * o.w * near; ringA[r * 4 + 2] = o.hue; r++;
+          if (o.note) flash += o.w * Math.exp(-age * 6.0) * near;
         }
         rings.count = r; rings.instanceMatrix.needsUpdate = true; ringGeo.attributes.iA.needsUpdate = true;
         const low = 1 - smooth(0.9, 2.2, body.y);
-        touch.position.set(body.x, 0.08, body.z); touch.intensity = (0.6 + 6.0 * Math.min(1.5, flash)) * (0.35 + 0.65 * low);
+        touch.position.set(body.x, 0.12, body.z + 1.0); touch.intensity = (0.5 + 7.0 * Math.min(1.5, flash)) * (0.35 + 0.65 * low);
+        U.uPulse.value = Math.min(1.2, flash) * 0.9;
+        foam.position.x = body.x; foam.position.z = body.z; foam.scale.setScalar(0.80); foam.material.uniforms.uT.value = t;
+        foam.material.uniforms.uA.value = 1 - smooth(-0.02, 0.06, body.y); foam.material.uniforms.uF.value = Math.min(1, flash);
         contact.position.x = body.x; contact.position.z = body.z; contact.scale.setScalar(1.3 + 0.9 * Math.min(1, flash));
         contact.material.opacity = (0.18 + 0.55 * Math.min(1, flash)) * low;
         // climax halo
         const climax = smooth(62, 67, t) * (1 - smooth(75, 82, t));
         let pulse = 0; for (const o of ON) { const a = t - o.t; if (a >= 0 && a < 1.5) pulse = Math.max(pulse, Math.exp(-a * 3) * o.w * 0.7); }
         halo.position.set(body.x, body.y + 0.62, body.z - 0.9); halo.quaternion.copy(camera.quaternion); halo.scale.setScalar(3.4 + 0.25 * pulse);
+        halo.scale.setScalar(2 * (3.4 + 0.25 * pulse));
         halo.material.uniforms.uA.value = climax * (0.85 + 0.35 * pulse); halo.material.uniforms.uP.value = pulse;
+        { let q = 0; const A = halo.material.uniforms.uAge.value, Sx = halo.material.uniforms.uStr.value; A.fill(9); Sx.fill(0);
+          for (let k = ON.length - 1; k >= 0 && q < 3; k--) { const a = t - ON[k].t; if (a < 0) continue; if (a > 1.6) break; A[q] = a; Sx[q] = ON[k].w * 0.45; q++; } }
         // world
         moon.position.copy(camera.position).addScaledVector(MOON_DIR, 1300);
         sky.position.copy(camera.position);
         water.material.uniforms.time.value = t * 0.45;
         sky.material.uniforms.uT.value = t;
-        trMat.uniforms.uT.value = t; trMat.uniforms.uBoost.value = 1 + 0.8 * smooth(LAST - 2, LAST + 8, t);
+        trMat.uniforms.uT.value = t; trMat.uniforms.uBoost.value = 1 + 0.8 * smooth(LAST - 2, LAST + 5, t);
         finish.uniforms.uT.value = Math.round(t * 30);
         // text & end card
-        elTitle.style.opacity = smooth(0.3, 1.5, t) * (1 - smooth(6.6, 8.0, t));
+        elTitle.style.opacity = smooth(0.3, 1.5, t) * (1 - smooth(6.6, 8.0, t)); elShade.style.opacity = elTitle.style.opacity;
         elTitle.style.transform = `translateY(${(1 - smooth(0.3, 2.0, t)) * 0.8}vh)`;
-        elCredit.style.opacity = smooth(137, 137.8, t) * 0.85;
-        elCard.style.opacity = smooth(139.6, 140.5, t);
-        elVeil.style.opacity = smooth(142.4, 143.0, t);
+        elCredit.style.opacity = smooth(132, 132.8, t) * 0.9;
+        elCard.style.opacity = smooth(134.6, 135.4, t);
+        elVeil.style.opacity = smooth(137.4, 138.0, t);
         if (C.nocomp) renderer.render(scene, camera); else composer.render();
       };
       window.renderFrame(0); window.renderFrame(68);
