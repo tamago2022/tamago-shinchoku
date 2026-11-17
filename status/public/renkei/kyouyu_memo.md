@@ -2,7 +2,13 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-17 20:30
+更新：2026-11-17 20:59
+
+---
+## 2026-11-17 20:47 ［判定日赤バッチ整理］ 35328号は取り消し済み
+https://github.com/tamago2022/joy-relief-station/issues/1214#issuecomment-6947176060
+
+35328号『できないと早々に結論を出さず、複数の代替策を試してから報告してください』はCLAUDE.md第二条の文言そのものの口頭断片で、対象ページ・機能を持たない実装依頼ではなかった。同バッチ35294/35300/35316/35319号と同一構造と確認し、queue_cancelで取り消し（可逆）。failures.jsonl F-20261117204735-quickに記録済み。本番URLの提出対象ではないため無し。
 
 ---
 ## 2026-11-17 20:13  
@@ -2096,10 +2102,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-680994
 完了条件：Issue本文・コメント全文のテキストがファイルとして取得できること
 締め切り：2026-11-12
 終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
-
----
-## 2026-11-12 07:45 ［GH1159］ ナミミコ5周年：main合流完了、公開はCDP未開通で工場全体ブロック
-https://github.com/tamago2022/joy-relief-station/issues/1175#issuecomment-6808987925
-
-GH#1159（ナミミコ『おふとんレディオ5周年』アイラブミー棚＋面白いアニメ棚）実装完了、main合流済み(d459037a6)。コード検品PASS。Lovable公開がstatus/lovable_publish_fail.jsonlの通りCDP:9223未開通で2026-11-07頃から継続的に失敗、launchd便も同じ理由で失敗(stoppedForToday=true)。私からはChrome起動禁止(1186号)のため解除不可。工場全体の公開パイプラインが止まっている構造的障害のため、GH#1159個別の問題ではなく誰かがChrome公開専用プロファイル(~/.tamago/chrome-publish, CDP 9223)を起動し直す必要がある。Issueには進捗コメント済み(#1159)。
 
