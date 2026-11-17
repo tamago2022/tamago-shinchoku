@@ -45,7 +45,7 @@ if (a.still !== undefined) {
   const t0 = Date.now();
   for (let f = from; f < to; f++) {
     await page.evaluate((t) => window.renderFrame(t), start + f / fps);
-    await page.screenshot({ path: path.join(a.out, `f${String(f).padStart(5, "0")}.jpg`), type: "jpeg", quality: 95 });
+    await page.screenshot({ path: path.join(a.out, `f${String(f).padStart(5, "0")}.jpg`), type: "jpeg", quality: 92 });
     if ((f - from) % 90 === 0) console.log(`frame ${f} (${from}..${to})`);
   }
   const s = (Date.now() - t0) / 1000;

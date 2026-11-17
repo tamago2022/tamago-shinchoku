@@ -1,0 +1,412 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!-- 宇宙うんこシリーズ2本目「亜麻色の髪の乙女」 シーン：Claude Opus 5.5 (claude-opus-5-5) 2026-11-17。音は鳴らさない（絵だけ）。 -->
+    <style>
+      html, body { margin: 0; background: var(--t-bg); overflow: hidden; }
+      canvas { display: block; }
+      .txt { position: absolute; color: var(--t-fg); font-family: Georgia, "Times New Roman", "DejaVu Serif", serif; pointer-events: none;
+        text-shadow: 0 0 1.2em rgba(4,8,24,0.85), 0 0 0.25em rgba(4,8,24,0.9); }
+      #title { left: 5.2vh; top: 5.0vh; opacity: 0; }
+      #title .k { font-size: 1.7vh; letter-spacing: 0.42em; text-transform: uppercase; color: var(--t-pink); }
+      #title .a { font-size: 4.6vh; margin-top: 1.1vh; letter-spacing: 0.01em; font-style: italic; }
+      #title .b { font-size: 2.1vh; margin-top: 0.9vh; letter-spacing: 0.08em; opacity: 0.9; }
+      #credit { left: 0; right: 0; bottom: 4.5vh; text-align: center; font-size: 2.3vh; letter-spacing: 0.1em; opacity: 0; line-height: 1.7; }
+      #card { position: absolute; inset: 0; opacity: 0; background: linear-gradient(180deg, var(--t-bg) 0%, var(--t-bg) 100%);
+        display: flex; align-items: center; justify-content: center; }
+      #card img { height: 82vh; -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 50%, #000 70%, transparent 100%); }
+      #veil { position: absolute; inset: 0; background: var(--t-bg); opacity: 0; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <div id="title" class="txt"><div class="k">The Space Unko Series</div><div class="a">La fille aux cheveux de lin</div><div class="b">Claude Debussy &nbsp;·&nbsp; Préludes, Book I, No. 8</div></div>
+    <div id="card"><img id="logo" src="data/logo.png" /></div>
+    <div id="credit" class="txt">Score: Satoshi Nakajima (CC BY 4.0) &nbsp;·&nbsp; Piano: VCSL (CC0) &nbsp;·&nbsp; Made with JingleScript</div>
+    <div id="veil"></div>
+    <script type="importmap">
+      { "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+      import { Water } from "three/addons/objects/Water.js";
+      import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+      import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+      import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+      import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+      import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+
+      const P = new URLSearchParams(location.search);
+      const W = +(P.get("w") || 1280), H = +(P.get("h") || 720);
+      const C = (window.CFG = Object.assign(
+        { exposure: 1.0, bloom: 0.42, bloomR: 0.35, bloomT: 0.95, key: 1.6, rim: 2.4, amb: 0.55, env: 0.7, mirror: 0.75 },
+        JSON.parse(P.get("cfg") || "{}"),
+      ));
+      const smooth = (a, b, x) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
+      const lerp = (a, b, u) => a + (b - a) * u;
+
+      // ---------- data ----------
+      const [T, ND] = await Promise.all([fetch("data/timing.json").then((r) => r.json()), fetch("data/notes.json").then((r) => r.json())]);
+      const DUR = (window.DURATION = T.duration);
+      // onsets: notes within 25 ms are one event
+      const ON = [];
+      for (const n of [...ND.notes].sort((a, b) => a.t - b.t)) {
+        let o = ON[ON.length - 1];
+        if (!o || n.t - o.t > 0.025) { o = { t: n.t, notes: [], top: 0, vel: 0 }; ON.push(o); }
+        o.notes.push(n); o.top = Math.max(o.top, n.m); o.vel = Math.max(o.vel, n.vel);
+      }
+      ON.forEach((o) => { o.w = Math.min(1.6, 0.45 + o.vel * 0.9 + 0.12 * o.notes.length); });
+      const LAST = ON[ON.length - 1].t;
+
+      // note density (smoothed) sampled at 10 Hz -> travel speed -> distance table
+      const SR = 10, NS = Math.ceil(DUR * SR) + 2;
+      const dens = new Float32Array(NS);
+      for (let i = 0; i < NS; i++) { const t = i / SR; let d = 0; for (const o of ON) { const x = (t - o.t) / 2.2; if (x > -4 && x < 4) d += o.w * Math.exp(-0.5 * x * x); } dens[i] = d; }
+      const dmax = Math.max(...dens);
+      const dist = new Float32Array(NS);
+      for (let i = 1; i < NS; i++) {
+        const t = i / SR, dn = dens[i] / dmax;
+        const sp = (t > LAST + 1 ? lerp(0.32, 0.03, smooth(LAST + 1, LAST + 6, t)) : 0.12 + 0.62 * Math.pow(dn, 0.85));
+        dist[i] = dist[i - 1] + sp / SR;
+      }
+      const sAt = (t) => { const f = Math.min(NS - 1.001, Math.max(0, t * SR)), i = Math.floor(f); return lerp(dist[i], dist[i + 1], f - i); };
+      const S_END = sAt(DUR);
+      // travel path on the sea: toward the viewer (+z), gentle meander
+      const pathXZ = (s, out) => out.set(1.7 * Math.sin(s * 0.16) + 0.6 * Math.sin(s * 0.41 + 1.3), 0, s);
+      // altitude: hover, rise at the climax, low during the quiet section
+      const baseY = (t) => {
+        let y = 0.36;
+        y += 2.9 * smooth(60.5, 67.5, t) * (1 - smooth(74.5, 84, t));
+        y -= 0.16 * smooth(88, 93, t) * (1 - smooth(118, 124, t));
+        y += 0.18 * Math.sin(t * 0.55) * (0.4 + 0.6 * smooth(88, 95, t));
+        y += 0.5 * smooth(LAST + 0.5, LAST + 7, t);
+        return y;
+      };
+      // touch (dip) impulse response per onset: anticipate, touch at t_note, spring back
+      const dipK = (dt) => (dt < 0 ? Math.exp(-((dt / 0.11) ** 2)) : Math.exp(-dt * 5.5) * Math.cos(dt * 7.0));
+      const dipAt = (t) => { let d = 0; for (const o of ON) { const dt = t - o.t; if (dt < -0.35) break; if (dt > 1.6) continue; d += o.w * dipK(dt); } return d; };
+      const _p = new THREE.Vector3();
+      const charAt = (t, out) => {
+        pathXZ(sAt(t), out);
+        const by = baseY(t), dip = dipAt(t);
+        const dipAmp = 0.30 * (1 - smooth(1.0, 2.0, by));
+        out.y = Math.max(0.04, by - Math.min(by - 0.04, dip * dipAmp));
+        return out;
+      };
+
+      // ---------- renderer / scene ----------
+      const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+      renderer.setPixelRatio(1); renderer.setSize(W, H);
+      document.body.insertBefore(renderer.domElement, document.body.firstChild);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = C.exposure;
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(new THREE.Color().setRGB(0.10,0.095,0.17, THREE.LinearSRGBColorSpace), 0.0045);
+      const camera = new THREE.PerspectiveCamera(36, W / H, 0.1, 4000);
+
+      const MOON_DIR = new THREE.Vector3(0.10, 0.20, -1).normalize();
+      // sky dome: night gradient, moon glow, stars
+      const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 48, 24), new THREE.ShaderMaterial({
+        side: THREE.BackSide, depthWrite: false, fog: false,
+        uniforms: { uMoon: { value: MOON_DIR }, uT: { value: 0 }, uGlow: { value: 1 } },
+        vertexShader: `varying vec3 vD0; void main(){ vD0 = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+        fragmentShader: `varying vec3 vD0; uniform vec3 uMoon; uniform float uT; uniform float uGlow;
+          float h(vec3 p){ return fract(sin(dot(p, vec3(12.9898,78.233,37.719)))*43758.5453); }
+          void main(){
+            vec3 vD = normalize(vD0);
+            float y = clamp(vD.y, -0.2, 1.0);
+            vec3 top = vec3(0.008,0.016,0.055), mid = vec3(0.028,0.048,0.125), hor = vec3(0.100,0.095,0.170);
+            vec3 c = mix(hor, mid, smoothstep(0.0, 0.16, y)); c = mix(c, top, smoothstep(0.16, 0.75, y));
+            float m = max(dot(vD, uMoon), 0.0);
+            c += uGlow * (vec3(0.50,0.44,0.36)*pow(m, 220.0)*0.5 + vec3(0.30,0.27,0.30)*pow(m, 24.0)*0.30 + vec3(0.12,0.10,0.16)*pow(m,4.0)*0.10);
+            // stars
+            vec3 g = floor(vD*420.0); float s = h(g);
+            float st = step(0.9965, s) * smoothstep(0.03, 0.25, y) * (0.55 + 0.45*sin(uT*1.7 + s*80.0));
+            c += vec3(0.85,0.88,1.0) * st * 0.9;
+            float disc = smoothstep(0.99975, 0.99982, m); c = mix(c, vec3(0.92,0.86,0.72), disc);
+            gl_FragColor = vec4(c, 1.0);
+          }`,
+      }));
+      scene.add(sky);
+      // moon disc
+      const moonTex = (() => { const cv = document.createElement("canvas"); cv.width = cv.height = 256; const g = cv.getContext("2d");
+        const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128); gr.addColorStop(0, "rgba(255,248,232,1)"); gr.addColorStop(0.36, "rgba(252,244,226,1)");
+        gr.addColorStop(0.42, "rgba(240,224,236,0.35)"); gr.addColorStop(1, "rgba(200,170,220,0)"); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+        g.globalAlpha = 0.08; g.fillStyle = "#8a7f9a"; for (const [x, y, r] of [[105, 110, 18], [150, 140, 12], [120, 155, 9], [140, 100, 7]]) { g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+        return new THREE.CanvasTexture(cv); })();
+      moonTex.colorSpace = THREE.SRGBColorSpace;
+      const moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, fog: false, depthWrite: false, color: new THREE.Color(1.35, 1.18, 0.92) }));
+      moon.scale.setScalar(95); moon.visible = false;
+
+      // water normals: tileable procedural (no external image)
+      const normTex = (() => {
+        const N = 256, d = new Uint8Array(N * N * 4), hgt = new Float32Array(N * N);
+        const waves = []; let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+        for (let i = 0; i < 26; i++) waves.push([Math.floor(1 + rnd() * 9) * (rnd() < 0.5 ? -1 : 1), Math.floor(rnd() * 9) * (rnd() < 0.5 ? -1 : 1), rnd() * 6.28, 1 / (1 + i * 0.35)]);
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { let v = 0; for (const [a, b, ph, am] of waves) v += am * Math.sin((a * x + b * y) / N * 6.2832 + ph); hgt[y * N + x] = v; }
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+          const dx = hgt[y * N + ((x + 1) % N)] - hgt[y * N + ((x + N - 1) % N)], dy = hgt[((y + 1) % N) * N + x] - hgt[((y + N - 1) % N) * N + x];
+          const n = new THREE.Vector3(-dx * 0.9, -dy * 0.9, 1).normalize(), k = (y * N + x) * 4;
+          d[k] = (n.x * 0.5 + 0.5) * 255; d[k + 1] = (n.y * 0.5 + 0.5) * 255; d[k + 2] = (n.z * 0.5 + 0.5) * 255; d[k + 3] = 255;
+        }
+        const t = new THREE.DataTexture(d, N, N); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.generateMipmaps = true; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.needsUpdate = true; return t;
+      })();
+      const water = new Water(new THREE.PlaneGeometry(4000, 4000), {
+        textureWidth: Math.round(W * C.mirror), textureHeight: Math.round(H * C.mirror), waterNormals: normTex,
+        sunDirection: MOON_DIR.clone(), sunColor: 0xffd9a8, waterColor: 0x061226, distortionScale: C.wdist ?? 0.9, fog: true, alpha: 1,
+      });
+      water.material.fragmentShader = water.material.fragmentShader
+        .replace("( sunColor * diffuseLight * 0.3 + scatter )", "( sunColor * diffuseLight * 0.02 + scatter * 0.6 )")
+        .replace("( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight )", "( vec3( 0.004 ) + reflectionSample * 0.95 + specularLight * 0.9 )");
+      water.rotation.x = -Math.PI / 2; water.material.uniforms.size.value = C.wsize ?? 5.0; scene.add(water);
+
+      // ---------- lights (moon key, pink rim, ambient, touch glow) ----------
+      scene.add(new THREE.HemisphereLight(0x6f86c8, 0x1a2140, C.amb));
+      const key = new THREE.DirectionalLight(0xcfdcff, C.key); scene.add(key, key.target);   // cool moon-ish key from front-left
+      const rim = new THREE.DirectionalLight(0xff7fb0, C.rim); scene.add(rim, rim.target);   // pink rim from behind
+      const rim2 = new THREE.DirectionalLight(0xbfd2ff, 1.0); scene.add(rim2, rim2.target);  // cool kicker, other side
+      const touch = new THREE.PointLight(0xff8fbf, 0, 3.5, 2); scene.add(touch);           // light bouncing up from the touched water
+
+      // env map for the gloss (sky + moon only)
+      const pm = new THREE.PMREMGenerator(renderer);
+      const envScene = new THREE.Scene(); envScene.add(sky.clone());
+      const em = new THREE.Mesh(new THREE.SphereGeometry(60, 16, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 5.6, 5.2) }));
+      em.position.copy(MOON_DIR).multiplyScalar(900); envScene.add(em);
+      const pinkCard = new THREE.Mesh(new THREE.PlaneGeometry(900, 300), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.9, 0.35, 0.6), side: THREE.DoubleSide }));
+      pinkCard.position.set(-700, 250, 500); pinkCard.lookAt(0, 0, 0); envScene.add(pinkCard);
+      const envRT = pm.fromScene(envScene, 0.02);
+
+      // ---------- the Space Unko (kit v2, texture untouched) ----------
+      const gltf = await new GLTFLoader().loadAsync("data/unko.glb");
+      let unkoMesh = null; gltf.scene.traverse((o) => { if (o.isMesh) unkoMesh = o; });
+      unkoMesh.geometry.computeVertexNormals();
+      const baseMap = unkoMesh.material.map;
+      // pink mask from the texture colours (pink/red marble circles), softened so the whole circle counts
+      const img = baseMap.image, MW = 1024, MH = Math.round(1024 * img.height / img.width);
+      const cv = document.createElement("canvas"); cv.width = MW; cv.height = MH; const g2 = cv.getContext("2d");
+      g2.drawImage(img, 0, 0, MW, MH);
+      const id = g2.getImageData(0, 0, MW, MH), px = id.data, m0 = new Float32Array(MW * MH);
+      for (let i = 0; i < MW * MH; i++) { const r = px[i * 4] / 255, g = px[i * 4 + 1] / 255, b = px[i * 4 + 2] / 255; const sat = r - Math.min(g, b);
+        m0[i] = smooth(0.10, 0.22, sat) * smooth(0.25, 0.42, r); }
+      const blur = (src, rad) => { const out = new Float32Array(src.length), tmp = new Float32Array(src.length);
+        for (let y = 0; y < MH; y++) { let acc = 0; for (let x = -rad; x <= rad; x++) acc += src[y * MW + Math.min(MW - 1, Math.max(0, x))];
+          for (let x = 0; x < MW; x++) { tmp[y * MW + x] = acc / (2 * rad + 1); acc += src[y * MW + Math.min(MW - 1, x + rad + 1)] - src[y * MW + Math.max(0, x - rad)]; } }
+        for (let x = 0; x < MW; x++) { let acc = 0; for (let y = -rad; y <= rad; y++) acc += tmp[Math.min(MH - 1, Math.max(0, y)) * MW + x];
+          for (let y = 0; y < MH; y++) { out[y * MW + x] = acc / (2 * rad + 1); acc += tmp[Math.min(MH - 1, y + rad + 1) * MW + x] - tmp[Math.max(0, y - rad) * MW + x]; } }
+        return out; };
+      const m1 = blur(m0, 7);
+      for (let i = 0; i < MW * MH; i++) { const v = smooth(0.18, 0.45, m1[i]); px[i * 4] = v * 255; px[i * 4 + 1] = (1 - 0.55 * v) * 255; px[i * 4 + 2] = v * 255; px[i * 4 + 3] = 255; }
+      g2.putImageData(id, 0, 0);
+      const maskTex = new THREE.CanvasTexture(cv); maskTex.flipY = baseMap.flipY; maskTex.colorSpace = THREE.NoColorSpace;
+      // R = clearcoat amount (pink only), G = roughness multiplier (pink smoother), B = translucency mask
+      const mat = new THREE.MeshPhysicalMaterial({
+        map: baseMap, roughness: 0.42, roughnessMap: maskTex, metalness: 0, clearcoat: 0.85, clearcoatMap: maskTex, clearcoatRoughness: 0.12,
+        envMap: envRT.texture, envMapIntensity: C.env,
+      });
+      const U = { uMask: { value: maskTex }, uPink: { value: new THREE.Color(1.0, 0.42, 0.62) }, uTrans: { value: C.trans ?? 0.22 }, uRimDir: { value: new THREE.Vector3() } };
+      mat.onBeforeCompile = (sh) => {
+        Object.assign(sh.uniforms, U);
+        sh.fragmentShader = "uniform sampler2D uMask; uniform vec3 uPink; uniform float uTrans; uniform vec3 uRimDir;\n" + sh.fragmentShader.replace(
+          "#include <emissivemap_fragment>",
+          `#include <emissivemap_fragment>
+           { float pm = texture2D(uMask, vMapUv).b;
+             vec3 V = normalize(vViewPosition);
+             float fr = pow(1.0 - clamp(abs(dot(normal, V)), 0.0, 1.0), 2.2);
+             float back = pow(clamp(dot(-normal, uRimDir) * 0.5 + 0.5, 0.0, 1.0), 3.0);
+             vec3 base = texture2D(map, vMapUv).rgb;
+             totalEmissiveRadiance += pm * uTrans * (fr * 0.55 + back * 0.25 + 0.06) * mix(uPink, base * 1.4, 0.45); }`);
+      };
+      unkoMesh.material = mat;
+      const unko = new THREE.Group(); unko.add(gltf.scene); scene.add(unko);
+      unko.scale.setScalar(0.62);
+      // soft contact glow under the body (on the water)
+      const glowTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 128; const g = c.getContext("2d");
+        const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.3, "rgba(255,255,255,0.45)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+        g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
+
+      // ---------- touch rings (ripples of pink light) ----------
+      const RINGS = 48;
+      const ringMat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+        uniforms: {},
+        vertexShader: `attribute vec4 iA; varying vec2 vUv; varying vec4 vA;
+          void main(){ vUv = uv*2.0-1.0; vA = iA; vec4 p = instanceMatrix * vec4(position,1.0); gl_Position = projectionMatrix*modelViewMatrix*p; }`,
+        fragmentShader: `varying vec2 vUv; varying vec4 vA; // x=age 0..1, y=strength, z=hue
+          void main(){ float r = length(vUv); float age = vA.x;
+            float ring = exp(-pow((r - 0.86)/0.035, 2.0)) + 0.45*exp(-pow((r - 0.62)/0.05, 2.0))*(1.0-age);
+            float inner = 0.10 * (1.0 - smoothstep(0.0, 0.9, r)) * (1.0-age);
+            float a = (ring + inner) * pow(1.0-age, 1.6) * vA.y;
+            vec3 col = mix(vec3(1.0,0.45,0.70), vec3(1.0,0.78,0.55), vA.z);
+            gl_FragColor = vec4(col * a, 1.0); }`,
+      });
+      const ringGeo = new THREE.PlaneGeometry(2, 2); ringGeo.rotateX(-Math.PI / 2);
+      const ringA = new Float32Array(RINGS * 4); ringGeo.setAttribute("iA", new THREE.InstancedBufferAttribute(ringA, 4));
+      const rings = new THREE.InstancedMesh(ringGeo, ringMat, RINGS); rings.frustumCulled = false; rings.position.y = 0.012; scene.add(rings);
+
+      // ---------- lights left on the sea (the "healed" traces) ----------
+      const TR = ON.map((o) => { const v = new THREE.Vector3(); charAt(o.t, v); return { t: o.t, x: v.x, z: v.z, w: o.w, hue: (o.top % 12) / 11, top: o.top }; });
+      const trGeo = new THREE.BufferGeometry();
+      const trPos = new Float32Array(TR.length * 3), trB = new Float32Array(TR.length * 4);
+      TR.forEach((d, i) => { trPos[i * 3] = d.x + Math.sin(i * 12.9) * 0.55; trPos[i * 3 + 1] = 0.05; trPos[i * 3 + 2] = d.z + Math.cos(i * 7.3) * 0.45;
+        trB[i * 4] = d.t; trB[i * 4 + 1] = d.w; trB[i * 4 + 2] = smooth(55, 88, d.top); trB[i * 4 + 3] = i; });
+      trGeo.setAttribute("position", new THREE.BufferAttribute(trPos, 3)); trGeo.setAttribute("aB", new THREE.BufferAttribute(trB, 4));
+      const trMat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+        uniforms: { uT: { value: 0 }, uH: { value: H }, uBoost: { value: 1 } },
+        vertexShader: `attribute vec4 aB; uniform float uT; uniform float uH; uniform float uBoost; varying float vA; varying float vHue;
+          void main(){ vec4 mv = modelViewMatrix*vec4(position,1.0); gl_Position = projectionMatrix*mv;
+            float age = uT - aB.x; float on = step(0.0, age);
+            float flash = exp(-max(age,0.0)*1.6);
+            float tw = 0.78 + 0.22*sin(uT*1.3 + aB.w*2.1);
+            vA = on * (0.42*tw*uBoost + 1.6*flash) * (0.55 + 0.45*aB.y);
+            vHue = aB.z;
+            gl_PointSize = on * uH * (0.05 + 0.06*flash) * (0.6+0.4*aB.y) * (1.0 + 0.6*(uBoost-1.0)) / max(-mv.z, 0.5) * 10.0; }`,
+        fragmentShader: `varying float vA; varying float vHue;
+          void main(){ vec2 q = gl_PointCoord*2.0-1.0; float r = dot(q,q); if (r>1.0) discard;
+            float core = exp(-r*9.0), halo = exp(-r*2.6)*0.35;
+            vec3 col = mix(vec3(1.0,0.50,0.72), vec3(1.0,0.82,0.58), vHue);
+            gl_FragColor = vec4(col*(core*1.2+halo)*vA, 1.0); }`,
+      });
+      const traces = new THREE.Points(trGeo, trMat); traces.frustumCulled = false; scene.add(traces);
+      // contact glow sprite on the water under the body
+      const contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
+        new THREE.MeshBasicMaterial({ map: glowTex, color: 0xff7fb5, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+      contact.position.y = 0.015; scene.add(contact);
+      // moonlight halo at the climax (billboard behind the body)
+      const halo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uA: { value: 0 }, uP: { value: 0 } },
+        vertexShader: `varying vec2 vUv; void main(){ vUv = uv*2.0-1.0; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+        fragmentShader: `varying vec2 vUv; uniform float uA; uniform float uP;
+          void main(){ float r = length(vUv);
+            float ring = exp(-pow((r-0.70)/0.012,2.0))*0.55 + exp(-pow((r-0.70)/0.10,2.0))*0.28 + exp(-pow((r-0.84 - 0.08*uP)/0.015,2.0))*0.5*uP;
+            float fill = (1.0-smoothstep(0.0,0.72,r))*0.10;
+            vec3 col = mix(vec3(1.0,0.90,0.74), vec3(1.0,0.62,0.80), smoothstep(0.6,0.9,r));
+            gl_FragColor = vec4(col*(ring+fill)*uA, 1.0); }`,
+      }));
+      scene.add(halo);
+
+      // ---------- camera choreography (keys interpolated with Catmull-Rom = no stops) ----------
+      // [t, dist, yawDeg, camH(rel. water), lookY(rel. body), fov]
+      const KEYS = [ // [t, dist, yawDeg, camH, lookY(rel. body), fov, lookX(lateral, +: body sits left)]
+        [0, 15.0, -9, 0.95, 1.30, 34, 2.2],
+        [8, 13.0, -7, 0.85, 1.20, 34, 2.0],
+        [15, 11.0, -3, 0.75, 1.10, 34, 1.6],
+        [27, 9.0, 6, 0.55, 1.00, 33, -1.6],
+        [40, 8.0, 11, 0.90, 0.95, 33, -1.8],
+        [52, 8.6, 4, 0.75, 1.00, 34, -1.0],
+        [60, 9.6, -2, 0.55, 1.00, 35, 0.0],
+        [67, 11.0, 0, 0.70, 0.75, 36, 0.0],
+        [73, 10.5, -4, 1.20, 0.70, 36, 0.4],
+        [80, 9.4, -10, 1.50, 0.80, 35, 1.4],
+        [88, 8.6, -8, 1.00, 0.95, 34, 1.8],
+        [96, 8.4, -4, 0.75, 1.00, 33, 1.6],
+        [106, 8.0, 3, 0.70, 1.00, 33, -1.4],
+        [116, 7.6, 6, 0.90, 0.95, 33, -1.6],
+        [122, 9.0, 4, 2.40, 0.60, 35, 0.0],
+      ];
+      const cr = (p0, p1, p2, p3, u) => 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u);
+      const camKey = (t) => {
+        let i = 0; while (i < KEYS.length - 2 && KEYS[i + 1][0] <= t) i++;
+        const k1 = KEYS[i], k2 = KEYS[Math.min(KEYS.length - 1, i + 1)], k0 = KEYS[Math.max(0, i - 1)], k3 = KEYS[Math.min(KEYS.length - 1, i + 2)];
+        const u = Math.min(1, Math.max(0, (t - k1[0]) / Math.max(1e-3, k2[0] - k1[0])));
+        return [1, 2, 3, 4, 5, 6].map((j) => cr(k0[j], k1[j], k2[j], k3[j], u));
+      };
+      const ENDC = (() => { // final crane: look down the trail toward the moon
+        let zs = 0, xs = 0; TR.forEach((d) => { zs += d.z; xs += d.x; }); return { x: xs / TR.length, z: zs / TR.length };
+      })();
+      const cpos = new THREE.Vector3(), clook = new THREE.Vector3(), tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3();
+      const placeCamera = (t, body) => {
+        const [d, yawD, h, ly, fov, lx] = camKey(t);
+        const yaw = THREE.MathUtils.degToRad(yawD);
+        tmpA.set(body.x + Math.sin(yaw) * d, h + (body.y - 0.36) * 0.55, body.z + Math.cos(yaw) * d);
+        tmpB.set(body.x + Math.cos(yaw) * lx, body.y + ly, body.z - Math.sin(yaw) * lx);
+        // tiny hand-held breathing (very small, slow)
+        tmpA.x += 0.05 * Math.sin(t * 0.37) + 0.03 * Math.sin(t * 0.91 + 1.0); tmpA.y += 0.03 * Math.sin(t * 0.53 + 2.0);
+        // crane up at the end
+        const c = smooth(LAST - 4.5, LAST + 9.5, t);
+        if (c > 0) {
+          const ce = c * c * (3 - 2 * c);
+          const top = new THREE.Vector3(body.x + 2.5, 15, body.z + 12);
+          const lk = new THREE.Vector3(lerp(body.x, ENDC.x, 0.4), 0, body.z - 11);
+          tmpA.lerp(top, ce); tmpB.lerp(lk, ce);
+          camera.fov = lerp(fov, 42, ce);
+        } else camera.fov = fov;
+        camera.position.copy(tmpA); camera.lookAt(tmpB); camera.updateProjectionMatrix();
+        return yawD;
+      };
+
+      // ---------- post ----------
+      const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: C.msaa ?? 0 }));
+      composer.addPass(new RenderPass(scene, camera));
+      const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), C.bloom, C.bloomR, C.bloomT); composer.addPass(bloom);
+      composer.addPass(new OutputPass());
+      const finish = new ShaderPass({
+        uniforms: { tDiffuse: { value: null }, uT: { value: 0 } },
+        vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+        fragmentShader: `uniform sampler2D tDiffuse; uniform float uT; varying vec2 vUv;
+          float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)) + uT*0.618)*43758.5453); }
+          void main(){ vec4 c = texture2D(tDiffuse, vUv); vec2 q = vUv-0.5; float v = 1.0 - 0.42*dot(q*vec2(1.25,1.0), q*vec2(1.25,1.0))*2.2;
+            c.rgb *= v; c.rgb += (h(vUv*vec2(1280.0,720.0)) - 0.5) * 0.018; gl_FragColor = c; }`,
+      });
+      composer.addPass(finish);
+
+      const elTitle = document.getElementById("title"), elCredit = document.getElementById("credit"), elCard = document.getElementById("card"), elVeil = document.getElementById("veil");
+      const body = new THREE.Vector3(), bodyPrev = new THREE.Vector3();
+
+      window.renderFrame = function (t) {
+        charAt(t, body); charAt(Math.max(0, t - 0.25), bodyPrev);
+        const yawD = placeCamera(t, body);
+        // body: faces the camera (keep within the kit's ±14° front view), small lean with motion, squash on touch
+        const dip = dipAt(t), vy = (body.y - bodyPrev.y) / 0.25;
+        unko.position.copy(body);
+        unko.rotation.set(THREE.MathUtils.degToRad(-2 + 4 * Math.tanh(vy * 0.6)), THREE.MathUtils.degToRad(yawD * 0.55 + 3 * Math.sin(t * 0.41)), THREE.MathUtils.degToRad(2.2 * Math.sin(t * 0.63)));
+        const sq = Math.max(0, dip) * 0.06 * (1 - smooth(1.2, 2.2, body.y));
+        unko.scale.set(0.62 * (1 + sq * 0.5), 0.62 * (1 - sq), 0.62 * (1 + sq * 0.5));
+        // lights follow the body
+        key.position.set(body.x - 5, body.y + 6, body.z + 7); key.target.position.copy(body);
+        key.intensity = C.key * (1 + 0.7 * smooth(62, 67, t) * (1 - smooth(76, 84, t)));
+        rim.position.set(body.x + 3.5, body.y + 3.0, body.z - 6); rim.target.position.copy(body);
+        rim2.position.set(body.x - 4.5, body.y + 1.2, body.z - 4); rim2.target.position.copy(body);
+        U.uRimDir.value.copy(rim.position).sub(body).normalize().transformDirection(camera.matrixWorldInverse);
+        // rings: last onsets
+        let r = 0, flash = 0;
+        for (let k = ON.length - 1; k >= 0 && r < RINGS; k--) {
+          const o = ON[k], age = t - o.t; if (age < 0) continue; if (age > 4.2) break;
+          const d = TR[k], u = age / 4.2, rad = 0.35 + 2.6 * Math.sqrt(u) * (0.6 + 0.4 * o.w);
+          const hy = charAt(o.t, tmpA).y, near = 1 - 0.65 * smooth(1.0, 2.6, hy);
+          const m = new THREE.Matrix4().makeScale(rad, 1, rad).setPosition(d.x, 0, d.z); rings.setMatrixAt(r, m);
+          ringA[r * 4] = u; ringA[r * 4 + 1] = 0.85 * o.w * near; ringA[r * 4 + 2] = smooth(55, 88, o.top); r++;
+          flash += o.w * Math.exp(-age * 4.0) * near;
+        }
+        rings.count = r; rings.instanceMatrix.needsUpdate = true; ringGeo.attributes.iA.needsUpdate = true;
+        const low = 1 - smooth(0.9, 2.2, body.y);
+        touch.position.set(body.x, 0.08, body.z); touch.intensity = (0.6 + 6.0 * Math.min(1.5, flash)) * (0.35 + 0.65 * low);
+        contact.position.x = body.x; contact.position.z = body.z; contact.scale.setScalar(1.3 + 0.9 * Math.min(1, flash));
+        contact.material.opacity = (0.18 + 0.55 * Math.min(1, flash)) * low;
+        // climax halo
+        const climax = smooth(62, 67, t) * (1 - smooth(75, 82, t));
+        let pulse = 0; for (const o of ON) { const a = t - o.t; if (a >= 0 && a < 1.5) pulse = Math.max(pulse, Math.exp(-a * 3) * o.w * 0.7); }
+        halo.position.set(body.x, body.y + 0.62, body.z - 0.9); halo.quaternion.copy(camera.quaternion); halo.scale.setScalar(3.4 + 0.25 * pulse);
+        halo.material.uniforms.uA.value = climax * (0.85 + 0.35 * pulse); halo.material.uniforms.uP.value = pulse;
+        // world
+        moon.position.copy(camera.position).addScaledVector(MOON_DIR, 1300);
+        sky.position.copy(camera.position);
+        water.material.uniforms.time.value = t * 0.45;
+        sky.material.uniforms.uT.value = t;
+        trMat.uniforms.uT.value = t; trMat.uniforms.uBoost.value = 1 + 0.8 * smooth(LAST - 2, LAST + 8, t);
+        finish.uniforms.uT.value = Math.round(t * 30);
+        // text & end card
+        elTitle.style.opacity = smooth(0.3, 1.5, t) * (1 - smooth(6.6, 8.0, t));
+        elTitle.style.transform = `translateY(${(1 - smooth(0.3, 2.0, t)) * 0.8}vh)`;
+        elCredit.style.opacity = smooth(137, 137.8, t) * 0.85;
+        elCard.style.opacity = smooth(139.6, 140.5, t);
+        elVeil.style.opacity = smooth(142.4, 143.0, t);
+        if (C.nocomp) renderer.render(scene, camera); else composer.render();
+      };
+      window.renderFrame(0); window.renderFrame(68);
+      window.ready = true;
+    </script>
+  
+<!--tamago-dark 2--><link rel="stylesheet" href="../../../../theme/tamago-dark.css">
+</body>
+</html>
