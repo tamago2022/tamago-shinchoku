@@ -44,7 +44,7 @@ if (a.still !== undefined) {
   fs.mkdirSync(a.out, { recursive: true });
   const t0 = Date.now();
   for (let f = from; f < to; f++) {
-    await page.evaluate((t) => window.renderFrame(t), start + f / fps);
+    await page.evaluate((t) => { window.renderFrame(t); return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); }, start + f / fps); // wait for the compositor: no stale frames
     await page.screenshot({ path: path.join(a.out, `f${String(f).padStart(5, "0")}.jpg`), type: "jpeg", quality: 92 });
     if ((f - from) % 90 === 0) console.log(`frame ${f} (${from}..${to})`);
   }

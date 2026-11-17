@@ -13,7 +13,7 @@
       #title .k { font-size: 2.3vh; letter-spacing: 0.42em; text-transform: uppercase; color: var(--t-pink); }
       #title .a { font-size: 7.2vh; margin-top: 1.2vh; letter-spacing: 0.01em; font-style: italic; }
       #title .b { font-size: 3.0vh; margin-top: 1.0vh; letter-spacing: 0.08em; opacity: 0.9; }
-      #credit { left: 0; right: 0; bottom: 4.5vh; text-align: center; font-size: 2.3vh; letter-spacing: 0.1em; opacity: 0; line-height: 1.7; }
+      #credit { left: 0; right: 0; bottom: 4.0vh; text-align: center; font-size: 3.5vh; letter-spacing: 0.1em; opacity: 0; line-height: 1.7; }
       #card { position: absolute; inset: 0; opacity: 0; background: linear-gradient(180deg, var(--t-bg) 0%, var(--t-bg) 100%);
         display: flex; align-items: center; justify-content: center; }
       #card img { height: 82vh; -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 50%, #000 70%, transparent 100%); }
@@ -42,7 +42,7 @@
       const P = new URLSearchParams(location.search);
       const W = +(P.get("w") || 1280), H = +(P.get("h") || 720);
       const C = (window.CFG = Object.assign(
-        { exposure: 1.0, bloom: 0.42, bloomR: 0.35, bloomT: 0.95, key: 1.6, rim: 2.4, amb: 0.55, env: 0.7, mirror: 0.75 },
+        { exposure: 1.1, bloom: 0.42, bloomR: 0.35, bloomT: 0.95, key: 1.6, rim: 2.4, amb: 0.55, env: 1.0, mirror: 0.75 },
         JSON.parse(P.get("cfg") || "{}"),
       ));
       const smooth = (a, b, x) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
@@ -102,7 +102,7 @@
       renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = C.exposure;
       const scene = new THREE.Scene();
       scene.fog = new THREE.FogExp2(new THREE.Color().setRGB(0.10,0.095,0.17, THREE.LinearSRGBColorSpace), 0.0045);
-      const camera = new THREE.PerspectiveCamera(36, W / H, 0.1, 4000);
+      const camera = new THREE.PerspectiveCamera(36, W / H, 0.3, 3000); // near 0.3: enough depth precision for the ripples just above the water
 
       const MOON_DIR = new THREE.Vector3(0.10, 0.20, -1).normalize();
       // sky dome: night gradient, moon glow, stars
@@ -123,7 +123,7 @@
             vec3 g = floor(vD*420.0); float s = h(g);
             float st = step(0.9965, s) * smoothstep(0.03, 0.25, y) * (0.55 + 0.45*sin(uT*1.7 + s*80.0));
             c += vec3(0.85,0.88,1.0) * st * 0.9;
-            float disc = smoothstep(0.99975, 0.99982, m); c = mix(c, vec3(0.92,0.86,0.72), disc);
+            float disc = smoothstep(0.99975, 0.99982, m); c = mix(c, vec3(2.4,2.15,1.75), disc);
             gl_FragColor = vec4(c, 1.0);
           }`,
       }));
@@ -158,7 +158,7 @@
       water.material.fragmentShader = water.material.fragmentShader
         .replace("( sunColor * diffuseLight * 0.3 + scatter )", "( sunColor * diffuseLight * 0.02 + scatter * 0.6 )")
         .replace("( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight )", "( vec3( 0.004 ) + reflectionSample * 0.95 + specularLight * 0.9 )");
-      water.rotation.x = -Math.PI / 2; water.material.uniforms.size.value = C.wsize ?? 5.0; scene.add(water);
+      water.rotation.x = -Math.PI / 2; water.material.uniforms.size.value = C.wsize ?? 9.0; scene.add(water);
 
       // ---------- lights (moon key, pink rim, ambient, touch glow) ----------
       scene.add(new THREE.HemisphereLight(0x6f86c8, 0x101830, C.amb * 0.8));
@@ -206,11 +206,13 @@
       const U = { uMask: { value: maskTex }, uPink: { value: new THREE.Color(1.0, 0.42, 0.62) }, uTrans: { value: C.trans ?? 0.12 }, uRimDir: { value: new THREE.Vector3() }, uPulse: { value: 0 } };
       mat.onBeforeCompile = (sh) => {
         Object.assign(sh.uniforms, U);
-        sh.fragmentShader = "uniform sampler2D uMask; uniform vec3 uPink; uniform float uTrans; uniform vec3 uRimDir; uniform float uPulse;\n" + sh.fragmentShader.replace(
+        sh.vertexShader = "varying vec3 vWP;\n" + sh.vertexShader.replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\n vWP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+        sh.fragmentShader = "varying vec3 vWP; uniform sampler2D uMask; uniform vec3 uPink; uniform float uTrans; uniform vec3 uRimDir; uniform float uPulse;\n" + sh.fragmentShader.replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
            { vec3 wN = inverseTransformDirection(normal, viewMatrix); float under = smoothstep(-0.05, -0.55, wN.y);
-             diffuseColor.rgb *= 1.0 - 0.85 * under; } // underside (seen in the mirror) stays in the black base, no smeared projection
+             diffuseColor.rgb *= 1.0 - 0.85 * under;
+             float wet = 1.0 - smoothstep(0.0, 0.10, vWP.y); diffuseColor.rgb *= 1.0 - 0.55 * wet; } // wet, darker band at the waterline // underside (seen in the mirror) stays in the black base, no smeared projection
            { float pm = texture2D(uMask, vMapUv).b;
              vec3 V = normalize(vViewPosition);
              float fr = pow(1.0 - clamp(abs(dot(normal, V)), 0.0, 1.0), 2.2);
@@ -229,7 +231,7 @@
       // ---------- touch rings (ripples of pink light) ----------
       const RINGS = 96;
       const ringMat = new THREE.ShaderMaterial({
-        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
         uniforms: {},
         vertexShader: `attribute vec4 iA; varying vec2 vUv; varying vec4 vA;
           void main(){ vUv = uv*2.0-1.0; vA = iA; vec4 p = instanceMatrix * vec4(position,1.0); gl_Position = projectionMatrix*modelViewMatrix*p; }`,
@@ -243,7 +245,7 @@
       });
       const ringGeo = new THREE.PlaneGeometry(2, 2); ringGeo.rotateX(-Math.PI / 2);
       const ringA = new Float32Array(RINGS * 4); ringGeo.setAttribute("iA", new THREE.InstancedBufferAttribute(ringA, 4));
-      const rings = new THREE.InstancedMesh(ringGeo, ringMat, RINGS); rings.frustumCulled = false; rings.position.y = 0.012; scene.add(rings);
+      const rings = new THREE.InstancedMesh(ringGeo, ringMat, RINGS); rings.frustumCulled = false; rings.position.y = 0.035; scene.add(rings);
 
       // ---------- lights left on the sea (the "healed" traces) ----------
       const TR = ON.map((o) => { const v = new THREE.Vector3(); charAt(o.t, v); return { t: o.t, x: v.x, z: v.z, y: v.y, w: o.w, hue: (o.top % 12) / 11, top: o.top }; });
@@ -253,7 +255,7 @@
       EV.sort((a, b) => a.t - b.t);
       const trGeo = new THREE.BufferGeometry();
       const trPos = new Float32Array(TR.length * 3), trB = new Float32Array(TR.length * 4);
-      TR.forEach((d, i) => { trPos[i * 3] = d.x + Math.sin(i * 12.9) * 0.55; trPos[i * 3 + 1] = 0.05; trPos[i * 3 + 2] = d.z + Math.cos(i * 7.3) * 0.45;
+      TR.forEach((d, i) => { trPos[i * 3] = d.x + Math.sin(i * 12.9) * 0.55; trPos[i * 3 + 1] = 0.06; trPos[i * 3 + 2] = d.z + Math.cos(i * 7.3) * 0.45;
         trB[i * 4] = d.t; trB[i * 4 + 1] = d.w; trB[i * 4 + 2] = smooth(55, 88, d.top); trB[i * 4 + 3] = i; });
       trGeo.setAttribute("position", new THREE.BufferAttribute(trPos, 3)); trGeo.setAttribute("aB", new THREE.BufferAttribute(trB, 4));
       const trMat = new THREE.ShaderMaterial({
@@ -277,7 +279,7 @@
       // contact glow sprite on the water under the body
       const contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
         new THREE.MeshBasicMaterial({ map: glowTex, color: 0xff7fb5, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
-      contact.position.y = 0.015; scene.add(contact);
+      contact.position.y = 0.03; contact.material.polygonOffset = true; contact.material.polygonOffsetFactor = -4; contact.material.polygonOffsetUnits = -4; scene.add(contact);
       // foam / waterline ring around the body where it meets the water
       const foam = new THREE.Mesh(new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uT: { value: 0 }, uA: { value: 0 }, uF: { value: 0 } },
@@ -291,7 +293,7 @@
             vec3 col = mix(vec3(0.62,0.72,0.95), vec3(1.0,0.60,0.80), uF);
             gl_FragColor = vec4(col * (band*0.55*n + lace*0.18) * uA * (1.0 + 1.2*uF), 1.0); }`,
       }));
-      foam.position.y = 0.02; scene.add(foam);
+      foam.position.y = 0.04; foam.material.polygonOffset = true; foam.material.polygonOffsetFactor = -4; foam.material.polygonOffsetUnits = -4; scene.add(foam);
       // moonlight halo at the climax (billboard behind the body)
       const halo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uA: { value: 0 }, uP: { value: 0 }, uAge: { value: new Array(6).fill(9) }, uStr: { value: new Array(6).fill(0) } },
@@ -302,7 +304,7 @@
             float ring = exp(-pow((r-0.70)/0.012,2.0))*0.55 + exp(-pow((r-0.70)/0.10,2.0))*0.28 + exp(-pow((r-0.84 - 0.08*uP)/0.015,2.0))*0.5*uP;
             float fill = (1.0-smoothstep(0.0,0.72,r))*0.10;
             vec3 col = mix(vec3(1.0,0.90,0.74), vec3(1.0,0.62,0.80), smoothstep(0.6,0.9,r));
-            gl_FragColor = vec4(col*(ring+fill+em*0.9)*uA, 1.0); }`,
+            gl_FragColor = vec4(col*(ring*0.6+fill*1.6+em*0.0)*uA, 1.0); }`,
       }));
       scene.add(halo);
 
@@ -319,7 +321,7 @@
         [[c60, 9.5, -8, 0.60, 1.00, 35, 0.8], [65, 8.4, -3, 0.22, 1.00, 38, 0], [70, 7.0, 9, 1.30, 0.62, 38, 0],
          [74.5, 6.8, 13, 2.60, 0.35, 37, 0], [80, 8.4, 5, 2.40, 0.60, 35, 0.6], [c88, 8.5, -8, 1.00, 0.95, 34, 1.6]], // climax: low -> arc up and over
         [[c88, 7.0, -7, 0.30, 0.65, 32, 1.2], [c97, 6.4, -2, 0.30, 0.65, 32, 1.0]],                      // quiet: close, by the water
-        [[c97, 15.0, 7, 2.20, 0.60, 34, -2.2], [c108, 13.0, 4, 2.00, 0.60, 34, -1.8]],                   // lonely wide
+        [[c97, 10.5, 7, 1.50, 0.70, 34, -2.0], [c108, 9.5, 4, 1.30, 0.70, 34, -1.7]],                   // lonely wide
         [[c108, 8.5, -5, 0.70, 0.95, 33, 1.4], [118, 8.0, 3, 0.80, 0.95, 33, 0.8], [124, 9.0, 4, 1.40, 0.80, 34, 0]], // home stretch
       ];
       const cr = (p0, p1, p2, p3, u) => 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u);
@@ -386,7 +388,7 @@
         unko.scale.set(0.62 * (1 + sq * 0.5), 0.62 * (1 - sq), 0.62 * (1 + sq * 0.5));
         // lights follow the body
         key.position.set(body.x - 4, body.y + 4, body.z + 8); key.target.position.copy(body);
-        key.intensity = C.key * 0.55 * (1 + 0.6 * smooth(62, 67, t) * (1 - smooth(76, 84, t)));
+        key.intensity = C.key * 0.85 * (1 + 0.6 * smooth(62, 67, t) * (1 - smooth(76, 84, t)));
         rim.position.copy(body).addScaledVector(MOON_DIR, 10); rim.position.y = body.y + 3.2; rim.target.position.copy(body);
         rim2.position.set(body.x - 5.0, body.y + 1.0, body.z - 3.5); rim2.target.position.copy(body);
         U.uRimDir.value.copy(rim.position).sub(body).normalize().transformDirection(camera.matrixWorldInverse);
@@ -395,7 +397,7 @@
         let lo = 0, hi = EV.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (EV[mid].t <= t) lo = mid + 1; else hi = mid; }
         for (let k = lo - 1; k >= 0 && r < RINGS; k--) {
           const o = EV[k], age = t - o.t; if (age > 4.2) break;
-          const u = age / 4.2, rad = (o.note ? 0.75 : 0.85) + (o.note ? 2.6 : 1.6) * Math.sqrt(u) * (0.6 + 0.4 * o.w);
+          const u = age / 4.2, rad = (o.note ? 0.75 : 0.85) + (o.note ? 2.6 + 1.6 * smooth(1.0, 2.4, o.y) : 1.6) * Math.sqrt(u) * (0.6 + 0.4 * o.w);
           const near = 1 - 0.45 * smooth(1.0, 2.6, o.y);
           const m = new THREE.Matrix4().makeScale(rad, 1, rad).setPosition(o.x, 0, o.z); rings.setMatrixAt(r, m);
           ringA[r * 4] = u; ringA[r * 4 + 1] = (o.note ? 0.95 : 0.55) * o.w * near; ringA[r * 4 + 2] = o.hue; r++;
