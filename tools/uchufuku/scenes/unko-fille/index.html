@@ -102,7 +102,7 @@
       renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = C.exposure;
       const scene = new THREE.Scene();
       scene.fog = new THREE.FogExp2(new THREE.Color().setRGB(0.10,0.095,0.17, THREE.LinearSRGBColorSpace), 0.0045);
-      const camera = new THREE.PerspectiveCamera(36, W / H, 0.1, 4000);
+      const camera = new THREE.PerspectiveCamera(36, W / H, 0.3, 3000); // near 0.3: enough depth precision for the ripples just above the water
 
       const MOON_DIR = new THREE.Vector3(0.10, 0.20, -1).normalize();
       // sky dome: night gradient, moon glow, stars
@@ -231,7 +231,7 @@
       // ---------- touch rings (ripples of pink light) ----------
       const RINGS = 96;
       const ringMat = new THREE.ShaderMaterial({
-        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
         uniforms: {},
         vertexShader: `attribute vec4 iA; varying vec2 vUv; varying vec4 vA;
           void main(){ vUv = uv*2.0-1.0; vA = iA; vec4 p = instanceMatrix * vec4(position,1.0); gl_Position = projectionMatrix*modelViewMatrix*p; }`,
@@ -245,7 +245,7 @@
       });
       const ringGeo = new THREE.PlaneGeometry(2, 2); ringGeo.rotateX(-Math.PI / 2);
       const ringA = new Float32Array(RINGS * 4); ringGeo.setAttribute("iA", new THREE.InstancedBufferAttribute(ringA, 4));
-      const rings = new THREE.InstancedMesh(ringGeo, ringMat, RINGS); rings.frustumCulled = false; rings.position.y = 0.012; scene.add(rings);
+      const rings = new THREE.InstancedMesh(ringGeo, ringMat, RINGS); rings.frustumCulled = false; rings.position.y = 0.035; scene.add(rings);
 
       // ---------- lights left on the sea (the "healed" traces) ----------
       const TR = ON.map((o) => { const v = new THREE.Vector3(); charAt(o.t, v); return { t: o.t, x: v.x, z: v.z, y: v.y, w: o.w, hue: (o.top % 12) / 11, top: o.top }; });
@@ -255,7 +255,7 @@
       EV.sort((a, b) => a.t - b.t);
       const trGeo = new THREE.BufferGeometry();
       const trPos = new Float32Array(TR.length * 3), trB = new Float32Array(TR.length * 4);
-      TR.forEach((d, i) => { trPos[i * 3] = d.x + Math.sin(i * 12.9) * 0.55; trPos[i * 3 + 1] = 0.05; trPos[i * 3 + 2] = d.z + Math.cos(i * 7.3) * 0.45;
+      TR.forEach((d, i) => { trPos[i * 3] = d.x + Math.sin(i * 12.9) * 0.55; trPos[i * 3 + 1] = 0.06; trPos[i * 3 + 2] = d.z + Math.cos(i * 7.3) * 0.45;
         trB[i * 4] = d.t; trB[i * 4 + 1] = d.w; trB[i * 4 + 2] = smooth(55, 88, d.top); trB[i * 4 + 3] = i; });
       trGeo.setAttribute("position", new THREE.BufferAttribute(trPos, 3)); trGeo.setAttribute("aB", new THREE.BufferAttribute(trB, 4));
       const trMat = new THREE.ShaderMaterial({
@@ -279,7 +279,7 @@
       // contact glow sprite on the water under the body
       const contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
         new THREE.MeshBasicMaterial({ map: glowTex, color: 0xff7fb5, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
-      contact.position.y = 0.015; scene.add(contact);
+      contact.position.y = 0.03; contact.material.polygonOffset = true; contact.material.polygonOffsetFactor = -4; contact.material.polygonOffsetUnits = -4; scene.add(contact);
       // foam / waterline ring around the body where it meets the water
       const foam = new THREE.Mesh(new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uT: { value: 0 }, uA: { value: 0 }, uF: { value: 0 } },
@@ -293,7 +293,7 @@
             vec3 col = mix(vec3(0.62,0.72,0.95), vec3(1.0,0.60,0.80), uF);
             gl_FragColor = vec4(col * (band*0.55*n + lace*0.18) * uA * (1.0 + 1.2*uF), 1.0); }`,
       }));
-      foam.position.y = 0.02; scene.add(foam);
+      foam.position.y = 0.04; foam.material.polygonOffset = true; foam.material.polygonOffsetFactor = -4; foam.material.polygonOffsetUnits = -4; scene.add(foam);
       // moonlight halo at the climax (billboard behind the body)
       const halo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uA: { value: 0 }, uP: { value: 0 }, uAge: { value: new Array(6).fill(9) }, uStr: { value: new Array(6).fill(0) } },
