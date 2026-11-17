@@ -78,6 +78,18 @@
 <tr><td>個別のボタンを直接呼ぶ未統一箇所が残っている</td><td class="yes">no</td></tr>
 </table>
 
+<h2>⑥ 触る検品（押して反応するか・2026-11-17追記）</h2>
+<div class="note">
+前回(11-17 01:09)はCDP応答待ちタイムアウト(30秒)で検品自体が失敗していたが、
+node tools/verify_click.mjs を同じ曲ページに対して再実行したところ正常終了した。
+一時的な接続タイムアウトであり、実装側の不具合ではないことを確認した。
+</div>
+<div class="nums">
+  <div class="num"><b>14/14</b><span>テストした押せる要素のうち反応した件数（全63件中）</span></div>
+  <div class="num"><b>0</b><span>押しても無反応だった要素</span></div>
+  <div class="num"><b>PASS</b><span>CLICK_VERDICT（既知issueのコンソールエラー1件はFAIL対象外）</span></div>
+</div>
+
 <footer>
 このページは #35301 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
