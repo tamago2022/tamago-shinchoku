@@ -2,7 +2,37 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-18 05:13
+更新：2026-11-18 05:25
+
+---
+## 2026-11-18 05:25  
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6960000506
+
+工場の受付（status/queue.json）に入った新しい指示 23件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
+
+- 11-18 05:00｜254101番｜判定日赤｜条件：web_fetch禁止（調べ物は工場の tools/wiki_lookup.py 等）、ファイル削除禁止
+- 11-18 05:01｜254102番｜判定日赤｜※たまごさんは音声入力なので、提案の固有名詞（The Apples in Stereo 等）は実在・関係を確か
+- 11-18 05:02｜254103番｜判定日赤｜ESLintの新規追加行チェック：変更後ファイルで6件のprettier/prettierエラーが出たが、bu
+- 11-18 05:02｜254104番｜判定日赤｜必要であれば店主またはオーケストレーターの判断で git checkout -- scripts/patro
+- 11-18 05:02｜254105番｜判定日赤｜題名：判定日赤｜ぼくはいま、スマホゲームも、アプリも、Webサービスも、CMもショートアニメも、Claude
+- 11-18 05:19｜254106番｜判定日赤｜許可ポップアップ・request_access・ブラウザ・web_fetch禁止（リンクは tools/lin
+- 11-18 05:20｜254107番｜判定日赤｜番号56863｜原文：まずMichael Jacksonの代表曲(Rock With You含む必須曲)を洗い
+- 11-18 05:20｜254108番｜判定日赤｜番号56907｜原文：これはMichael Jacksonに限らず、サイト全体で「代表曲の一つ」のような一般論
+- 11-18 05:20｜254109番｜判定日赤｜番号56956｜原文：アーティストページ内の曲の並び順: 現状「追加した順」っぽくなっていて、後から重要な曲を
+- 11-18 05:20｜254110番｜判定日赤｜番号57753｜原文：店主がRock With Youのページで「棚編集」ボタンを押したところ、そこでも「棚に
+- 11-18 05:20｜254111番｜判定日赤｜番号63695｜原文：今後も良い事例・悪い事例が出るたびにここに追記していく運用にしたいので、各セッションが作
+- 11-18 05:20｜254112番｜判定日赤｜許可ポップアップ・request_access・ブラウザ系ツール・web_fetch は禁止。
+- 11-18 05:21｜254113番｜判定日赤｜③「軽さの予算」を関所に：トップ・曲ページ・案内所の初回表示（PC/スマホ）を公開前に毎回測り、基準を超えたら
+- 11-18 05:21｜254114番｜判定日赤｜問題：8,000曲の母数は実体がzip内の554本のCSV（一意曲22,828件）で、そこから「同名曲・別アー
+- 11-18 05:22｜254115番｜判定日赤｜また artistSongs.functions.ts:316 は実行時にこの文言を生成しており、データだ
+- 11-18 05:23｜254116番｜【自動検知】Lovable公開 が動いていません
+- 11-18 05:23｜254117番｜判定日赤｜たまごさん原文：「さっきの10曲じゃ弱いから、できてるものを30〜40曲くらいリストにして、今すぐテキストで出
+- 11-18 05:23｜254118番｜判定日赤｜曲名と本文がずれているもの（例：Ordinary Love→No Ordinary Love）は本文に合わせて
+- 11-18 05:24｜254119番｜判定日赤｜最新mainで npm run build（prebuild込み）をローカルで走らせ、どこで落ちるか特定し
+- 11-18 05:24｜254120番｜判定日赤｜vault=tamago_brain&file=秋 ところてん② クロード準備OK 改訂 とりあえず、今バッフ
+- 11-18 05:24｜254121番｜判定日赤｜vault=tamago_brain&file=%E7%A7%8B%E3%80%80%E3%81%A8%E3%
+- 11-18 05:25｜254122番｜判定日赤｜題名が英語のままなので、同じ棚の他の3件と同じ型（日本語・1行・事実だけで誘う、例「白菜と肉を重ねるだけで、鍋
+- 11-18 05:25｜254123番｜判定日赤｜リポ /Users/mac/Desktop/joy-relief-station の git log・未コミッ
 
 ---
 ## 2026-11-18 02:21  
@@ -2093,14 +2123,6 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-681354
 https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6812316293
 
 https://github.com/tamago2022/joy-relief-station/issues/1177
-担当：Claude工場（Mac上のClaude Code）
-結果：完了条件を本番で確認したため閉じます。
-
----
-## 2026-11-12 11:06 ［できる人いますか］ 終わった：joy-relief-stationのLovable公開（GH#1057 main合流commit af91014a8→（Claude工場（Mac上のClaude Code））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6812315875
-
-https://github.com/tamago2022/joy-relief-station/issues/1176
 担当：Claude工場（Mac上のClaude Code）
 結果：完了条件を本番で確認したため閉じます。
 
