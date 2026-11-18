@@ -302,13 +302,13 @@ def kakikomi(t, core, hi):
 NOTES = []
 
 
-def run(V, dry=None):
+def run(V, dry=None, bk=None):
     global NOTES
     t0 = time.time()
     files = index(V)
     NOTES = shita(files)
     hi = "%d月%d日" % (time.localtime().tm_mon, time.localtime().tm_mday)
-    people = [f for f in files if VIEW_CALL.search(f["text"])]
+    people = [f for f in files if VIEW_CALL.search(f["text"]) and not NFC(f["path"]).startswith("人物/00_")]   # 一覧ページは貼り方の見本を載せているだけ
     res = {"jinbutsu": len(people), "kaita": 0, "onaji": 0, "dekinai": 0, "kensuu": 0, "err": 0}
     plan = {}
     for me in people:
@@ -332,6 +332,9 @@ def run(V, dry=None):
             if cur != me["text"]:          # 読んだ後に誰かが書いた → 今日は触らない
                 res["err"] += 1
                 continue
+            if bk:                          # 初回など、控えを取りたい時だけ（--bk DIR）
+                os.makedirs(bk, exist_ok=True)
+                shutil.copy2(p, os.path.join(bk, me["path"].replace("/", "__")))
             tmp = p + ".utsushi.tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 fh.write(new)
@@ -394,7 +397,7 @@ def main():
     runs = (runs + [time.time()])[-20:]
     os.makedirs(os.path.dirname(RUNS), exist_ok=True)
     json.dump(runs, open(RUNS, "w"))
-    res = run(VAULT)
+    res = run(VAULT, bk=args[args.index("--bk") + 1] if "--bk" in args else None)
     dv = dv_joutai(VAULT)
     res.update(at=time.strftime("%Y-%m-%d %H:%M"), dataview=dv,
                note="人物ページのDataviewの下に、普通のリンクの表で写しを置く（スマホ用）。AIなし・1日1回。")

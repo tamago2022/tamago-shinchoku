@@ -314,6 +314,9 @@ while :; do
   # 2026-11-18 1時間おき→1日1回（新しい曲が来た時だけAIを呼ぶ。待つ理由が無い）
   # 2026-11-19 店主「AIを呼ぶ定期は1日2回でいい」：止めた定期（留守番の見回り）の中身が戻っていないか・定期のAI呼び出しが1日2回を超えていないかを1日1回見る（AIは呼ばない）
   every_hours teiki_jougen 24 && ( python3 "$REPO/tools/teiki_jougen.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  # 2026-11-19 店主「iPhoneのObsidianで人物ページがコードのまま」：決まり「Dataviewは結果を書き足した写しを置く」。
+  #   人物ページ76枚のDataviewの下に、普通のリンクの表の写しを1日1回だけ書き直す（AIなし・中でも20時間ゲート・teiki_jougen が回数を見る）
+  every_hours jinbutsu_utsushi 24 && ( python3 "$REPO/tools/jinbutsu/utsushi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   every_hours 1192_romaji 24 && ( python3 "$REPO/tools/1192_title_romaji.py" hourly >> "$REPO/status/1192_romaji/hourly.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（882番）：「今すぐ走っているもの」がgenzaichi.json（実質30分おき）だと
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
