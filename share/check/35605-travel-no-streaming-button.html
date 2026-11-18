@@ -52,7 +52,7 @@
 <div class="date">2026-11-18 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-14に『旅の部屋＞旅に出たくなる1分』棚の非音楽カード（鹿の動画等）にSpotify/Apple/Amazonボタンが誤表示されていると報告された件。当時の調査で、コードはmain修正済み(commit 867a30d8・ShelfCardViewはCardActionClusterへstreamingTargetを渡さない設計に恒久対策済み)、Lovable公開の反映待ちのみと判明していた。本日2026-11-18、本番URLを実機で再確認した。
+2026-08-14に『旅の部屋＞旅に出たくなる1分』棚の非音楽カード（鹿の動画等）にSpotify/Apple/Amazonボタンが誤表示されていると報告された件。当時の調査で、コードは既にmain修正済み（ShelfCardViewはCardActionClusterへstreamingTargetを渡さない設計に恒久対策済み）、Lovable公開の反映待ちのみと判明していた。本日2026-11-18、本番URLを実機で再確認した。
 </div>
 
 <h2>② 数字</h2>
@@ -78,7 +78,7 @@
 </table>
 
 <footer>
-node fetchで本番HTMLを直接取得し、data-card-admin-bar要素の中身を実測。計10個のadmin-bar要素（travel-short-films棚3件含む）すべて空で、Spotify/Apple/Amazonのアイコン・リンクは0件。コード側（src/components/ShelfCardView.tsx・CardActionCluster.tsx）もstreamingTargetを棚グリッドには渡さない設計であることをソースで確認済み。追加修正は不要、既に反映済みと判断した。
+node fetchで本番HTMLを直接取得し、各カードの管理バー要素の中身を実測。計10個の要素（travel-short-films棚3件含む）すべて空で、Spotify/Apple/Amazonのアイコン・リンクは0件。棚グリッドを描く側のコードも、曲ストリーミング検索ボタンを渡さない設計であることをソースで確認済み。追加修正は不要、既に反映済みと判断した。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
