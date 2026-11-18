@@ -110,8 +110,10 @@ def from_heartbeat():
         if not m:
             continue
         te = re.search(r"tick_every\s+(\d+)", s)
+        eh = re.search(r"every_hours\s+\S+\s+(\d+)", s)   # 2026-11-18 時刻で間引く形
         go = re.search(r"status/([\w\-]+\.go)", s)
         freq = ("%d分おき" % max(1, int(te.group(1)) * TICK_SEC // 60)) if te else \
+               ("%d時間おき" % int(eh.group(1))) if eh else \
                ("%s があるとき" % go.group(1) if go else "毎周（15秒）")
         if te and go:
             freq += "＋%s" % go.group(1)

@@ -248,20 +248,20 @@ while :; do
   # 2026-09-07（620番）：確認ページ(share/check)が上限も掃除も無いまま増え続けていた。
   #   60日以上さわられていないものだけ、店主が拾えるようゴミ箱へ退避する（6時間に1回でよい）。
   # 起動の間引き（2026-09-18）：中で6時間に間引いている
-  tick_every 40 && ( python3 "$REPO/tools/check_page_pruner.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  every_hours check_page_pruner 6 && ( python3 "$REPO/tools/check_page_pruner.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-07（626番）：support@anthropic.comへの問い合わせ返信を1日1回チェックする見張り。
   #   新しいlaunchd便は増やさず、既存の心臓に相乗り。実際にIMAPへ繋ぐのはスクリプト内部で
   #   1日1回に間引いている（それ以外の15秒ごとの呼び出しは即座に戻るだけで負荷ゼロに近い）。
   # 起動の間引き（2026-09-18）：中で1日1回に間引いている
-  tick_every 40 && ( python3 "$REPO/tools/check_anthropic_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  every_hours check_anthropic_reply 6 && ( python3 "$REPO/tools/check_anthropic_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-13（801番）：LINE Creators Market／スタンプメーカーへの問い合わせ返信を1日1回チェックする見張り。
   #   check_anthropic_reply.pyと全く同じ間引きパターンで既存の心臓に相乗り（新しいlaunchd便は増やさない）。
   # 起動の間引き（2026-09-18）：中で1日1回に間引いている
-  tick_every 40 && ( python3 "$REPO/tools/check_line_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  every_hours check_line_reply 6 && ( python3 "$REPO/tools/check_line_reply.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-20（974番）：珍獣ラシコルの【審査結果】メールの見張り。801番と同じ相乗り方式。
   #   801番は「問い合わせの返信」用でDONEフラグを別に持つため、審査結果はこちらで別に見る。
   #   たまごさんが「すぐ」と言っているので、中の間引きだけ30分（IMAP接続は30分に1回）。
-  tick_every 40 && ( python3 "$REPO/tools/check_line_shinsa.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  every_hours check_line_shinsa 6 && ( python3 "$REPO/tools/check_line_shinsa.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-17（891番）：外部連絡窓口台帳(renraku_madoguchi.json)に登録した全窓口(LINE Creators
   #   Market・LINEスタンプメーカー・Lovable・Anthropic)への返信を毎日（朝・夜の2回想定）見張る。
   #   check_anthropic_reply.py/check_line_reply.pyと同じ間引きパターンで既存の心臓に相乗り
@@ -279,20 +279,20 @@ while :; do
   #   新規登録された動画を見回るタスクを、1日1回だけ発車待ちへ積む（check_anthropic_reply.pyと
   #   同じ間引きパターン。新しいlaunchd便は増やさない）。
   # 起動の間引き（2026-09-18）：中で1日1回に間引いている
-  tick_every 40 && ( python3 "$REPO/tools/daily_ingest_scheduler.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  every_hours daily_ingest_scheduler 3 && ( python3 "$REPO/tools/daily_ingest_scheduler.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-23（1036番）：税金ラインの係。Obsidianの#税金タグ・棚を1日1回拾って、
   #   e-Gov法令API／国会会議録API（どちらもキー不要・0円）で裏を取り、
   #   「裏取り待ち／裏が取れた／取れなかった」の3つの数字だけを status/uratori/counts.json へ。
   #   新しいlaunchd便は増やさない。中で1日1回に間引いている（daily_ingest_schedulerと同じ型）。
   #   ★Vaultにも外のAPIにも、サンドボックスからは届かない（実測 curl→000）。心臓はMacなので届く。
-  tick_every 40 && ( python3 "$REPO/tools/zeikin_kakari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  every_hours zeikin_kakari 3 && ( python3 "$REPO/tools/zeikin_kakari.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-25（1140番）：ごきげん補給所の全26,400曲を、毎日1回まるごと機械で流し直す。
   #   実測（oEmbedで全動画IDを1件ずつ）→全曲検査→「再生できる動画が1本も無い」曲を
   #   表から外す表を作り直す→変わったぶんだけ main に1コミット。
   #   ★新しいlaunchd便は増やさない。中で1日1回に間引いている（daily_ingest_schedulerと同じ型）。
   #   ★サンドボックスからは youtube.com に回線が出ない（実測 curl→000）。心臓はMacなので届く。
-  tick_every 40 && ( python3 "$REPO/tools/1140_mainichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
-  tick_every 41 && ( python3 "$REPO/tools/1141_mainichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  every_hours 1140_mainichi 3 && ( python3 "$REPO/tools/1140_mainichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  every_hours 1141_mainichi 3 && ( python3 "$REPO/tools/1141_mainichi.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1057番）：ごきげん補給所の「重さ」の見張り。たまごさんより先に気づく係。
   #   これまで重さは**人が思い出したときにだけ**測られていた＝「いつの間にか3MBに戻る」が
   #   何度でも起きる。1日1回、機械が測る。★赤（前回比+5%超／1MB超／CLS0.1超）のときだけ
@@ -488,28 +488,28 @@ while :; do
   #     そこが毎日勝手に書き換わる形にする。新しい常駐も定期タスクも作らない（心臓に相乗り）。
   #   中で1日1回に間引く（status/.soto_hatarakite_at）ので、ここは緩く呼べばよい。
   #   AIを1回も呼ばない・外へ1回も出ない＝クレジット0円。投げっぱなしにして心臓は待たない。
-  tick_every 240 && ( python3 "$REPO/tools/soto_hatarakite.py" >> "$REPO/status/soto_hatarakite.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours soto_hatarakite 6 && ( python3 "$REPO/tools/soto_hatarakite.py" >> "$REPO/status/soto_hatarakite.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1059番）サブスクのお知らせ係。たまごさん「全てのサブスク、3日ぐらい前から
   #   アナウンスして。もう更新が迫ってるって。3日連続お知らせしてくださいね」
   #   ★更新日の3日前・2日前・前日に、status/dispatch_outbox.jsonl へ**1行だけ**積む。
   #     更新日を過ぎたら止まる。同じ日に2回は言わない（status/subsc_shirase_sent.json）。
   #   ★お金の紙(1051番)より先に呼ぶ＝紙は書き直された数字を写すだけ。新しい常駐も定期タスクも作らない。
   #   中で1日1回に間引く（status/.subsc_shirase_at）。外へ出るのは為替レート1本だけ＝0円。
-  tick_every 240 && ( python3 "$REPO/tools/subsc_shirase.py" >> "$REPO/status/subsc_shirase.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours subsc_shirase 6 && ( python3 "$REPO/tools/subsc_shirase.py" >> "$REPO/status/subsc_shirase.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-14 サブスクのカレンダー。家計簿（status/okane/kakin.json）に予定の無いサブスクが増えたら
   #   status/dispatch_outbox.jsonl に1日1行 → Dispatch がGoogleカレンダーのコネクタで作り --done で控える。読むだけ＝0円。
-  tick_every 240 && ( python3 "$REPO/tools/subsc_calendar.py" >> "$REPO/status/subsc_calendar.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours subsc_calendar 4 && ( python3 "$REPO/tools/subsc_calendar.py" >> "$REPO/status/subsc_calendar.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-21 ごきげんの種（今週のごきげん一粒・LINE 週1回）。5分おき：1日1回 次の2号の下書き、金曜20〜23時に broadcast。
   #   鍵（LINE_CHANNEL_ACCESS_TOKEN）が無い間は送らず下書きだけ。無料枠200通を超えそうなら送らず Dispatch へ1行＝0円。
   #   2026-10-25 たまごさん方針確定：配信・運営はGrokボット担当。gokigen_tane.py は送らない（HAISHIN_TANTOU）＝下書きのネタ帳だけ。
-  tick_every 20 && ( python3 "$REPO/tools/gokigen_tane.py" --tick >> "$REPO/status/gokigen_tane.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours gokigen_tane 6 && ( python3 "$REPO/tools/gokigen_tane.py" --tick >> "$REPO/status/gokigen_tane.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-25 LINE配信の記録係：Grokボットが #1039 に書く【LINE配信記録】を拾い、sns_hannou（platform=line）と週まとめ sns_shuukei.json へ。
   #   中で6時間に1回へ間引く。gh で読むだけ・送らない＝0円。
   tick_every 20 && ( python3 "$REPO/tools/line_haishin.py" --tick >/dev/null 2>&1 & ) >/dev/null 2>&1
   # 2026-10-15 クラウドセッションクレジット問い合わせ（Gmail thread 1a13bbf5804e4282）の返事見張り。1日1回 outbox に1行→Dispatch がGmailで確認。11/5で自動停止。0円。
   # 2026-10-22 クラウド便を毎日2〜3本自動で起動（claude --cloud・クレジット$248を11/1までに使い切る）。順番 status/cloud_credit/junban.txt。11/1で自動停止。
-  tick_every 240 && ( python3 "$REPO/tools/cloud_mainichi.py" >> "$REPO/status/cloud_credit/mainichi.log" 2>&1 & ) >/dev/null 2>&1
-  tick_every 240 && ( python3 "$REPO/tools/cloud_credit_henji.py" >> "$REPO/status/cloud_credit_henji.log" 2>&1 & ) >/dev/null 2>&1
+  # 【停止 2026-11-18 定期の棚卸し：クラウド枠は11/1で期限切れ・毎時「期限後」と書くだけ】 tick_every 240 && ( python3 "$REPO/tools/cloud_mainichi.py" >> "$REPO/status/cloud_credit/mainichi.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours cloud_credit_henji 24 && ( python3 "$REPO/tools/cloud_credit_henji.py" >> "$REPO/status/cloud_credit_henji.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-24（1051番）お金の紙。たまごさん「シンプルに月々いくらかかってるかを目視で確認できるようにしたい」
   #   ★お金の紙は1枚だけ。中で1日1回に間引く（status/.okane_ichimai_at）。AIを呼ばない・外へ出ない＝0円。
   #   2026-10-08 作り直し：今月いくら（カードから実際に引かれた円）＋サービスごと＋証拠。1時間に1回書き直す。
@@ -639,11 +639,11 @@ while :; do
   tick_every 20 && ( python3 "$REPO/tools/okoshi.py" >> "$REPO/status/okoshi/run.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-11 案件ごとの家計簿。たまごさん「『テスト1 水彩画バージョンでいくら』みたいに、案件ごとのコストを家計簿みたいに全部つけて」
   #   台帳を読み直して share/check/kakeibo.html を作り直すだけ（AIを呼ばない・外へ出ない＝0円）。20分おき（15秒×80）。
-  tick_every 80 && ( python3 "$REPO/tools/kakeibo.py" >> "$REPO/status/kakeibo.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours kakeibo 6 && ( python3 "$REPO/tools/kakeibo.py" >> "$REPO/status/kakeibo.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-11 特集の見張り。たまごさん「特集がどんどんできるのは悪くない。公開はしていい。でも1個ずつさらっと確認したい」
   #   joy-relief-station の main の /feature/... を前回と比べ、本番で200になった新しい特集を進捗表の一番上と outbox へ。
   #   git と curl だけ（0円）。20分おき。結果 status/public/tokushu.json・tokushu_new.json。
-  tick_every 80 && ( python3 "$REPO/tools/tokushu.py" >> "$REPO/status/tokushu.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours tokushu 6 && ( python3 "$REPO/tools/tokushu.py" >> "$REPO/status/tokushu.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-09 許可ポップアップの関所：アプリのログから許可要求を道具ごとに数える（読むだけ・1時間おき・0円）。
   # 【停止 2026-10-17 見回りの棚卸し：7日で直した実績ゼロ／通知だけ（status/public/mimawari_hantei.json）】 tick_every 240 && ( python3 "$REPO/tools/kyoka_kanmon.py" >> "$REPO/status/okoshi/kyoka.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-10 編集ログインの毎日見回り。たまごさん「本当に終わらせてほしい」（@で入れない・6回目）。
@@ -654,7 +654,7 @@ while :; do
   #   Vaultの更新時刻を数えて1日の書き込み回数を出し、工場側が上限を超えたら進捗表を赤（status/public/vault_kanmon.json）。
   #   読むだけ（0円）。20分おき。00_現在地.md のまとめ書きは1時間おきに起きて、22時以降・変化があった時だけ1日1回。
   tick_every 80 && ( python3 "$REPO/tools/vault_kanmon.py" > "$REPO/status/vault_kanmon/run.log" 2>&1 & ) >/dev/null 2>&1
-  tick_every 240 && ( python3 "$REPO/tools/genzaichi_matome.py" >> "$REPO/status/vault_kanmon/matome.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours genzaichi_matome 6 && ( python3 "$REPO/tools/genzaichi_matome.py" >> "$REPO/status/vault_kanmon/matome.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-11 テザリングの関所。たまごさん「Wi-Fiが重すぎてテザリング中＝通信量が限られる」
   #   テザリング中は push／yt-dlp／大量取得／朗読ループ／Playwright／Googleドライブを止め、Wi-Fiに戻ったら自動で再開。1分おき。
   tick_every 4  && ( python3 "$REPO/tools/tethering_kanmon.py" > /dev/null 2>> "$REPO/status/tethering.log" & ) >/dev/null 2>&1
@@ -672,8 +672,8 @@ while :; do
   # 2026-10-12 作業場と制作の中間ファイルを本体に溜めない（push済みは消す・未保存はiMac HDDへ写して消す）。1時間おき。
   # 2026-10-14 gitの書きかけパックを消す・自動gcを止めて1日1回だけ最後まで回す（打ち切られたgcが1時間2GBずつ食っていた）
   # 2026-10-14 Vaultを本体に置いたままにする（容量不足でiCloudに追い出された分を取り戻す）。1時間おき。
-  tick_every 240 && ( python3 "$REPO/tools/obsidian_mamoru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
-  tick_every 240 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  every_hours obsidian_mamoru 6 && ( python3 "$REPO/tools/obsidian_mamoru.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
+  every_hours git_souji 24 && ( python3 "$REPO/tools/git_souji.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   #   2026-10-14 1時間→10分おきへ（子セッションが /private/tmp に push 用の作業場を1日7GB置いていく速さに合わせる）
   tick_every 40 && ( python3 "$REPO/tools/worktree_taihi.py" >/dev/null 2>> "$REPO/status/youryou_kyuukyuu.log" & ) >/dev/null 2>&1
   # 2026-10-15 使ったらしまう係（1日1回＋status/shimau.go で今すぐ）。測る・作り直せるものを片付ける・HDDの置き場を日数で片付ける
