@@ -784,3 +784,6 @@ if __name__ == "__main__":
     # 2026-10-31 YouTube 限定公開を Grokボットに頼んだ分の返事を拾う（たまごさん「Grokボットは普通に限定公開で上げてくる」）。
     #   Issue のコメントから YouTube URL を拾って status/yt_gentei/grok_irai.json と Dispatch へ。中で10分に間引く・そろうか7日で止まる。
     _okosu("yt_grok_irai.py", "--tick")
+
+    # 2026-11-18 Museとの往復（行き＝museラベルのIssue／帰り＝Releaseの添付・コメント）。中で10分に1回に間引く
+    _okosu("muse_renraku.py", "--tick")
