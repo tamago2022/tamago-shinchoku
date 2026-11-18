@@ -33,6 +33,11 @@ HOME = os.path.expanduser("~")
 BACKUP = os.path.join(HOME, ".tamago", "backup", "teiki_jougen")
 TOMETA = ["rusuban-mimawari-30min"]          # 止めた定期タスク（中身を置かせない）
 JOUGEN = 2                                    # 1日の上限
+# AIを呼ばない定期で「1日1回まで」と決めたもの（名前, 走った時刻の記録 runs.json（UNIX秒の並び）, 1日の上限）。
+#   2026-11-19 人物ページのスマホ用の写し（tools/jinbutsu/utsushi.py・心臓 every_hours 24＋中で20時間ゲート）。
+AI_NASHI = [
+    ("人物ページの写し(jinbutsu/utsushi.py)", os.path.join(REPO, "status", "jinbutsu_utsushi", "runs.json"), 1),
+]
 # 出どころ（会話の最初の依頼文の頭で見分ける）。仕事そのもの（工場の子・検品）はここに入れない。
 TEIKI = [
     ("留守番の見回り", re.compile(r'scheduled-task name=\\?"rusuban')),
@@ -128,13 +133,30 @@ def kazoeru(roots, since):
     return cnt
 
 
+def ai_nashi(since, ichiran=None):
+    """AIを呼ばない定期の、直近24時間の実行回数。上限を超えたものだけ返す。"""
+    cnt, over = {}, {}
+    for name, runs, jougen in (ichiran or AI_NASHI):
+        try:
+            n = sum(1 for x in json.load(open(runs)) if x >= since)
+        except Exception:
+            n = 0
+        cnt[name] = n
+        if n > jougen:
+            over[name] = n
+    return cnt, over
+
+
 def main():
     moved = mamoru()
     roots = [os.path.join(HOME, ".claude", "projects"),
              os.path.join(HOME, "Library", "Application Support", "Claude", "local-agent-mode-sessions")]
     cnt = kazoeru(roots, time.time() - 86400)
     over = {k: v for k, v in cnt.items() if v > JOUGEN}
+    an_cnt, an_over = ai_nashi(time.time() - 86400)
+    over.update(an_over)
     res = {"at": time.strftime("%Y-%m-%d %H:%M"), "jougen_1nichi": JOUGEN, "24jikan": cnt, "koeta": over,
+           "ai_nashi_24jikan": an_cnt,
            "modoshita_nakami": moved,
            "note": "AIを呼ぶ定期は1日2回まで（2026-11-19 店主）。超えたものは Dispatch へ1行。止めた定期の中身が戻っていたら控えへ移す。"}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
@@ -172,6 +194,10 @@ def selftest():
                 f.write(json.dumps({"type": "user", "timestamp": ts + ".000Z", "message": {"content": txt}}, separators=(",", ":")) + "\n")
         c = kazoeru([p], time.time() - 3600)
         assert c["留守番の見回り"] == 1 and c["ログイン確認(auth_keeper)"] == 1 and sum(c.values()) == 2, c   # 30日前の会話（ctimeは今）は数えない
+        r = os.path.join(t, "runs.json")
+        json.dump([time.time() - 90000, time.time() - 100, time.time() - 50], open(r, "w"))
+        c2, o2 = ai_nashi(time.time() - 86400, [("写し", r, 1), ("無い", os.path.join(t, "nai.json"), 1)])
+        assert c2 == {"写し": 2, "無い": 0} and o2 == {"写し": 2}, (c2, o2)
         print("teiki_jougen self-test OK")
     finally:
         shutil.rmtree(t, ignore_errors=True)

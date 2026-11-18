@@ -41,6 +41,7 @@ AI = {  # 2026-11-19 作り直し：数字は会話ログの実測（tools/teiki
     "cloud_mainichi.py": ("クラウド枠を毎日使う係（11/1で期限切れ・毎時「期限後」と書くだけ）", 0, 0, "止めた"),
     "muse_renraku.py": ("Museへの依頼の返事を GitHub で見る（AIは呼ばない）", 0, 0, "10分おき→依頼中だけ1日2回・依頼が無ければ何もしない"),
     "com.tamago.machine-status": ("15分便。中の gaibu_copy_naoshi（1日1回）・daimei_naoshi（12時間おき）・2210_tanaire（1日1回）、session_watchdog は止まった時だけAI", None, None, "中のAI係を1日2回までに"),
+    "jinbutsu/utsushi.py": ("Obsidianの人物ページ76枚に、Dataviewの結果の写し（普通のリンクの表）を書き直す。スマホでも一覧が見える（AIは呼ばない）", 0, 0, "新設（11/19・1日1回）"),
     "teiki_jougen.py": ("AIを呼ぶ定期が1日2回を超えていないか・止めた定期の中身が戻っていないかを見る（AIは呼ばない）", 0, 0, "新設（11/19・1日1回）"),
 }
 

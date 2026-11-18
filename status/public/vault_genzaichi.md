@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-11-19 07:49:38・hash=735530d0269f -->
+<!-- 自動生成・genzaichi_sync.py・2026-11-19 08:19:56・hash=3393b01c92f9 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -195,3 +195,5 @@
 - 2026-10-31 宇宙うんこv3（滝と月・54秒）をドライブ「AI制作物/Claude/宇宙うんこ」へ。らせん階段の鉄琴・円い滝つぼ・雲の夜のらせん・月の山のロゴ壁画→全体の引き。すり抜けはBlender内の衝突検査で0。作り方は ［除去］.md。次：板の質感・塔の見た目・水の厚み。
 
 - 2026-11-01 ごきげん補給所：棚編集のゴミ箱で画面が黒くなって固まる不具合を直して公開（削除の確認が編集パネルの裏に隠れていた。再発止め check-confirm-on-top）。空の棚「AIコメディ」を削除（中身0件・控え status/tana_sakujo_hikae/）。
+
+- 2026-11-19 人物ページ（76人）：iPhoneでDataviewがコードのまま→原因は community-plugins.json から dataview が外れていた（11/19 7:01に古い一覧で書き戻し）。戻した。保険に各ページのDataviewの下へ「スマホ用の写し」（普通のリンクの表）を置き、tools/jinbutsu/utsushi.py が1日1回更新（AIなし・teiki_jougenに登録）。店主の1手：iPhoneのObsidianを閉じて開き直す。
