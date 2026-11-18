@@ -50,7 +50,7 @@ GATE = os.path.join(ST, ".daimei_naoshi_last")
 FORCE = os.path.join(ST, ".daimei_naoshi_force")
 LOCK = os.path.join(ST, ".daimei_naoshi.lock")
 LOG = os.path.join(ST, "daimei_naoshi.log")
-CAP_PER_DAY = 20
+CAP_PER_DAY = 2   # 2026-11-19 店主「AIを呼ぶ定期は1日2回まで」（元は20）
 GIVE_UP = 3
 DEADLINE_SEC = 15 * 60
 HISTORY_KEEP = 2000
@@ -367,7 +367,7 @@ def main():
                 pass
         else:
             try:
-                if time.time() - os.path.getmtime(GATE) < 30 * 60:
+                if time.time() - os.path.getmtime(GATE) < 12 * 3600:  # 2026-11-19 30分→12時間（1日2回まで）
                     return 0
             except OSError:
                 pass
