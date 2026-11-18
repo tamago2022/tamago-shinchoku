@@ -128,6 +128,15 @@ run_with_timeout() {
 #   毎分の起動回数：約56回 → 約12回（約8割減）。
 TICK=0
 tick_every() { [ "$(( TICK % $1 ))" -eq 0 ]; }
+# 2026-11-18 店主「1日1回でいいことまで10分・1時間おきに回してクレジットを減らすのは良くない」
+#   AIを呼ぶ定期処理は、心臓の周回数（再起動で0に戻る）ではなく、最後に走った時刻で間引く。
+#   every_hours 名前 時間 … 前回から指定の時間がたっていれば印を打って真を返す。表は Documents/AI作業/teiki_ichiran_1118.md
+every_hours() {
+  local f="$REPO/status/.every_$1"
+  local last; last="$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null || echo 0)"
+  [ $(( $(date +%s) - last )) -lt $(( $2 * 3600 )) ] && return 1
+  touch "$f"; return 0
+}
 
 # ---- 2026-09-26（1153番）Macが寝ないように、心臓が自分で押さえる ----
 # たまごさん「Claudeがオフラインになる。リモートも切れる。切れない方法はないのか。」
@@ -302,7 +311,8 @@ while :; do
   # 【停止 2026-11-05 見回りの棚卸し：claudeを呼ぶのに7日で訳した0（status/mihari_tanaoroshi/hyou.md）】 tick_every 15 && ( python3 "$REPO/tools/1191_honyaku_jidou.py" >> "$REPO/status/1191_nihongo_nokori/jidou.log" 2>&1 & ) >/dev/null 2>&1
   # 1192番（2026-10-10）日本語の曲名に海外向け表記（①Apple Music米国ストアの公式→②MusicBrainz→③Haikuのローマ字）を付けて辞書へ。
   #   新しい曲を拾う→ローマ字→公式集め（止まっていれば再開）→変わっていれば1コミット。結果 status/1192_romaji/build.json
-  tick_every 15 && ( python3 "$REPO/tools/1192_title_romaji.py" hourly >> "$REPO/status/1192_romaji/hourly.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-11-18 1時間おき→1日1回（新しい曲が来た時だけAIを呼ぶ。待つ理由が無い）
+  every_hours 1192_romaji 24 && ( python3 "$REPO/tools/1192_title_romaji.py" hourly >> "$REPO/status/1192_romaji/hourly.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（882番）：「今すぐ走っているもの」がgenzaichi.json（実質30分おき）だと
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
   #   毎サイクル（15秒おき）回して status/top_status.json を常に生きた状態に保つ。
@@ -311,7 +321,8 @@ while :; do
   #   queue_add は機械的に掃除した1行（hyoudaiSrc=rule）を即座に入れる。ここでは約10分おきに
   #   それをAI（haiku・関所経由）で「何をする仕事か」の1行へ書き直す。走っているもの→次に発車の順。
   #   中で重ね掛けを止めている（前の回がまだなら即終了）。対象が0件ならAIは呼ばない。
-  tick_every 40 && ( python3 "$REPO/tools/hyoudai.py" --fill --max 20 >> "$REPO/status/hyoudai.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-11-18 10分おき→1日1回（進捗表の見出しのためだけにAIを週600回呼んでいた）
+  every_hours hyoudai 24 && ( python3 "$REPO/tools/hyoudai.py" --fill --max 40 >> "$REPO/status/hyoudai.log" 2>&1 & ) >/dev/null 2>&1
   # ───────────────────────────────────────────────────────────────
   # 1142番（2026-09-25）ループを閉じる3本。**出す → 測る → 直す → また出す** の後ろ3つ。
   #   たまごさん「測るところが無いと全部ただの作業」「基本的に止まらないで回し続けて」

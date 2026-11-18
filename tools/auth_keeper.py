@@ -104,7 +104,7 @@ if os.path.exists(_KANMON):
 #   キーチェーン側で測るときは今までどおり関所を通す（あちらは書き替えが起きる）。
 
 
-PROBE_INTERVAL_OK = 1800       # 通っているときは30分に1回
+PROBE_INTERVAL_OK = 86400      # 通っているときは1日1回（2026-11-18 店主：30分おきはクレジットの無駄。発車が落ちれば auto_launcher 側で分かる）
 PROBE_INTERVAL_NG = 600        # 切れているときは10分に1回（戻ったら即再開したい）
 TOKEN_LIFETIME_DAYS = 365      # setup-token の公称寿命
 WARN_DAYS = (30, 14, 7, 3, 1)

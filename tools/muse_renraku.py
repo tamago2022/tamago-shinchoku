@@ -11,7 +11,8 @@
   ※ github_watch.py は muse ラベルを工場の発車待ちに積まない（233213番）。帰りを拾うのはこの係だけ。
 
 使い方：
-  python3 tools/muse_renraku.py --tick       心臓から（中で10分に1回に間引く）
+  python3 tools/muse_renraku.py --tick       心臓から。依頼が無ければ何もしない。依頼中だけ12時間に1回（1日2回）見る
+                                             （2026-11-18 店主「10分おきなんかやらなくていい。待つ間も1日2回で十分」）
   python3 tools/muse_renraku.py --ima        今すぐ1回
   python3 tools/muse_renraku.py --self-test
 作るもの：status/muse_renraku/uketori/<tag>/（受け取った画像）・status/muse_renraku/irai_*.json の更新
@@ -49,6 +50,24 @@ def _dispatch(msg, kind="muse_uketori"):
     with open(OUTBOX, "a", encoding="utf-8") as f:
         f.write(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"), "type": kind, "message": msg},
                            ensure_ascii=False) + "\n")
+
+
+KANKAKU = 12 * 3600   # 依頼中に見に行く間隔（1日2回）
+
+
+def machi_ari():
+    """返事待ちの依頼（owari の無い irai_*.json）が1つでもあるか。ファイルを見るだけ。"""
+    try:
+        for n in os.listdir(DIR):
+            if n.startswith("irai_") and n.endswith(".json"):
+                try:
+                    if not json.load(open(os.path.join(DIR, n), encoding="utf-8")).get("owari"):
+                        return True
+                except Exception:
+                    return True
+    except OSError:
+        pass
+    return False
 
 
 def mitsukeru(irai, release, comments, labels):
@@ -113,6 +132,17 @@ def self_test():
     assert r["nai"] == ["b.png"] and not r["done"] and [c["id"] for c in r["new_comments"]] == [2]
     r = mitsukeru(irai, None, [], ["muse", "done"])
     assert r["nai"] == ["a.png", "b.png"] and r["done"]
+    import tempfile
+    global DIR
+    keep = DIR
+    with tempfile.TemporaryDirectory() as d:
+        DIR = d
+        assert not machi_ari()
+        json.dump({"owari": "x"}, open(os.path.join(d, "irai_a.json"), "w"))
+        assert not machi_ari()
+        json.dump({"issue": 1}, open(os.path.join(d, "irai_b.json"), "w"))
+        assert machi_ari()
+    DIR = keep
     print("muse_renraku self-test OK")
 
 
@@ -122,8 +152,10 @@ if __name__ == "__main__":
         self_test()
         sys.exit(0)
     if "--tick" in a:
+        if not machi_ari():
+            sys.exit(0)          # 依頼が無い＝何もしない（GitHubも叩かない）
         try:
-            if time.time() - os.path.getmtime(STAMP) < 600:
+            if time.time() - os.path.getmtime(STAMP) < KANKAKU:
                 sys.exit(0)
         except OSError:
             pass
