@@ -199,8 +199,14 @@ def u_html(u):
             "重み＝input×1＋書き込み×1.25＋読み×0.1＋output×5（APIの料金の比。Opus／Sonnet／Haikuの違いは入れていない＝Opusの留守番は少なめ、Haikuの係は多めに出る）。"
             "週枠≈＝重みの割合×その週の％【推測】。週枠の％の出どころ：" + "／".join("%s：%s" % (w["label"], w["pct_src"]) for w in W) +
             "。分からないこと：週枠が何トークンか（公開されていない）。Dispatch本体の11/12より前の会話ログは見つからない。店主との会話は直近4週のログに無い。集めた時刻 %s。" % u.get("at"))
-    return ("<ul>%s</ul><div class=\"w\"><table class=\"u\">%s%s</table></div><p class=\"note\">%s</p>" % (
-        "".join("<li>%s</li>" % html.escape(x) for x in top), th, "".join(tr), html.escape(note)))
+    raw = ["実測：会話ログ %s 集計（tools/teiki_uchiwake_atsume.py → tools/teiki_uchiwake.py）。週｜週枠%%（記録）｜出どころ｜会話数｜トークン [input, output, 書き込み, 読み]｜重みの割合%%" % u.get("at")]
+    for w in W:
+        for k, x in sorted(w["cats"].items(), key=lambda kv: -kv[1]["wari"]):
+            raw.append("%s｜%s｜%s｜%d｜%s｜%.2f" % (w["label"], w["pct"], k, x["kaiwa"], x["tok"], x["wari"]))
+    ru = u["rusuban"]
+    raw.append("留守番の見回り 10/11 23時以降：%d会話 %s／8/31以降：%d会話 %s" % (ru["tometa_ato"]["kaiwa"], ru["tometa_ato"]["tok"], ru["kaiwa"], ru["tok"]))
+    return ("<ul>%s</ul><div class=\"w\"><table class=\"u\">%s%s</table></div><p class=\"note\">%s</p><details><summary>実測の生データ</summary><pre style=\"font-size:11px;white-space:pre-wrap\">%s</pre></details>" % (
+        "".join("<li>%s</li>" % html.escape(x) for x in top), th, "".join(tr), html.escape(note), html.escape("\n".join(raw))))
 
 
 def render(rs):
