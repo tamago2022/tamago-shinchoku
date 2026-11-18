@@ -2,7 +2,36 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-18 17:18
+更新：2026-11-18 17:48
+
+---
+## 2026-11-18 17:35  
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6973361060
+
+工場の受付（status/queue.json）に入った新しい指示 22件。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
+
+- 11-18 16:20｜254584番｜GH1218 【最優先】見張りのNGで本番公開が黙って止まる問題を直す（3日停止の再発防止）
+- 11-18 16:52｜254600番｜判定日赤｜許可ポップアップ・request_access・ブラウザ・web_fetch禁止（リンクは tools/lin
+- 11-18 16:52｜254601番｜判定日赤｜番号56863｜原文：まずMichael Jacksonの代表曲(Rock With You含む必須曲)を洗い
+- 11-18 16:53｜254602番｜判定日赤｜番号56907｜原文：これはMichael Jacksonに限らず、サイト全体で「代表曲の一つ」のような一般論
+- 11-18 16:53｜254603番｜判定日赤｜番号56956｜原文：アーティストページ内の曲の並び順: 現状「追加した順」っぽくなっていて、後から重要な曲を
+- 11-18 16:53｜254604番｜判定日赤｜番号57753｜原文：店主がRock With Youのページで「棚編集」ボタンを押したところ、そこでも「棚に
+- 11-18 16:53｜254605番｜判定日赤｜番号63695｜原文：今後も良い事例・悪い事例が出るたびにここに追記していく運用にしたいので、各セッションが作
+- 11-18 16:54｜254606番｜判定日赤｜許可ポップアップ・request_access・ブラウザ系ツール・web_fetch は禁止。
+- 11-18 16:58｜254607番｜判定日赤｜③「軽さの予算」を関所に：トップ・曲ページ・案内所の初回表示（PC/スマホ）を公開前に毎回測り、基準を超えたら
+- 11-18 17:11｜254608番｜判定日赤｜問題：8,000曲の母数は実体がzip内の554本のCSV（一意曲22,828件）で、そこから「同名曲・別アー
+- 11-18 17:12｜254609番｜判定日赤｜また artistSongs.functions.ts:316 は実行時にこの文言を生成しており、データだ
+- 11-18 17:14｜254610番｜判定日赤｜たまごさん原文：「さっきの10曲じゃ弱いから、できてるものを30〜40曲くらいリストにして、今すぐテキストで出
+- 11-18 17:14｜254611番｜判定日赤｜曲名と本文がずれているもの（例：Ordinary Love→No Ordinary Love）は本文に合わせて
+- 11-18 17:14｜254612番｜判定日赤｜最新mainで npm run build（prebuild込み）をローカルで走らせ、どこで落ちるか特定し
+- 11-18 17:15｜254613番｜判定日赤｜vault=tamago_brain&file=秋 ところてん② クロード準備OK 改訂 とりあえず、今バッフ
+- 11-18 17:15｜254614番｜判定日赤｜vault=tamago_brain&file=%E7%A7%8B%E3%80%80%E3%81%A8%E3%
+- 11-18 17:17｜254615番｜判定日赤｜題名が英語のままなので、同じ棚の他の3件と同じ型（日本語・1行・事実だけで誘う、例「白菜と肉を重ねるだけで、鍋
+- 11-18 17:17｜254616番｜判定日赤｜リポ /Users/mac/Desktop/joy-relief-station の git log・未コミッ
+- 11-18 17:18｜254617番｜判定日赤｜渡す前に、そのURLを iPhone幅とPC幅の両方で headless で開いて、本文・画像・動画枠が出るの
+- 11-18 17:18｜254618番｜判定日赤｜工場の gh-pages 公開で消えないように、同じファイルを工場側の share/（公開の元になる場所）にも
+- 11-18 17:19｜254619番｜GH390 tamago2022さんの返信（11-18 17:18）
+- 11-18 17:19｜254620番｜GH826 tamago2022さんの返信（11-18 17:18）
 
 ---
 ## 2026-11-18 14:34  
@@ -2132,12 +2161,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-681939
 https://github.com/tamago2022/joy-relief-station/issues/1181
 担当：Claude工場（Mac上のClaude Code）
 結果：本番公開した。完了条件を満たしている。  - 公開: Lovable MCP `deploy_project`（Lovable AIエージェントは使っていない） - 時刻: 2026-11-12 18:01 JST 頃 - deployment_id: `7b59bb97-e07b-4c5c-ac7f-2e80df26b449` - 本番 `data-commit-sha`: `12e51369ad228ba3b3fdb2d9d1dc7e8a282c75f8`（078235a33 の9曲note埋めを含む main tip） - 確認URL: https://joy-relief-station.lovable.app/cover-guide?artist=robbie-robertson - `x-deployment-id`: `psr2.7b59bb97-e07b-4c5c-ac7f
-
----
-## 2026-11-12 15:54 ［できる人いますか］ 終わった：GitHub Issue tamago2022/joy-relief-station#1163 の本文全文とコメント全文（ChatGPT（Codex・エージェント））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6817067145
-
-https://github.com/tamago2022/joy-relief-station/issues/1170
-担当：ChatGPT（Codex・エージェント）
-結果：### Summary  * Issue #1163を基に実装された昭和大阪特集の成果物を、`status/furiwake/kaeri/issue-1163/`へ回収・固定保存しました。回収対象と来歴をREADMEに記録しています。 * 2026-11-12改稿版の13章本文を反映した`feature.showa-osaka.tsx`全文と、15本の動画定義を含む`showaOsakaVideos.ts`全文を保存しました。 * リポジトリ内から確認できた、Issue本文25,030字・コメント14件の取得実績、完成原稿のコメントID、関連コミットを回収記録へまとめました。 * この環境はGitHub未認証かつremote未設定であり、Issue本文と14コメントの**生テキストそのものは再取得できませんでした**。未取得部分を捏造せず、今回保存したものが「反映済み成果物全文と取得記録」
 
