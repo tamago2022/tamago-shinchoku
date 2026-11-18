@@ -202,7 +202,12 @@ def u_html(u):
     raw = ["実測：会話ログ %s 集計（tools/teiki_uchiwake_atsume.py → tools/teiki_uchiwake.py）。週｜週枠%%（記録）｜出どころ｜会話数｜トークン [input, output, 書き込み, 読み]｜重みの割合%%" % u.get("at")]
     for w in W:
         for k, x in sorted(w["cats"].items(), key=lambda kv: -kv[1]["wari"]):
-            raw.append("%s｜%s｜%s｜%d｜%s｜%.2f" % (w["label"], w["pct"], k, x["kaiwa"], x["tok"], x["wari"]))
+            raw.append("%s｜週枠%s%%｜%s｜%d会話｜%s｜重み%.2f%%｜週枠≈%.2f%%" % (w["label"], w["pct"], k, x["kaiwa"], x["tok"], x["wari"], x["waku_suisoku"]))
+        for k, x in w["heart"].items():
+            raw.append("%s｜　└%s｜%d会話｜%s｜重み%.2f%%｜週枠≈%.2f%%" % (w["label"], k, x["kaiwa"], x["tok"], x["wari"], x["waku_suisoku"]))
+    a = sum((w["cats"].get("留守番の見回り") or {}).get("waku_suisoku", 0) for w in W[:4])
+    b = sum((w["cats"].get("心臓のAI係") or {}).get("waku_suisoku", 0) for w in W[:4])
+    raw.append("4週の合計（推測）：留守番 %.1f%%／心臓のAI係 %.1f%%／両方 %.1f%%" % (a, b, a + b))
     ru = u["rusuban"]
     raw.append("留守番の見回り 10/11 23時以降：%d会話 %s／8/31以降：%d会話 %s" % (ru["tometa_ato"]["kaiwa"], ru["tometa_ato"]["tok"], ru["kaiwa"], ru["tok"]))
     return ("<ul>%s</ul><div class=\"w\"><table class=\"u\">%s%s</table></div><p class=\"note\">%s</p><details><summary>実測の生データ</summary><pre style=\"font-size:11px;white-space:pre-wrap\">%s</pre></details>" % (
