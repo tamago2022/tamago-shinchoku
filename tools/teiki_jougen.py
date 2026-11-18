@@ -64,6 +64,25 @@ def mamoru(home=None):
     return moved
 
 
+def hajime(f):
+    """会話の始まりの時刻（ログの最初の timestamp）。ファイルの ctime は使わない：
+    11/19 実測で古い会話ログの ctime がまとめて新しくなっており、ctime で選ぶと24時間で留守番132回と誤って数えた
+    （前の便の「週3,012回」も同じ誤りの可能性が高い）。"""
+    import datetime as _D
+    try:
+        with open(f, encoding="utf-8", errors="ignore") as fh:
+            for i, l in enumerate(fh):
+                if i > 30:
+                    break
+                m = re.search(r'"timestamp":"([0-9T:.\-]+)Z?"', l)
+                if m:
+                    t = _D.datetime.fromisoformat(m.group(1)[:19]).replace(tzinfo=_D.timezone.utc)
+                    return t.timestamp()
+    except Exception:
+        pass
+    return 0
+
+
 def atama(f):
     try:
         with open(f, encoding="utf-8", errors="ignore") as fh:
@@ -95,9 +114,11 @@ def kazoeru(roots, since):
             if f.endswith("audit.jsonl") or "/subagents/" in f:
                 continue
             try:
-                if os.path.getctime(f) < since:
+                if os.path.getmtime(f) < since:   # 下見（書き足されていない会話は飛ばす）
                     continue
             except Exception:
+                continue
+            if hajime(f) < since:                 # 本番：会話が始まった時刻で決める
                 continue
             h = atama(f)
             for k, rx in TEIKI:
@@ -143,11 +164,14 @@ def selftest():
         assert mamoru(home=t) == []
         p = os.path.join(t, "proj")
         os.makedirs(p)
-        for i, txt in enumerate(['<scheduled-task name="rusuban-mimawari-30min">', "1+1は？数字だけ", "ふつうの仕事"]):
+        now = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime())
+        old = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(time.time() - 30 * 86400))
+        for i, (txt, ts) in enumerate([('<scheduled-task name="rusuban-mimawari-30min">', now), ("1+1は？数字だけ", now),
+                                       ("ふつうの仕事", now), ('<scheduled-task name="rusuban-mimawari-30min">', old)]):
             with open(os.path.join(p, "%d.jsonl" % i), "w") as f:
-                f.write(json.dumps({"type": "user", "message": {"content": txt}}) + "\n")
-        c = kazoeru([p], time.time() - 60)
-        assert c["留守番の見回り"] == 1 and c["ログイン確認(auth_keeper)"] == 1 and sum(c.values()) == 2, c
+                f.write(json.dumps({"type": "user", "timestamp": ts + ".000Z", "message": {"content": txt}}, separators=(",", ":")) + "\n")
+        c = kazoeru([p], time.time() - 3600)
+        assert c["留守番の見回り"] == 1 and c["ログイン確認(auth_keeper)"] == 1 and sum(c.values()) == 2, c   # 30日前の会話（ctimeは今）は数えない
         print("teiki_jougen self-test OK")
     finally:
         shutil.rmtree(t, ignore_errors=True)
