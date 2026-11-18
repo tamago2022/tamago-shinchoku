@@ -312,6 +312,8 @@ while :; do
   # 1192番（2026-10-10）日本語の曲名に海外向け表記（①Apple Music米国ストアの公式→②MusicBrainz→③Haikuのローマ字）を付けて辞書へ。
   #   新しい曲を拾う→ローマ字→公式集め（止まっていれば再開）→変わっていれば1コミット。結果 status/1192_romaji/build.json
   # 2026-11-18 1時間おき→1日1回（新しい曲が来た時だけAIを呼ぶ。待つ理由が無い）
+  # 2026-11-19 店主「AIを呼ぶ定期は1日2回でいい」：止めた定期（留守番の見回り）の中身が戻っていないか・定期のAI呼び出しが1日2回を超えていないかを1日1回見る（AIは呼ばない）
+  every_hours teiki_jougen 24 && ( python3 "$REPO/tools/teiki_jougen.py" >/dev/null 2>&1 & ) >/dev/null 2>&1
   every_hours 1192_romaji 24 && ( python3 "$REPO/tools/1192_title_romaji.py" hourly >> "$REPO/status/1192_romaji/hourly.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-09-16（882番）：「今すぐ走っているもの」がgenzaichi.json（実質30分おき）だと
   #   古すぎて0本と誤表示することがあった。queue_light.jsonだけを読む軽い専用スクリプトを
@@ -322,7 +324,7 @@ while :; do
   #   それをAI（haiku・関所経由）で「何をする仕事か」の1行へ書き直す。走っているもの→次に発車の順。
   #   中で重ね掛けを止めている（前の回がまだなら即終了）。対象が0件ならAIは呼ばない。
   # 2026-11-18 10分おき→1日1回（進捗表の見出しのためだけにAIを週600回呼んでいた）
-  every_hours hyoudai 24 && ( python3 "$REPO/tools/hyoudai.py" --fill --max 40 >> "$REPO/status/hyoudai.log" 2>&1 & ) >/dev/null 2>&1
+  every_hours hyoudai 24 && ( python3 "$REPO/tools/hyoudai.py" --fill --max 20 >> "$REPO/status/hyoudai.log" 2>&1 & ) >/dev/null 2>&1
   # ───────────────────────────────────────────────────────────────
   # 1142番（2026-09-25）ループを閉じる3本。**出す → 測る → 直す → また出す** の後ろ3つ。
   #   たまごさん「測るところが無いと全部ただの作業」「基本的に止まらないで回し続けて」
