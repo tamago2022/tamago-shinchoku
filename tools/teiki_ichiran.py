@@ -23,7 +23,7 @@ OUT_MD = os.path.join(REPO, "status", "teiki", "teiki_ichiran_1118.md")
 
 # AIを呼ぶもの（呼び方・1週間のAI呼び出し 前→後・どうしたか）。数字は 11/11〜11/18 のログの実測か、間隔からの計算。
 AI = {
-    "claude-teiki:rusuban-mimawari-30min": ("Claudeの会話（Opus/Sonnet）を30分おきに起こす。中身は10/11に停止済みなのに有効のまま。実測：7日で3,012回の会話", 3012, 0, "止めた（有効→無効）"),
+    "claude-teiki:rusuban-mimawari-30min": ("Claudeの会話（Opus/Sonnet）を30分おきに起こす。中身は10/11に停止済みなのに有効のまま。実測：7日で3,012回の会話", 3012, 0, "止めた（中身の SKILL.md を ~/.tamago/backup へ移した。アプリが enabled を書き戻すため。18:23の回は会話0件を確認）"),
     "claude-teiki:weekly-reset-wakeup": ("週枠リセット直後に発車しているか見る（Coworkの会話1回）", 1, 1, "そのまま（週1回）"),
     "auth_keeper.py": ("ログインの生死を Sonnet に「1+1は？」と聞いて確かめる（実測：7日で212回）", 212, 7, "30分おき→1日1回"),
     "hyoudai.py": ("進捗表の見出しをAIで1行に書き直す（実測：7日で490回の会話）", 490, 7, "10分おき→1日1回"),
