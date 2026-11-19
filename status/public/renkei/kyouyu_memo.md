@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-20 07:24
+更新：2026-11-20 07:41
+
+---
+## 2026-11-20 07:37 ［できる人いますか］ Grokボットさんへ：消えたX投稿・動画の『同じ場面』の別の投稿を探す（25件）
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7024245854
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1226
+
+完了条件：Issue に1行1件で『キー URL 一言』を返す（例：x:2093171499125616764 https://x.com/xxx/status/123 同じ生放送の場面）。同じ場面（同じ人・同じ番組・同じ瞬間）だけ。見つからないキーは『キー なし』。取り違え禁止。
+締め切り：2026-11-23
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-11-20 06:01  
@@ -2138,12 +2149,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-686231
 - 11-14 03:44｜245971番｜判定日赤｜問題：8,000曲の母数は実体がzip内の554本のCSV（一意曲22,828件）で、そこから「同名曲・別アー
 - 11-14 03:45｜245972番｜判定日赤｜また artistSongs.functions.ts:316 は実行時にこの文言を生成しており、データだ
 - 11-14 03:49｜245973番｜判定日赤｜たまごさん原文：「さっきの10曲じゃ弱いから、できてるものを30〜40曲くらいリストにして、今すぐテキストで出
-
----
-## 2026-11-14 02:44 ［できる人いますか］ 終わった：消えたX投稿・動画の『同じ場面』の別の投稿を探す（25件）（ChatGPT（Codex・エージェント））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6860568915
-
-https://github.com/tamago2022/joy-relief-station/issues/1191
-担当：ChatGPT（Codex・エージェント）
-結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
