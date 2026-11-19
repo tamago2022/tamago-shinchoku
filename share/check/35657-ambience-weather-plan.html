@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35657 天候・時間帯連動レコメンド｜実現可能性・統合案たたき台 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35657 天候・時間帯連動レコメンド｜実現可能性・統合案たたき台</div>
+<h1>#35657 天候・時間帯連動レコメンド｜実現可能性・統合案たたき台</h1>
+<div class="date">2026-11-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+店主依頼(2026-08-15)：天候(雨/猛暑等)・時間帯(夜遅い帰宅時間帯等)のシグナルに応じて、その瞬間に効く「小さな1つのコンテンツ(曲・言葉・演出)」を、既存の気分レコメンド機能に統合・強化できないか検討。<br><br><b>結論：実現可能性は高い。土台はすでに本番で動いている。</b><br>天気取得(Open-Meteo・鍵不要・東京固定)と時間帯判定は既に実装済みで、トップページの挨拶文と「時間帯で1本だけ差し出すプチ旅行」として本番稼働中。残る作業は、この既存の値を「気分診断(3問クイズ)」側にも渡して、診断結果に天候シグナルを1行添える拡張だけで済む。新しいデータ構造や新しい外部APIは不要。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>済み</b><span>天気取得(Open-Meteo・鍵不要)</span></div>
+  <div class="num"><b>済み</b><span>季節・時間帯の判定</span></div>
+  <div class="num"><b>済み</b><span>挨拶文への反映(トップページ)</span></div>
+  <div class="num"><b>済み</b><span>時間帯で1件だけ差し出す仕組み(プチ旅行)</span></div>
+  <div class="num"><b>未着手</b><span>気分診断(3問クイズ)への天候反映</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番トップ(挨拶・時間帯のプチ旅行を確認できる)</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>本番の気分診断(3問クイズ)</b><a href="https://joy-relief-station.lovable.app/checkup" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/checkup</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>天気API連携(Open-Meteo)</td><td class="yes">src/lib/ambience.ts に実装・本番稼働中</td></tr>
+<tr><td>季節/時間帯判定</td><td class="yes">src/lib/ambience.ts に実装・本番稼働中</td></tr>
+<tr><td>時間帯で1本だけ差し出す(プチ旅行)</td><td class="yes">トップページで本番稼働中</td></tr>
+<tr><td>気分診断(3問クイズ)が天候・時間帯を使う</td><td class="no">未着手。現状は天候と無関係の独立機能</td></tr>
+<tr><td>季節/時間/気分/場面チップで棚を絞る(/axis)</td><td class="no">コード実装済みだがpush未達・本番404</td></tr>
+</table>
+
+<footer>
+次の一手(提案)：①まず軽い案として、気分診断の結果画面に『今は雨なので、雨の日の曲も合わせて』のような一言(既存ambience.tsの天気・時間帯の値をそのまま流用)を1行だけ追加。新規の棚追加・新規データ構造は作らず、既存の軽さ優先の設計を壊さない。②/axisページ(季節・時間・気分・場面チップ)は別案件(34561号)としてpushが詰まったまま止まっているため、今回の企画とは別に解消する。③どちらも既存棚の中身を増減させる変更ではないため、第一条の「棚への追加は店主の明示指示のみ」には触れない設計。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
