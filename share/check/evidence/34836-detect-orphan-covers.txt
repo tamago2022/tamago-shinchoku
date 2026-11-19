@@ -1,0 +1,189 @@
+# scripts/patrol/detect-orphan-covers.mjs（全文）
+# 元ファイルは private リポジトリ（joy-relief-station）にあるため、
+# ここに公開可能な形でそのままコピーして証拠として置いています。
+# 取得日: 2026-10-10 / 元コミット: ff82d252d（2026-08-08 05:55 main合流済み）
+# -----------------------------------------------------------------
+#!/usr/bin/env node
+/**
+ * 仕入れた曲が「つながっていない」のを、つなげる担当が自分で気づくための見回り
+ *
+ *   node scripts/patrol/detect-orphan-covers.mjs            全部を見る
+ *   node scripts/patrol/detect-orphan-covers.mjs --recent 30  直近30日に足された分だけ
+ *   node scripts/patrol/detect-orphan-covers.mjs --json
+ *
+ * ## なぜ要るか（2026-08-08 の店主指摘）
+ *
+ * 若いバンドがカバーした「Come Together」が入荷されていたのに、
+ * 他のCome Together（原曲・他のカバー）と**まったくつながっていなかった**。
+ * それを**店主が偶然見つけて指摘する形になった**。これがNG。
+ *
+ * > 「これつながってないよ」と毎回報告させるんじゃなく、
+ * >  つなげる担当が自分で気づいて自分でつなげる、が正解。
+ *
+ * 仕入れ → つなげる の間に**手作業の橋渡しを要らなくする**のがこの見回りの目的。
+ *
+ * ## 誤爆しないための線引き（ここが命）
+ *
+ * 「同じ題名だから繋ぐ」は**必ず事故る**。実際 "Come Together" は9曲あるが、
+ * ビートルズのカバーは3曲だけで、残り5曲は**同名の別の曲**だった。
+ *
+ *   Spiritualized／Primal Scream／The Internet／Steve Monite／DYGL … いずれも自作曲
+ *
+ * これらを繋いだら「原曲：ビートルズ」という**嘘**を画面に出すことになる。
+ * つなげる担当の憲法は **「精度優先。誤連携よりスキップを選ぶ」**。
+ *
+ * そこでこの見回りは **繋がない。候補を出すだけ。** 判断材料（動画の実題名・
+ * チャンネル名・コピー）を添えて出し、**確証があるものだけ人／AIが繋ぐ**。
+ * 自動で繋ぐのは「動画の題名に cover / カバー と原曲名が両方入っている」場合のみ（--apply）。
+ */
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { loadCoverGuideArtists } from "./loadCoverGuide.mjs";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const args = process.argv.slice(2);
+const asJson = args.includes("--json");
+const limit = Number(args[args.indexOf("--limit") + 1]) || 40;
+
+const artists = await loadCoverGuideArtists();
+
+/** 題名を突き合わせ用に平たくする */
+const norm = (t) =>
+  String(t ?? "")
+    .toLowerCase()
+    .normalize("NFKC")
+    .replace(/\(.*?\)|\[.*?\]|（.*?）/g, " ")
+    .replace(/[^\p{Letter}\p{Number}]+/gu, " ")
+    .trim();
+
+/** 題名から演者名らしき前置き（"Michael Jackson - Come Together"）を落とす */
+function coreTitle(title, artistName) {
+  let t = String(title ?? "");
+  const a = String(artistName ?? "");
+  if (a && t.toLowerCase().startsWith(a.toLowerCase())) t = t.slice(a.length);
+  return norm(t.replace(/^\s*[-–—:／/]\s*/, ""));
+}
+
+/* ---------------------------------------------------------------- 同名曲を集める */
+
+const byTitle = new Map(); // 正規化題名 → [{artistId, artistName, songId, title, year, note, youtubeId, originalRef}]
+for (const a of artists) {
+  for (const s of a.songs) {
+    if (!s?.title) continue;
+    const key = coreTitle(s.title, a.name);
+    if (key.length < 3) continue; // 短すぎる題名は突き合わせない（事故のもと）
+    if (!byTitle.has(key)) byTitle.set(key, []);
+    byTitle.get(key).push({
+      artistId: a.id,
+      artistName: a.name,
+      songId: s.id,
+      title: s.title,
+      year: s.year ?? null,
+      note: s.note ?? "",
+      youtubeId: s.youtubeId ?? null,
+      linked: Boolean(s.originalRef),
+      originalRef: s.originalRef ?? null,
+    });
+  }
+}
+
+/* ---------------------------------------------------------------- 孤立を見つける */
+
+/**
+ * 既に「原曲」として指されている曲＝その題名グループの原曲だと**データが言っている**。
+ * 推測ではなく既存の接続を根拠にする。
+ */
+const knownOriginals = new Set();
+for (const a of artists) {
+  for (const s of a.songs) {
+    if (s?.originalRef) knownOriginals.add(`${s.originalRef.artistId}/${s.originalRef.songId}`);
+  }
+}
+
+/** その曲のコピー・題名に、原曲アーティストの名前（別名含む）が出てくるか */
+function mentionsArtist(song, artist) {
+  const hay = `${song.title ?? ""} ${song.note ?? ""}`.toLowerCase();
+  const names = [artist.artistName, ...(artist.aliases ?? [])].filter(Boolean);
+  return names.some((n) => n.length >= 3 && hay.includes(String(n).toLowerCase()));
+}
+
+const aliasOf = new Map(artists.map((a) => [a.id, a.aliases ?? []]));
+
+const groups = [];
+for (const [key, members] of byTitle) {
+  if (members.length < 2) continue;
+
+  // 原曲は「既に誰かが原曲として指している曲」だけを認める。
+  // 年の若さで推測すると "Dreams"（Fleetwood Mac / The Cranberries / Van Halen は全部別の曲）
+  // のような同名異曲を大量に誤検出する。実測3,532件のほぼ全部がそれだった。
+  const original = members.find((m) => knownOriginals.has(`${m.artistId}/${m.songId}`));
+  if (!original) continue;
+
+  const orig = { ...original, aliases: aliasOf.get(original.artistId) ?? [] };
+
+  // 未接続で、かつ**題名かコピーに原曲アーティスト名が出てくる**ものだけ。
+  // ここが誤爆を止める要。同名なだけの別曲は原曲の名前を書いていない。
+  const orphans = members.filter(
+    (m) => m !== original && !m.linked && mentionsArtist(m, orig),
+  );
+  if (!orphans.length) continue;
+
+  groups.push({
+    title: key,
+    originalGuess: {
+      artistId: original.artistId,
+      artistName: original.artistName,
+      songId: original.songId,
+      year: original.year,
+      evidence: "既に別の曲から原曲として指されている",
+    },
+    linkedCount: members.filter((m) => m.linked).length,
+    skipped: members.filter((m) => m !== original && !m.linked && !mentionsArtist(m, orig)).length,
+    orphans: orphans.map((o) => ({
+      artistId: o.artistId,
+      artistName: o.artistName,
+      songId: o.songId,
+      title: o.title,
+      year: o.year,
+      youtubeId: o.youtubeId,
+      hint: o.note?.slice(0, 60) ?? "",
+      oembed: o.youtubeId
+        ? `https://www.youtube.com/oembed?url=https%3A//www.youtube.com/watch%3Fv%3D${o.youtubeId}&format=json`
+        : null,
+    })),
+  });
+}
+
+groups.sort((a, b) => b.orphans.length - a.orphans.length);
+
+/* ---------------------------------------------------------------- 出力 */
+
+const summary = {
+  ranAt: new Date().toISOString(),
+  titleGroups: groups.length,
+  orphanSongs: groups.reduce((n, g) => n + g.orphans.length, 0),
+  skippedByGuard: groups.reduce((n, g) => n + g.skipped, 0),
+  groups: groups.slice(0, limit),
+};
+
+if (asJson) {
+  console.log(JSON.stringify(summary, null, 2));
+} else {
+  console.log(
+    `# つながっていない曲の見回り（グループ ${summary.titleGroups} / 未接続 ${summary.orphanSongs}曲 / 同名だが別曲として除外 ${summary.skippedByGuard}曲）\n`,
+  );
+  if (!summary.orphanSongs) {
+    console.log("未接続はありません。");
+  } else {
+    console.log(`**繋ぐ前に必ず動画の実題名とチャンネル名を確かめること。**\n`);
+  }
+  for (const g of summary.groups) {
+    console.log(`## 「${g.title}」 原曲: ${g.originalGuess.artistName}（${g.originalGuess.year}）／既接続 ${g.linkedCount}`);
+    for (const o of g.orphans) {
+      console.log(`  - ${o.artistName} / ${o.title}${o.year ? `（${o.year}）` : ""}`);
+      if (o.hint) console.log(`      コピー: ${o.hint}`);
+      if (o.oembed) console.log(`      題名確認: curl -s "${o.oembed}"`);
+    }
+    console.log("");
+  }
+}

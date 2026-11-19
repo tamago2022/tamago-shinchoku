@@ -1,0 +1,191 @@
+/* 966番・追加ぶんだけ（正本 concierge.css は1行も書き換えていない）
+   ・正本にある形はそのまま使う。ここに書くのは「正本に無い機能」の見た目だけ。
+   ・承認済みPNG／承認済みモックの該当部分を写真として差し込む配線（958番と同じ考え方）。
+*/
+
+/* ── 承認済みモックのレコード店を、そのまま背景に敷く ──────────
+   正本の .concept-02 .hero-record は「まだ写真が無いときの近似グラデ」。
+   958番が thumb に承認写真を差し込んだのと同じやり方で、ここも写真に置き換える。
+   配置・余白・階層・比率には触れていない。 */
+.concept-02 .hero-record{
+  background-image:
+    linear-gradient(100deg,rgba(8,11,8,.86) 0%,rgba(8,11,8,.84) 27%,rgba(8,11,8,.44) 47%,rgba(8,11,8,.04) 66%,rgba(8,11,8,0) 100%),
+    linear-gradient(0deg,rgba(8,11,8,.34) 0%,rgba(8,11,8,.30) 9%,rgba(8,11,8,0) 30%),
+    url(hero-record.jpg);
+  background-size:cover,cover,cover;
+  background-position:center,center,center bottom;
+  background-repeat:no-repeat;
+}
+.concept-02 .hero-record::before{content:none}   /* カウンターは写真の中にある */
+.record-copy{z-index:2}
+/* 承認モックでは小さい欧文も生成りの文字。暗い写真の上で灰色は読めない。 */
+.concept-02 .hero-record .eyebrow,
+.concept-02 .hero-record .micro{color:rgba(247,240,228,.74)}
+
+/* ── 案内人（喋る箱）──────────────────────────────────
+   正本の .record-owner img の指定（幅・高さ・contain・影）をそのまま受けるため、
+   img は .record-owner の中に置いたままにしてある。 */
+.tmk-rig{position:relative;display:block;transform-origin:50% 100%;will-change:transform}
+.tmk-face{position:absolute;left:0;top:0;pointer-events:none}
+
+/* 吹き出しの横の小さい丸（承認済みPNGをそのまま丸く抜くだけ） */
+.tmk-ava{
+  display:block;width:34px;height:34px;border-radius:50%;
+  background:#efe7d6 url(egg-body-lit.png) no-repeat center 62%/150% auto;
+  border:1px solid rgba(66,56,44,.18)
+}
+.tmk-ava.you{background:#e3e8de;position:relative}
+.tmk-ava.you::after{
+  content:"";position:absolute;left:50%;top:52%;width:17px;height:17px;transform:translate(-50%,-50%);
+  border-radius:50% 50% 45% 45%;background:#8d9585
+}
+
+/* ── 頭の「話す／やめる」。正本 08 の .head-action をそのまま使う ── */
+.head-action.stopping{background:#fff;color:var(--brick);box-shadow:inset 0 0 0 1px rgba(143,61,46,.45)}
+#go:disabled{display:none}
+#go:disabled + #stop{display:inline-block}
+#stop{display:none}
+
+/* ── 会話（正本 .conversation-row をそのまま。左に丸アイコン）── */
+.conversation-row .who{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.conversation-row.sys{background:rgba(143,61,46,.06)}
+.conversation-row.sys .say{color:var(--brick);font:12px/1.9 var(--sans)}
+#state{margin:12px 0 0;padding:0 46px 0 34px;text-align:right}
+
+/* ── ★974：台詞窓（ドラクエ式）──────────────────────────
+   窓は1枚。高さは固定。下にスペースを取らない＝ページは絶対に伸びない。
+   長い返事は窓の中だけが送られる（ページは動かない）。 */
+#log{height:126px;overflow:hidden}
+#log .conversation-row{height:100%;box-sizing:border-box;border-top:0}
+#log .say{
+  max-height:92px;overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:rgba(80,68,53,.28) transparent;
+}
+#log .say::-webkit-scrollbar{width:4px}
+#log .say::-webkit-scrollbar-thumb{background:rgba(80,68,53,.28);border-radius:4px}
+#log .say::-webkit-scrollbar-track{background:transparent}
+/* 入れ替わったことが分かる程度に。動きは小さく。 */
+#log .conversation-row.irekae{animation:tmk-irekae .24s ease-out}
+@keyframes tmk-irekae{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#log .conversation-row.irekae{animation:none}}
+
+/* ── 札（正本 .rec-card を button にしただけ）───────────── */
+button.rec-card{
+  display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  font-family:var(--serif)
+}
+button.rec-card:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+.rec-card.sel{box-shadow:0 0 0 2px var(--forest);transform:translateY(-2px)}
+.concept-02 .rec-media .cover{background-size:cover;background-position:center}
+.rec-card .rec-title{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em
+}
+.rec-card .rec-copy{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ★1023：入口の一言（札はドア）。
+   ・**1行しか出さない。**どんなに長い文が来ても nowrap＋… で切る。札は下に伸びない。
+   ・**空でも高さを取る**（min-height）。あとから文字が入っても札の位置が動かない
+     ＝押そうとした瞬間に札がずれる、が起きない。
+   ・正本の色だけを使う（--forest）。新しい色は作っていない。
+   ・左の細い罫は「ここが入口」の目印。枠で囲うと札の中に札ができるので、線1本だけ。 */
+.rec-card .rec-door{
+  margin:7px 0 0;padding-left:8px;min-height:1.7em;
+  border-left:2px solid rgba(38,76,59,.38);
+  color:var(--forest);font:12px/1.7 var(--serif);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+/* 言うことが無い札には**何も書かない**（水で薄めない）。
+   ただし高さは残す＝4枚の背が揃う。線だけが宙に浮くのは見苦しいので、線も消す。 */
+.rec-card .rec-door:empty{border-left-color:transparent}
+/* ★1023：下のボタンは、その人ごとに言葉が変わる。**丸い1行のまま**にする（2行に折らない）。 */
+.more-button{white-space:nowrap}
+@media (max-width:780px){ .rec-card .rec-door{font-size:11px} }
+.rec-empty{
+  margin:0;padding:34px 10px;text-align:center;
+  font-size:13px;line-height:2;color:var(--muted)
+}
+
+/* ── 押した札の真下で鳴る（正本に無い機能。正本の色と角だけ借りる）── */
+.player{display:none;position:relative;margin:16px 0 0;background:#1b1813;border-radius:10px;
+  border:1px solid rgba(86,72,55,.4)}
+.player.on{display:block}
+.player .caret{position:absolute;top:-7px;width:12px;height:12px;background:#1b1813;
+  border-left:1px solid rgba(86,72,55,.4);border-top:1px solid rgba(86,72,55,.4);
+  transform:translateX(-50%) rotate(45deg);transition:left .18s}
+.player .frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;
+  border-radius:10px 10px 0 0;overflow:hidden}
+.player .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.player .meta{padding:12px 14px 0;color:#f4efe4}
+.player .pt{margin:0;font-size:15px;line-height:1.5;font-weight:600}
+.player .pa{margin:3px 0 0;font:10px/1.6 var(--sans);letter-spacing:.14em;color:#b3a891}
+.prow{display:flex;gap:8px;padding:12px 14px 14px;flex-wrap:wrap}
+.prow button{
+  flex:1 1 92px;padding:10px 8px;border:1px solid rgba(228,205,165,.34);border-radius:999px;
+  background:transparent;color:#ece3cf;font:12px/1 var(--sans);letter-spacing:.08em;cursor:pointer
+}
+.prow .b-talk{background:var(--forest);border-color:var(--forest);color:#fff}
+.prow .b-big{background:#c58a48;border-color:#c58a48;color:#221d18}
+.thru{display:flex;align-items:center;gap:10px;padding:0 14px 14px;color:#b3a891;
+  font:11px/1.7 var(--sans);cursor:pointer}
+.thru input{width:16px;height:16px;flex:0 0 auto;accent-color:#c58a48}
+.thru b{color:#ece3cf;font-weight:600}
+.micdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5a5245;
+  margin-right:6px;vertical-align:middle}
+.micdot.on{background:#c4483a;box-shadow:0 0 0 3px rgba(196,72,58,.2)}
+
+/* ── 機械のところ（ふだんは畳んでおく）───────────────── */
+.kikai{width:min(calc(100% - 40px),var(--max));margin:0 auto 64px;font:12px/1.8 var(--sans);color:#5d554a}
+.kikai summary{cursor:pointer;letter-spacing:.1em;color:var(--muted);padding:10px 0}
+.kikai h2{margin:18px 0 8px;font:13px/1.6 var(--sans);letter-spacing:.12em;color:var(--brick);font-weight:600}
+.kikai input[type=password],.kikai input[type=text],.kikai input[type=number]{
+  width:100%;max-width:420px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+  font:13px/1.4 ui-monospace,monospace;background:#fff;color:var(--ink)}
+.kikai .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.kikai button{border:1px solid var(--line);background:#faf7f0;border-radius:999px;
+  padding:9px 18px;font:12px/1 var(--sans);letter-spacing:.08em;cursor:pointer}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.chips label{font:11px/1 var(--sans);padding:8px 13px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;cursor:pointer;letter-spacing:.04em}
+.chips input{display:none}
+.chips input:checked + span{font-weight:700;color:var(--forest)}
+table.cost{width:100%;border-collapse:collapse;margin-top:6px;font:11px/1.7 var(--sans)}
+table.cost td{border-top:1px solid var(--line);padding:5px 2px;color:#5d554a}
+table.cost td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.kv{font:11px/1.9 var(--sans);color:#6d655a;margin-top:8px}
+.kikai a{text-decoration:underline;text-underline-offset:2px}
+.meter,.sw{font:11px/1.9 var(--sans);color:#6d655a;font-variant-numeric:tabular-nums}
+.sw b{color:var(--brick);font-size:13px}
+.kd-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:6px;margin-top:8px}
+.kd{display:flex;align-items:stretch;background:#fff;border:1px solid var(--line);border-radius:8px;
+  overflow:hidden}
+.kd .pick{flex:1 1 auto;min-width:0;text-align:left;background:none;border:0;border-radius:0;
+  color:var(--ink);padding:7px 5px 7px 10px;font:11px/1.35 var(--sans);cursor:pointer}
+.kd .pick i{display:block;font-style:normal;color:var(--muted);font-size:10px}
+.kd .try{flex:0 0 auto;background:#f3ede1;border:0;border-left:1px solid var(--line);border-radius:0;
+  color:var(--brick);padding:7px 11px;font-size:12px;cursor:pointer}
+.kd.on{border-color:var(--forest);background:#f1f5ef}
+.kd.on .pick{font-weight:700}
+.kd.dead{opacity:.45}
+.kd.dead .pick,.kd.dead .try{cursor:not-allowed}
+.kd .try.busy{color:var(--muted)}
+
+/* ── スマホ（正本の 780px の区切りに合わせる）───────────── */
+@media (max-width:780px){
+  .head-action{display:inline-block;min-width:0;padding:9px 16px}
+  .mobile-menu{display:none}
+  .concept-02 .hero-record{
+    background-image:
+      linear-gradient(172deg,rgba(8,11,8,.80) 0%,rgba(8,11,8,.78) 34%,rgba(8,11,8,.26) 58%,rgba(8,11,8,0) 74%),
+      linear-gradient(0deg,rgba(8,11,8,.34) 0%,rgba(8,11,8,.30) 10%,rgba(8,11,8,0) 30%),
+      url(hero-record.jpg)}
+  .rec-card .rec-title{min-height:2.8em}
+  .kikai{width:min(calc(100% - 24px),430px)}
+  .prow button{flex:1 1 44%}
+  #state{text-align:left}
+}
+
+/* ★974：台詞窓（狭い画面）。ここでも高さは固定。ページは伸びない。 */
+@media (max-width:780px){
+  #log{height:112px}
+  #log .say{max-height:84px}
+}
