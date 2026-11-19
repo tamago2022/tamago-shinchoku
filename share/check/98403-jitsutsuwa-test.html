@@ -1,0 +1,48 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>話す卵の案内人｜監査明けの実通話テスト 手順書と費用見積り（98403番）</title><style>body{font-family:-apple-system,"Hiragino Sans",sans-serif;background:#faf7f0;color:#211d18;margin:0;padding:20px;line-height:1.8}pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:14px;background:#fff;border:1px solid #ddd5c6;border-radius:12px;padding:16px}</style></head><body><p style="font-size:12px;color:#8d8578">下書きの写し（正本は工場の status/shitagaki/）。ここに書いた通話は監査が終わるまで1回も行わない。</p><pre># 話す卵の案内人｜監査明けの実通話テスト 手順書と費用見積り（98403番・2026-10-16）
+
+**これは下書き。お金の監査が終わるまで、ここに書いた通話は1回も行わない。**
+人格・会話設計そのものはコードに入れて本番反映済み（`src/lib/annaininJinkaku.ts` が正本、
+見本 https://joy-relief-station.lovable.app/voice-annai-check ）。ここは「声で確かめる」工程だけ。
+
+## 単価（正本 config/official-rates.json・公式 https://docs.x.ai/developers/pricing 2026-09-27確認）
+- 音声（Speech to Speech）：$0.08／分
+- 文字入力（人格文＋言葉の約束の system 1通）：$0.004／通
+- 為替：157.233円／$（2026-09-25・参考）
+- サイト側の壁：1日 $1.00（guard.ts BUDGET_LIMIT_USD）／1通話 最長180秒。店主の合言葉（VOICE_ADMIN_TOKEN）なしでは超えられない。
+
+## テストの中身（人格の正本の「例の会話」9場面をそのまま使う）
+| # | 場面 | 言う言葉 | 合格の目安 | 想定 |
+|---|------|---------|-----------|------|
+| 1 | はじめて | 「仕事で疲れた」 | 一言→1曲→理由1行。質問は1つ。10秒以内 | 1.5分 |
+| 2 | 迷った人 | 「なんでもいい」 | 二択で返す（静かめ？にぎやかめ？） | 1.0分 |
+| 3 | 詳しい人 | 「シティポップは一通り聴いた」 | 知識比べをせず、カバー等の半歩先を1枚 | 1.5分 |
+| 4 | 脱線 | 「今日カレー食べた」→2往復 | 3往復目で「で、今日の一枚どうする？」 | 1.5分 |
+| 5 | 落ち込み | 「失恋した」 | 元気の押し売りをしない。バラード系1枚 | 1.0分 |
+| 6 | 季節外れ | 「クリスマスの曲ある？」 | 出すが一言添える（季節に触れる） | 1.0分 |
+| 7 | 知らない | 「先週出た新曲知ってる？」 | 「知らない」と正直に言い、棚を探す | 1.0分 |
+| 8 | 英語 | &quot;I&#x27;m so tired today.&quot; | 英語のまま、短く、同じ人格 | 1.0分 |
+| 9 | 別れ | 「そろそろ行くね」 | 引き止めない。「またね。ここは逃げないから」系 | 0.5分 |
+
+- 禁句チェック：通話中の字幕（画面の1行）に `kinkuNiAtaru()` の禁句が出ないこと（出たら即記録）。
+- 合計 10.0分 ＝ **$0.80 ≒ 126円**（＋文字入力 9通 $0.036 ≒ 6円）→ **1回の通しで約132円**。
+
+## 上限（これを超えない）
+- 1回の通し：10分・$0.84 ≒ **132円**
+- やり直し込みの合計上限：2回まで＝20分・$1.68 ≒ **264円**（1日 $1.00 の壁があるので2日に分ける）
+- 超えそうなら止めて見積りを書き直す。実績は `status/fal_cost_ledger.json` と同じ要領で円で記録。
+
+## スマホ（本命）での測り方（お金をかけない前段）
+1. iPhone Safari で https://joy-relief-station.lovable.app/cover-guide を開く → 案内所のマイク（salon-mic）が親指で押せる大きさか（44px以上）。
+2. 押してから「うん、聞いてる。」が画面に出るまでの秒数を手で計る（目標3秒以内。1715番の締め切りは3秒）。
+3. 通話はここでは始めない（マイク許可のダイアログで止めてよい）。
+
+## 3秒以内の内訳を測る（無料・headless）
+- 工場の Chromium headless（無音 `--mute-audio`）で /cover-guide を開き、`performance` のタイムラインで
+  ①ページ読み込み ②ConciergeChat の描画 ③マイクボタン押下→createVoiceSession の往復（Edge Function）
+  ④WebSocket open までを分ける。④の手前（③まで）を3秒以内に収めるのが先。
+- 音声接続（④）はお金が動くので監査明けに。
+
+## 入口（トップ・各ページの「話しかける」）
+- 現状：案内所トップの単独ウィジェットは店主判断でOFF（annaishoFeatureFlags.ts）。生きている入口は案内所の会話欄（ConciergeChat の salon-mic）1つ。
+- 次の一手：共有ヘッダー／フッターへの追加は見た目の共有部品の変更にあたるため、tamago-tone に沿った1案を作って別便で出す。
+</pre></body></html>

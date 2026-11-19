@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35068 円卓会議の保存処理：新規ノートをハブノート『円卓会議議事録一覧』へ自動リンク 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35068 円卓会議の保存処理：新規ノートをハブノート『円卓会議議事録一覧』へ自動リンク</div>
+<h1>#35068 円卓会議の保存処理：新規ノートをハブノート『円卓会議議事録一覧』へ自動リンク</h1>
+<div class="date">2026-10-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+entaku_kaigi.pyのwrite_to_vault()が作る新規ノートのfrontmatterにtype(円卓会議)/開催日/statusが無く、ハブノート「円卓会議議事録一覧.md」のDataviewクエリ(WHERE type = "円卓会議")に一切引っかからず一覧に出てこなかった(2026-08-10に言われてから1ヶ月以上未着手)。保存処理のfrontmatter生成部分を直し、新規ノートがクエリ条件に自動で一致するようにした。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+<div class="note">（数字なし）</div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>修正コミット(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/288d6da210" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/288d6da210</a></li>
+  <li><b>修正ファイル(entaku_kaigi.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/288d6da210/tools/entaku_kaigi.py#L356-L381" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/288d6da210/tools/entaku_kaigi.py#L356-L381</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>新規ノートのfrontmatterにtype: 円卓会議が入る</td><td class="yes">yes</td></tr>
+<tr><td>開催日・statusも自動で入る</td><td class="yes">yes</td></tr>
+<tr><td>YAMLとして実際にパースできる(python3のyaml.safe_loadで実測)</td><td class="yes">yes</td></tr>
+<tr><td>ハブのDataview条件(type一致+失敗/旧フォーマット除外)に自動で一致する</td><td class="yes">yes</td></tr>
+<tr><td>既存ノート・既存のハブ一覧(34624号)には一切触れていない</td><td class="yes">yes</td></tr>
+</table>
+
+<h2>実測ログ（本番コードを実行して1件保存→YAML検証→テスト分は削除して片付け済み）</h2>
+<div class="note">
+<pre style="white-space:pre-wrap;word-break:break-word;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:12px;font-size:0.8rem;">$ python3 tools/entaku_kaigi.py --content-file /tmp/xxx.md --slug "35068-kakunin" --to-vault
+ENTAKU_RESULT: 完成/20261017-084657-35068-kakunin.md
+ENTAKU_VAULT: AI出力/40_プロジェクト/円卓会議🔥/20261017-084657-35068-kakunin-円卓会議.md
+
+生成されたfrontmatter（実物）:
+---
+type: 円卓会議
+開催日: 2026-10-17
+tags: [円卓会議, 円卓会議/議事録]
+status: 未読
+生成元: tools/entaku_kaigi.py（35068号で自動ハブ登録対応）
+生成日時: 2026-10-17 08:46 JST
+出典:
+  - content-file: /tmp/35068_test_content.md
+---
+
+python3のyaml.safe_load()で実際にパースした結果:
+frontmatter parsed OK: {'type': '円卓会議', '開催日': datetime.date(2026, 10, 17), ...}
+Dataviewクエリ条件(type=円卓会議 AND folder除外)に一致: True
+
+→ ハブノート「円卓会議議事録一覧.md」のDataviewクエリ
+   WHERE type = "円卓会議" AND !contains(file.folder, "失敗") AND !contains(file.folder, "旧フォーマット")
+   に自動で一致することを確認。確認後、テスト用ノートとテスト用の完成/ファイルは削除済み
+   （本番Vaultにテストデータを残さないため。既存ノートには一切触れていない）。</pre>
+</div>
+
+<footer>
+このページは #35068 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

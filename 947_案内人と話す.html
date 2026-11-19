@@ -1,0 +1,423 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ごきげん補給所・案内人（声で話せる試作）</title>
+<style>html,body{margin:0;background:#0d0b09}</style></head><body>
+<style>
+  :root{
+    --bg:#12100d; --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
+    --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227;
+  }
+  *{box-sizing:border-box}
+  .wrap{
+    max-width:720px;margin:0 auto;padding:24px 18px 64px;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    color:var(--ink);
+  }
+  .stage{
+    background:radial-gradient(120% 90% at 50% 20%,#1d1a15 0%,#12100d 70%);
+    border-radius:20px;padding:18px 18px 14px;border:1px solid #2b2620;
+  }
+  .kanban{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    color:#e8dcc0;letter-spacing:.14em;font-size:.82rem;text-align:center;margin:0 0 10px;
+  }
+  canvas#face{display:block;width:100%;max-width:340px;margin:0 auto;aspect-ratio:1/1}
+  .state{
+    text-align:center;color:#b5aa93;font-size:.78rem;letter-spacing:.08em;
+    margin:6px 0 2px;min-height:1.2em;
+  }
+  .panel{
+    background:var(--paper);border-radius:16px;padding:18px;margin-top:14px;
+    border:1px solid #e2dccd;
+  }
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
+     font-size:1rem;letter-spacing:.06em;margin:0 0 10px;color:var(--sub)}
+  input[type=password],input[type=text]{
+    width:100%;padding:11px 12px;border:1px solid #d8d1c0;border-radius:10px;
+    font-size:15px;background:#fff;color:var(--ink);font-family:ui-monospace,monospace;
+  }
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  button{
+    flex:1 1 140px;padding:14px 18px;border-radius:12px;border:none;cursor:pointer;
+    font-size:16px;font-weight:700;letter-spacing:.06em;font-family:inherit;
+  }
+  #go{background:var(--midori);color:#fff}
+  #go:disabled{background:#c3bdb0;cursor:not-allowed}
+  #stop{background:#fff;color:var(--aka);border:1px solid #e0cfcb}
+  .note{font-size:.8rem;color:var(--sub);line-height:1.7;margin-top:10px}
+  .log{margin-top:14px;max-height:230px;overflow-y:auto}
+  .line{padding:8px 12px;border-radius:12px;margin:6px 0;font-size:.92rem;line-height:1.65}
+  .line.me{background:#e7eef3;color:#22303a}
+  .line.her{background:#fff;border:1px solid #e2dccd}
+  .line.sys{background:#f7e9e7;color:var(--aka);font-size:.82rem}
+  .voices{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .voices label{
+    font-size:.8rem;padding:6px 11px;border-radius:999px;border:1px solid #d8d1c0;
+    background:#fff;cursor:pointer
+  }
+  .voices input{display:none}
+  .voices input:checked + span{font-weight:800;color:var(--midori)}
+</style>
+
+<div class="wrap">
+
+  <div class="stage">
+    <p class="kanban">ご き げ ん 補 給 所 ・ 案 内 人</p>
+    <canvas id="face" width="680" height="680"></canvas>
+    <div class="state" id="state">鍵を入れて「話す」を押してください</div>
+  </div>
+
+  <div class="panel">
+    <h2>① あなたの OpenAI の鍵</h2>
+    <input id="key" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
+    <div class="note">
+      鍵はこの端末のブラウザの中だけに保存され、送り先は api.openai.com だけです。
+      サーバーにも、この画面を作った側にも渡りません。
+    </div>
+
+    <h2 style="margin-top:20px">② 声</h2>
+    <div class="voices" id="voices">
+      <label><input type="radio" name="v" value="marin" checked><span>marin（女性・自然）</span></label>
+      <label><input type="radio" name="v" value="cedar"><span>cedar（男性・落ち着き）</span></label>
+      <label><input type="radio" name="v" value="shimmer"><span>shimmer</span></label>
+      <label><input type="radio" name="v" value="alloy"><span>alloy</span></label>
+    </div>
+
+    <div class="row">
+      <button id="go">話す</button>
+      <button id="stop">やめる</button>
+    </div>
+    <div class="note">
+      初回はブラウザがマイクの許可を聞いてきます。許可したら、そのまま声で話しかけてください。
+      口は、相手の声にあわせてその場で動きます。
+    </div>
+
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<!-- 名前の読み辞書（自動生成）。読み込めなくても案内人は動く。 -->
+<script src="share/yomi/yomi.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const keyEl=$("key"), goEl=$("go"), stopEl=$("stop"), stateEl=$("state"), logEl=$("log");
+
+  const SAVED="tamago_openai_key";
+  try{ const k=localStorage.getItem(SAVED); if(k) keyEl.value=k; }catch(e){}
+
+  const INSTRUCTIONS = [
+    "あなたは「ごきげん補給所」の案内人です。名前はアイリス。",
+    "ここは、埋もれた名曲・名動画を掘り起こして置いてある小さな商店街です。",
+    "話し方：日本語。短く、やわらかく、間を大事に。1回の返事は2〜3文まで。",
+    "相手を質問攻めにしない。まず相手の気分を受け止めて、それから扉をそっと差し出す。",
+    "正解を押し付けない。「これが好きならこれも」という差し出し方をする。",
+    "事実があやしいときは断定しない。年号や売上のような数字は、自信がなければ言わない。",
+    "最初のひとことは「こんばんは。今日はどんな気分で来られました？」のように、短く迎える。"
+  ].join("\n")
+  // ★ 名前の読み方。King Gnu を「キング・ヌー」と読ませないための一撃。
+  + (window.TAMAGO_YOMI ? "\n" + window.TAMAGO_YOMI.instruction() : "");
+
+  let pc=null, dc=null, mic=null, audioEl=null, ac=null, analyser=null, raf=0;
+  let level=0, bright=0, speaking=false, blink=0, nextBlink=60, t=0;
+
+  function say(cls,txt){
+    const d=document.createElement("div");
+    d.className="line "+cls; d.textContent=txt;
+    logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight;
+  }
+  function setState(s){ stateEl.textContent=s; }
+
+  /* ── 顔（オリジナルの卵の案内人）────────────────────────── */
+  const cv=$("face"), cx=cv.getContext("2d");
+  function draw(){
+    const W=cv.width,H=cv.height; t++;
+    cx.clearRect(0,0,W,H);
+
+    // 呼吸
+    const br=Math.sin(t/55)*6;
+    const cxp=W/2, cyp=H/2+br;
+    const rw=W*0.30, rh=H*0.36;
+
+    // 影
+    cx.save();
+    cx.globalAlpha=.35; cx.fillStyle="#000";
+    cx.beginPath(); cx.ellipse(cxp,cyp+rh+26,rw*0.8,16,0,0,7); cx.fill();
+    cx.restore();
+
+    // 卵型の体
+    const g=cx.createLinearGradient(0,cyp-rh,0,cyp+rh);
+    g.addColorStop(0,"#fdf7ea"); g.addColorStop(1,"#e8d9bd");
+    cx.fillStyle=g;
+    cx.beginPath();
+    cx.moveTo(cxp,cyp-rh);
+    cx.bezierCurveTo(cxp+rw*1.05,cyp-rh*0.75,cxp+rw,cyp+rh*0.62,cxp,cyp+rh);
+    cx.bezierCurveTo(cxp-rw,cyp+rh*0.62,cxp-rw*1.05,cyp-rh*0.75,cxp,cyp-rh);
+    cx.fill();
+    cx.strokeStyle="#cdbb99"; cx.lineWidth=3; cx.stroke();
+
+    // 頬
+    cx.fillStyle="rgba(214,120,102,.28)";
+    cx.beginPath(); cx.ellipse(cxp-rw*0.52,cyp+rh*0.16,26,15,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(cxp+rw*0.52,cyp+rh*0.16,26,15,0,0,7); cx.fill();
+
+    // 目（まばたき）
+    if(--nextBlink<0){ blink=7; nextBlink=90+Math.random()*160; }
+    const open = blink>0 ? (blink--, 0.12) : 1;
+    cx.fillStyle="#2a2622";
+    const ey=cyp-rh*0.12, ex=rw*0.36, er=15;
+    [-1,1].forEach(s=>{
+      cx.beginPath(); cx.ellipse(cxp+s*ex,ey,er,er*open+1.5,0,0,7); cx.fill();
+      if(open>0.5){
+        cx.fillStyle="#fff";
+        cx.beginPath(); cx.ellipse(cxp+s*ex-5,ey-5,4.5,4.5,0,0,7); cx.fill();
+        cx.fillStyle="#2a2622";
+      }
+    });
+
+    // 眉（喋ってるときだけ少し上がる）
+    cx.strokeStyle="#7a6a52"; cx.lineWidth=5; cx.lineCap="round";
+    const bry = ey-30-(speaking?6:0);
+    [-1,1].forEach(s=>{
+      cx.beginPath();
+      cx.moveTo(cxp+s*ex-16,bry+4); cx.quadraticCurveTo(cxp+s*ex,bry-4,cxp+s*ex+16,bry+4);
+      cx.stroke();
+    });
+
+    // 口（声の大きさ＝開き／高い音＝横に広がる）
+    const my=cyp+rh*0.34;
+    const openH = 6 + level*74;                 // 縦の開き
+    const wideW = 34 + (1-bright)*16 + level*26; // 横の広がり（低い音ほど「う」寄り）
+    cx.fillStyle="#7d3b34";
+    cx.beginPath();
+    cx.ellipse(cxp,my,wideW*(0.55+bright*0.5),openH,0,0,7);
+    cx.fill();
+    cx.strokeStyle="#5e2c26"; cx.lineWidth=3; cx.stroke();
+    if(openH>22){ // 舌
+      cx.fillStyle="#d1736c";
+      cx.beginPath(); cx.ellipse(cxp,my+openH*0.42,wideW*0.42,openH*0.3,0,0,7); cx.fill();
+    }
+
+    // 蝶ネクタイ（案内人の印）
+    cx.fillStyle="#c4483a";
+    const by=cyp+rh*0.82;
+    cx.beginPath();
+    cx.moveTo(cxp,by); cx.lineTo(cxp-40,by-20); cx.lineTo(cxp-40,by+20); cx.closePath(); cx.fill();
+    cx.beginPath();
+    cx.moveTo(cxp,by); cx.lineTo(cxp+40,by-20); cx.lineTo(cxp+40,by+20); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.ellipse(cxp,by,9,11,0,0,7); cx.fill();
+
+    // 音の解析
+    if(analyser){
+      const n=analyser.frequencyBinCount, d=new Uint8Array(n);
+      analyser.getByteFrequencyData(d);
+      let lo=0,hi=0;
+      const cut=Math.floor(n*0.12);
+      for(let i=0;i<cut;i++) lo+=d[i];
+      for(let i=cut;i<Math.floor(n*0.5);i++) hi+=d[i];
+      lo/=cut*255; hi/=(Math.floor(n*0.5)-cut)*255;
+      const target=Math.min(1,(lo*1.4+hi*1.0));
+      level += (target-level)*0.35;
+      if(level<0.03) level*=0.6;
+      const b = hi/(lo+hi+0.0001);
+      bright += (b-bright)*0.2;
+    } else {
+      level*=0.85;
+    }
+    raf=requestAnimationFrame(draw);
+  }
+  draw();
+
+  /* ── つなぐ ───────────────────────────────────────── */
+  // 新しい名前から順に試す。名前が変わってもここだけ足せば直る。
+  const MODELS=["gpt-realtime-2.1","gpt-realtime","gpt-realtime-2.1-mini"];
+
+  async function mintEphemeral(sk,voice,model){
+    const body={ session:{ type:"realtime", model:model,
+      instructions:INSTRUCTIONS,
+      audio:{ input:{ turn_detection:{ type:"server_vad", threshold:0.5,
+                        prefix_padding_ms:300, silence_duration_ms:600,
+                        create_response:true, interrupt_response:true },
+                      transcription:{ model:"whisper-1" } },
+              output:{ voice:voice } } } };
+    const r=await fetch("https://api.openai.com/v1/realtime/client_secrets",{
+      method:"POST",
+      headers:{ "Authorization":"Bearer "+sk, "Content-Type":"application/json" },
+      body:JSON.stringify(body)
+    });
+    if(!r.ok) throw new Error("client_secrets "+r.status+": "+(await r.text()).slice(0,200));
+    const j=await r.json();
+    return j.value || j.client_secret?.value;
+  }
+
+  async function connect(){
+    const sk=keyEl.value.trim();
+    if(!sk){ say("sys","鍵が空です。sk- で始まる鍵を入れてください。"); return; }
+    try{ localStorage.setItem(SAVED,sk); }catch(e){}
+    const voice=document.querySelector('input[name=v]:checked').value;
+
+    if(!tsukaeruka()) return;          // ★財布が空ならつながせない
+    SAIFU.stopped=false;
+    goEl.disabled=true; setState("つないでいます…");
+    logEl.innerHTML="";
+
+    // ① 使い捨ての鍵をとる。取れなければ鍵で直接つなぐ（どちらでも動くようにしてある）
+    let token=sk, viaEk=false, model=MODELS[0], lastErr="";
+    for(const m of MODELS){
+      try{ token=await mintEphemeral(sk,voice,m); viaEk=true; model=m; break; }
+      catch(e){ lastErr=e.message; }
+    }
+    if(!viaEk) say("sys","使い捨て鍵は取れませんでした（"+lastErr+"）。鍵で直接つなぎます。");
+
+    try{
+      pc=new RTCPeerConnection();
+
+      audioEl=document.createElement("audio"); audioEl.autoplay=true;
+      audioEl.style.display="none"; document.body.appendChild(audioEl);
+      pc.ontrack=ev=>{
+        if(!ev.streams[0]) return;
+        audioEl.srcObject=ev.streams[0];
+        try{
+          ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+          const src=ac.createMediaStreamSource(ev.streams[0]);
+          analyser=ac.createAnalyser(); analyser.fftSize=512; analyser.smoothingTimeConstant=0.4;
+          src.connect(analyser);
+          if(ac.state==="suspended") ac.resume();
+        }catch(e){}
+      };
+
+      mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+      pc.addTrack(mic.getAudioTracks()[0],mic);
+
+      dc=pc.createDataChannel("oai-events");
+      dc.addEventListener("open",()=>{
+        setState("聞いています。話しかけてください");
+        if(!viaEk){
+          dc.send(JSON.stringify({ type:"session.update", session:{ type:"realtime",
+            instructions:INSTRUCTIONS,
+            audio:{ input:{ turn_detection:{ type:"server_vad", threshold:0.5,
+                              prefix_padding_ms:300, silence_duration_ms:600,
+                              create_response:true, interrupt_response:true },
+                            transcription:{ model:"whisper-1" } },
+                    output:{ voice:voice } } } }));
+        }
+        setTimeout(()=>dc.send(JSON.stringify({type:"response.create"})),350);
+      });
+      dc.addEventListener("close",()=>setState("切れました"));
+      dc.addEventListener("message",e=>onEvent(e.data));
+
+      const offer=await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      const tryModels = viaEk ? [model] : MODELS;
+      let answer=null, err="";
+      for(const m of tryModels){
+        const r=await fetch("https://api.openai.com/v1/realtime/calls?model="+encodeURIComponent(m),{
+          method:"POST", body:offer.sdp,
+          headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/sdp" }
+        });
+        if(r.ok){ answer=await r.text(); model=m; break; }
+        err="calls "+r.status+"（"+m+"）: "+(await r.text()).slice(0,240);
+        if(r.status===401||r.status===403) break; // 鍵の問題。他のモデルを試しても同じ
+      }
+      if(!answer) throw new Error(err||"つながりませんでした");
+      await pc.setRemoteDescription({type:"answer",sdp:answer});
+    }catch(e){
+      say("sys","つながりませんでした → "+e.message);
+      setState("失敗しました"); goEl.disabled=false; close();
+    }
+  }
+
+  /* ── 財布（1日いくらまで喋れるか）★2026-09-19 追加 ──────────────
+     このページは gpt-realtime（いちばん高い口）につなぐのに、値段が1つも出ていなかった。
+     たまごさんの言葉：「多分、俺の金がどんどん溶けていく。」
+     そこで **OpenAI側の上限とは別に、この画面で止める**。
+     数え方は見積もりではない。response.done が返してくる実測のトークン数に
+     公式単価（2026-09-19 実機確認・$/100万トークン）を掛けたもの。 */
+  const YEN=157;
+  const RT_PRICE={audioIn:32,audioCached:0.40,audioOut:64,textIn:4.00,textCached:0.40,textOut:24.00};
+  const SAIFU={
+    capDefault:100,
+    day(){ return new Date(Date.now()+9*3600e3).toISOString().slice(0,10); },
+    kDay(){ return "tamago_voice_yen_"+this.day(); },
+    cap(){ try{ const v=parseFloat(localStorage.getItem("tamago_voice_cap_yen"));
+                return (isFinite(v)&&v>0)?v:this.capDefault; }catch(_){ return this.capDefault; } },
+    today(){ try{ const v=parseFloat(localStorage.getItem(this.kDay())); return isFinite(v)?v:0; }
+             catch(_){ return 0; } },
+    tasu(yen){ try{ localStorage.setItem(this.kDay(),String(this.today()+Math.max(0,yen))); }catch(_){} },
+    nokori(){ return this.cap()-this.today(); },
+    stopped:false
+  };
+  const saifuEl=(()=>{
+    try{
+      const p=document.createElement("p");
+      p.style.cssText="text-align:center;color:#9d947f;font-size:.76rem;margin:6px 0 0";
+      stateEl.parentNode.insertBefore(p,stateEl.nextSibling);
+      return p;
+    }catch(_){ return null; }
+  })();
+  function paintSaifu(){
+    if(!saifuEl) return;
+    saifuEl.innerHTML="今日ここまで <b>"+SAIFU.today().toFixed(1)+"円</b> ／ 上限 "
+      +SAIFU.cap().toFixed(0)+"円（あと "+Math.max(0,SAIFU.nokori()).toFixed(1)+"円）";
+  }
+  paintSaifu();
+  function saifuKire(){
+    if(SAIFU.stopped) return;
+    SAIFU.stopped=true;
+    close(); setState("今日のぶんは使い切りました"); goEl.disabled=false;
+    say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）に達したので切りました。"
+      +"OpenAI側の上限とは別に、この画面で止めています。");
+  }
+  function tsukaeruka(){                     // つなぐ前の栓
+    if(SAIFU.nokori()>0) return true;
+    say("sys","今日の上限（"+SAIFU.cap().toFixed(0)+"円）を使い切っています。明日また使えます。");
+    setState("今日のぶんは使い切りました"); paintSaifu(); return false;
+  }
+  function kazoeru(usage){                   // 実測のトークン数→円
+    if(!usage) return;
+    const i=usage.input_token_details||{}, o=usage.output_token_details||{};
+    const c=i.cached_tokens_details||{};
+    const aC=c.audio_tokens||0, tC=c.text_tokens||0;
+    const aIn=Math.max(0,(i.audio_tokens||0)-aC), tIn=Math.max(0,(i.text_tokens||0)-tC);
+    const usd=(aIn*RT_PRICE.audioIn + aC*RT_PRICE.audioCached
+              +(o.audio_tokens||0)*RT_PRICE.audioOut
+              +tIn*RT_PRICE.textIn + tC*RT_PRICE.textCached
+              +(o.text_tokens||0)*RT_PRICE.textOut)/1e6;
+    SAIFU.tasu(usd*YEN);
+    paintSaifu();
+    if(SAIFU.nokori()<=0) saifuKire();
+  }
+
+  let buf="";
+  function onEvent(raw){
+    let ev; try{ ev=JSON.parse(raw);}catch(e){return;}
+    switch(ev.type){
+      case "error": say("sys","エラー："+(ev.error&&ev.error.message||"不明")); break;
+      case "input_audio_buffer.speech_started": speaking=false; setState("聞いています"); break;
+      case "output_audio_buffer.started":
+      case "response.output_audio.delta": speaking=true; setState("話しています"); break;
+      case "response.output_audio_transcript.delta": buf+=(ev.delta||""); break;
+      case "response.output_audio_transcript.done":
+        say("her",ev.transcript||buf); buf=""; break;
+      case "conversation.item.input_audio_transcription.completed":
+        if(ev.transcript) say("me",ev.transcript); break;
+      case "response.done": speaking=false; setState("聞いています");
+        kazoeru(ev.response&&ev.response.usage); break;
+    }
+  }
+
+  function close(){
+    try{dc&&dc.close()}catch(e){}
+    try{pc&&pc.close()}catch(e){}
+    if(mic) mic.getTracks().forEach(t=>t.stop());
+    if(audioEl) audioEl.remove();
+    dc=pc=mic=audioEl=null; analyser=null; speaking=false;
+  }
+
+  goEl.addEventListener("click",connect);
+  stopEl.addEventListener("click",()=>{ close(); setState("やめました"); goEl.disabled=false; });
+})();
+</script>
+</body></html>

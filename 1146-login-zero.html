@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ログインの手をゼロに近づける（世界の実例で調べた）</title>
+<style>
+:root{--paper:#f4f1ea;--ink:#16130f;--sub:#6b6259;--rule:#d8d2c6;--red:#b3261e;--ok:#2f6b3f;--amber:#8a6d1f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.65}
+.wrap{max-width:1000px;margin:0 auto;padding:26px 16px 80px}
+header{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:16px}
+h1{font-size:21px;margin:0 0 4px;letter-spacing:.04em}
+.lead{color:var(--sub);font-size:12.5px;margin:0}
+h2{font-size:13px;letter-spacing:.14em;color:var(--sub);margin:30px 0 8px;font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
+.kotae{border:3px solid var(--ink);padding:14px 16px;margin:0 0 20px;background:#fff}
+.kotae .big{font-size:30px;font-weight:800;letter-spacing:.02em;line-height:1.25}
+.kotae .big em{font-style:normal;color:var(--red)}
+.kotae .big b{color:var(--ok)}
+.kotae p{margin:8px 0 0;font-size:12.5px;color:var(--sub)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+th{text-align:left;font-size:10.5px;letter-spacing:.08em;color:var(--sub);font-weight:700;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule);white-space:nowrap;vertical-align:bottom}
+td{padding:9px 8px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td small{color:var(--sub);font-size:11px;display:block;margin-top:3px}
+.what{font-weight:700;white-space:nowrap}
+.num{font-weight:800;white-space:nowrap;font-size:15px}
+.ng{color:var(--red)}.ok{color:var(--ok)}.un{color:var(--amber)}
+.rule{margin:0 0 12px;padding:9px 11px;background:rgba(0,0,0,.035);font-size:12.5px;color:var(--sub)}
+ol,ul{padding-left:1.25em;margin:8px 0}li{margin:6px 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:rgba(0,0,0,.05);padding:1px 4px;word-break:break-all}
+pre{background:#1e1b17;color:#e8e2d6;padding:11px 13px;overflow-x:auto;font-size:11.5px;line-height:1.5;border-radius:3px}
+.card{border:1px solid var(--rule);background:#fff;padding:12px 14px;margin:10px 0}
+.card h3{margin:0 0 6px;font-size:14px}
+.tag{display:inline-block;font-size:10px;letter-spacing:.08em;padding:2px 6px;border:1px solid var(--rule);color:var(--sub);margin-left:6px;vertical-align:2px}
+.yowai{color:var(--amber);font-weight:700}
+a{color:#1d4ed8}
+footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--rule);color:var(--sub);font-size:11.5px}
+</style></head><body><div class="wrap">
+
+<header>
+<h1>ログインの手をゼロに近づける</h1>
+<p class="lead">「この先もずっとやんないといけないの？」への答え。世界の運用事例と各社の公式ドキュメントで調べた。／1146番・2026-09-26・全部0円</p>
+</header>
+
+<div class="kotae">
+<div class="big">今 <em>年89回</em> → 変えると <b>年5回</b></div>
+<p>「年89回」は実測ではなく<b>置き</b>（下の表に1件ずつ根拠を書いた）。「年5回」は各社の公式ドキュメントに書いてある寿命から出した数。<br>
+ゼロにはならない。どうしても残るのは <b>Claude年1・Supabase年1・Spotify年2・Lovable年1</b>。</p>
+</div>
+
+<h2>1. サービスごとの表</h2>
+<p class="rule">「たまごさんの手」＝ブラウザを開いてログインする／鍵を作り直す回数。値は一切載せない。</p>
+<div class="scroll">
+<table>
+<thead><tr>
+<th>サービス</th><th>今どうなっているか</th><th>長期に<br>できるか</th><th>その方法</th><th>持続期間</th><th>費用</th><th>今<br>年◯回</th><th>後<br>年◯回</th>
+</tr></thead>
+<tbody>
+
+<tr><td class="what">Claude 本体</td>
+<td>解決済み。同時起動で refreshToken を取り合って鍵が消えていた<small>実測で判明。1年トークンに置き換えた</small></td>
+<td class="ok">◯</td>
+<td><code>claude setup-token</code> で <code>sk-ant-oat01-…</code> を作り <code>CLAUDE_CODE_OAUTH_TOKEN</code> に入れる。Pro/Max/Team/Enterprise の契約者が対象</td>
+<td><b>1年</b></td><td>0円</td><td class="num">1</td><td class="num ok">1</td></tr>
+
+<tr><td class="what">Buffer</td>
+<td>ブラウザでログインして手で予約している</td>
+<td class="ok">◎</td>
+<td><b>公式APIキー1本</b>。<code>publish.buffer.com/settings/api</code> で作って <code>Authorization: Bearer</code> で送るだけ。<b>公式MCPサーバ</b> <code>https://mcp.buffer.com/mcp</code> も同じ鍵で動く。2026-05-27に公開、<b>無料プランを含む全プランで使える</b><small>OAuthの道もあるが refresh が1回使い切りで事故りやすい。キー1本の方が手が減る</small></td>
+<td><b>公式に期限の記載なし</b>（漏れた時だけ作り直す）</td><td>0円</td><td class="num ng">52</td><td class="num ok">0</td></tr>
+
+<tr><td class="what">X（Twitter）</td>
+<td>ブラウザでログインしている</td>
+<td class="un">△</td>
+<td><b>Buffer経由で投稿する</b>（Bufferのチャンネルとして繋ぐ）。X APIを直接叩く道は下の「採らなかった手」参照<small>直接やるなら OAuth 1.0a の Access Token &amp; Secret は失効しない。ただし今のXは無料枠が無い</small></td>
+<td>Bufferの鍵に乗る</td><td>0円<br><small>直APIは課金</small></td><td class="num ng">12</td><td class="num ok">0</td></tr>
+
+<tr><td class="what">Lovable</td>
+<td><code>~/.tamago/lovable_oauth.json</code> に refresh_token あり。回っている限り生きる</td>
+<td class="un">△</td>
+<td>今の refresh_token を<b>使い続ける</b>。公式APIキーは<b>Business/Enterpriseプラン限定</b>と明記されているので採らない。MCPサーバもある<small>死んだ時だけ1回ログイン</small></td>
+<td>回している限り</td><td>0円<br><small>公式APIは有料</small></td><td class="num ng">6</td><td class="num un">1</td></tr>
+
+<tr><td class="what">GitHub</td>
+<td><code>gh auth</code>。今トークンが取れない＝赤</td>
+<td class="ok">◎</td>
+<td><b>Fine-grained PAT を無期限で作る</b>。個人リポジトリなら無期限が選べる（組織に属する鍵は既定で最長366日）</td>
+<td><b>無期限</b></td><td>0円</td><td class="num ng">4</td><td class="num ok">0</td></tr>
+
+<tr><td class="what">Supabase</td>
+<td>Secrets に置いてあるが分散している</td>
+<td class="ok">◯</td>
+<td><b>Scoped Personal Access Token</b>（全権の Classic ではなく、必要な分だけの Scoped。公式が「AIエージェント・自動化・CIには特にこちら」と書いている）。期限は自分で指定する<small>anon / service_role キーは2026年末で廃止予定。<code>sb_publishable_</code>／<code>sb_secret_</code> に移す</small></td>
+<td>指定した期間<br>（1年で置いた）</td><td>0円</td><td class="num">2</td><td class="num un">1</td></tr>
+
+<tr><td class="what">Spotify</td>
+<td>鍵がまだ無い</td>
+<td class="un">△</td>
+<td>Authorization Code フローを1回通して refresh_token を取る。以後 access_token は自動で作り直せる</td>
+<td class="ng"><b>6か月</b><small>2026-06-18告知。新規アプリは即時、既存アプリは2026-07-20から。期限は「最初に許可した日」から数え、更新しても伸びない</small></td><td>0円</td><td class="num ng">12</td><td class="num un">2</td></tr>
+
+<tr><td colspan="6" style="text-align:right;font-weight:700;border-bottom:none">合計</td>
+<td class="num ng" style="border-bottom:none">89</td><td class="num ok" style="border-bottom:none">5</td></tr>
+</tbody></table>
+</div>
+<p class="rule">「今」の数の置き方：Claude＝実測で解決済みなので1／Buffer＝週1回ログインして予約と置いて52／X＝月1回と置いて12／Lovable＝2か月に1回で6／GitHub＝四半期に1回で4／Supabase＝半年に1回で2／Spotify＝鍵が無いので毎月手が要ると置いて12。<b>ここは実測ではない。</b>実測したければ <code>tools/1146_kagi_mihari.py</code> を毎日回せば、切れた回数がそのまま数になる。</p>
+
+<h2>2. 手は最低5つ並べた。そのうえで選んだ</h2>
+<div class="card"><h3>① 公式の長期トークン／APIキーに置き換える<span class="tag">採用・本命</span></h3>
+サービス自身が「機械用の鍵」を用意している場合、これが一番強い。ブラウザを一切使わないので規約にも触れない。Buffer・GitHub・Supabase・Claude はここに入る。</div>
+
+<div class="card"><h3>② OAuth の refresh_token を回し続ける<span class="tag">採用・次善</span></h3>
+access_token が切れても refresh_token で自動で作り直す。Lovable・Spotify はこれ。<b>落とし穴：refresh_token は1回使い切りのサービスが多い</b>（Buffer・Xとも公式に明記）。古い方をもう一度送ると<b>そのアプリの鍵が全部失効して、人が再許可するはめになる</b>。必ず最新の1本だけを保存して古いのを捨てる。</div>
+
+<div class="card"><h3>③ ブラウザのログイン状態を保存する（Playwright の storageState／永続プロファイル）<span class="tag ng">採らない</span></h3>
+Cookie と localStorage をファイルに落として使い回す手。<b>やめた理由が世界中に転がっている：</b>多くのサイトはセッションを24時間前後で切る／月曜に取った状態が金曜には死んでいる／Cookieを強く切るサイトと毎回回る2段階認証があると破綻する／サイトごとにログイン処理を書くのが保守地獄になった。さらに <b>LinkedIn は利用規約でヘッドレスブラウザを名指しで禁止</b>、Instagram も公式API以外の自動化を禁止。<b>ブラウザでログインする自動化は、プラットフォームから見ると bot と区別がつかない。</b>だから採らない。</div>
+
+<div class="card"><h3>④ パスワードマネージャCLIで人が打たずに通す<span class="tag ng">採らない</span></h3>
+1Password の service account（<code>OP_SERVICE_ACCOUNT_TOKEN</code> を置くと <code>op run</code> が対話なしで通る）や Bitwarden の personal API key。<b>仕組みとしては正しい。</b>ただしこれは「鍵を安全に取り出す」道具であって、<b>取り出した先でブラウザにパスワードを打ち込むなら③の問題がそのまま残る</b>。加えて Bitwarden は API key でログインしたあと結局 <code>bw unlock</code> にマスターパスワードが要る（<code>--passwordenv</code> で環境変数に置く形）。<b>こちらがパスワードを直接扱う形になるので採らない。</b>①②が効かないサービスが出てきたら、その時だけ再検討する。</div>
+
+<div class="card"><h3>⑤ 2段階認証（TOTP）を自前で計算して通す<span class="tag ng">採らない</span></h3>
+otpauth などのライブラリに同じ秘密鍵を渡せば、認証アプリと同じ6桁が作れる。技術的には動く（Checkly が手順を公開している）。<b>採らない理由：</b>③とセットでしか意味がなく、③が規約に触れる。そして2段階認証を機械に持たせた時点で、2段階認証をかけた意味が消える。</div>
+
+<div class="card"><h3>⑥ デバイスコードフロー（画面の無い機械で1回だけ人が承認する）<span class="tag">部分採用</span></h3>
+機械が短いコードを表示して、人は手元のスマホで1回だけ許可する。<code>claude setup-token</code> と <code>gh auth login</code> が実質これ。<b>「そこだけ人」を最小の1回に圧縮する形</b>として、①が無いサービスで使う。</div>
+
+<h2>3. 一番効く1つ：Buffer をキー1本にする</h2>
+<p class="rule">89回のうち<b>64回（Buffer 52＋X 12）がこの1手で消える</b>。しかも0円。Buffer は2026年5月に公開API・MCP・CLI を出して、無料プランでも使える。</p>
+<ol>
+<li><b>ここだけ人の手が要る（1回だけ）：</b> <a href="https://publish.buffer.com/settings/api">publish.buffer.com/settings/api</a> を開いて「Create a new API key」。出てきた鍵を <code>~/.tamago/keys/api_keys.env</code> に <code>BUFFER_API_KEY=…</code> で貼る。<br>
+<small>こちらはパスワードを扱わない。鍵の値もこのページには一切書かない。</small></li>
+<li>そのあとは機械だけで回る。動かす口はもう作って置いてある：
+<pre>python3 tools/1146_buffer.py channels
+python3 tools/1146_buffer.py post --channel &lt;id&gt; --text "本文" --at 2026-09-27T09:00:00+09:00
+python3 tools/1146_buffer.py post --channel &lt;id&gt; --text "本文" --dry-run   # 1バイトも送らず中身だけ出す</pre></li>
+<li>Claude から直接使うなら MCP を足すだけ（同じ鍵）：
+<pre>{ "mcpServers": { "buffer": {
+    "type": "http",
+    "url": "https://mcp.buffer.com/mcp",
+    "headers": { "Authorization": "Bearer ${BUFFER_API_KEY}" }
+} } }</pre></li>
+<li>X は Buffer のチャンネルとして繋ぐ。Xに直接ログインする用事が消える。</li>
+</ol>
+<p class="rule">動かした証拠：<code>--dry-run</code> が送信内容（<code>createPost</code> ミューテーション・channelId・dueAt）を正しく組み立てて出すところまで確認済み。鍵が無い時は「どこで作るか」を書いて止まる。実際の送信は鍵を貼った後。</p>
+
+<h2>4. 切れたら自動で気づく（鍵の見張り）</h2>
+<p class="rule">SREの世界の定石は「切れてから慌てない。期限の手前で鳴らす」。トークンの寿命の75〜80%を過ぎたら先に更新する、401が返ったら再取得に落ちる、という二段構え。ただし<b>refresh_token 自体が死んだ場合は機械では戻せない</b>ので、そこは人を呼ぶしかない。だから「呼ぶ回数を数えられる形」にした。</p>
+<pre>python3 tools/1146_kagi_mihari.py            # 人が読む形
+python3 tools/1146_kagi_mihari.py --json     # 機械が読む形（status/1146/kagi_jotai.json に出る）
+# 終了コード 0=全部生きている / 1=期限が近い / 2=死んでいる鍵がある</pre>
+<p class="rule">鍵の<b>値は1バイトも読まない</b>。「置き場に在るか」と「あと何日か」だけ。取得日が台帳に無いものは<b>推測で埋めず</b>「残り日数が出せない」と黄色で出す。<br>
+テストで動作確認済み：期限365日・取得2026-01-01の鍵を「あと97日／青」、中身が空の項目を「赤」、ファイルが無いものを「赤」と正しく判定した。<br>
+台帳は <code>status/1146/kagi_daicho.json</code>。毎日1回回せば、上の表の「今 年◯回」が置きではなく実測になる。</p>
+
+<h2>5. 採らなかった手と、その理由</h2>
+<div class="scroll"><table>
+<thead><tr><th>採らなかった手</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td class="what">X API を直接叩く</td><td><b>0円で出来ない。</b>2026-02-06 に新規向けの無料枠が廃止され従量課金へ。投稿1件 $0.015、リンク付き $0.20、読み取り1件 $0.005 という報告。<span class="yowai">※この価格は個人ブログ複数の一致で、公式ページでは未確認＝弱い情報。</span>→ Buffer経由にすれば0円で済むので、確認を待たずに回避できる。</td></tr>
+<tr><td class="what">Lovable の公式APIキー</td><td><b>課金。</b>公式FAQに「APIキーの作成には Business または Enterprise プランと、ワークスペースのowner/admin権限が要る」と明記。</td></tr>
+<tr><td class="what">ブラウザにログインを保持させる<br>（storageState／永続プロファイル）</td><td><b>規約と、壊れやすさ。</b>LinkedIn はヘッドレスブラウザを名指しで禁止、Instagram は公式API以外の自動化を禁止。技術的にも24時間〜数日で切れる実例が多数。</td></tr>
+<tr><td class="what">パスワードマネージャに打たせる</td><td><b>こちらがパスワードを直接扱う形になる。</b>Bitwarden CLI は API key でログインしても <code>bw unlock</code> にマスターパスワードが要る。原則に反するので採らない。</td></tr>
+<tr><td class="what">2段階認証を機械に持たせる</td><td>③とセットでしか意味がなく、③が規約に触れる。2段階認証の意味も消える。</td></tr>
+<tr><td class="what">Buffer を OAuth で繋ぐ</td><td>動くが、refresh が1回使い切りで、間違えると<b>全部の鍵が失効して人が再許可する</b>。APIキー1本の方が手が減る。目的は手を減らすことなので採らない。</td></tr>
+</tbody></table></div>
+
+<h2>6. 「永久」を信じた仕組みが死んだ実例</h2>
+<ul>
+<li><b>Spotify（2026年）</b>：長らく refresh_token は無期限だった。2026-06-18に「6か月で失効させる」と告知、既存アプリも2026-07-20から対象。期限は<b>最初に許可した日から数え、更新しても伸びない</b>。世界中の「一度作れば一生動く」仕組みが一斉に止まり、MagicMirror のモジュールは再認証フローを足したフォークが出た。<b>教訓：寿命は変更される。だから見張りが要る。</b></li>
+<li><b>X（OAuth 2.0）</b>：<code>offline.access</code> を付けているのに refresh_token が切れるという報告が開発者フォーラムに何年も積み上がっている。access_token は2時間、refresh_token は6か月・1回使い切り。</li>
+<li><b>ブラウザ自動化</b>：storageState を使っていた人が「Cookieを強く切るサイトと、毎回回る2FAで破綻した。サイトごとにログイン処理を書くのが保守地獄になった」と書いて乗り換えている。<span class="yowai">※出典が個人ブログ＝弱い情報。ただし同じ趣旨の記述が複数ある。</span></li>
+</ul>
+
+<h2>7. 出典</h2>
+<p class="rule">公式ドキュメントを上に、個人ブログだけのものは<span class="yowai">弱い</span>と書いた。</p>
+<ol style="font-size:12.5px">
+<li>Buffer 公式・認証（APIキーの作り方、OAuth、refreshは1回使い切り）<br><a href="https://developers.buffer.com/guides/authentication.html">https://developers.buffer.com/guides/authentication.html</a></li>
+<li>Buffer 公式・MCPサーバ（<code>https://mcp.buffer.com/mcp</code>、鍵はBearer、鍵は口座全体に効く）<br><a href="https://developers.buffer.com/guides/integrations/mcp.html">https://developers.buffer.com/guides/integrations/mcp.html</a></li>
+<li>Buffer 公式・旧API（「単一のアクセストークンだけ要るなら自動で発行する」）<br><a href="https://developers.buffer.com/api/authentication/">https://developers.buffer.com/api/authentication/</a></li>
+<li>X 公式・APIキーとシークレット（開発者コンソールでアクセストークンを作る）<br><a href="https://docs.x.com/fundamentals/authentication/oauth-1-0a/api-key-and-secret">https://docs.x.com/fundamentals/authentication/oauth-1-0a/api-key-and-secret</a></li>
+<li>X 公式・OAuth 2.0 認可コードフロー（access 2時間／refresh 6か月・1回使い切り）<br><a href="https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code">https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code</a></li>
+<li>X 開発者フォーラム・「offline.access なのに refresh が切れる」<br><a href="https://devcommunity.x.com/t/refresh-token-expiring-with-offline-access-scope/168899">https://devcommunity.x.com/t/refresh-token-expiring-with-offline-access-scope/168899</a></li>
+<li>Spotify 公式ブログ・refresh_token の失効を導入（2026-06-18）<br><a href="https://developer.spotify.com/blog/2026-06-18-refresh-token-expiration">https://developer.spotify.com/blog/2026-06-18-refresh-token-expiration</a></li>
+<li>Spotify 公式・トークンの更新<br><a href="https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens">https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens</a></li>
+<li>Spotify 6か月失効で壊れた実例（MagicMirror モジュール）<span class="yowai">／GitHub Issue＝中</span><br><a href="https://github.com/raywo/MMM-NowPlayingOnSpotify/issues/151">https://github.com/raywo/MMM-NowPlayingOnSpotify/issues/151</a></li>
+<li>Lovable 公式・API（APIキー作成は Business/Enterprise 限定、MCPサーバの存在）<br><a href="https://docs.lovable.dev/integrations/lovable-api">https://docs.lovable.dev/integrations/lovable-api</a></li>
+<li>GitHub 公式・PATの管理／無期限の可否<br><a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens">https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens</a></li>
+<li>GitHub 公式・fine-grained PAT に無期限を許可した変更（組織は既定366日）<br><a href="https://github.blog/changelog/2024-10-18-new-pat-rotation-policies-preview-and-optional-expiration-for-fine-grained-pats/">https://github.blog/changelog/2024-10-18-new-pat-rotation-policies…</a></li>
+<li>Supabase 公式・Personal Access Tokens（Classic と Scoped、AI／自動化には Scoped）<br><a href="https://supabase.com/docs/guides/platform/personal-access-tokens">https://supabase.com/docs/guides/platform/personal-access-tokens</a></li>
+<li>Supabase 公式・新しいAPIキーへの移行（anon / service_role は2026年末で廃止）<br><a href="https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys">https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys</a></li>
+<li>Claude Code 公式・GitHub Actions（<code>claude setup-token</code> と <code>CLAUDE_CODE_OAUTH_TOKEN</code>）<br><a href="https://code.claude.com/docs/en/github-actions">https://code.claude.com/docs/en/github-actions</a></li>
+<li>Playwright 公式・認証（storageState の保存と、期限が切れたら取り直す運用）<br><a href="https://playwright.dev/docs/auth">https://playwright.dev/docs/auth</a></li>
+<li>1Password 公式・サービスアカウントを CLI で使う（<code>OP_SERVICE_ACCOUNT_TOKEN</code>）<br><a href="https://www.1password.dev/service-accounts/use-with-1password-cli">https://www.1password.dev/service-accounts/use-with-1password-cli</a></li>
+<li>Bitwarden 公式・API キーでの CLI 認証（その後も unlock が要る）<br><a href="https://bitwarden.com/help/personal-api-key/">https://bitwarden.com/help/personal-api-key/</a></li>
+<li>Bitwarden 公式・CLI（<code>BW_SESSION</code>）<br><a href="https://bitwarden.com/help/cli/">https://bitwarden.com/help/cli/</a></li>
+<li>Checkly・Playwright で TOTP を通す手順<span class="yowai">／ベンダー記事＝中</span><br><a href="https://www.checklyhq.com/docs/learn/playwright/bypass-totp/">https://www.checklyhq.com/docs/learn/playwright/bypass-totp/</a></li>
+<li>storageState が保守地獄になった話<span class="yowai">／個人ブログ＝弱い</span><br><a href="https://dev.to/web4browser/cookie-vs-session-vs-browser-profile-what-breaks-in-real-automation-workflows-338e">https://dev.to/web4browser/cookie-vs-session-vs-browser-profile…</a></li>
+<li>X の自動化ルール（何が許されて何が凍結されるか）<span class="yowai">／個人ブログ＝弱い</span><br><a href="https://opentweet.io/blog/twitter-automation-rules-2026">https://opentweet.io/blog/twitter-automation-rules-2026</a></li>
+<li>X API の従量課金・無料枠廃止<span class="yowai">／個人ブログ複数一致＝弱い。公式で要確認</span><br><a href="https://www.wearefounders.uk/the-x-api-price-hike-a-blow-to-indie-hackers/">https://www.wearefounders.uk/the-x-api-price-hike-a-blow-to-indie-hackers/</a></li>
+<li>Buffer が公開API・MCP・CLI を出した日と無料プラン対応<span class="yowai">／第三者まとめ＝弱い。公式ドキュメントの存在で裏は取れている</span><br><a href="https://thatmarketingbuddy.com/mcp/buffer">https://thatmarketingbuddy.com/mcp/buffer</a></li>
+</ol>
+
+<h2>8. 裏が取れなかったこと（推測で埋めていない）</h2>
+<ul>
+<li>Buffer APIキーの<b>寿命</b>。公式ドキュメントに期限の記載が無い。「無期限」と書いてあるわけではない。→ 見張りで実測する。</li>
+<li>X API の<b>現在の価格表</b>。公式ページを直接確認できていない。個人ブログ複数の一致どまり。</li>
+<li>Lovable の refresh_token の<b>寿命</b>。公式に記載が見つからない。</li>
+<li>「今 年89回」の数。<b>実測ではなく置き</b>。見張りを毎日回せば実測になる。</li>
+</ul>
+
+<footer>
+1146番 ／ 2026-09-26 ／ 全部0円（追加課金ゼロ）<br>
+道具：<code>tools/1146_buffer.py</code>（Bufferを動かす口）・<code>tools/1146_kagi_mihari.py</code>（鍵の見張り）・<code>status/1146/kagi_daicho.json</code>（鍵の寿命台帳）<br>
+前号：<a href="1124-login-zero.html">1124 ログインを頼まない形にする（鍵への置き換え表）</a>
+</footer>
+</div></body></html>

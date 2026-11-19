@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34382 34382号｜元ネタ逆引きツールをブラウザ自動操作からVision APIの本物実装へ 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34382 34382号｜元ネタ逆引きツールをブラウザ自動操作からVision APIの本物実装へ</div>
+<h1>#34382 34382号｜元ネタ逆引きツールをブラウザ自動操作からVision APIの本物実装へ</h1>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<h2>① 何を直したか</h2>
+<div class="fix">
+元ネタ逆引きツールが、画面ありのChromeを自動操作してGoogleの検知をすり抜ける「応急処置」実装だったのを、ブラウザを一切使わないGoogle公式Vision APIへ直接送る「本物」の実装に差し替えた。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>8/8</b><span>自動テスト（分類ロジック）PASS件数</span></div>
+  <div class="num"><b>0件</b><span>新経路(vision-api.mjs)でのブラウザ起動呼び出し数</span></div>
+</div>
+
+
+
+<h2>③ 押せるリンク（すべてたまごさんが開ける公開ページ）</h2>
+<ul class="links">
+  <li><b>この確認ページ自体（GitHub Pages・公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34382-reverse-lookup-vision-api.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34382-reverse-lookup-vision-api.html</a></li>
+  <li><b>直した内容のテキスト全文（diff・公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34382-diff.txt" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34382-diff.txt</a></li>
+  <li><b>自動テストの実行ログ全文（公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/34382-test-log.txt" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/34382-test-log.txt</a></li>
+  <li><b>進捗表トップ（公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>④ 実行ログ（画面が無いCLIツールのため、前後スクリーンショットの代わりに生ログをそのまま貼る）</h2>
+<div class="note">コマンド: <code>npm run test:reverse-lookup</code>（joy-relief-station リポジトリ・main合流済みコミット da66af65d）</div>
+<pre style="background:#1c1c1c;color:#8ef0ae;border-radius:10px;padding:14px 16px;font-size:0.8rem;overflow-x:auto;white-space:pre-wrap;">── readVisionApiKey：存在しない鍵名ではnullを返す ──
+  ✅ 架空のルートではnullを返す（例外を投げない）
+── candidates.mjs：分類ロジック ──
+  ✅ YouTube watchを正しく分類する
+  ✅ YouTube動画IDを正しく取り出す
+  ✅ youtu.be短縮URLからも動画IDを取り出す
+  ✅ 未知のサイトはwebとして分類する（元ネタ候補から外さない）
+── candidates.mjs：Vision API形式のレスポンスをrankCandidatesへ通す ──
+  ✅ 候補が2件（YouTube1件＋低信頼サイト1件）に整理される
+  ✅ 複数の切り出しで一致したYouTube動画が1位に来る
+  ✅ 9gagのような転載サイトは低信頼として減点されている
+
+══ 結果: 8 PASS / 0 FAIL ══</pre>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>ブラウザ・ネットワーク不要な分類ロジックの自動テスト</td><td class="yes">8/8 PASS</td></tr>
+<tr><td>mainブランチへの反映</td><td class="yes">完了（da66af65d）</td></tr>
+<tr><td>Vision API実通信テスト</td><td class="no">GOOGLE_VISION_API_KEY未設定のため未実施</td></tr>
+</table>
+
+<footer>
+このツールはCLI（コマンドライン）ツールであり、Lovable上の公開Webページではない。だから「本番URLが200で中身が空でない」の代わりに、この確認ページ自体と、直した内容のテキスト全文・テスト実行ログ全文を、すべてたまごさんが開けるGitHub Pages（公開）に置いた。GOOGLE_VISION_API_KEYの取得（Google Cloudプロジェクト作成・決済情報登録を伴う可能性）はたまごさん本人の操作が必要で、AI側では実行できない（確認義務③④）。.env.localに1行追記すれば即座に本物経路（ブラウザ不使用）で動く。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

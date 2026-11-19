@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>今週かかったお金（972番）</title>
+<style>
+  :root{ --paper:#f4f1ea; --ink:#16130f; --sub:#6b6259; --rule:#d8d2c6;
+         --red:#b3261e; --ok:#2f6b3f; --amber:#8a6d1f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+       font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 18px 80px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:18px}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:.04em}
+  .lead{color:var(--sub);font-size:12.5px;margin:0}
+  .banner{border:2px solid var(--ink);padding:12px 14px;margin:0 0 16px;font-size:13.5px;background:#fff}
+  .banner.red{border-color:var(--red)}
+  .banner b{font-size:15px}
+  h2{font-size:13px;letter-spacing:.14em;color:var(--sub);margin:30px 0 8px;
+     font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;letter-spacing:.1em;color:var(--sub);
+     font-weight:700;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule);
+     white-space:nowrap;vertical-align:bottom}
+  td{padding:9px 8px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  tfoot td{font-weight:700;border-bottom:2px solid var(--ink)}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+  .ng{color:var(--red);font-weight:700} .ok{color:var(--ok);font-weight:700} .un{color:var(--amber);font-weight:700}
+  .ev{color:var(--sub);font-size:11.5px}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+       background:rgba(0,0,0,.05);padding:1px 4px;border-radius:2px;word-break:break-all}
+  pre{background:#fff;border:1px solid var(--rule);padding:10px 12px;font-size:11.5px;
+      overflow-x:auto;line-height:1.5;margin:8px 0}
+  .note{border-left:3px solid var(--rule);padding:4px 0 4px 12px;margin:10px 0;font-size:12.5px;color:var(--sub)}
+  .warn{border-left-color:var(--red);color:var(--red)}
+  ul{margin:8px 0;padding-left:1.2em} li{margin:5px 0;font-size:13px}
+  footer{margin-top:40px;padding-top:12px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--sub)}
+  @media(max-width:640px){ table{font-size:12px} td,th{padding-right:5px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>今週かかったお金</h1>
+  <p class="lead">972番／集計した期間：2026-09-15（月）〜 2026-09-21（月）の直近7日間。<br>
+  ドル→円は <b>150円／$1</b>（各台帳が使っているレート <code>gaibu.json: usdToYenFallback = 150.0</code> をそのまま使用）。今日の実勢レートは取れていない。</p>
+</header>
+
+<div class="banner red">
+  <b>一番大きい支出：Devin のオンデマンド。残高が空になりました。</b><br>
+  <b>2026-09-20 17:44・たまごさん撮影の app.devin.ai の公式画面</b>にこう出ています ——
+  <pre>Current plan : Pro $20/month（Ends on October 16, 2026）
+Daily quota  : 0% used（Resets in 23 hours）
+Weekly quota : 0% used（Resets in 7 days）
+On-demand usage
+  Remaining balance     $-0.26
+  Your on-demand usage  $10.26
+  "No on-demand balance remaining. Sessions will pause when your included quota is exceeded."</pre>
+  <b>これが一番強い証拠です。</b>公式画面の実測値。ファイルに無かったのは、会話で渡された画像だからです。
+</div>
+
+<h2>① Devin オンデマンド ─ いつ減ったか</h2>
+<table>
+<thead><tr><th>時刻</th><th class="num">使用</th><th class="num">残高</th><th>出どころ</th></tr></thead>
+<tbody>
+<tr><td>2026-09-18 07:35</td><td class="num">$1.41</td><td class="num">$8.59</td>
+ <td class="ev"><code>status/devin-night-2026-09-18.md</code>「実測の元データ（<b>すべて app.devin.ai の画面から</b>）」</td></tr>
+<tr><td>2026-09-20 17:44</td><td class="num">$10.26</td><td class="num ng">$-0.26</td>
+ <td class="ev"><b>たまごさん撮影の app.devin.ai 公式画面</b>（Usage）</td></tr>
+</tbody>
+<tfoot>
+<tr><td><b>この2点の差</b></td><td class="num"><b>+$8.85</b></td><td class="num"><b>-$8.85</b></td>
+ <td class="ev"><b>9/18 07:35 〜 9/20 17:44 のあいだに $8.85＝1,327.5円 減った。</b>これは事実。<br>
+ <b class="ng">そのあいだのどこで減ったかは取れません。</b>Devinには使用量を日付で取る口が無いため（下の④参照）。</td></tr>
+</tfoot>
+</table>
+
+<div class="banner">
+  <b>もう勝手には課金されません。</b><br>
+  根拠：残高が <b>$-0.26＝空</b>で、公式画面が自分でこう宣言しています ——
+  <code>No on-demand balance remaining. Sessions will pause when your included quota is exceeded.</code>
+  つまり<b>枠を使い切ったらセッションが止まる</b>。勝手に足されない。<br>
+  <b class="ng">ただし auto-reload（自動チャージ）の状態は未確認です。</b>
+  最後に確認できたのは 2026-09-18 の「auto-reload は OFF（Auto-reload spend this cycle: $0.00）」まで。
+  <b>9/20以降にONになっていないかは、画面を見ないと分かりません。</b>そこだけ1回だけ目で見てください。
+</div>
+
+<h2>② 使った分（従量）／ 取れたもの</h2>
+<table>
+<thead><tr>
+  <th>日付</th><th>何に</th><th>何をしたら</th><th class="num">いくら（円）</th><th>証拠（どこで確認したか）</th><th>質</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td>09/18<br>〜09/20</td><td><b>Devin オンデマンド</b></td>
+  <td>この間に走らせた Devin セッション（9/18に5本・9/19に4本・9/20に6本）</td>
+  <td class="num"><b>1,327.5</b><br><span class="ev">$8.85×150</span></td>
+  <td class="ev"><b>公式画面2点の差分。</b>9/18 07:35 の画面「$1.41／$8.59」と、9/20 17:44 のたまごさん撮影画面「$10.26／$-0.26」</td>
+  <td class="ok">公式画面</td>
+</tr>
+<tr>
+  <td>09/16</td><td>Devin オンデマンド</td>
+  <td>joy-relief-station unused cleanup 1本</td>
+  <td class="num">148.5<br><span class="ev">$0.99×150</span></td>
+  <td class="ev"><code>status/gaibu.json</code>・<code>"costSource":"manual"</code>＝<b>たまごさん本人の申告値</b>（消費の速さに気づいて自分で止めた件）。9/18時点の累計$1.41の内側なので、上の$8.85とは重複しない</td>
+  <td class="un">本人申告</td>
+</tr>
+<tr>
+  <td>09/17</td><td>OpenAI（検品）</td><td>gpt-4o-mini 28回・gpt-5-mini 2回</td>
+  <td class="num">21.784<br><span class="ev">$0.14523</span></td>
+  <td class="ev"><code>status/gaibu_kenpin_ledger.json</code>。APIが返した実トークン数×公表単価で、こちら側が計算した額</td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/17</td><td>fal（画像）</td><td>nano-banana/edit で縦長2枚を16:9に横拡張</td>
+  <td class="num">12.0</td>
+  <td class="ev"><code>status/fal_cost_ledger.json</code>（919番・単価6.0円×2）</td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/17</td><td>fal（動画）</td><td>minimax/h3-max-turbo で1080pループ動画5秒×2本</td>
+  <td class="num">60.0</td>
+  <td class="ev"><code>status/fal_cost_ledger.json</code>（919番・単価30.0円×2）</td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/18</td><td>OpenAI（検品）</td><td>gpt-4o-mini 10回・gpt-5-mini 20回</td>
+  <td class="num">28.964<br><span class="ev">$0.19309</span></td>
+  <td class="ev"><code>status/gaibu_kenpin_ledger.json</code></td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/18</td><td>OpenAI（相談）</td><td>gpt-4o-mini 14回（915番の配管テスト）</td>
+  <td class="num">0.756</td>
+  <td class="ev"><code>status/kiku_log.jsonl</code></td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/18</td><td>Gemini（相談）</td><td>gemini-2.5-flash 9回（944番の配管テスト）</td>
+  <td class="num">1.494</td>
+  <td class="ev"><code>status/gaibu_seika_ledger.jsonl</code>（0.166円×9件）。<b>注記：</b><code>kiku_log.jsonl</code> にも同じ単価のGemini 5件が同じ4分間（07:59〜08:03）に載っている。<b>同一イベントか別イベントか判定できない</b>ので、多い方の9件だけ計上し、5件分（0.830円）は足していない</td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/18</td><td>Grok / xAI（文字）</td><td>grok-4.3 5回</td>
+  <td class="num">1.685</td>
+  <td class="ev"><code>status/kiku_log.jsonl</code>。<b>これ以降のGrokは全部 HTTP 403／410 で失敗＝0円</b></td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/19</td><td>OpenAI（検品＋相談）</td><td>検品 gpt-4o-mini 15・gpt-5-mini 11・gpt-4o 1／相談 gpt-4o-mini 3</td>
+  <td class="num">15.701</td>
+  <td class="ev"><code>gaibu_kenpin_ledger.json</code>＋<code>kiku_log.jsonl</code>。<b>gpt-4o の 4.610円 1件は両方の台帳に同じ値で載る＝同一イベント</b>として1回だけ計上（二重計上を外した）</td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/20</td><td>OpenAI（相談）</td><td>gpt-5 1回 25.866円・gpt-4o 1回 2.548円・gpt-4o-mini 1回 0.069円。中身は「声で接客する仕組み」の調査</td>
+  <td class="num">28.483</td>
+  <td class="ev"><code>status/kiku_log.jsonl</code>。<code>gaibu_kenpin_ledger.json</code> の同日分と3件とも値が一致＝同一イベント。1回だけ計上</td>
+  <td class="un">こちら計算</td>
+</tr>
+<tr>
+  <td>09/15<br>09/21</td><td>—</td><td>どの台帳にもこの2日の行が無い</td>
+  <td class="num">0</td>
+  <td class="ev">fal／kenpin／kiku／seika／gaibu の全台帳を日付で集計。該当行 0件</td>
+  <td class="ok">台帳</td>
+</tr>
+</tbody>
+<tfoot>
+<tr><td colspan="3">Devin オンデマンド（公式画面の差分）</td><td class="num">1,327.5 円</td><td class="ev">証拠の質：最上</td><td></td></tr>
+<tr><td colspan="3">Devin オンデマンド（本人申告・09/16）</td><td class="num">148.5 円</td><td class="ev">機械実測ではない</td><td></td></tr>
+<tr><td colspan="3">OpenAI・fal・Gemini・Grok（台帳からの計算）</td><td class="num">170.867 円</td><td class="ev">こちら側の計算。公式の請求額ではない</td><td></td></tr>
+<tr><td colspan="3"><b>合計（取れた分だけ）</b></td><td class="num"><b>1,646.867 円</b></td><td class="ev">これは「取れた分の合計」であって、今週かかった総額ではない</td><td></td></tr>
+</tfoot>
+</table>
+<div class="note">
+  <b>Devinの端数について。</b>9/18時点の累計 $1.41 のうち、いくらが 9/15以降のものかは<b>取れません</b>。
+  うち $0.99 は 9/16 の本人申告分。残る $0.42 がいつのものかは不明なので、合計に入れていません。
+</div>
+
+<h2>③ 今日 Mac側から公式APIを叩いた結果（生のまま）</h2>
+<div class="note">
+  この作業場所（サンドボックス）は外に回線が出ないので、<b>心臓（heartbeat）経由でMacの上から curl を叩きました。</b>
+  以下は<b>公式が返した生の文言</b>です。こちらの解釈は入れていません。実行：2026-09-21 08:01〜08:05。
+</div>
+<pre>鍵の有無： openai=あり  openai_admin=<b>なし</b>  fal_admin=あり  devin=あり
+
+[OpenAI] GET /v1/organization/costs?start_time=…&bucket_width=1d   -> HTTP 403
+  {"error":"You have insufficient permissions for this operation.
+            Missing scopes: api.usage.read. …"}
+[OpenAI] GET /v1/organization/usage/completions?…                  -> HTTP 403
+  （同じ文言）
+
+[fal] GET https://rest.alpha.fal.ai/billing/user_spending （admin鍵）-> HTTP 404 {"detail":"Not Found"}
+[fal] GET https://rest.alpha.fal.ai/billing             （admin鍵）-> HTTP 404 {"detail":"Not Found"}
+[fal] GET https://api.fal.ai/v1/billing                 （admin鍵）-> HTTP 404
+  {"error":{"type":"not_found","message":"Route not found"}}
+
+[Devin] GET /v1/enterprise/consumption                             -> HTTP 400
+  {"detail":"Both start_date and end_date parameters are required"}
+[Devin] GET /v1/enterprise/consumption?start_date=2026-09-15&end_date=2026-09-21 -> HTTP 403
+  <b>{"detail":"Contact support to enable the consumption API"}</b>
+[Devin] GET /v1/usage    -> HTTP 404 {"detail":"Not Found"}
+[Devin] GET /v1/billing  -> HTTP 404 {"detail":"Not Found"}</pre>
+<div class="note warn">
+  <b>これで確定しました。</b>Devin の使用量APIは「403・サポートに連絡して有効化してくれ」＝<b>アカウント側で閉じている</b>。
+  日付を付けて叩き直しても同じ。<b>だから $10.26 は画面でしか取れず、たまごさんのスクショが唯一の証拠です。</b><br>
+  OpenAI も同様に、Costs/Usage API は Admin key（<code>sk-admin-…</code>）専用で、今の鍵には <code>api.usage.read</code> が無い。
+  <b>Admin key を1本作って鍵ファイルに足せば、翌日から公式の実額が自動で取れるようになります。</b>
+</div>
+
+<h2>④ 使った分（従量）／ 取れないもの</h2>
+<table>
+<thead><tr><th>何</th><th>いくら</th><th>どの口が閉じているか（今日の実測）</th></tr></thead>
+<tbody>
+<tr><td><b>Devin オンデマンドの日別内訳</b></td><td class="ng">取れない</td>
+ <td class="ev"><code>/v1/enterprise/consumption</code> → <b>403「Contact support to enable the consumption API」</b>。<code>/v1/usage</code> <code>/v1/billing</code> → 404。<b>合計（$8.85）は画面から取れたが、いつ減ったかは取れない。</b></td></tr>
+<tr><td><b>OpenAI の公式請求額</b></td><td class="ng">取れない</td>
+ <td class="ev">Costs API・Usage API とも <b>HTTP 403「Missing scopes: api.usage.read」</b>。Admin key が無い。②のOpenAI 95.7円はこちら側の計算であって公式の請求額ではない。</td></tr>
+<tr><td><b>fal の公式請求額</b></td><td class="ng">取れない</td>
+ <td class="ev">管理鍵（<code>~/.fal_admin_key</code>）は<b>あった</b>が、公式Billingの住所3本とも <b>404 Not Found</b>。エンドポイントが変わったか廃止されている。②のfal 72円はこちら側の台帳。</td></tr>
+<tr><td><b>Google / Gemini の公式請求額</b></td><td class="ng">取れない</td>
+ <td class="ev">Geminiの鍵自体が今日の実測（09-21 07:14）で<b>「鍵が置かれていません」</b>。9/19以降のGemini呼び出しは全部「鍵が見つかりません」で失敗＝0円。</td></tr>
+<tr><td><b>xAI 声（iris）の実額</b></td><td class="ng">取れない</td>
+ <td class="ev">窓口が返す「上限 $4.50 のうち $1.96 使用済み」は<b>こちら側サーバの自己集計</b>。元の単価は <code>status/grok_voice_cost.json</code> に「$0.02/秒・<b>未実測</b>、xAI公開価格表からの概算」と明記。<b>xAI公式の請求額ではない。</b></td></tr>
+<tr><td><b>GitHub Actions</b></td><td class="ng">取れない</td>
+ <td class="ev">Mac側から <code>gh auth token</code>（あり・login=<code>tamago2022</code>）で叩いた結果：<br>
+ <code>GET /users/tamago2022/settings/billing/actions</code> → <b>HTTP 404 {"message":"Not Found"}</b>（2026-09-21 08:13 実測）。<b>この口は今のトークンでは開いていない。</b><br>
+ 記録上は <code>docs/2026-09-19_申し送り_GitHub見張り番.md</code> に「Actions の<b>無料枠が尽きている</b>」とあり、だからETagポーリングを採用した、とある。<b>支払いが発生したかは取れない。</b></td></tr>
+<tr><td><b>Lovable のクレジット</b></td><td class="ok">こちら発は 0</td>
+ <td class="ev">今日07:14の実測で Lovable MCP は<b>「認証がまだ取れていません（同意ボタンが押されていない）」</b>。クレジットを食う <code>send_message</code> / <code>create_project</code> は1回も呼べていない。<b>たまごさんがブラウザで使った分は取れない。</b></td></tr>
+<tr><td><b>Anthropic（Claude）の請求額</b></td><td class="ng">取れない</td>
+ <td class="ev">使用量の公開APIが無い。加えて今日の実測でClaudeの鍵自体が切れている（OAuth session expired）。</td></tr>
+</tbody>
+</table>
+
+<h2>⑤ 月額（固定）／ 従量とは別勘定</h2>
+<table>
+<thead><tr><th>何</th><th class="num">月額</th><th>証拠</th></tr></thead>
+<tbody>
+<tr><td><b>Devin Pro</b></td><td class="num">$20／月<br><span class="ev">150円換算で3,000円</span></td>
+ <td class="ev"><b>たまごさん撮影の公式画面（2026-09-20 17:44）</b>「Current plan: Pro $20/month・<b>Ends on October 16, 2026</b>」。9/18の画面読み取りとも一致。<b>実際に円でいくら引き落とされているかは取れない。</b></td></tr>
+<tr><td>Claude（Anthropic）</td><td class="ng">取れない</td><td class="ev"><code>status/subscriptions.json</code>：<code>monthlyYen: null</code>＝未登録</td></tr>
+<tr><td>Grok（SuperGrok）</td><td class="ng">取れない</td><td class="ev"><code>subscriptions.json</code>：<code>monthlyYen: null</code></td></tr>
+<tr><td>Kindle Unlimited</td><td class="ng">取れない</td><td class="ev"><code>subscriptions.json</code>：<code>monthlyYen: null</code></td></tr>
+<tr><td>Audible</td><td class="ng">取れない</td><td class="ev"><code>subscriptions.json</code>：<code>monthlyYen: null</code></td></tr>
+<tr><td>Spotify</td><td class="ng">取れない</td><td class="ev"><code>subscriptions.json</code>：<code>monthlyYen: null</code></td></tr>
+<tr><td>Lovable</td><td class="ng">取れない</td><td class="ev"><code>subscriptions.json</code> に行そのものが無い</td></tr>
+<tr><td>Supabase</td><td class="ng">取れない</td><td class="ev">台帳に行が無い。無料枠かどうかも取れない</td></tr>
+</tbody>
+</table>
+<div class="note">
+  <code>status/subscriptions.json</code> の先頭に理由が書いてあります ——
+  「名前だけがたまごさん本人の発言(2026-09-08)からの既知情報。<b>金額・課金日・状態はまだ聞けていないため全部null（未登録）</b>」。
+  金額は <code>money.html</code> に入力すると<b>その端末のlocalStorageにだけ</b>保存される作りなので、ここからは読めません。
+</div>
+
+<h2>⑥ 請求は来ない（参考値）</h2>
+<table>
+<thead><tr><th>日付</th><th>何</th><th class="num">API単価に換算すると</th><th>証拠</th></tr></thead>
+<tbody>
+<tr><td>09/16</td><td rowspan="3">Claude Code のトークン消費</td><td class="num">$15.15（8件）</td>
+ <td class="ev" rowspan="3"><code>status/cost_by_task.json</code>。<b>定額プラン内の消費量をAPI単価に換算した参考値で、この分の追加請求は来ません</b>（<code>money.html</code> にも同じ注記あり）。<br>
+ <b>★この台帳は 2026-09-18 03:19 で更新が止まっています。9/19・9/20・9/21 の分は入っていません。</b></td></tr>
+<tr><td>09/17</td><td class="num">$362.71（90件）</td></tr>
+<tr><td>09/18</td><td class="num">$87.87（62件）</td></tr>
+<tr><td colspan="2"><b>3日分の参考値 合計</b></td><td class="num"><b>$465.73</b><br><span class="ev">150円換算で約 69,860円相当</span></td><td class="ev">繰り返しますが<b>請求は来ません</b></td></tr>
+</tbody>
+</table>
+
+<h2>⑦ こちらが使った分 ／ たまごさんが使った分</h2>
+<div class="note">
+  <b>分けられません。</b>どの台帳も「どのプロセスが叩いたか」を記録していないため、機械的に分離できない。<br>
+  はっきりしているのは3つだけ：<br>
+  ・<b>Devin オンデマンドの $8.85</b>は、9/18〜9/20 に走ったセッション15本ぶん＝<b>ほぼ全部こちら発</b>（台帳 <code>gaibu.json</code> に15本とも記録がある）。<br>
+  ・<b>Lovable はこちら発 0回</b>（MCP未認証で呼べない）＝もし消費があればたまごさん側。<br>
+  ・<b>Devin 09/16 の $0.99 はたまごさん本人の申告</b>。
+</div>
+
+<h2>⑧ 公式の画面（こちらでは撮れない）</h2>
+<div class="note warn">
+  <b>スクリーンショットは撮っていません。</b>ブラウザMCPもcomputer-useも使わない＝画面を奪わない、という指示のため。
+  下は Mac側から <code>curl</code> で<b>実際に叩いたHTTPコード</b>です（2026-09-21 08:01 実測）。
+  403は「ログインしていない状態で叩いたから」で、たまごさんのブラウザでは開きます。
+</div>
+<table>
+<thead><tr><th>社</th><th>開く場所</th><th class="num">実測</th><th>そこで見える数字</th></tr></thead>
+<tbody>
+<tr><td>Devin</td><td><code>https://app.devin.ai/settings</code></td><td class="num ok">200</td><td class="ev">Usage。<b>$10.26／$-0.26 を撮ったのがこの画面</b>。★ついでに <b>auto-reload が OFF のまま</b>かだけ見てください</td></tr>
+<tr><td>fal</td><td><code>https://fal.ai/dashboard/billing</code></td><td class="num ok">200</td><td class="ev">Subtotal。②のfal 72円と突き合わせられます</td></tr>
+<tr><td>OpenAI</td><td><code>https://platform.openai.com/usage</code></td><td class="num un">403</td><td class="ev">未ログインだと403。ブラウザでは開きます。日別の実額。②のOpenAI 95.7円と合っているか一発で分かります</td></tr>
+<tr><td>xAI</td><td><code>https://console.x.ai/</code></td><td class="num un">403</td><td class="ev">Billing / Usage。<b>$1.96という数字はここの値ではありません</b></td></tr>
+<tr><td>Lovable</td><td><code>https://lovable.dev/</code></td><td class="num un">403</td><td class="ev">Settings → クレジット残高と月額</td></tr>
+<tr><td>GitHub</td><td><code>https://github.com/settings/billing</code></td><td class="num un">404</td><td class="ev">未ログインだと404。ブラウザでは開きます。Actions の使用分数と支払い方法</td></tr>
+</tbody>
+</table>
+
+<h2>⑨ AIとの繋がり（今日 09-21 07:14 の実測）</h2>
+<div class="note">出典は <code>status/public/kagi_daicho.json</code>（実際に叩いて返ってきたコードだけを載せる台帳）。</div>
+<ul>
+<li><b>こちらから投げられる（200を確認）</b>：GitHub（200）／OpenAI（200）／Devin（200）／fal（404＝鍵は通った、点検用の住所が無いだけ）／xAI声の窓口（200・短命トークンが出た）</li>
+<li><b>向こうから来られる（1往復できた）</b>：中継所（スマホのボタン→Mac）だけ（200・返事あり）。<b>それ以外は1往復できた記録がありません。</b></li>
+<li><b>通っていない</b>：Gemini（鍵が置かれていない）／Grok・xAI文字（403・チーム goodvibes にクレジットと権限が無い）／Lovable（OAuth未同意）／Claudeの鍵（OAuth session expired）／Gmail（アプリパスワード未配置）</li>
+<li><b>Genspark</b>：この台帳に行がありません。<b>取れない</b>ので「繋がっている」とは書きません。</li>
+</ul>
+
+<h2>⑩ 金が出る前に「何回でいくら」を先に出す仕組み</h2>
+<table>
+<thead><tr><th>仕組み</th><th>どこ</th><th>効いている上限</th></tr></thead>
+<tbody>
+<tr><td>外部AI検品の関所</td><td><code>tools/kenpin_gate.py</code>＋<code>status/gaibu_kenpin_ledger.json</code></td>
+ <td class="ev"><b>1日 100円／120回</b>。9/18に「回数30回で先に止まり、金額はまだ7割余っていた」事故があり、<b>お金の上限100円は一切動かさず回数だけ120回に上げた</b>と台帳に明記（実測単価 約0.97円/回）</td></tr>
+<tr><td>fal の月上限</td><td><code>status/fal_cost_ledger.json</code></td>
+ <td class="ev"><b>月3,000円</b>。今月ここまで 1,374.35円／残り 1,625.65円（<code>overCap: false</code>）</td></tr>
+<tr><td>外注の月上限</td><td><code>status/gaibu.json</code> の <code>monthlyCapUsd</code></td>
+ <td class="ev">Devin $20／ChatGPT $10／Grok $10</td></tr>
+<tr><td>xAI 声のハード上限</td><td>xAIコンソール側 $5＋窓口側 $4.50</td>
+ <td class="ev">二重の栓。ただし<b>集計の元になる単価が未実測</b>なので、栓としては効くが金額表示は信用できない</td></tr>
+<tr><td class="ng">Devin オンデマンド</td><td class="ng">仕組みが無かった</td>
+ <td class="ev"><b>ここが今週の穴でした。</b>使用量APIが403で閉じているので、走らせる前に「何回でいくら」を出せない。
+ <b>結果、$8.85＝1,327.5円が、いつ減ったか分からないまま消えました。</b><br>
+ いま効いている歯止めは<b>「残高が空」という事実そのもの</b>だけ（公式画面が「超えたら止まる」と宣言）。
+ <b>新しい常駐は増やしていません。</b>次に足すなら、Devinを投げる前に「今週の本数×実測単価」を出して gaibu.json の $20 上限に当てる関所——ただし<b>単価が実測できないので、投げた本数で数えるしかありません。</b></td></tr>
+</tbody>
+</table>
+
+<footer>
+972番／作成 2026-09-21。この調査で使ったお金：<b>0円</b>（叩いたのは読み取り専用のGETのみ。課金・購入・プラン変更・カード登録は一切していません）。<br>
+鍵の値は1文字も載せていません。Mac側での実測ログは <code>status/972_jitsugaku.txt</code> / <code>972_jitsugaku2.txt</code> に生のまま残してあります。
+</footer>
+
+</div>
+</body>
+</html>

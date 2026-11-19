@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#801 LINE2窓口への問い合わせ・返信見張りの現状 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #801 LINE2窓口への問い合わせ・返信見張りの現状</div>
+<h1>#801 LINE2窓口への問い合わせ・返信見張りの現状</h1>
+<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認／2026-09-14 触る検品を再確認しPASS・Gmail認証の依頼を追記</div>
+
+<div class="fix">
+791番で確定した5項目の問い合わせ文面をそのまま使い、両窓口(Creators Market／スタンプメーカー)へ送る作業に着手。だが791番が実測済みの通り、フォームは<b>本人のLINE登録電話番号が必須</b>＋<b>画像キャプチャ保護</b>という本人確認の壁があり、これはAIエージェントには突破できない（電話番号を知らない・キャプチャは本人確認が目的のため）。加えて今回は着手時点でMac全体が高負荷（Chrome関連プロセス201個・load average最大27.6）で、確認用のheadless Chrome起動も3回ともハング／タイムアウトし送信を試みることさえできなかった。<br><br>そのため<b>今回は自動送信を見送り</b>、確実にできる①返信の見張り機構(tools/check_line_reply.py)を新設し既存の心臓(heartbeat.sh)へ相乗り登録②進捗表(data.js/index.html)に「LINEから返信が来たら知らせる」表示を追加、の2点を実装・main反映した。送信そのものは<b>791番の確認ページのコピペ文面を使い、たまごさんが選択肢を選んで本文を貼り、電話番号とキャプチャを入力して送信ボタンを押す</b>のが最短経路（AI側の技術的な壁のため、ここだけは人の手が必要）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1本</b><span>新設した見張りコード(check_line_reply.py)</span></div>
+  <div class="num"><b>1回</b><span>見張りコードの動作テスト(blocked:no_credentialで正常終了を確認)</span></div>
+  <div class="num"><b>0件</b><span>自動送信できた件数(本人確認の壁+Mac高負荷のため今回は0)</span></div>
+  <div class="num"><b>4回</b><span>headless Chrome起動を試した回数(全てタイムアウト/ハング)</span></div>
+</div>
+
+
+
+<h2>③ 2026-09-14 追記：見張りを動かすには1つだけお願いがあります</h2>
+<div class="fix">
+返信見張り(check_line_reply.py)は心臓(30秒おき)に登録済みで、1日1回Gmailを覗く動きは正しく実行されています。ただし<b>Gmailのアプリ用パスワードがまだ無い</b>ため、毎回「no_credential」で素通りしていて、実際には返信を検知できていません（同じ壁は626番のAnthropic返信見張りにもあります）。<br><br>
+<b>たまごさんにお願いしたいのはこれだけです：</b>
+<ol style="padding-left:1.3em;margin:10px 0;">
+<li><a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">https://myaccount.google.com/apppasswords</a> を開く（2段階認証が有効なeggypop2010@gmail.comでログイン）</li>
+<li>アプリ名を適当に入れて「作成」。16文字のパスワードが表示される</li>
+<li>ターミナルで1行だけ実行：<br><code>echo 'ここに16文字' | tr -d ' ' > ~/.tamago/gmail_app_password</code></li>
+</ol>
+これで次の見回り（最大1日以内）から自動的に返信を拾い、進捗表とこのページへ全文をそのまま反映します。パスワードそのものはこちらには送らないでください（ファイルに直接書き込むだけでOKです）。<br><br>
+また、今回<b>触る検品を再実行し、押しても無反応だった5件は解消（現在は7件中5件テストし5件とも反応・PASS）</b>していることを確認しました。前回のstuck判定は既に直っています。
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>①791番の確認ページ(コピペ用文面はここ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/791-line-inquiry-draft.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/791-line-inquiry-draft.html</a></li>
+  <li><b>②LINE Creators Marketへの問い合わせフォーム</b><a href="https://contact.line.me/serviceId/10569" target="_blank" rel="noopener">https://contact.line.me/serviceId/10569</a></li>
+  <li><b>③LINEスタンプメーカーへの問い合わせフォーム</b><a href="https://contact-cc.line.me/detailId/11844" target="_blank" rel="noopener">https://contact-cc.line.me/detailId/11844</a></li>
+  <li><b>④進捗表(LINE返信が来たらここに表示される)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>両窓口への自動送信</td><td class="yes">no</td></tr>
+<tr><td>791番の文面(コピペ用)を確定済みのまま維持</td><td class="yes">yes</td></tr>
+<tr><td>返信見張りコードの新設・心臓への登録</td><td class="yes">yes</td></tr>
+<tr><td>見張りコードの動作テスト(no_credentialで正常終了)</td><td class="yes">yes</td></tr>
+<tr><td>進捗表への「LINE返信あり」表示追加</td><td class="yes">yes</td></tr>
+<tr><td>触る検品の再実行(2026-09-14・案件#718対策後)</td><td class="yes">PASS(5/5)</td></tr>
+<tr><td>Gmail見張りが実際に動いているか</td><td class="no">no（アプリパスワード未設定・上記③参照）</td></tr>
+</table>
+
+<footer>
+このページは #801 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

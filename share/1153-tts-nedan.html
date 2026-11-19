@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>読み上げ、いくら？ — 掘り起こしと値段の実測（2026-09-26）</title>
+<style>
+:root{--ink:#17150f;--sub:#6b6357;--line:#e3ddd0;--bg:#faf7f0;--hi:#b8402c;--ok:#1f6b45;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.75;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 80px}
+h1{font-size:1.5rem;line-height:1.4;margin:.2em 0 .1em;letter-spacing:-.01em}
+.date{color:var(--sub);font-size:.8rem;margin-bottom:26px}
+h2{font-size:1.12rem;margin:44px 0 12px;padding-bottom:7px;border-bottom:2px solid var(--ink)}
+h3{font-size:.98rem;margin:26px 0 8px;color:var(--hi)}
+p{margin:.6em 0}
+.lead{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--hi);border-radius:9px;padding:16px 18px;margin:18px 0}
+.lead .big{font-size:1.2rem;font-weight:700;line-height:1.5}
+.big em{font-style:normal;color:var(--hi)}
+table{width:100%;border-collapse:collapse;font-size:.83rem;background:var(--card);margin:12px 0;display:block;overflow-x:auto;white-space:nowrap}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f1ece0;font-weight:600}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.best td{background:#eaf5ee;font-weight:600}
+tr.best td:first-child::before{content:"◎ "}
+.note{font-size:.79rem;color:var(--sub);margin-top:6px}
+ul{padding-left:1.2em}li{margin:.35em 0}
+.tl{list-style:none;padding:0;margin:14px 0}
+.tl li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:8px 0}
+.tl b{display:block;font-size:.76rem;color:var(--sub);font-weight:600;letter-spacing:.04em}
+.stop{border-color:var(--hi)!important;background:#fdf2ef!important}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;border:1px solid var(--line);background:#f1ece0;color:var(--sub);margin-right:5px}
+.tag.red{background:#fdf2ef;border-color:#e6bdb3;color:var(--hi)}
+.tag.grn{background:#eaf5ee;border-color:#b9ddc8;color:var(--ok)}
+a{color:var(--hi)}
+.src{font-size:.78rem;color:var(--sub)}
+.src li{margin:.3em 0;word-break:break-all}
+hr{border:0;border-top:1px solid var(--line);margin:34px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>読み上げ、結局どうなってる？ いくらかかる？</h1>
+<div class="date">2026年9月26日 ／ 実測と公式ドキュメントだけで作成</div>
+
+<div class="lead">
+<div class="big">答え：<em>0円でいい。</em></div>
+<p><b>Macの中にすでに VOICEVOX が入っている。</b>たまごさんが「生成してくれた声の方がよっぽどいい」と言った<b>ずんだもんの声は、これ。</b>ノート1本だろうが1,000本だろうが<b>0円</b>。</p>
+<p>Geminiに払うなら<b>1本あたり約4〜12円</b>。ただし<b>Geminiの鍵は今うちに無い</b>（実測）。鍵があって今すぐ課金で回せるのは OpenAI（約13.5円／本）と ElevenLabs（約16円／本）。<b>0円で足りるので、まずそっち。</b></p>
+</div>
+
+<h2>① Obsidianの読み上げ ── どこで止まっていたか</h2>
+
+<p>やりっぱなしではなかった。<b>道具は動いていて、たまごさんが聴いて「10点満点。声は80点」まで言っている。</b>その先で止まった。</p>
+
+<ul class="tl">
+<li><b>9月6日 ／ 512番</b>「文章を自然な朗読の音声にする（円卓は人ごとに声を変える）」で着手。聴き比べページができた。</li>
+<li><b>9月7日 ／ 615番</b>「朗読の道具を仕上げる（どのノートか分かる・URLは読まない・声を選べる）」。この日だけで4回発車し直している。</li>
+<li><b>9月10日〜11日 ／ 754番</b>「Vaultのノートを読み上げ音声にしていく」で<b>即読みPWAが立ち上がった。</b>ノート3本、音声2本まで入った。</li>
+<li><b>9月12日 ／ たまごさんが実際に聴いた</b>「10点満点でいいと思います」「声がもう80点です」。同時に注文が4つ出た（声をフラットに／止められる・戻れる／ノートから1クリック／一覧に戻れる）。</li>
+<li class="stop"><b>9月12日以降 ／ ここで完全に止まった</b>
+<p><span class="tag red">730番 waiting</span>声を選べる＋一時停止・履歴・リピート<br>
+<span class="tag red">766番 waiting</span>声をフラットに＋止められる・戻れる＋ノートから1クリック</p>
+<p><b>止まった理由：この2つに「お金がかかるかもしれない」という札（costsMoney）が貼られ、値段が確定するまで発車しない関所に入ったまま放置された。</b>関所に入った時刻は 730番が9月10日22:34、766番が9月12日01:40。<b>以後14日間、誰も値段を出さなかったので、誰も発車させなかった。</b></p>
+<p>つまり<b>今回たまごさんが聞いた「いくらか」が、そのまま止まっていた原因そのもの。</b></p>
+</li>
+</ul>
+
+<p><span class="tag grn">再開した</span>値段が出たので関所を外し、730番・766番を発車待ちに戻した。声は0円のVOICEVOXに寄せる方針を両方のメモに書き込んである。</p>
+
+<p class="note">いま公開されている即読みPWAの中身：ノート3本／音声2本（9月12日で更新が止まっている）。たまごさんが言った「今60分の1」はこの状態のこと。</p>
+
+<h2>② Gemini TTS ── 公式の数字だけ</h2>
+
+<h3>いくらか（2026年9月26日時点の公式料金表）</h3>
+<p>Geminiは<b>トークン数え</b>。音声は<b>1秒＝25トークン</b>と公式に明記されている（＝1分＝1,500トークン）。</p>
+
+<table>
+<tr><th>モデル</th><th>音声出力</th><th>1分あたり</th><th>1分あたり(円)</th></tr>
+<tr><td>Gemini 3.8 Flash-Lite TTS（Batch）</td><td class="num">$3.00 /100万</td><td class="num">$0.0045</td><td class="num">0.71円</td></tr>
+<tr><td>Gemini 3.8 Flash-Lite TTS（標準）</td><td class="num">$6.00 /100万</td><td class="num">$0.009</td><td class="num">1.42円</td></tr>
+<tr><td>Gemini 3.8 Flash TTS（標準・高音質）</td><td class="num">$9.00 /100万</td><td class="num">$0.0135</td><td class="num">2.13円</td></tr>
+<tr><td>Gemini 3.1 Flash TTS Preview</td><td class="num">$20.00 /100万</td><td class="num">$0.030</td><td class="num">4.74円</td></tr>
+</table>
+<p class="note">入力（読ませる文章）は別に $0.50／100万トークン。2,000字なら0.1円ほどで、誤差。／ 上記の $9.00 と $6.00 は<b>2026年12月31日まで</b>の価格で、<b>2027年1月1日から倍</b>になると公式表に書いてある。</p>
+
+<h3>無料枠</h3>
+<p><b>ある。</b>公式料金表の TTS 各モデルに「Free Tier：Free of charge」の列がある（レート制限つき・入力データは製品改善に使われる）。<b>試すだけなら0円。</b></p>
+
+<h3>声は何種類選べるか</h3>
+<p><b>「2,000人」ではない。</b>公式の内訳はこう。</p>
+<ul>
+<li><b>プリセットの声：30種。</b>Zephyr（明るい）／Puck（陽気）／Kore（きっぱり）／Charon（説明的）など、名前と性格がセットで一覧になっている。</li>
+<li><b>Extended Voice Library：数百種。</b>言語・なまり・キャラ性で絞り込んで取り出せる（<code>GET /v1beta/voices</code>）。公式は「hundreds」としか書いておらず、<b>正確な総数は公開されていない。</b></li>
+<li><b>Voice design：声を文章で注文して作れる。</b></li>
+<li><b>Voice replication：実在の声を複製できる（本人の同意音声が要る）。</b></li>
+<li>自分で作って保存できる声は<b>1プロジェクト200個まで・保存期間1年。</b></li>
+</ul>
+
+<h3>日本語で使える声はいくつか</h3>
+<p><b>30種全部が日本語をしゃべる。</b>Geminiは声に言語が紐づいていない。<b>入れた文章の言語を自動判定して読む</b>方式。対応言語は Flash TTS が130言語超、Flash-Lite TTS が100言語超で、日本語は両方に入っている。<br>
+Extended Voice Library のほうは日本語で絞り込めるが、<b>何種類あるかは実際に叩かないと分からない（鍵が無いので未実測）。</b></p>
+
+<h3>Gemini Live と TTS は別枠か ── ここが一番分かりにくいところ</h3>
+<div class="lead">
+<p><b>完全に別枠。別のモデルで、料金表の別の行に載っている。混ざらない。</b></p>
+</div>
+<table>
+<tr><th></th><th>TTS（決まった文章を読む）</th><th>Live（声で会話する）</th></tr>
+<tr><td>モデル名</td><td>gemini-3.8-flash-tts など</td><td>gemini-3.8-live など</td></tr>
+<tr><td>音声の出力</td><td class="num">$9.00 /100万<br>（Lite は $6.00）</td><td class="num">$12.00 /100万<br>＝ $0.018／分</td></tr>
+<tr><td>音声の入力</td><td>なし（文章を入れる）</td><td class="num">$3.00 /100万 ＝ $0.005／分</td></tr>
+<tr><td>課金</td><td colspan="2"><b>使ったモデルごとに別々に請求される。</b>TTSを使ってもLiveの料金は発生しないし、逆もない。無料枠もそれぞれ別に付いている。</td></tr>
+</table>
+<p class="note">ノートを読ませるだけなら<b>TTSだけでいい。</b>Liveは「こっちが喋って相手が喋り返す」ためのもので、読み上げには要らない。うちの915番（コンシェルジュと声で会話）はLive側の話で、<b>読み上げとは財布が別。</b></p>
+
+<h3>MCP はあるか</h3>
+<p><b>無い。</b>コネクタの登録簿を「gemini／tts／text to speech／voice／elevenlabs／audio」で引いたが<b>0件</b>。読み上げ系の公式コネクタは今のところ用意されていない。<b>使うならAPIを直接叩く。</b></p>
+
+<h3>鍵は今あるか（実測）</h3>
+<table>
+<tr><th>鍵</th><th>ある？</th><th>どこ</th></tr>
+<tr><td><b>Gemini / Google</b></td><td><b>無い</b></td><td>—</td></tr>
+<tr><td>OpenAI</td><td>ある</td><td>鍵の台帳</td></tr>
+<tr><td>ElevenLabs</td><td>ある</td><td>専用の置き場</td></tr>
+<tr><td>xAI / YouTube / Supabase / Buffer</td><td>ある</td><td>鍵の台帳</td></tr>
+</table>
+<p><b>Geminiの鍵の取り方（1行）：</b><a href="https://aistudio.google.com/apikey">aistudio.google.com/apikey</a> を開いて「Create API key」を押し、出てきた文字列を鍵の台帳に <code>GEMINI_API_KEY=</code> として1行足すだけ。</p>
+
+<h2>③ うちの1回にいくらか ── これが答え</h2>
+
+<p>前提を先に置く。<b>Obsidianのノート1本＝2,000字</b>（うちの平均的な長さ）、<b>日本語の読み上げは毎分350字</b>として<b>約5.7分</b>の音声になる。為替は<b>1ドル＝158円</b>で計算した。</p>
+
+<table>
+<tr><th>手</th><th>ノート1本</th><th>100本</th><th>1,000本</th><th>声</th><th>鍵</th></tr>
+<tr class="best"><td>VOICEVOX（Mac内・ずんだもん等）</td><td class="num">0円</td><td class="num">0円</td><td class="num">0円</td><td>数十キャラ</td><td>不要</td></tr>
+<tr class="best"><td>Macの say コマンド（Kyoko）</td><td class="num">0円</td><td class="num">0円</td><td class="num">0円</td><td>日本語1種</td><td>不要</td></tr>
+<tr class="best"><td>ブラウザ／iPhoneの読み上げ</td><td class="num">0円</td><td class="num">0円</td><td class="num">0円</td><td>端末の声</td><td>不要</td></tr>
+<tr><td>Gemini 3.8 Flash-Lite TTS（Batch）</td><td class="num">約4円</td><td class="num">約410円</td><td class="num">約4,100円</td><td>30＋数百</td><td>無い</td></tr>
+<tr><td>Gemini 3.8 Flash-Lite TTS（標準）</td><td class="num">約8円</td><td class="num">約820円</td><td class="num">約8,200円</td><td>30＋数百</td><td>無い</td></tr>
+<tr><td>Gemini 3.8 Flash TTS（高音質）</td><td class="num">約12円</td><td class="num">約1,220円</td><td class="num">約12,200円</td><td>30＋数百</td><td>無い</td></tr>
+<tr><td>OpenAI gpt-4o-mini-tts</td><td class="num">約13.5円</td><td class="num">約1,350円</td><td class="num">約13,500円</td><td>十数種</td><td><b>ある</b></td></tr>
+<tr><td>ElevenLabs Flash / Turbo</td><td class="num">約16円</td><td class="num">約1,580円</td><td class="num">約15,800円</td><td>多数・声の複製可</td><td><b>ある</b></td></tr>
+<tr><td>ElevenLabs v3（一番いい声）</td><td class="num">約32円</td><td class="num">約3,160円</td><td class="num">約31,600円</td><td>多数・感情表現が強い</td><td>ある</td></tr>
+</table>
+
+<h3>声の質と値段を並べると</h3>
+<table>
+<tr><th>手</th><th>値段</th><th>声の質（うちの用途＝ノートの読み上げ）</th></tr>
+<tr><td>Macの say（Kyoko）</td><td>0円</td><td><b>ロボットボイス。</b>たまごさんが9月10日に「読み上げの一番初期の声」と却下したのがこれ。</td></tr>
+<tr><td>VOICEVOX</td><td>0円</td><td><b>たまごさんが「よっぽどいい」と言った声。</b>キャラ声だが聞き取りやすく、抑揚も一定。<b>766番の注文「感情を込めないでフラットに」とも相性がいい。</b></td></tr>
+<tr><td>Gemini Flash-Lite TTS</td><td>8円/本</td><td>自然。声の選択肢が桁違いに多い。感情の強さも指示できる。</td></tr>
+<tr><td>Gemini Flash TTS</td><td>12円/本</td><td>公式が「スタジオ品質・長尺で崩れない」と謳う上位版。</td></tr>
+<tr><td>OpenAI gpt-4o-mini-tts</td><td>13.5円/本</td><td>自然。読み方を文章で指示できる。<b>鍵が既にあるので今日から動く。</b></td></tr>
+<tr><td>ElevenLabs v3</td><td>32円/本</td><td>一番人間に近い。ただし<b>感情がこもりすぎる</b>＝766番でたまごさんが嫌がった症状が出やすい。<b>読み上げには過剰。</b></td></tr>
+</table>
+
+<hr>
+
+<div class="lead">
+<div class="big">名指しで1つ：<em>VOICEVOX（0円）</em></div>
+<ul>
+<li><b>Macにもう入っている。</b>追加の支払いも、鍵の発行も、登録も要らない。</li>
+<li><b>たまごさんが実際に聴いて「こっちの方がよっぽどいい」と選んだ声そのもの。</b>好みが既に確認済み。</li>
+<li><b>1,000本でも0円。</b>Vault全部を読み上げにしても0円。ここが決定的。</li>
+<li>766番の「感情を込めないでフラットに」は、感情の強い高級TTSより<b>VOICEVOXの方が素直に出る。</b></li>
+</ul>
+<p><b>お金を使うのは、ここぞの1本だけでいい。</b>公開するコラムなど、人に聴かせるものだけ Gemini 3.8 Flash-Lite TTS の Batch（<b>4円／本</b>）。<b>鍵が無いので、その時だけ上のリンクで発行する。</b>鍵を取りに行くのも面倒なら OpenAI（13.5円／本）で今すぐ動く。</p>
+</div>
+
+<h2>出典</h2>
+<ul class="src">
+<li>Gemini API 公式料金表（TTS・Live の全価格、無料枠、25トークン／秒）<br><a href="https://ai.google.dev/gemini-api/docs/pricing">https://ai.google.dev/gemini-api/docs/pricing</a></li>
+<li>Gemini 音声生成 公式ドキュメント（プリセット30声の一覧、Extended Voice Library、対応130言語超、自作声200個・1年）<br><a href="https://ai.google.dev/gemini-api/docs/speech-generation">https://ai.google.dev/gemini-api/docs/speech-generation</a></li>
+<li>Gemini API キー発行<br><a href="https://aistudio.google.com/apikey">https://aistudio.google.com/apikey</a></li>
+<li>ElevenLabs 公式 API料金（v3 $0.10／1,000字、Flash/Turbo $0.05／1,000字）<br><a href="https://elevenlabs.io/pricing/api">https://elevenlabs.io/pricing/api</a></li>
+<li>OpenAI gpt-4o-mini-tts モデルページ<br><a href="https://developers.openai.com/api/docs/models/gpt-4o-mini-tts">https://developers.openai.com/api/docs/models/gpt-4o-mini-tts</a></li>
+<li>為替（2026年9月25日 東京市場 1ドル＝158円65銭。本ページは158円で計算）<br><a href="https://www.nikkei.com/marketdata/quote/USDJPY/">https://www.nikkei.com/marketdata/quote/USDJPY/</a></li>
+<li>①の日付・番号・止まった理由は、うちの発車待ち台帳と受付台帳の実データから。声の環境（VOICEVOXの有無・Macの日本語音声・鍵の有無）はMac上で実際にコマンドを叩いて確認した。</li>
+</ul>
+
+<p class="note">※ OpenAI の声の種類数は公式ページで数え切れなかったため「十数種」と幅で書いている。断定していない。</p>
+
+</div>
+</body>
+</html>

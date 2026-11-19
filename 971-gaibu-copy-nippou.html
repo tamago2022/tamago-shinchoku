@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>外部から入れたもの・コピー日報</title>
+<style>
+  :root{ --paper:#f4f1ea; --ink:#16130f; --sub:#6b6259; --rule:#d8d2c6;
+         --red:#b3261e; --ok:#2f6b3f; --amber:#8a6d1f; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+       font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:980px;margin:0 auto;padding:24px 16px 72px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:16px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:.04em}
+  .lead{color:var(--sub);font-size:12.5px;margin:0}
+  .banner{border:2px solid var(--red);color:var(--red);padding:10px 12px;
+          font-weight:700;margin:0 0 16px;font-size:15px}
+  .banner.clear{border-color:var(--ok);color:var(--ok)}
+  .banner ul{margin:6px 0 0;padding-left:1.1em;font-weight:400;font-size:13px}
+  h2{font-size:13px;letter-spacing:.14em;color:var(--sub);margin:24px 0 8px;
+     font-weight:700;border-bottom:1px solid var(--rule);padding-bottom:5px}
+  h3.h3{font-size:12px;letter-spacing:.08em;margin:18px 0 6px;font-weight:700}
+  .nums{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+  .nums .cell{border:1px solid var(--rule);background:#fff;padding:8px 12px;min-width:92px}
+  .nums .cell.bad{border-color:var(--red)}
+  .nums .k{font-size:10.5px;letter-spacing:.1em;color:var(--sub);display:block}
+  .nums .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .nums .cell.bad .v{color:var(--red)}
+  .was{color:var(--sub);text-decoration:line-through;font-size:12.5px}
+  .now{font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-size:11px;letter-spacing:.1em;color:var(--sub);
+     font-weight:700;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule);
+     white-space:nowrap}
+  td{padding:8px 8px 8px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  tr.red td{background:rgba(179,38,30,.05)}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;
+       padding-right:10px}
+  .todo{color:var(--red);font-weight:700}
+  .ng{color:var(--red);font-weight:700}.ok{color:var(--ok);font-weight:700}
+  .small{font-size:12px;color:var(--sub)}
+  .what{font-weight:700}
+  .where{color:var(--sub);font-size:11.5px;display:block;margin-top:2px;
+         word-break:break-word}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  footer{margin-top:30px;padding-top:12px;border-top:1px solid var(--rule);
+         color:var(--sub);font-size:11.5px}
+  a{color:#1b4d8f}
+  @media(max-width:620px){ .hide-sp{display:none} body{font-size:14px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>外部から入れたもの・コピー日報</h1>
+  <p class="lead">昨日いくつ入って、コピーがいくつ書けて、<strong>いくつ手つかずか</strong>。
+     数字が取れない日は推測で埋めず赤にする。</p>
+</header>
+
+<p id="banner" class="banner">読み込み中…</p>
+
+<h2>1. 日ごと（直近7日）</h2>
+<table id="t-day">
+  <thead><tr>
+    <th>日付</th><th class="num">入った</th><th class="num">コピー済</th>
+    <th class="num">手つかず</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2>2. 直す係：走った回数と、直した件数</h2>
+<p class="small">数えるだけでは減らない。<strong>走った&gt;0 なのに 直した=0 は赤。</strong>
+   動いているのに何も取れていないのが、一番たちの悪い壊れ方だから。</p>
+<div id="naoshi-nums" class="nums"></div>
+
+<h3 class="h3">こう直した（前 → 後）</h3>
+<table id="t-fix">
+  <thead><tr><th>曲／動画</th><th>前</th><th>後</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<h3 class="h3">直せなかったもの（理由をそのまま出す）</h3>
+<p class="small">見ていない動画を想像で書くことになるものは、<strong>書かずに残す。</strong>
+   黙って飲み込まない。</p>
+<table id="t-skip">
+  <thead><tr><th>曲／動画</th><th>なぜ直せなかったか</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2>3. まだ書けていないもの</h2>
+<p class="small">直近のものが上。「代表曲のひとつ。」のような水道水コピーも手つかずに数える。</p>
+<table id="t-todo">
+  <thead><tr>
+    <th>曲／動画</th><th class="hide-sp">今のコピー</th><th>なぜ手つかずか</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2>4. 毎朝の入荷見回りは走ったか</h2>
+<table id="t-patrol">
+  <thead><tr><th>対象日</th><th>番号</th><th>今</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<footer>
+  <div id="meta"></div>
+  <div style="margin-top:6px">
+    数える係：<code>tools/gaibu_copy_nippou.py</code>／
+    直す係：<code>tools/gaibu_copy_naoshi.py</code>（朝6時以降の最初の便で1日1回）。
+    どちらも5分便 <code>machine_status_push.sh</code> に相乗り＝
+    <strong>心臓が死んでいても launchd が直接起こすので回ってくる。</strong>新しい常駐は増やしていない／
+    正本：joy-relief-station の <code>admin_stock</code>（<code>created_at</code>＝入荷日時）
+  </div>
+</footer>
+
+</div>
+<script>
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,
+  c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function cell(k,v,bad){return '<div class="cell'+(bad?' bad':'')+'">'+
+  '<span class="k">'+esc(k)+'</span><span class="v">'+esc(v)+'</span></div>';}
+
+fetch('status/public/gaibu_copy_nippou.json?t='+Date.now())
+ .then(r=>r.json()).then(render)
+ .catch(e=>{document.getElementById('banner').textContent=
+   '日報が読めませんでした：'+e;});
+
+function render(d){
+  const b=document.getElementById('banner');
+  const t=d.total||{};
+  if(d.redCount){
+    b.className='banner';
+    b.innerHTML='赤 '+d.redCount+'件'+
+      '<ul>'+(d.red||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+  }else{
+    b.className='banner clear';
+    b.textContent='赤 0件。入った'+(t.in||0)+'件、全部コピーが書けています。';
+  }
+
+  const td=document.querySelector('#t-day tbody');
+  if(!(d.byDay||[]).length){
+    td.innerHTML='<tr class="red"><td colspan="4" class="small">'+
+      '正本（admin_stock）から数えられていません。'+esc(d.sourceNote||'')+
+      '<br>推測では埋めません。次に5分便が回って鍵が通れば、ここに実数が入ります。</td></tr>';
+  }else (d.byDay||[]).forEach(r=>{
+    const tr=document.createElement('tr');
+    if(r.todo) tr.className='red';
+    tr.innerHTML='<td>'+esc(r.date)+'</td>'+
+      '<td class="num">'+(r.in||0)+'</td>'+
+      '<td class="num">'+(r.written||0)+'</td>'+
+      '<td class="num '+(r.todo?'todo':'')+'">'+(r.todo||0)+'</td>';
+    td.appendChild(tr);
+  });
+
+  const tt=document.querySelector('#t-todo tbody');
+  if(!(d.todo||[]).length){
+    tt.innerHTML='<tr><td colspan="3" class="small">'+
+      (d.source==='admin_stock'
+        ? '手つかずはありません。'
+        : '正本から釣れていないので、まだ一覧にできていません。')+'</td></tr>';
+  }else (d.todo||[]).slice(0,120).forEach(x=>{
+    const tr=document.createElement('tr'); tr.className='red';
+    tr.innerHTML='<td><span class="what">'+esc(x.title)+'</span>'+
+        '<span class="where">'+esc(x.artist)+' ／ '+esc(x.date)+
+        (x.url?' ／ <a href="'+esc(x.url)+'" target="_blank" rel="noopener">元</a>':'')+
+        '</span></td>'+
+      '<td class="hide-sp small">'+(x.copy?esc(x.copy):'（空）')+'</td>'+
+      '<td class="small ng">'+esc(x.why)+'</td>';
+    tt.appendChild(tr);
+  });
+
+  // ---- 直す係 ----
+  const n=d.naoshi||{};
+  const zero = (n.targets||0)>0 && (n.fixed||0)===0;
+  document.getElementById('naoshi-nums').innerHTML=
+    cell('走った回数（累計）', n.runs||0, !(n.runs||0)) +
+    cell('今回の対象', n.targets||0, false) +
+    cell('今回直した', n.fixed||0, zero) +
+    cell('まだ残り', (n.remaining==null?'—':n.remaining), !!n.remaining) +
+    cell('直した累計', n.fixedTotal||0, false);
+
+  const tf=document.querySelector('#t-fix tbody');
+  const fixes=(n.changes&&n.changes.length)?n.changes:(n.history||[]);
+  if(!fixes.length){
+    tf.innerHTML='<tr class="red"><td colspan="3" class="small">'+
+      (n.ranAt?'走ったが、まだ1件も直っていません。理由は下の表に出ています。'
+             :'直す係がまだ一度も走っていません。')+'</td></tr>';
+  }else fixes.slice(0,40).forEach(x=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td><span class="what">'+esc(x.title)+'</span>'+
+        '<span class="where">'+esc(x.date||'')+
+        (x.at?' ／ 直した '+esc(x.at):'')+
+        (x.url?' ／ <a href="'+esc(x.url)+'" target="_blank" rel="noopener">元</a>':'')+
+        '</span></td>'+
+      '<td class="was">'+(x.was?esc(x.was):'（空）')+'</td>'+
+      '<td class="now">'+esc(x.now)+'</td>';
+    tf.appendChild(tr);
+  });
+
+  const ts=document.querySelector('#t-skip tbody');
+  if(!(n.skips||[]).length){
+    ts.innerHTML='<tr><td colspan="2" class="small">ありません。</td></tr>';
+  }else (n.skips||[]).forEach(x=>{
+    const tr=document.createElement('tr'); tr.className='red';
+    tr.innerHTML='<td><span class="what">'+esc(x.title)+'</span>'+
+        '<span class="where">'+esc(x.date||'')+'</span></td>'+
+      '<td class="small ng">'+esc(x.reason)+
+        (x.draft?'<span class="where">書いた案：'+esc(x.draft)+'</span>':'')+'</td>';
+    ts.appendChild(tr);
+  });
+
+  const tp=document.querySelector('#t-patrol tbody');
+  const rows=((d.patrol||{}).rows)||[];
+  if(!rows.length){
+    tp.innerHTML='<tr><td colspan="3" class="small">見回りの号がありません。</td></tr>';
+  }else rows.slice(-10).reverse().forEach(r=>{
+    const done = r.status==='done';
+    const tr=document.createElement('tr');
+    if(!done) tr.className='red';
+    tr.innerHTML='<td>'+esc(r.date)+'</td><td class="small">'+esc(r.n)+'番</td>'+
+      '<td class="'+(done?'ok':'ng')+'">'+(done?'走った':'走っていない')+'</td>';
+    tp.appendChild(tr);
+  });
+
+  const last=(d.patrol||{}).lastActuallyRan;
+  document.getElementById('meta').textContent=
+    '実測：'+esc(d.generatedAt)+
+    '／出どころ：'+esc(d.sourceNote||d.source||'—')+
+    (last?'／実際に見回った最後の記録：'+esc(last):'');
+}
+</script>
+</body>
+</html>

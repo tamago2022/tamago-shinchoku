@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#905 仕組み⑫ Geminiを繋ぐ（調べ物・要約はGemini／判断はClaude） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #905 仕組み⑫ Geminiを繋ぐ（調べ物・要約はGemini／判断はClaude）</div>
+<h1>#905 仕組み⑫ Geminiを繋ぐ（調べ物・要約はGemini／判断はClaude）</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+重い『読む』仕事（大きいファイル・大きいログの要約、複数ファイルへの質問）を安いモデルGemini 2.5 Flashへ委譲するCLI(tools/gemini_delegate.py)とスキル(.claude/skills/gemini-delegate)を新規実装。下敷きはSpotify社Portal/shunt(2026-09-03公開の公式ブログ記事、一次情報)。判断・編集・設計判断はClaudeが持ち、Geminiには渡さない設計。GEMINI_API_KEYは.envに未設定のため実際のAPI疎通は未実施、キーが入れば即動く状態。<pre>実測(2026-09-17):
+[自社実測・python3 tools/estimate_gemini_savings.py]
+サンプルしたセッション数: 40
+Readツール呼び出しの総数: 88
+うち350行以上の大きい読み込み: 4
+大きい読み込みの割合: 4.5%
+Read呼び出しが1回以上あったセッション数: 4/40
+
+[他社一次情報・引用]
+Spotify社公式ブログ(2026-09-03)の実測: 90%削減(Javaモノレポ・bulk-readシナリオ平均)</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>4.5%</b><span>自社40セッション実測・350行以上の大きいRead呼び出しの割合(上のpre参照)</span></div>
+  <div class="num"><b>90%</b><span>Spotify社公式ブログの実測値(他社一次情報・上のpre参照。自社実測ではない)</span></div>
+  <div class="num"><b>$0.30/$2.50</b><span>Gemini 2.5 Flash 入力/出力 100万トークンあたり料金(無料枠あり・公式価格ページで確認)</span></div>
+</div>
+
+<h2>③ 世界の節約事例（Spotify以外にも・一次情報のみ・2026-09-17に実際に開いて確認）</h2>
+<div class="note">1回目提出はSpotify1社のみだった指摘を受け、他社の一次情報を追加で確認した。数字が確認できなかったもの(Google Gemini公式ドキュメント／Duolingo公式ブログ)、ドメインブロックで開けなかったもの(OpenAI公式Klarna事例)は採用せず「未確認」のまま docs/gemini_bridge_2026-09-17.md §2 に正直に記録している。</div>
+<table>
+<tr><th>会社</th><th>数字（原文どおり）</th><th>何に使ったか</th><th>向かない用途・注記</th></tr>
+<tr><td>Spotify</td><td>Javaモノレポのbulk-readで平均<b>90%</b>トークン削減</td><td>大きいファイルの読み込み・要約の委譲</td><td>編集・デバッグ・設計判断には使わない(実際にスレッド安全性バグを見逃した例あり)</td></tr>
+<tr><td>Anthropic（Prompt Caching）</td><td>長いプロンプトで<b>コスト最大90%削減・レイテンシ最大85%削減</b>（本1冊対話：11.5秒→2.4秒）</td><td>長文ドキュメントとの対話・要約・コーディング支援</td><td>「繰り返し読む」時に効く別方式の節約。初回読み込みコストは下がらない</td></tr>
+<tr><td>Anthropic導入事例：EvenUp</td><td>文書作成が<b>15時間→15分</b></td><td>法律文書のドラフト作成</td><td>人間の最終確認込みの数字</td></tr>
+<tr><td>Anthropic導入事例：Spellbook</td><td>月間<b>53万件</b>の契約審査を処理</td><td>契約審査の一次チェック</td><td>最終承認は人間側に残す設計</td></tr>
+</table>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>実装本体 tools/gemini_delegate.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gemini_delegate.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/gemini_delegate.py</a></li>
+  <li><b>使い方スキル SKILL.md</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/.claude/skills/gemini-delegate/SKILL.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/.claude/skills/gemini-delegate/SKILL.md</a></li>
+  <li><b>まとめドキュメント(世界の節約事例+効果測定)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/gemini_bridge_2026-09-17.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/docs/gemini_bridge_2026-09-17.md</a></li>
+  <li><b>効果測定スクリプト</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/estimate_gemini_savings.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/estimate_gemini_savings.py</a></li>
+  <li><b>Spotify社一次情報(90%削減の出典)</b><a href="https://engineering.atspotify.com/2026/9/portal-by-spotify-cut-my-claude-code-token-usage-by-90" target="_blank" rel="noopener">https://engineering.atspotify.com/2026/9/portal-by-spotify-cut-my-claude-code-token-usage-by-90</a></li>
+  <li><b>Anthropic公式 Prompt Caching(他社事例①・90%削減の出典)</b><a href="https://claude.com/blog/prompt-caching" target="_blank" rel="noopener">https://claude.com/blog/prompt-caching</a></li>
+  <li><b>Anthropic導入企業事例一覧(他社事例②③・EvenUp/Spellbook)</b><a href="https://claude.com/customers" target="_blank" rel="noopener">https://claude.com/customers</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>GEMINI_API_KEY未設定時にクラッシュせず日本語エラーで終わるか</td><td class="yes">OK</td></tr>
+<tr><td>APIキーの値がログ・出力に一切出ないか(コード読解+検品)</td><td class="yes">OK</td></tr>
+<tr><td>py_compile(構文チェック)</td><td class="yes">OK</td></tr>
+<tr><td>既存ファイルの削除・上書きが無いか(git status)</td><td class="yes">OK</td></tr>
+<tr><td>ドキュメントに向かない用途(編集/デバッグ/設計判断/安全性推論)を明記</td><td class="yes">OK</td></tr>
+<tr><td>実測数字とドキュメント記載の数字が一致(独立検品で再実行し比較)</td><td class="yes">OK</td></tr>
+<tr><td>世界の節約事例がSpotify以外にもあるか(1回目の指摘への対応)</td><td class="yes">OK(Spotify+Anthropic本体+導入事例2社の計4件、全て一次情報URLをWebFetchで実際に開いて確認。数字が非公開だったGoogle/Duolingo、開けなかったOpenAI/Klarnaは不採用と正直に記載)</td></tr>
+</table>
+
+<footer>
+このページは #905 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

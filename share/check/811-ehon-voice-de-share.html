@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#811 読み聞かせ絵本 D(渋い男性)+E(女の子)追加＋比較ページ共有ボタン 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #811 読み聞かせ絵本 D(渋い男性)+E(女の子)追加＋比較ページ共有ボタン</div>
+<h1>#811 読み聞かせ絵本 D(渋い男性)+E(女の子)追加＋比較ページ共有ボタン</h1>
+<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映・触る検品(verify_click.mjs)PASSまで実測確認</div>
+
+<div class="fix">
+783番の読み聞かせ絵本・声比較ページにD(MiniMax Deep_Voice_Man・渋い男性・1.0倍速)とE(MiniMax Sweet_Girl_2・女の子・1.0倍速)を追加。台本はA/B/Cと1文字も変えていない(桃太郎冒頭116文字)。あわせて747/783/一覧の比較ページ3枚に共有ボタン(ページ全体＋各案ごとの小さいボタン)を実装。スマホはnavigator.shareを使い、使えない場合はURLをコピーする。<br><br>
+<b>追記：</b>1回目の触る検品で「📤 このページを共有」が押しても無反応、とNGを受けた。原因はnavigator.shareが環境によって失敗(NotAllowedError等)した時に何も表示していなかったこと。失敗時は必ずURLコピーへフォールバックするよう修正し、さらにコピー完了の案内(トースト)を同じ文言のまま連続表示すると変化が伝わりにくい問題も見つけたため、「どの案をコピーしたか」を毎回メッセージに含める形に直した。3回とも実際に機械でクリックして直った証拠をとった。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3.48円</b><span>D+E 2本の実費(予算10円・上限20円以内)</span></div>
+  <div class="num"><b>116文字</b><span>A〜E共通の台本</span></div>
+  <div class="num"><b>5種類</b><span>A/B/C/D/Eの声比較</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番:読み聞かせ絵本5種聞き比べ(D案へ直接ジャンプ)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/compare/783-ehon-voice-compare.html#case-d" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/compare/783-ehon-voice-compare.html#case-d</a></li>
+  <li><b>本番:同ページ・E案へ直接ジャンプ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/compare/783-ehon-voice-compare.html#case-e" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/compare/783-ehon-voice-compare.html#case-e</a></li>
+  <li><b>本番:鬼嫁ちゃんループGIF(共有ボタン実装後)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/compare/747-oniyome-loop.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/compare/747-oniyome-loop.html</a></li>
+  <li><b>本番:案の比較台 一覧(共有ボタン実装後)</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/compare/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/compare/index.html</a></li>
+  <li><b>帳簿(fal_cost_ledger.json)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/status/fal_cost_ledger.json" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/status/fal_cost_ledger.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>D音声ファイルが本番URLで200で取得できる</td><td class="yes">HTTP 200・340404バイト・audio/mp3 確認済み</td></tr>
+<tr><td>E音声ファイルが本番URLで200で取得できる</td><td class="yes">HTTP 200・298932バイト・audio/mp3 確認済み</td></tr>
+<tr><td>783ページ本番にcase-d/case-eアンカーとsharemini/shareTopBtnが存在する</td><td class="yes">本番HTMLをcurlで実測(件数一致)</td></tr>
+<tr><td>747/一覧ページ本番にも共有ボタンが反映されている</td><td class="yes">本番HTMLをcurlで実測</td></tr>
+<tr><td>共有ボタン・案ごとの共有ボタンを実際にクリックして反応するか(tools/verify_click.mjs・機械によるタップ相当の検証)</td><td class="yes">783番=15件中15件反応・一覧=5件中5件反応・747番=共有ボタン全件反応(sharemini無反応0件)。747番に残る5件の無反応(コマ送り「▶自動」「1コマ▶」・B案「これにする」)は今回の共有ボタン実装と無関係な既存コード</td></tr>
+<tr><td>20円上限を超えていない</td><td class="yes">実費3.48円(見積もり通り)</td></tr>
+</table>
+
+<footer>
+このページは #811 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

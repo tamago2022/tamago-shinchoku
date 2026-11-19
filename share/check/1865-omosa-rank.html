@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1865 重さの監査S/A/B/Cランキング（コード変更なし） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1865 重さの監査S/A/B/Cランキング（コード変更なし）</div>
+<h1>#1865 重さの監査S/A/B/Cランキング（コード変更なし）</h1>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<b>重さの監査だけ（コードは1行も変えない）。</b>ごきげん補給所(joy-relief-station)の本番 <code>https://joy-relief-station.lovable.app</code> から、入口・検索・お気に入り・履歴・特集・世界(音楽/食/かわいい)・棚(名カバー/原曲の旅)・部屋カード・特集ページ・曲ページ(重い既知/通常)・マガジン(静的HTML)の15種を選び、headless Chrome＋4G相当のネットワーク制限(fast4g)・幅375(スマホ相当・CSSピクセル)で実測した。<b>修正は一切していない。現状をS/A/B/Cで並べただけ。</b><br>実測: own(自サイトが送るKB)とfirstPageMs(LCP相当の初回表示)の組み合わせで判定。S=自サイト700KB未満かつ初回3.0秒未満／A=1500KB未満かつ5.0秒未満／B=2500KB未満かつ8.0秒未満／C=それ以外。<br>最重量はC判定の4ページ：世界(食)3279KB・部屋カード3505KB・特集ページ2795KB・世界(かわいい)2530KB。共通して画像(webp/png)が1ページ1〜2MB級の大きさで入っている（例：世界(食)のturkish-cilbir.png=1515KB、部屋カードのcoverguide-data-*.js=2492KB）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>15ページ</b><span>測った代表ページ数</span></div>
+  <div class="num"><b>2件</b><span>Sランク（最軽量）</span></div>
+  <div class="num"><b>5件</b><span>Aランク</span></div>
+  <div class="num"><b>4件</b><span>Bランク</span></div>
+  <div class="num"><b>4件</b><span>Cランク（重い）</span></div>
+  <div class="num"><b>23KB / 2.2秒</b><span>最軽量：マガジン(静的HTML)</span></div>
+  <div class="num"><b>3505KB / 3.4秒</b><span>最重量：部屋カード(star-land)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>マガジン(静的)（Sランク）</b><a href="https://joy-relief-station.lovable.app/magazine/rei-harakami.html" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/magazine/rei-harakami.html</a></li>
+  <li><b>特集一覧（Sランク）</b><a href="https://joy-relief-station.lovable.app/features" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/features</a></li>
+  <li><b>入口(トップ)（Aランク）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>世界(音楽)（Aランク）</b><a href="https://joy-relief-station.lovable.app/world/music" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/music</a></li>
+  <li><b>曲ページ(重い既知)（Aランク）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=akiko&amp;song=love-theme-from-spartacus</a></li>
+  <li><b>検索（Aランク）</b><a href="https://joy-relief-station.lovable.app/search" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/search</a></li>
+  <li><b>お気に入り（Aランク）</b><a href="https://joy-relief-station.lovable.app/favorites" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/favorites</a></li>
+  <li><b>履歴（Bランク）</b><a href="https://joy-relief-station.lovable.app/history" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/history</a></li>
+  <li><b>曲ページ(通常)（Bランク）</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=sheila-on-7&amp;song=kita" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=sheila-on-7&amp;song=kita</a></li>
+  <li><b>棚(原曲の旅)（Bランク）</b><a href="https://joy-relief-station.lovable.app/shelf/music/origin-song-journey" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/origin-song-journey</a></li>
+  <li><b>棚(名カバー)（Bランク）</b><a href="https://joy-relief-station.lovable.app/shelf/music/covers" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/music/covers</a></li>
+  <li><b>世界(かわいい)（Cランク）</b><a href="https://joy-relief-station.lovable.app/world/cute" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/cute</a></li>
+  <li><b>特集ページ（Cランク）</b><a href="https://joy-relief-station.lovable.app/feature/final-view" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/feature/final-view</a></li>
+  <li><b>世界(食)（Cランク）</b><a href="https://joy-relief-station.lovable.app/world/food" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/world/food</a></li>
+  <li><b>部屋カード（Cランク）</b><a href="https://joy-relief-station.lovable.app/room/card/star-land" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/star-land</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>1. マガジン(静的)</td><td class="yes">Sランク｜自サイト23KB・全体142KB・初回表示2.2秒</td></tr>
+<tr><td>2. 特集一覧</td><td class="yes">Sランク｜自サイト654KB・全体738KB・初回表示2.6秒</td></tr>
+<tr><td>3. 入口(トップ)</td><td class="yes">Aランク｜自サイト825KB・全体826KB・初回表示4.4秒</td></tr>
+<tr><td>4. 世界(音楽)</td><td class="yes">Aランク｜自サイト989KB・全体990KB・初回表示5.0秒</td></tr>
+<tr><td>5. 曲ページ(重い既知)</td><td class="yes">Aランク｜自サイト1183KB・全体2326KB・初回表示3.2秒</td></tr>
+<tr><td>6. 検索</td><td class="yes">Aランク｜自サイト1386KB・全体1386KB・初回表示1.7秒</td></tr>
+<tr><td>7. お気に入り</td><td class="yes">Aランク｜自サイト1390KB・全体1391KB・初回表示3.6秒</td></tr>
+<tr><td>8. 履歴</td><td class="no">Bランク｜自サイト677KB・全体677KB・初回表示7.2秒</td></tr>
+<tr><td>9. 曲ページ(通常)</td><td class="no">Bランク｜自サイト1384KB・全体3727KB・初回表示5.5秒</td></tr>
+<tr><td>10. 棚(原曲の旅)</td><td class="no">Bランク｜自サイト2072KB・全体2400KB・初回表示4.5秒</td></tr>
+<tr><td>11. 棚(名カバー)</td><td class="no">Bランク｜自サイト2090KB・全体2666KB・初回表示3.4秒</td></tr>
+<tr><td>12. 世界(かわいい)</td><td class="no">Cランク｜自サイト2530KB・全体3228KB・初回表示7.9秒</td></tr>
+<tr><td>13. 特集ページ</td><td class="no">Cランク｜自サイト2795KB・全体2795KB・初回表示2.0秒</td></tr>
+<tr><td>14. 世界(食)</td><td class="no">Cランク｜自サイト3279KB・全体3733KB・初回表示11.0秒</td></tr>
+<tr><td>15. 部屋カード</td><td class="no">Cランク｜自サイト3505KB・全体3602KB・初回表示3.4秒</td></tr>
+</table>
+
+<footer>
+1865号。tools/koutai_sokutei.mjs（既存の重さ計測エンジン）をそのまま呼び、15ページ分のpages.jsonを渡して測った。コードは1文字も変更していない（監査のみ）。生データは本セッションのログに残る。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

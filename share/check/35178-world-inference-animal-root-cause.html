@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35178 動物動画の根本原因2つを特定・両方main合流済み・Lovable公開はP0停止で未反映 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35178 動物動画の根本原因2つを特定・両方main合流済み・Lovable公開はP0停止で未反映</div>
+<h1>#35178 動物動画の根本原因2つを特定・両方main合流済み・Lovable公開はP0停止で未反映</h1>
+<div class="date">2026-10-23 AI検品1回目FAILを受け、本番で不具合が実際に再現するかを実測し直した</div>
+
+<div class="fix">
+動物の動画が文脈に合わない場所に出る不具合(35176/35178号)の根本原因は<b>2つ重なっていた</b>。<br>
+<b>①直接の原因（主因）</b>：/watch ページ(外部URL取り込み動画)の戻るボタン・最下部リンクが、動画の内容を一切見ず<code>fallbackTo="/world/cute"</code>を無条件・固定で渡していた。モンスタートラックでも野外調理動画でも、/watchを開けば履歴が無い時は必ず「かわいいの部屋」行きになる作りだった。<br>
+<b>②背景の原因</b>：仕組みの土台である src/lib/worldInference.ts の inferWorldFromText() も、動物の種名(犬・猫・パンダ等)が1語でも入っていると他のどんな強い手がかり(MV・ライブ・バンド等の音楽語)より先に無条件で「かわいい動物」判定を返す作りだった(動物カテゴリの無条件デフォルトフォールバック)。<br>
+①は案件#35176、②は案件#34368として、どちらも<b>最新のmainへ合流済み</b>とコード本体の実測で再確認した。<br>
+<b>しかし本日(2026-10-23)、本番ページ<code>/watch?v=q-Rvd_FR2DA</code>(動物と無関係な野外調理動画)を実測したところ、「← かわいいの部屋に戻る」の誤表示が<u>いまも再現した</u>。</b>main合流済みの修正はまだ本番に反映されていない。原因は工場共通の公開ブロックと、2026-10-22に店主本人が出したLovable自動公開のP0停止指示（新しい具体的な許可が無い限りLovable操作を実行しない）。公開は試みず、正直に「main合流済み・本番は未反映（不具合再現を実測で確認）」と報告する。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2</b><span>重なっていた根本原因の数（①/watchの固定cute・②inferWorldFromTextの無条件animal優先）</span></div>
+  <div class="num"><b>最新のmain</b><span>①②とも合流済み（コード本体を本日実測で再確認）</span></div>
+  <div class="num"><b>再現した</b><span>本番/watch?v=q-Rvd_FR2DAの「かわいいの部屋に戻る」誤表示を本日実測</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番ページ（不具合の再現を確認した実物）</b><a href="https://joy-relief-station.lovable.app/watch?v=q-Rvd_FR2DA" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/watch?v=q-Rvd_FR2DA</a></li>
+  <li><b>本番トップ</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+
+<div class="note">①(/watchの固定cute)は案件#35176、②(worldInference.tsの無条件animal優先)は案件#34368として記録されている（非公開リポジトリのため個別リンクは省略）。2026-10-22に店主本人がLovable自動公開をP0停止しているため、この修正に限らずmain合流済みの変更全般が本番(Lovable)へまだ反映されていない。公開は試みず、正直に「main合流済み・公開は未反映」と報告する。</div>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①/watchのBackButton・下部リンクが fallbackTo="/world/cute" を無条件固定していたか(最新のmain実測)</td><td class="yes">yes(直っている。fallbackTo="/"＋animal条件付きに修正済み)</td></tr>
+<tr><td>②worldInference.tsが動物語を他の強い手がかりより無条件優先していたか(最新のmain実測)</td><td class="yes">yes(直っている。スコア方式化済み)</td></tr>
+<tr><td>本番 https://joy-relief-station.lovable.app/watch?v=q-Rvd_FR2DA (野外調理動画・動物と無関係) に「かわいいの部屋に戻る」が出るか(本日実測)</td><td class="no">出る(本番は未反映の証拠。x-deployment-idも旧デプロイのまま)</td></tr>
+<tr><td>Lovable公開を本セッションで実行したか</td><td class="no">実行していない(2026-10-22の店主P0停止指示に従った)</td></tr>
+</table>
+
+<footer>
+このページは #35178 のセッションが tools/make_check_page.py で自動生成した確認資料。前回提出(2026-10-23)はAI検品で「main合流済みだが本番は未反映、不具合が本番でまだ直っていない」としてFAILしたため、本番の再現状況を実測し直し、正確な状態（main合流済み・本番未反映・公開は店主指示でブロック中）に書き直した。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

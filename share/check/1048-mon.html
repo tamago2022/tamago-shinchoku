@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1048｜渡す前の門 ― 誰が何を見るのか</title>
+<style>
+:root{--ink:#17150f;--sub:#6b6357;--line:#ddd6c8;--paper:#f7f4ec;--red:#a4231f;--grn:#2f6b3a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font:16px/1.85 "Hiragino Mincho ProN","Yu Mincho",serif;
+ -webkit-text-size-adjust:100%}
+.pg{max-width:860px;margin:0 auto;padding:28px 18px 72px}
+.kicker{font:600 12px/1 system-ui,sans-serif;letter-spacing:.22em;color:var(--sub)}
+h1{font-size:30px;line-height:1.3;margin:14px 0 6px;letter-spacing:.01em}
+.lead{color:var(--sub);font-size:14px;margin:0 0 26px}
+.rule{height:1px;background:var(--line);margin:26px 0}
+h2{font-size:18px;margin:34px 0 10px;padding-left:11px;border-left:4px solid var(--ink)}
+p{margin:0 0 14px}
+blockquote{margin:0 0 18px;padding:14px 16px;background:#fffdf7;border:1px solid var(--line);
+ font-size:15px}
+blockquote p:last-child{margin:0}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);
+ background:#fffdf7;margin:0 0 10px}
+table{border-collapse:collapse;width:100%;min-width:560px;
+ font:14px/1.7 system-ui,-apple-system,sans-serif}
+th,td{border-bottom:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}
+th{background:#f0ebdd;font-weight:600;white-space:nowrap;font-size:13px}
+td.n{white-space:nowrap;font-variant-numeric:tabular-nums}
+.me{background:#fff6ec}
+.zero{color:var(--grn);font-weight:600}
+.cap{font:12px/1.7 system-ui,sans-serif;color:var(--sub);margin:0 0 24px}
+.card{border:1px solid var(--line);background:#fffdf7;padding:16px 18px;margin:0 0 14px}
+.card h3{margin:0 0 8px;font-size:16px}
+ul{margin:0 0 14px;padding-left:1.25em}
+li{margin:0 0 6px}
+code{font:13px/1.6 ui-monospace,Menlo,monospace;background:#efeadc;padding:1px 5px}
+.ng{color:var(--red);font-weight:600}
+.foot{color:var(--sub);font-size:13px;border-top:1px solid var(--line);padding-top:16px;margin-top:34px}
+</style>
+</head>
+<body>
+<div class="pg">
+
+<div class="kicker">1048 ／ 2026-09-24 ／ 検品</div>
+<h1>渡す前の門<br>― そもそも開いて動くか、を見る係</h1>
+<p class="lead">たまごさんに渡す前に、機械が本物のブラウザで実際に開いて、押して、動いたことを確かめる。AIは1回も呼ばない。</p>
+
+<blockquote>
+<p>「俺でテストするなって言ってるじゃん。動くものを出してきてよって。まだ不完全なものを俺に触らせないでよ。表示されすらしないよ。動かないんだったら突き返してほしい。」</p>
+</blockquote>
+
+<h2>起きたこと</h2>
+<p><code>share/ohon/1046-live2d.html</code> を渡した。たまごさんの画面で何も表示されなかった。こちらの手元のブラウザはWebGLが切ってあり、<b>動くところを一度も見ずに渡していた</b>。コードを読んで「たぶん動く」で出した。</p>
+<p>道具が無かったわけではない。覆面調査員（<code>tools/fukumen.py</code>）は9月23日に、本物のブラウザで本番を触って「曲ページが6回中6回止まる／CLS 0.169／一番大きい絵が出るまで22.5秒」を取っている。<b>外向けのサイトだけ見て、自分の出すものには一度も通していなかった。</b>それが穴だった。</p>
+
+<h2>誰が何を見るのか（4つの門）</h2>
+<div class="wrap">
+<table>
+<thead><tr><th>門</th><th>何を見るか</th><th>お金</th><th class="n">実測で落とした回数</th></tr></thead>
+<tbody>
+<tr><td>絵の門<br><code>tools/e_gate.py</code></td><td>絵の良し悪し。お手本と並べて外部のAIが見る（こちらが一番できないところ）</td><td class="zero">別便・外部AI</td><td class="n">21回中 <span class="ng">20回</span></td></tr>
+<tr><td>鬼の門<br><code>tools/oni_gate.py</code></td><td>書いてある日本語。水道水コピー・言い回し・たまごさんが繰り返した指摘</td><td class="zero">0円</td><td class="n">336回中 <span class="ng">211回</span></td></tr>
+<tr><td>数の門<br><code>tools/kazu_gate.py</code></td><td>数字と出典。出どころの無い断定を書かせない</td><td class="zero">0円</td><td class="n">84回中 <span class="ng">47回</span></td></tr>
+<tr class="me"><td>渡す門（この便）<br><code>tools/watashi_gate.py</code></td><td><b>そもそも開いて動くか。</b>本物のブラウザで開き、ボタンを全部押す（＝覆面と同じ機械）</td><td class="zero">0円</td><td class="n">6回中 <span class="ng">4回</span></td></tr>
+</tbody>
+</table>
+</div>
+<p class="cap">回数は各門のログの実数（status/e_gate.log・oni_gate.log・kazu_gate.log・watashi_gate.log、2026-09-24 01:39 時点）。渡す門は本日作ったので母数が小さい。</p>
+
+<h2>渡す門が落とす6つ</h2>
+<div class="card">
+<ul>
+<li>① 開いて10秒たっても、画面に中身が出ていない（本文のバイト数・面積を持って描かれた要素の数がゼロに近い／canvasが真っ白）</li>
+<li>② ボタンを全部押して、押す前後で画面が1ミリも変わらないボタンが1つでもある</li>
+<li>③ consoleにエラーが出ている（とくに WebGL／Failed to load／404）</li>
+<li>④ 外から読む部品（CDN等）が1つでも200以外</li>
+<li>⑤ 375pxで横にはみ出す、または中身が出ない</li>
+<li>⑥ 動くもので fps が30を割る／1MBを超える／WebGLが要るのに立ち上がらない</li>
+</ul>
+<p style="margin:0">判定文は <code>tools/hantei.py</code> の <code>watashi_han()</code> にしか書かない。渡す門は測るだけ。同じ規則を2か所に書けば、片方だけ直る日が必ず来る。</p>
+</div>
+
+<h2>実測：事故った実物を通した結果</h2>
+<div class="card">
+<h3><span class="ng">落ちた</span>　share/ohon/1046-live2d.html</h3>
+<ul>
+<li>canvasが 300×150 のまま真っ白＝絵が1枚も描かれていない</li>
+<li>押しても何も起きないボタンが 2個中2個（1つはそもそも押せない）</li>
+</ul>
+<p style="margin:0">WebGL自体は立ち上がっていた（ANGLE／SwiftShader）。つまりこれはWebGLの有無の話ではなく、<b>ページが素で壊れていた</b>。たまごさんの画面で何も出なかったのは当然だった。渡す前にこの門を通していれば、渡していない。</p>
+</div>
+<div class="card">
+<h3>門そのものの試験（門は黙って効かなくなる）</h3>
+<p style="margin:0">わざと壊した見本＝6項目すべてで落ちた。正しい見本＝通った。門が素通りするようになったら、この試験が先に赤くなる。<code>python3 tools/watashi_gate.py --selftest</code></p>
+</div>
+
+<h2>繋ぎ込み（呼び忘れという概念を消す）</h2>
+<ul>
+<li>公開の口 <code>tools/kohyou.py</code> の中で必ず呼ぶ。<b>門を通らないものは公開できない。</b></li>
+<li>中身のハッシュで引く。1文字でも直したら通し直し。<b>測っていない＝通っていない</b>として止める。</li>
+<li>門が壊れたときは「通す」ではなく「止める」。素通りが今回の事故の正体だった。</li>
+<li>落ちたら、たまごさんに出さない。理由を <code>status/watashi_gate.log</code> に残して作り直す。</li>
+</ul>
+
+<h2>いま走っているもの</h2>
+<p>既に渡してしまった <code>share/check/</code> の621枚を、さかのぼって全部この門に通している。1枚あたり実際に10秒開いて押すので時間がかかる。落ちたものは一覧にして直す。途中経過は <code>status/watashi_gate.log</code> に1行ずつ出る。</p>
+
+<div class="foot">
+1048番／2026-09-24。判定は tools/hantei.py、測るのは tools/watashi_gate.py、公開は tools/kohyou.py。<br>
+WebGLを有効にする起動オプションは Chromium公式 docs/gpu/swiftshader.md の記述どおり（--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader）。オリジナルの指定はしていない。
+</div>
+
+</div>
+</body>
+</html>

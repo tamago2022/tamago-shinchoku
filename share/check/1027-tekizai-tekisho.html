@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1027 誰に何を任せるか（適材適所・全員ぶん実測）確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#8a6a1f;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 14px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.05em;margin:0 0 6px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.05em;margin:36px 0 12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
+  h3{font-size:0.98rem;margin:22px 0 8px;color:var(--ao);}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:18px;}
+  .fix{background:#fff;border-left:4px solid var(--midori);border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 20px;font-size:1.04rem;}
+  .fix p{margin:0 0 10px;}
+  .fix p:last-child{margin:0;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.92rem;margin:0 0 14px;}
+  .warn{background:#fff;border-left:4px solid var(--aka);border-radius:0 10px 10px 0;padding:12px 15px;font-size:0.92rem;margin:0 0 14px;}
+  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:#fff;}
+  table{width:100%;border-collapse:collapse;font-size:0.84rem;min-width:640px;}
+  th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;position:sticky;top:0;}
+  tr:last-child td{border-bottom:none;}
+  td b{font-size:0.9rem;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);font-weight:700;}
+  .mi{color:var(--ki);font-weight:700;}
+  .hint{font-size:0.78rem;color:var(--sub);margin:0 0 20px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:0 0 9px;}
+  ul.links li b{display:block;margin-bottom:3px;}
+  ul.links a{word-break:break-all;font-size:0.9rem;}
+  pre.paste{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:0.82rem;
+    white-space:pre-wrap;word-break:break-word;user-select:all;-webkit-user-select:all;line-height:1.6;margin:0 0 12px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:44px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+  @media (max-width:420px){ body{font-size:15px;padding-left:11px;padding-right:11px;} table{font-size:0.8rem;} h1{font-size:1.15rem;} }
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1027 ／ 姉妹編：<a href="./1030-tekizai-matrix.html">#1030 タスク別に◯△✕─で書いたほう</a></div>
+<h1>誰に何を任せるか ― 全員ぶん、実際に叩いて数えました</h1>
+<div class="date">2026-09-23 09:30〜10:00 実測／数えた場所：tamago2022/joy-relief-station・ai-kaigi・工場の台帳</div>
+
+<div class="fix">
+<p><b>1.</b> ★<b>「本番に出た数」で優劣を付けるのをやめました。</b>Julesは返事16本・PR3本・本番入り0本。
+これを「Julesがダメ」と読むのは間違いでした。<b>Julesは4区（PRまで）を走り切っていて、その先の5〜8区を走る人が誰もいなかった</b>だけです。
+仕事を<b>駅伝の8区間</b>に割り直しました（第2節）。<b>誰も走っていないのは5・6・7・8区。とくに7区（本番に公開する）です。</b>
+（JulesとCodexは別物です。Jules＝<b>Google</b>、Codex＝<b>OpenAI</b>。）</p>
+<p><b>1-2.</b> ★<b>今日その受け口を作って、JulesのPRを1本、実際に本番まで運びました。</b>
+PR #458 → 機械で検品（AIを呼ばない）→ mainに入れた（10:13）→ 外から叩いて確認。
+<b>「そこまで運んでくれてありがとう。ここから先はこちらが受ける」を、気持ちではなく機械の形にしました。</b></p>
+<p><b>2.</b> <b>ひたすら仕入れを任せるのは「ノー」です。</b>今日じっさいに1本投げました（8分28秒で返ってきた）。速くて形も綺麗でしたが、<b>「まだ棚に1曲も無い組を選べ」と書いたのに、棚の上から2番目にいるKHRUANGBINを選んで持ってきました。</b>前提を外したまま、それらしい体裁で返ってくる。これが一番あぶない型です。</p>
+<p><b>3.</b> <b>盛り付け担当＝fal（24本中20本が本番に出ている・83%）と Genspark（動画・スライド・画像／あと10日）。皿洗い担当＝Devin（PR5本中3本が本番入り・60%）と Jules（形の決まった作業を速く大量に）。</b>Claude（こちら）は<b>皿洗いの水道工事係</b>です。絵と映像の良し悪しは自分で測れないので、そこは持ち場ではありません。</p>
+</div>
+
+<h2>0. 今日この環境から叩いて、中身が返ってきたURL（これだけ渡します）</h2>
+<ul class="links">
+  <li><b>Jules＝Googleのもの（公式・本文を取得できた）</b><a href="https://developers.google.com/jules/api">https://developers.google.com/jules/api</a></li>
+  <li><b>Devin＝Cognitionのもの（公式・本文を取得できた）</b><a href="https://docs.devin.ai/get-started/devin-intro">https://docs.devin.ai/get-started/devin-intro</a></li>
+</ul>
+<div class="warn">
+★<b>渡せるURLはこの2本だけです。</b>jules.google／OpenAI／GitHub Copilot／x.ai／fal.ai／Genspark の公式ページは、
+<b>今日この作業環境からは1本も開けませんでした</b>（社内の通信制限で、github.com 以外はほぼ通りません）。
+開けなかったページの数字を、それらしく書くことはしません。<br>
+だから<b>下の表の「いくら」は、台帳に実額が残っているものだけ円で書いています。</b>残っていないものは「公式ページを叩けていないので書かない」と書いてあります。
+</div>
+
+<h2>1. 誰が何をしたか（★返事した数と、本番に出た数を分けています）</h2>
+<div class="wrap">
+<table>
+<tr><th>誰</th><th>どこの会社の何</th><th>返事した数<br>（コメント）</th><th>PRを立てた数</th><th>★本番（main）に<br>入った数</th><th>本番に出た率</th></tr>
+<tr><td><b>Jules</b></td><td>Google（Google Labs）の<br>コーディング係</td><td>16</td><td>3<br>（#454 / #458 / #460）</td><td class="no">0</td><td class="no">0%</td></tr>
+<tr><td><b>Devin</b></td><td>Cognition の<br>コーディング係</td><td>5</td><td>5</td><td class="yes">3</td><td class="yes">60%</td></tr>
+<tr><td><b>Codex</b></td><td>OpenAI の<br>コーディング係</td><td>5<br>（うち3回は<br>「枠を使い切った」）</td><td>0</td><td class="no">0</td><td class="no">0%</td></tr>
+<tr><td><b>チャッピー</b><br>(ChatGPT直)</td><td>OpenAI のAPIに<br>直接聞く口</td><td>2（投げ2・返り2）<br>2.4〜2.6秒で返る</td><td>0<br>（PRを立てる係ではない）</td><td>—</td><td>—</td></tr>
+<tr><td><b>Copilot</b></td><td>GitHub（Microsoft）の<br>コーディング係</td><td class="no">0<br>（👀すら付かない）</td><td>0</td><td class="no">0</td><td class="no">0%</td></tr>
+<tr><td><b>Grok</b></td><td>xAI</td><td class="no">0</td><td>0</td><td class="no">0</td><td class="no">0%</td></tr>
+<tr><td><b>Genspark</b></td><td>Genspark（MainFunc）</td><td class="no">0<br>（掲示板は26時間コメント0）</td><td>0</td><td class="no">0</td><td class="no">0%</td></tr>
+<tr><td><b>Gemini</b></td><td>Google<br>※うちでは<b>Jules経由</b>で使っています<br>（tools/gemini_ni_tanomu.py）</td><td colspan="4">Julesと同じ人です。別に数えていません。</td></tr>
+<tr><td><b>fal</b></td><td>fal.ai（絵と動画と音の工場。<br>人ではなく機械）</td><td>24本つくった</td><td>—</td><td class="yes">20本採用</td><td class="yes">83%</td></tr>
+<tr><td><b>Claude</b><br>（子セッション）</td><td>Anthropic</td><td>検品を通した仕事 310件</td><td>—</td><td class="mi">169件合格</td><td class="mi">54.5%<br>（113件は不合格・28件はエラー）</td></tr>
+</table>
+</div>
+<p class="hint">数え方：GitHubのAPIを工場（Mac）から叩いて、書き込んだ相手ごとに数えました（2026-09-23 09:4x）。
+JulesのPRは<b>作者名がたまごさんになります</b>（Julesのアプリが持ち主の名前で押すため）。だから作者で数えると全部たまごさんの分に混ざります。番号で名指しして数え直しました。<br>
+★<b>Devinの「15本中1本＝6.7%」は、今日この環境からは同じ数字を出せませんでした。</b>たぶん「セッション15本のうち本番に出たのが1本」という別の数え方です。
+GitHubのPRで数えると<b>5本中3本（60%）</b>でした。両方書いておきます。どちらかを消して良い数字だけ残すことはしません。</p>
+<div class="warn">
+★<b>この表の「本番に出た率」で優劣を付けないでください。</b>この列は<b>「1人で8区まで走れるか」</b>を測っています。
+ところが<b>5〜8区は今日まで誰も走っていませんでした。</b>＝走る人がいない区間で止まっただけの人が、0%に見えます。
+<b>Julesの0%は「ダメ」ではなく「4区で渡す相手がいなかった」です。</b>正しい読み方は次の第2節（区間の表）です。
+</div>
+
+<h2>2. ★駅伝の区間で書き直しました（「1人で最後まで」をやめる）</h2>
+<div class="fix">
+<p><b>上の表（本番に入った数）だけを見ると、Julesは0本で一番下になります。でもそれは「Julesがダメ」ではありませんでした。</b>
+Julesの仕事は<b>4区（PRまで運ぶ）で終わり</b>で、<b>その先を走る人が誰もいなかった</b>だけです。</p>
+<p>だから<b>「1人で最後まで運べるか」で優劣を付けるのをやめました。</b>
+仕事を駅伝の8区間に割って、<b>誰が何区から何区まで走れるか</b>で書き直します。</p>
+</div>
+<div class="wrap">
+<table>
+<tr><th>区間</th><th>何をするか</th><th>★今そこを走っているのは誰か</th></tr>
+<tr><td><b>1区</b></td><td>調べる</td><td>Devin ◎／チャッピー ◎（2.6秒）／Claude ◎／<b>Jules △</b>（速いが前提を外す）</td></tr>
+<tr><td><b>2区</b></td><td>設計する（どうやるか決める）</td><td>Claude ◎／チャッピー ◯／Devin △</td></tr>
+<tr><td><b>3区</b></td><td>書く（コード・文章・絵を作る）</td><td><b>Jules ◎</b>（8分28秒）／Devin ◯／fal ◎（絵・動画）／Claude ◯</td></tr>
+<tr><td><b>4区</b></td><td>PRまで運ぶ</td><td><b>Jules ◎（3本）</b>／Devin ◎（5本）／Claude ◯</td></tr>
+<tr><td><b>5区</b></td><td>★検品する（出していいか判定する）</td><td class="no">★今日まで無人。<br>AIの自己採点しかなく、実測54.5%＝当てにならない</td></tr>
+<tr><td><b>6区</b></td><td>★mainに入れる</td><td class="no">★今日まで無人。<br>たまごさんが手で押したときだけ進んでいた</td></tr>
+<tr><td><b>7区</b></td><td>★本番に公開する</td><td class="no">★今日まで無人。しかも<b>誰も見ていなかった</b>（下の枠）</td></tr>
+<tr><td><b>8区</b></td><td>★出たことを確かめる（200・中身・375px）</td><td class="no">★道具はあったが、<b>本番を1度も叩いていなかった</b></td></tr>
+</table>
+</div>
+<div class="warn">
+★<b>誰も走っていない区間は 5・6・7・8 です。とくに7区が一番の落とし穴でした。</b><br>
+ごきげん補給所（joy-relief-station）は<b>GitHub Pagesではなく Lovable が配信しています。</b>
+つまり<b>mainに入れても、Lovableが取りに来るまで本番は変わりません。</b>
+そして<b>その「取りに来たか」を見ている人も機械も、今日まで1つもありませんでした。</b><br>
+さらに8区の道具（<code>tools/kakunin.py</code>）は、行き先が <code>tamago2022.github.io</code> だけに絞ってあり、
+<b>本番（lovable.app）を一度も叩けない設定でした。</b>＝「mainに入った＝出た」と数えていたので、7区の詰まりが構造的に見えなかった。
+</div>
+
+<h2>2-2. ★バトンの受け渡しを作りました（今日、実際に1本通しました）</h2>
+<p class="hint">「そこまで運んできてくれてありがとう。ここから先はこちらが受ける」を、<b>気持ちではなく機械の形</b>にしました。</p>
+<div class="wrap">
+<table>
+<tr><th>区間</th><th>★誰が受け取るか</th><th>何を見るか（機械だけ・AIに聞かない）</th></tr>
+<tr><td><b>5区</b>検品</td><td><code>tools/hantei.py</code> の <code>kensa_html()</code></td><td>中身が空でない／<code>&lt;/html&gt;</code> まで届いている／<code>&lt;title&gt;</code> がある／viewport がある／<b>375pxで横に流れない</b>／1MB未満。<b>AIを1回も呼びません。課金0。毎回同じ答えが出ます。</b></td></tr>
+<tr><td><b>6区</b>main</td><td><code>_965_keijiban.py</code> の <code>prmerge</code>（今日足した）</td><td>5区を通った票だけ入れる。白名簿のrepoの中だけ</td></tr>
+<tr><td><b>7区</b>公開</td><td>Lovable（main を取りに来る）</td><td>★ここは機械が勝手にやる。<b>だから8区で必ず外から叩いて確かめる</b></td></tr>
+<tr><td><b>8区</b>確認</td><td><code>tools/kakunin.py</code>（今日 lovable.app を追加）</td><td>200か／中身が空でないか。<b>叩いて200が出たURLしか渡しません</b></td></tr>
+</table>
+</div>
+<div class="note">
+★<b>検品はAIにやらせません。</b>理由は実測です。Claude子セッションの自己検品は310件中169件合格（54.5%）＝<b>自分の仕事を自分では見られていない。</b>
+だから5区は<b>ただの文字列判定</b>に落としました。甘くならないし、1円もかかりません。<br>
+★<b>Julesに「本番まで出せ」とは言いません。4区（PRまで）で合格にします。</b>その先はこちらが受けます。
+</div>
+
+<h2>2-3. ★実地テスト：JulesのPRを1本、本番まで運びました</h2>
+<div class="wrap">
+<table>
+<tr><th>区間</th><th>やったこと</th><th>★結果（実測・2026-09-23）</th></tr>
+<tr><td>4区</td><td>Julesが立てたPR #458（<code>public/lab/talking-egg.html</code>・724行）</td><td class="yes">受け取った（Jules は4区まで走り切っていた）</td></tr>
+<tr><td>5区</td><td><code>hantei.kensa_html()</code> に通した</td><td class="yes">合格（6項目すべて）</td></tr>
+<tr><td>6区</td><td><code>prmerge</code> で main に入れた</td><td class="yes">10:13 merged（<code>5be3951</code>）</td></tr>
+<tr><td>7区</td><td>Lovable が main を取りに来るのを待つ</td><td class="no">★<b>13分たっても本番に出ていない</b>（10:13 merge → 10:26 時点で404）</td></tr>
+<tr><td>8区</td><td><code>kakunin.py</code> で外から叩く</td><td class="yes">叩けるようになった（← これが今日まで無かった）</td></tr>
+</table>
+</div>
+<div class="warn">
+★<b>バトンは5区・6区までは渡せました。7区で止まりました。そして「止まった」と言えるようになったこと自体が、今日の成果です。</b><br>
+昨日までなら「mainに入った＝出た」と数えて<b>出ていないことに誰も気づけませんでした。</b>
+いま <code>https://joy-relief-station.lovable.app/lab/talking-egg.html</code> は<b>404のまま</b>です。
+Lovableが取りに来ていないのか、置き場所（<code>public/lab/</code>）が配信の対象外なのか、<b>まだ分かっていません。</b>
+<b>分かっていないことを「出ました」とは書きません。</b>
+</div>
+
+<h2>2-4. ★ついでに見つけた：進捗表の配信係が黙って止まっていました</h2>
+<div class="warn">
+このページ自体が404のままだったので中を見たら、<b>進捗表の配信係（<code>tools/pages_publish.sh</code>）が
+09:25 を最後に1度も完走していませんでした。</b>（09:36・09:49・10:01・10:15 の4回とも、
+「mainに追従した」までは書くのに、<b>成功の記録も失敗の記録も残さないまま消えていた</b>）<br>
+★<b>一番たちが悪い壊れ方です。</b>止まったことが記録に残らないので、画面は古いまま生き続けます。<br>
+→ その場しのぎではなく<b>出す口をもう1本だけ用意しました</b>（GitHubのAPIで<b>名指しの1ファイルだけ</b>を置く <code>putfile</code>）。
+配信係が復帰したら同じ中身で上書きされるので、ぶつかりません。<b>このページはその口から出ています。</b>
+</div>
+<p class="hint">★<b>#460（Khruangbinの仕入れ）は入れていません。</b>5区より手前の問題（指定した前提を外している）なので、
+機械の検品ではなく<b>やり直し</b>が要ります。<b>PRが来たら全部入れる、はしません。</b></p>
+
+<h2>3. 1枚の表 ― 向いている仕事／向いていない仕事／今使えるか／いくら</h2>
+<div class="wrap">
+<table>
+<tr><th>誰</th><th>★向いている仕事</th><th>★向いていない（もったいない・事故る）</th><th>今使えるか</th><th>いくら</th></tr>
+<tr>
+ <td><b>Jules</b><br>(Google)</td>
+ <td><b>形の決まった作業を速く大量に。</b>データ整形／名簿の一括処理／同じ直しを何十ファイルにも当てる／下書きのHTMLを一気に起こす。<b>8分28秒でPRが返ってくる速さは、うちで一番速い。</b></td>
+ <td class="no"><b>仕入れ。</b>前提（棚に無い組を選べ）を外したまま綺麗な形で返す。<b>検品も不向き</b>（落とす仕事は、外したことに自分で気づける人がやる必要がある）。<b>返し方の指定も守らない</b>（コメントで返せと書いたのにPRで返した）</td>
+ <td class="yes">◯ 使える。<b>こちらから自動で起こせる（本日再現）</b><br><code>python3 tools/nageru.py jules "お題"</code> 1行でIssueが立ち、<code>jules</code>ラベルで本人が起きる</td>
+ <td>台帳に課金の記録なし（Googleの月額の中）。<br>★公式の枠のページを今日叩けていないので<b>本数の上限は書きません</b>。今日の実測は<b>3本投げて3本とも受理</b></td>
+</tr>
+<tr>
+ <td><b>Devin</b><br>(Cognition)</td>
+ <td><b>原因究明。</b>「この前提は本当に正しいか、実測で確かめて」型。今日この型で5本投げて5本返り、3本が本番に入った。<b>心臓が死ぬ理由／リポジトリ肥大の真犯人／index.lockの取り合い</b>――みんなこの型</td>
+ <td class="no"><b>放っておく仕事。</b>「指示があるまで待ちます」と言って止まって死ぬ（依頼文に「返事を書くな・終わりの合図はPRのURLだけ」を必ず埋める運用でしのいでいる）。<b>1本ずつしか投げられない</b></td>
+ <td class="mi">△ 使えるが<b>返事待ち1件が24時間近く放置</b>（F番・12時間の約束を超過）</td>
+ <td>オンデマンド残高を使用済み <b>$8.85</b>（内訳は取れず）。★<b>為替レートを今日叩けていないので円換算は書きません。</b>残高には触っていません</td>
+</tr>
+<tr>
+ <td><b>Codex</b><br>(OpenAI)</td>
+ <td><b>いま任せられる仕事はありません。</b>枠が戻れば、mainに直接pushできる唯一の口なので「配管の小直し」に向く見込み（未実測）</td>
+ <td class="no">枠が切れている間は何を投げても同じ1行が返るだけ</td>
+ <td class="no">✕ ほぼ閉じている。4回投げて3回が<b>「枠を使い切りました」</b></td>
+ <td>ChatGPTの月額の中。★公式の枠のページを叩けていないので金額は書きません</td>
+</tr>
+<tr>
+ <td><b>チャッピー</b><br>(ChatGPT直)</td>
+ <td><b>その場で答えが要るリサーチと相談。</b>2.4〜2.6秒で返る。Grok/Genspark/Copilotが閉じたときの<b>差し替え先</b>はここ</td>
+ <td class="no">コードを書いて本番に出すこと（GitHubに手が届かない）</td>
+ <td class="yes">◯ 使える。自動で起こせる<br><code>python3 tools/nageru.py chappy "お題"</code></td>
+ <td>OpenAIのAPI代（従量）。★実額の台帳が無いので金額は書きません</td>
+</tr>
+<tr>
+ <td><b>Genspark</b></td>
+ <td><b>動画・スライド・画像・シート。</b>スーパーエージェント／AIスライド／AIシート／AIドキュメントの標準モードが<b>クレジット消費なし</b>。使えるモデルに Veo 3.1・Seedance 2.5・GPT Image 2・Nano Banana Pro・ElevenLabs・MiniMax。<b>ここは「Gensparkにしかできない」束</b></td>
+ <td class="no">こちらの工場と繋いで回す仕事（起こせないので、たまごさんが毎回押すことになる）</td>
+ <td class="mi">△ <b>あと約10日</b>（Oct 4, 2026 にキャンセル予定）。クレジット残 <b>1,969</b>／無料枠 残り<b>93%</b>。★<b>こちらから起こせない</b>（実測）</td>
+ <td>Plus $24.99/月・Pro $249.99/月（たまごさんの画面の実測）。★<b>為替を叩けていないので円換算は書きません。</b>いまは解約予定なので<b>追加のお金はかかりません</b></td>
+</tr>
+<tr>
+ <td><b>Grok</b><br>(xAI)</td>
+ <td>—</td>
+ <td>—</td>
+ <td class="no">✕ 閉じている。掲示板はbotが1体も居ない（コメント0）／APIは team_blocked で403</td>
+ <td>x.aiのteamへの課金が要る。★金額のページを叩けていないので書きません</td>
+</tr>
+<tr>
+ <td><b>Copilot</b><br>(GitHub)</td>
+ <td>—</td>
+ <td>—</td>
+ <td class="no">✕ 閉じている。4つの口ぜんぶ403か無反応。公開/非公開の問題ではなく<b>アカウントに権利が無い</b></td>
+ <td>Copilotの有料プランが要る。★金額のページを叩けていないので書きません</td>
+</tr>
+<tr>
+ <td><b>fal</b></td>
+ <td><b>絵・動画・音を実際に作る。</b>うちで<b>一番本番に出ている</b>（24本中20本採用）。卵劇場の動きショット・リップシンク・ナレーション</td>
+ <td class="no">考えること・決めること（機械なので、何を作るかはこちらが決める）</td>
+ <td class="yes">◯ 使える</td>
+ <td class="yes"><b>今月 1,374円</b>／月の上限 3,000円／<b>残り 1,626円</b>（台帳の実額）</td>
+</tr>
+<tr>
+ <td><b>Claude</b><br>Dispatch（こちら）</td>
+ <td><b>仕組みを決める・配管を直す・原因を突き止める・人の割り振り。</b>自分で正解を測れる仕事。今日も、サンドボックスから工場ごしにJulesを起こす線を1本にして、実際に再現させた</td>
+ <td class="no"><b>絵・映像の良し悪し。</b>自分で正解を測れないので、良いと言っても当てにならない。<b>あと「終わりました」と言うこと自体が苦手</b>――今日だけで<b>嘘の緑を26時間</b>出した</td>
+ <td class="yes">◯</td>
+ <td>—</td>
+</tr>
+<tr>
+ <td><b>Claude</b><br>子セッション</td>
+ <td><b>決まった手順を並行で回す。</b>調べもの・データ整形・ページ作り</td>
+ <td class="no"><b>決まりを守り続けること。</b>検品310件中<b>113件が不合格・28件がエラー＝合格は54.5%</b>。今日も決まりを守らずに何本も死んでいる。<b>監督なしで走らせると、半分は作り直しになります</b></td>
+ <td class="yes">◯</td>
+ <td>—</td>
+</tr>
+</table>
+</div>
+
+<h2>4. ★担当表 ― 持ち場に人を当てました</h2>
+<p class="hint">★<b>未実測の人を主担当にしていません。</b>未実測は「試す順番」を書いています。</p>
+<div class="wrap">
+<table>
+<tr><th>持ち場</th><th>★主担当</th><th>控え</th><th>理由（実測）／試す順番</th></tr>
+<tr><td><b>仕入れ</b><br>（曲を探して候補に積む）</td><td class="yes">Claude子セッション<br>＋ tools/shiire_fetch.py</td><td>チャッピー</td><td>★<b>Julesは外しました。</b>今日のテストで前提を外した。<b>いまの型（機械が関所2つを通し、通らなければ「見つからなかった」と返す）が一番事故らない。</b>18件の誤爆を機械で洗い出して18件とも落とした実績がある</td></tr>
+<tr><td><b>コピー書き</b><br>（曲ページ・カードの言葉）</td><td class="mi">Claude子セッション</td><td class="mi">Jules（未実測）</td><td>Julesの今日のコピーは<b>読めるものでした</b>（「車の窓を全開にして風を浴びているような」）。ただし<b>曲の選定を外していたので、コピーだけを切り出して測り直す必要があります。→ 試す順番①</b></td></tr>
+<tr><td><b>SNS運用</b><br>（X・Instagram）</td><td class="mi">チャッピー（下書き）<br>＋ Claude（並べて出す）</td><td>Genspark（画像・動画）</td><td>★<b>投稿前に全部見せる決まりは変えません。</b>下書きはその場で返るチャッピーが速い。<b>誰も未実測なので、まず1週間ぶんの下書きを作って質を見るところから。→ 試す順番②</b></td></tr>
+<tr><td><b>トーキングアバター</b><br>（案内人の見た目・口・背景）</td><td class="yes">fal（作る）</td><td class="mi">Jules（画面の器）<br>Genspark（動画）</td><td>falは20/24が本番入り。<b>Julesは #458 で1,448行のアバターのデモHTMLを実際に出してきた（まだ本番には入れていない）＝器を作る役なら向いている見込み。→ 試す順番③</b></td></tr>
+<tr><td><b>配管の修理</b><br>（止まる原因を潰す）</td><td class="yes">Claude Dispatch（こちら）</td><td>Devin</td><td>自分で正解を測れる持ち場。今日もJulesを自動で起こす線を通した</td></tr>
+<tr><td><b>原因究明</b><br>（前提が正しいか実測で確かめる）</td><td class="yes">Devin</td><td>Claude Dispatch</td><td><b>Devinが一番強いのはここ1点</b>。5本投げて5本返り、3本が本番入り。ただし1本ずつ・放置すると死ぬ</td></tr>
+<tr><td><b>検品</b><br>（出す前に落とす）</td><td class="yes">機械（tools/hantei.py・各関所）</td><td>Claude Dispatch</td><td>★<b>人（AI）に検品させない。</b>Claude子セッションの合格率が54.5%だった＝自分の仕事を自分で正しく見られない。<b>Julesも不向き</b>（外したことに自分で気づかない）</td></tr>
+<tr><td><b>リサーチ</b><br>（世界の実例を集める）</td><td class="yes">チャッピー（速い）</td><td>Devin（深い）</td><td>チャッピーは2.6秒。深掘りが要るものはDevin</td></tr>
+<tr><td><b>データ整形</b><br>（名簿・読み・産地の一括処理）</td><td class="yes">Jules</td><td>Claude子セッション</td><td>★<b>Julesの本当の持ち場はここです。</b>正解が決まっていて、外したかどうかを機械が後から判定できる仕事。8分で返る速さがそのまま効く</td></tr>
+<tr><td><b>動画・スライド</b></td><td class="mi">Genspark（未実測・あと10日）</td><td>fal</td><td>Veo 3.1／Seedance 2.5 が標準モードでクレジット消費なし。<b>10日で切れるので、ここは早めに1本試す価値があります。→ 試す順番①（Gensparkの中では最優先）</b></td></tr>
+</table>
+</div>
+
+<h2>5. ★Julesに仕入れを投げた実地テスト（今日 09:39→09:47）</h2>
+<div class="note">
+<b>投げたもの：</b>「フジロック'26の名簿のうち、<b>まだ棚に1曲も無い組を1組だけ</b>選んで、まず聴いてほしい曲を3曲。
+<b>記憶から曲名を書かない。MusicBrainzか公式で実在を確かめてURLを付ける。mbidを書く。結果はPRではなくこのIssueにコメントで。</b>」<br><br>
+<b>返ってきたもの：</b><b>8分28秒</b>でPR #460。選んだ組は <b>KHRUANGBIN</b>。3曲・mbid付き・日本語の紹介文つき・「詰まったところ」3行つき。
+</div>
+<div class="warn">
+<b>★ここが結論です。</b><br>
+<b>① 前提を外しました。</b>KHRUANGBINは<b>すでに棚にあります</b>（<code>status/fes_meibo/_coverage.json</code> の「already」の<b>2番目</b>＝ランク2）。
+「棚に1曲も無い組」と指定したのに、棚の一番上の方にいる組を持ってきた。<b>しかも、それらしい体裁で返ってくるので、読んだだけでは気づけません。</b><br>
+<b>② 出典が指定と違いました。</b>MusicBrainzか公式で、と書いたのに、3曲とも出典はYouTubeのURLでした（この環境からYouTubeを叩けないので、実在の確認もできていません）。<br>
+<b>③ 返し方の指定を守りませんでした。</b>「PRではなくコメントで」と書いたのにPRで返しました。<br><br>
+<b>＝「できます」と言って6.7%だったDevinと、同じ型の危なさです。速いこと・綺麗なことと、合っていることは別です。</b>
+</div>
+<div class="note">
+<b>では何なら任せられるか（今日の実測から）：</b><br>
+・<b>データ整形</b>＝正解が決まっていて、外したかどうかを<b>あとから機械が判定できる</b>仕事。ここはJulesの速さがそのまま効きます。<br>
+・<b>器を作る</b>＝#458で1,448行のアバターのデモHTMLを実際に出しました。<b>叩き台を速く出す</b>のは強い。<br>
+・<b>仕入れの「仕組み」を書かせる</b>のも可。ただし<b>その仕組みの正しさは、こちらの関所（tools/sekisho/）が判定します。Jules本人に判定させない。</b>
+</div>
+
+<h2>6. ★こちらから自動で起こせるか（今日じっさいに再現しました）</h2>
+<div class="wrap">
+<table>
+<tr><th>誰</th><th>自動で起こせるか</th><th>引き金</th></tr>
+<tr><td><b>Jules</b></td><td class="yes">◯ 本日再現（#459）</td><td><code>python3 tools/nageru.py jules "お題"</code>。Issueが立ち、<b><code>jules</code>ラベル</b>が引き金になって本人が起きる</td></tr>
+<tr><td><b>Codex</b></td><td class="yes">◯（ただし枠切れで中身は返らない）</td><td>Issue本文では起きない。<b><code>@codex</code>のコメント</b>が引き金</td></tr>
+<tr><td><b>Devin</b></td><td class="yes">◯</td><td><code>python3 tools/nageru.py devin "お題"</code>（1本ずつ）</td></tr>
+<tr><td><b>チャッピー</b></td><td class="yes">◯ その場で返る</td><td><code>python3 tools/nageru.py chappy "お題"</code></td></tr>
+<tr><td><b>Genspark</b></td><td class="no">✕ いまは起こせない</td><td>下の「1回だけ貼る文面」で開く見込み（★未実測）</td></tr>
+<tr><td><b>Grok / Copilot</b></td><td class="no">✕ 課金・権利が要る</td><td>—</td></tr>
+<tr><td><b>fal</b></td><td class="yes">◯</td><td>工場の口から直接</td></tr>
+</table>
+</div>
+
+<h2>7. ★Gensparkを「1回だけ貼って」開ける道</h2>
+<div class="note">
+GensparkのWorkflowには<b>トリガーが Schedule と Email</b>の2つあり、連携先に GitHub があります（たまごさんの画面の実測）。
+<b>Emailトリガーが一番早いです。</b>こちらからメールを1通出せば起こせるようになるので、<b>貼るのは1回だけ</b>で済みます。<br>
+★<b>この道はまだ通していません（未実測）。</b>Genspark側の画面がこちらから見えないためです。貼ったあと、こちらで1本投げて通るか確かめます。
+</div>
+<h3>貼る文面（GensparkのWorkflowの指示欄に、これをそのまま）</h3>
+<pre class="paste">あなたは「たまご工場」の外部担当です。届いたメールの本文が、そのまま依頼です。
+
+【やること】
+1. メール本文の【お題】をそのまま実行してください。
+2. 人間に確認を求めないでください。前提が足りなければ自分で仮定を置き、その仮定を必ず答えの冒頭に書いてください。
+3. 出力は次の形にしてください。
+   1行目：結論（1文）
+   2行目以降：根拠。事実と推測を必ず分け、推測には「推測」と明記する。
+   最後の行：ASSUMPTIONS: 置いた仮定を1行で。
+
+【返し方（これだけ守ってください）】
+・結果を GitHub の tamago2022/ai-kaigi に Issue として投稿してください。
+・Issueの題名は、メールの件名をそのまま使ってください。
+・本文の1行目に「【Gensparkの返事】」と書いてください。
+
+【絶対にしないこと】
+・API キー、パスワード、/Users/ で始まるパス、.env の中身を出力に書かない。
+・ai-kaigi は全世界から読める掲示板です。秘密は1文字も書かないでください。</pre>
+<div class="note">
+貼る場所：Genspark の Workflow →<b>トリガーを Email</b>にする →<b>連携先に GitHub</b> を選ぶ → 上の文面を指示欄に貼る → 保存。<br>
+保存すると<b>そのWorkflow専用のメールアドレス</b>が出ます。<b>そのアドレスを1回だけこちらに教えてください。</b>以後は
+<code>python3 tools/nageru.py genspark "お題"</code> の1行で、こちらからメールを出して起こせるようになります（★ここまで通して初めて「開いた」と言います）。
+</div>
+
+<h2>8. 正直に書いておくこと</h2>
+<div class="warn">
+・<b>Jules・Codex・Copilot・Grok・fal・Genspark の公式ページは、今日この環境から1本も開けませんでした。</b>だから<b>枠の本数も月額も書いていません。</b>検索結果に出ていた数字は見えましたが、自分で叩いていないので書きません。<br>
+・<b>Devinの「6.7%」は再現できませんでした。</b>GitHubのPRで数えると5本中3本（60%）です。両方載せています。<br>
+・<b>「本番に入った数」は、直近100件のコミットとPR全件（313本）を見た範囲です。</b>それより古いものは見ていません。<br>
+・<b>Gensparkの担当と、Julesのコピー書きは「未実測」です。</b>まだ1度も測っていないので、主担当にしていません。
+</div>
+
+<footer>
+2026-09-23 #1027／数えた場所：tamago2022/joy-relief-station（PR 313本・コメント100本）・tamago2022/ai-kaigi・<code>status/ai_daicho.jsonl</code>（41行）・<code>status/public/fal_cost_ledger.json</code>（24件）・<code>status/public/ai_verify_stats.json</code>（310件）・<code>status/fes_meibo/_coverage.json</code><br>
+数える口は <code>tools/_965_keijiban.py</code> に <code>prstats</code>（誰が何本PRを立てて何本mainに入ったか）と <code>prstate</code>（名指しのPRがmainに入ったか）を足しました。同じ数字は誰でも出し直せます。
+</footer>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>朗読の道具 聴き比べ（512番）</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin:0 auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 16px;}
+  .card b.name{display:block;font-size:1.05rem;margin-bottom:4px;}
+  .card span.tag{display:inline-block;background:#efe9db;color:var(--sub);border-radius:6px;padding:2px 8px;font-size:0.76rem;margin-bottom:10px;}
+  .card p{margin:6px 0 10px;font-size:0.9rem;color:var(--sub);}
+  audio{width:100%;}
+  .pending{color:var(--sub);font-size:0.9rem;background:#efe9db;border-radius:8px;padding:10px 12px;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.88rem;margin:0 0 10px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+  .sample-text{font-size:0.86rem;color:var(--sub);background:#efe9db;border-radius:8px;padding:10px 12px;margin:0 0 18px;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="./">共有資料の一覧</a> ／ 512番 朗読の道具</div>
+<h1>文章を自然な朗読の音声にする（聴き比べ）</h1>
+<div class="date">作成: 2026-09-06</div>
+
+<div class="sample-text">
+読み上げた同じ文章：「ごきげん補給所へようこそ。今日はどんな一日でしたか。ここでは、あなたの好きな音楽から、少しだけ半歩先の発見へ、そっと手を伸ばします。急がなくて大丈夫です。今日も、あなたのごきげんに、少しでも役に立てたら嬉しいです。」
+</div>
+
+<h2>① 聴き比べ（押したら鳴ります）</h2>
+
+<div class="card">
+  <b class="name">AivisSpeech Engine（無料・ローカル）</b>
+  <span class="tag">これでいきます</span>
+  <p>日本製、無料、Macだけで動く。円卓の話者切り替えもこれで実装済み。</p>
+  <audio controls preload="none" src="audio/512/test_aivis.m4a"></audio>
+</div>
+
+<div class="card">
+  <b class="name">Style-Bert-VITS2（無料・ローカル）</b>
+  <span class="tag">機械っぽさは一番少ない/しかし遅い</span>
+  <p>抑揚は3つの中で一番自然。ただし同じ文章の生成に120秒（AivisSpeechの約6倍）かかった。円卓20分の台本には現実的な時間で使えない。</p>
+  <audio controls preload="none" src="audio/512/test_sbv2.m4a"></audio>
+</div>
+
+<div class="card">
+  <b class="name">ElevenLabs（fal経由・有料）</b>
+  <span class="tag">一番自然・有料</span>
+  <p>3つの中で最も人間に近い。107文字で約1.6円。20分（8000文字）ならおよそ120円。</p>
+  <audio controls preload="none" src="audio/512/test_elevenlabs.mp3"></audio>
+</div>
+
+<h2>② 数字（同じ107文字の文章で計測）</h2>
+<div class="nums">
+  <div class="num"><b>20.3秒</b><span>AivisSpeech 生成時間（無料）</span></div>
+  <div class="num"><b>120.1秒</b><span>Style-Bert-VITS2 生成時間（無料・CPU）</span></div>
+  <div class="num"><b>約1.6円</b><span>ElevenLabs 費用（107文字）</span></div>
+  <div class="num"><b>約120円</b><span>ElevenLabs 費用（20分＝8000文字換算）</span></div>
+</div>
+
+<h2>③ これでいきます</h2>
+<div class="note"><b>朗読の標準エンジンは AivisSpeech Engine（無料・ローカル・円卓の声分け対応）に決めました。</b>
+Style-Bert-VITS2は抑揚は良いが1文でも2分かかり20分の台本には非現実的、ElevenLabsは最も自然だが有料。
+「無料で毎日気軽に」に一番合うのはAivisSpeechと判断しました。ここぞという1本を作りたい時はElevenLabsも<code>--engine elevenlabs</code>で選べます。</div>
+
+<h2>④ 円卓・人ごとの声分け（実データ）</h2>
+<div class="card">
+  <b class="name">Vault実物の円卓ノートを丸ごと1本読ませた（5人の顧問＋ナレーター）</b>
+  <span class="tag">押したら鳴ります・約3.5分</span>
+  <p>「円卓会議_思考メモ」ノート（2,097文字）をそのまま読ませた。サム・アルトマン→ヤン・ルカン→ジェフリー・ヒントン→ジェンスン・フアン→事業開発顧問の5人が、地の文（ナレーター）とは別の声で自動的に切り替わる。生成時間215秒・無料。</p>
+  <audio controls preload="none" src="audio/512/entaku_5nin_aivis.m4a"></audio>
+</div>
+
+<table>
+<tr><th>話者</th><th>割り当てた声</th></tr>
+<tr><td>ナレーター（地の文）</td><td>まお（ノーマル）</td></tr>
+<tr><td>サム・アルトマン</td><td>まお（ふつー）</td></tr>
+<tr><td>ヤン・ルカン</td><td>まお（あまあま）</td></tr>
+<tr><td>ジェフリー・ヒントン</td><td>まお（おちつき）</td></tr>
+<tr><td>ジェンスン・フアン</td><td>まお（からかい）</td></tr>
+<tr><td>事業開発・ビジネス戦略顧問</td><td>まお（せつなめ）</td></tr>
+</table>
+
+<h2>⑤ 円卓20分フル（Vault実データ）</h2>
+<div class="note">
+「AI失業回_素材」ノート（5,025文字・約12分の音声）を丸ごと1本読ませた。所要時間653秒（11分）・費用0円。
+このノートは複数の顧問が対話する形式ではなく地の文中心の資料だったため、ほぼ単一の声（ナレーター）で読み上げている
+（人物の対話形式のノートなら上の④のように自動で声が切り替わる）。
+容量が大きいため、GitHub Pagesではなく<a href="https://drive.google.com/drive/my-drive">Googleドライブ「マイドライブ／朗読ツール_512番_音声」</a>に保存した。
+</div>
+
+<h2>⑥ 道具の使い方</h2>
+<div class="note">
+Macのターミナルで次の1行だけ（ファイルパスを変えるだけ）：<br>
+<code>python3 "/Users/mac/Documents/AI作業/tools_local/dokudoku/dokudoku.py" "読みたいファイルのパス.md"</code><br>
+同じ場所に「ファイル名.wav」ができる。円卓ノート（人物名の見出し）なら自動で声を切り替える。
+普通のノートは全部同じ声（ナレーター）で読む。エンジンはMacのログイン時に自動で立ち上がる設定済み
+（<code>launchd</code>に登録済み・<code>com.tamago.dokudoku-engine</code>）ので、起動操作は不要。
+</div>
+
+<footer>
+このページは検証用の内部資料です。音は自動再生されません。再生ボタンを押した時だけ鳴ります。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

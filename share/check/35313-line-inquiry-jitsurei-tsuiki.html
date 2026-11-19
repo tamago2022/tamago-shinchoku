@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35313 35313号：LINE問い合わせ下書きに実例を追記・実機確認は構造的に不可能と確定 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35313 35313号：LINE問い合わせ下書きに実例を追記・実機確認は構造的に不可能と確定</div>
+<h1>#35313 35313号：LINE問い合わせ下書きに実例を追記・実機確認は構造的に不可能と確定</h1>
+<div class="date">2026-11-16 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+2026-08-13の依頼「送信前に、下書きへ重要な実例を追記してください（まだ送信しないで、追記して再度スクリーンショット確認するところまで）」について、LINE Creators Market宛の規約確認問い合わせ下書き（896号で用意済み・まだ未送信）に「ごきげん補給所での同様の自動化実績」という実例を1段追記した新しい本文を作成済み（前回試行で完了・変更なし）。今回新たに実測したのは「なぜ実機スクショが取れないか」。tools/_renraku_cdp.mjsはchrome-lineプロファイル(CDPポート9224)の既存Chromeタブに接続するだけで新規起動はしない設計だが、<b>そのChrome自体が今は起動していない</b>ことをホストMac本体側(サンドボックス外)でps aux・curlで実測確認した。Chromeを新規起動すれば接続できるようになるが、起動そのものがtools/stop_kanmon/1186_chrome_kidou_kinshi.mjs（2026-09-29・たまごさんの指示「どなたが使用しますか、の画面中央ダイアログを根絶するため、例外なし」）により全セッション共通で機械的に禁止されている。つまり本件は「スキル不足」ではなく「別の憲法（1186号）との構造的な矛盾」。送信ボタンを押す構造も元から実装されていない（姉妹案件35312号で確認済み・押せない）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>0</b><span>chrome-lineプロセス数（ホスト実測）</span></div>
+  <div class="num"><b>0</b><span>port9224応答バイト数（ホスト実測）</span></div>
+  <div class="num"><b>1</b><span>実例を追記した新しい下書き本文</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>姉妹案件35312号の確認ページ（同じ仕組み・2026-09-17実行の実例スクショ3件あり）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35312-henshin-shoushin-mae-teishi.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35312-henshin-shoushin-mae-teishi.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>下書き本文に重要な実例を追記したか</td><td class="yes">yes</td></tr>
+<tr><td>送信ボタンを押した／送信したか</td><td class="yes">no</td></tr>
+<tr><td>chrome-lineプロセスは起動しているか(ホスト実測)</td><td class="yes">no</td></tr>
+<tr><td>Chrome新規起動は1186号で許可されているか</td><td class="yes">no</td></tr>
+<tr><td>1464条(打開策2種以上)の申請は通ったか</td><td class="yes">yes</td></tr>
+</table>
+
+<footer>
+未達の1点（正直に書く）：「再度スクリーンショット確認」は実行できていない。理由：対象のChrome(chrome-line・CDPポート9224)が現在起動しておらず、ホストMac本体での実測(ps aux/curl)でも確認済み。新規起動すれば技術的には可能だが、Chrome新規起動は1186号で全セッション共通・例外なく禁止されている（たまごさんの画面に許可ダイアログが繰り返し出る邪魔を根絶するための恒久ルール）。この2つの憲法（本件の完了条件とChrome起動禁止）が構造的に矛盾しているため、たまごさん本人がchrome-lineを自分で開いて使っている間でなければ実機確認はできない。送信はしていない（依頼通り）。1464_dakai_kanmon.pyでPASS済み。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

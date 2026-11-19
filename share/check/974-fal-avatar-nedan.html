@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>卵をfalで喋らせる ― 値段の下調べ</title>
+<style>
+  :root{
+    --paper:#EDE6D6;
+    --ink:#22304A;
+    --accent:#C1442E;
+    --rule:rgba(34,48,74,.18);
+    --faint:rgba(34,48,74,.60);
+  }
+  *{box-sizing:border-box}
+  html,body{overflow-x:hidden;max-width:100%}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    line-height:1.85; font-size:16px;
+  }
+  .wrap{max-width:60rem;margin:0 auto;padding:7vw 6vw 14vw}
+  .eyebrow{
+    font-size:.68rem;letter-spacing:.42em;color:var(--faint);
+    text-transform:uppercase;margin:0 0 1.6rem
+  }
+  h1{
+    font-weight:400;font-size:clamp(1.5rem,5vw,2.3rem);
+    letter-spacing:.10em;margin:0 0 .4rem;line-height:1.5
+  }
+  .sub{color:var(--faint);font-size:.82rem;letter-spacing:.14em;margin:0 0 3.5rem}
+  .verdict{
+    border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);
+    padding:2.2rem 0;margin:0 0 3.5rem
+  }
+  .verdict p{margin:0 0 1.15rem;font-size:clamp(1rem,2.7vw,1.15rem);line-height:1.95}
+  .verdict p:last-child{margin-bottom:0}
+  .verdict .n{color:var(--accent);letter-spacing:.3em;font-size:.7rem;margin-right:.9em;vertical-align:.18em}
+  .big{color:var(--accent)}
+  h2{
+    font-weight:400;font-size:.76rem;letter-spacing:.38em;color:var(--faint);
+    text-transform:uppercase;margin:4.5rem 0 1.5rem;
+    padding-bottom:.7rem;border-bottom:1px solid var(--rule)
+  }
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -1px;max-width:100%}
+  .swipe{display:none;font-size:.7rem;letter-spacing:.2em;color:var(--accent);margin:0 0 .6rem}
+  @media(max-width:47rem){.swipe{display:block}}
+  table{border-collapse:collapse;width:100%;min-width:46rem;font-size:.84rem}
+  th,td{
+    text-align:left;padding:.85rem .8rem;border-bottom:1px solid var(--rule);
+    vertical-align:top;line-height:1.7
+  }
+  th{
+    font-weight:400;font-size:.66rem;letter-spacing:.16em;color:var(--faint);
+    border-bottom:1px solid var(--ink);white-space:nowrap
+  }
+  td.name{white-space:nowrap}
+  td.name a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule)}
+  td.name a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+  td.yen{white-space:nowrap;font-variant-numeric:tabular-nums}
+  tr.pick td{background:rgba(193,68,46,.055)}
+  tr.pick td.name a{color:var(--accent);border-bottom-color:var(--accent)}
+  .tag{
+    display:inline-block;font-size:.6rem;letter-spacing:.14em;
+    border:1px solid var(--accent);color:var(--accent);
+    padding:.1em .55em;border-radius:1px;margin-left:.5em;vertical-align:.12em
+  }
+  .no{color:var(--faint)}
+  .note{font-size:.78rem;color:var(--faint);margin:1.1rem 0 0;line-height:1.85}
+  .cols{display:grid;grid-template-columns:1fr;gap:2.5rem}
+  @media(min-width:44rem){.cols{grid-template-columns:1fr 1fr;gap:3rem}}
+  .cols h3{font-weight:400;font-size:.95rem;letter-spacing:.12em;margin:0 0 .7rem;color:var(--accent)}
+  .cols p{margin:0 0 .9rem;font-size:.88rem;line-height:1.95}
+  .cols p:last-child{margin-bottom:0}
+  .est{width:100%;border-collapse:collapse;font-size:.9rem;min-width:0}
+  .est th,.est td{padding:.85rem .5rem}
+  .est td:last-child,.est th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  .links{font-size:.78rem;line-height:2.3;margin:0;padding:0;list-style:none}
+  .links a{color:var(--faint);text-decoration:none;border-bottom:1px solid var(--rule);word-break:break-all}
+  .links a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+  @media(max-width:47rem){
+    .swipe{display:none}
+    .scroll{overflow-x:visible}
+    table{min-width:0;display:block}
+    thead{display:none}
+    tbody,tr{display:block}
+    tr{border-bottom:1px solid var(--ink);padding:1.2rem 0 .5rem}
+    tr:first-child{border-top:1px solid var(--ink)}
+    td{display:block;border:0;padding:.18rem 0;font-size:.86rem}
+    td::before{
+      content:attr(data-label);display:block;
+      font-size:.6rem;letter-spacing:.2em;color:var(--faint);margin-bottom:.1rem
+    }
+    td.name::before{display:none}
+    td.name{white-space:normal;font-size:1rem;margin-bottom:.5rem}
+    td.yen{font-size:1rem}
+    tr.pick td{background:none}
+    tr.pick{background:rgba(193,68,46,.055);padding-left:.8rem;padding-right:.8rem}
+  }
+  footer{margin-top:5rem;padding-top:1.6rem;border-top:1px solid var(--rule);font-size:.72rem;color:var(--faint);line-height:2}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">下調べ・生成なし・支出 0円</p>
+  <h1>卵をfalで喋らせると、いくらか</h1>
+  <p class="sub">2026年9月21日しらべ　1ドル＝157円で換算　すべてfalの公式ページの数字</p>
+
+  <div class="verdict">
+    <p><span class="n">01</span>卵で作るなら <strong>Kling AI Avatar v2 Standard</strong>。10秒の動画1本で<span class="big"><strong>約88円</strong></span>。falのモデル説明に「人間・動物・<strong>カートゥーン・様式化されたキャラクター</strong>」と書いてある唯一の系列で、卵に口を付けて喋らせるならここが一番あてになる。</p>
+    <p><span class="n">02</span>背景は<strong>替えられる</strong>。渡した絵の見た目をそのまま保って顔だけ動かす作りなので、背景を差し替えた卵の絵を渡せば、その背景の動画が返る。ただし<strong>背景だけ別レイヤーでは出てこない</strong>。焼き込みの1本の動画。合成したいなら、あとで背景を抜く工程が別に要る。</p>
+    <p><span class="n">03</span>リアルタイム会話には<strong>使えない</strong>。falのアバターは全部「音声を渡すと、その台詞を喋る動画が1本返ってくる」作り置き。今の案内人のような、その場で聞いてその場で答える喋りは、この値段表のどれでも作れない。</p>
+  </div>
+
+  <h2>falに載っているもの　全部</h2>
+  <p class="swipe">← 表は横にすべります →</p>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>モデル</th>
+        <th>1本＝10秒</th>
+        <th>何が要るか</th>
+        <th>背景を替えられるか</th>
+        <th>解像度・尺</th>
+        <th>卵（人でないもの）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="pick">
+        <td class="name" data-label="モデル"><a href="https://fal.ai/models/fal-ai/kling-video/ai-avatar/v2/standard">Kling AI Avatar v2 Standard</a><span class="tag">これ</span></td>
+        <td class="yen" data-label="1本＝10秒">約88円<br><span class="no">$0.0562/秒</span></td>
+        <td data-label="何が要るか">静止画＋音声</td>
+        <td data-label="背景">渡した絵の背景がそのまま残る。別レイヤーには<span class="no">ならない</span></td>
+        <td data-label="解像度・尺">記載なし／尺は音声の長さ次第</td>
+        <td data-label="卵で使えるか"><strong>公式に対応と明記</strong>（人間・動物・カートゥーン・様式化キャラ）</td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/models/fal-ai/kling-video/ai-avatar/v2/pro">Kling AI Avatar v2 Pro</a></td>
+        <td class="yen" data-label="1本＝10秒">約181円<br><span class="no">$0.115/秒</span></td>
+        <td data-label="何が要るか">静止画＋音声</td>
+        <td data-label="背景">上と同じ</td>
+        <td data-label="解像度・尺">記載なし／音声の長さ次第</td>
+        <td data-label="卵で使えるか"><strong>公式に対応と明記</strong>（同上・口元がより丁寧）</td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/h3-max-lip-sync">H3 Max Lip Sync</a></td>
+        <td class="yen" data-label="1本＝10秒">約79円（480p）<br>約126円（768p）<br>約251円（1080p）<br>約502円（2K）</td>
+        <td data-label="何が要るか">静止画＋音声</td>
+        <td data-label="背景">渡した絵の構図・光・背景をそのまま保つ。別レイヤーには<span class="no">ならない</span></td>
+        <td data-label="解像度・尺">480p〜2K／<strong>5〜15秒まで</strong>（超えた分は切られる）</td>
+        <td data-label="卵で使えるか">対応と明記（写真・3D・<strong>2Dイラスト</strong>・絵画）</td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/veed-lipsync-v2">VEED Lipsync v2</a></td>
+        <td class="yen" data-label="1本＝10秒">約110円<br><span class="no">$0.07/秒</span></td>
+        <td data-label="何が要るか"><strong>動画</strong>＋音声</td>
+        <td data-label="背景">元の動画の背景がそのまま。口だけ差し替え</td>
+        <td data-label="解像度・尺">元動画のまま／尺の上限の記載なし</td>
+        <td data-label="卵で使えるか">対応と明記（アバター・<strong>アニメのキャラクター</strong>）</td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/veed-fabric-1.0">VEED Fabric 1.0</a></td>
+        <td class="yen" data-label="1本＝10秒">約126円（480p）<br>約236円（720p）</td>
+        <td data-label="何が要るか">静止画＋音声</td>
+        <td data-label="背景">渡した絵の背景がそのまま</td>
+        <td data-label="解像度・尺">480p／720p</td>
+        <td data-label="卵で使えるか">対応と明記（イラスト・キャラクター画・<strong>マスコットや動物</strong>の作例あり）</td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/models/fal-ai/bytedance/omnihuman">OmniHuman</a></td>
+        <td class="yen" data-label="1本＝10秒">約220円<br><span class="no">$0.14/秒</span></td>
+        <td data-label="何が要るか">静止画＋音声</td>
+        <td data-label="背景">渡した絵の背景がそのまま</td>
+        <td data-label="解像度・尺">記載なし／音声は<strong>30秒まで</strong></td>
+        <td data-label="卵で使えるか"><span class="no">記載なし。</span>説明は「人物の画像」前提</td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/models/fal-ai/infinitalk">Infinitalk</a></td>
+        <td class="yen" data-label="1本＝10秒">約314円<br>720pは倍の約628円</td>
+        <td data-label="何が要るか">静止画＋音声＋文章</td>
+        <td data-label="背景">渡した絵の背景がそのまま</td>
+        <td data-label="解像度・尺">720pは料金2倍</td>
+        <td data-label="卵で使えるか"><span class="no">記載なし</span></td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/models/fal-ai/kling-video/lipsync/audio-to-video">Kling LipSync</a></td>
+        <td class="yen" data-label="1本＝10秒"><span class="no">公式の2か所で食い違い。<br>約4円 か 約22円</span></td>
+        <td data-label="何が要るか"><strong>動画</strong>＋音声</td>
+        <td data-label="背景">元の動画の背景がそのまま</td>
+        <td data-label="解像度・尺">720p〜1080p／元動画は2〜10秒。<strong>1本に約12分かかる</strong></td>
+        <td data-label="卵で使えるか"><span class="no">記載なし</span></td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/mirage-avatar-x">Mirage Avatar X</a></td>
+        <td class="yen" data-label="1本＝10秒">約471円<br><span class="no">$0.30/秒</span></td>
+        <td data-label="何が要るか">台本だけ（声も生成）／音声＋参照</td>
+        <td data-label="背景"><span class="no">記載なし</span></td>
+        <td data-label="解像度・尺">記載なし／最長180秒</td>
+        <td data-label="卵で使えるか"><span class="no">記載なし</span></td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/models/fal-ai/flashhead">Flashhead</a><span class="tag">唯一の streaming</span></td>
+        <td class="yen" data-label="1本＝10秒">約8円<br><span class="no">$0.005/秒</span></td>
+        <td data-label="何が要るか">静止画＋文章</td>
+        <td data-label="背景">渡した絵の背景がそのまま</td>
+        <td data-label="解像度・尺">記載なし／尺の上限なしをうたう</td>
+        <td data-label="卵で使えるか"><span class="no">記載なし。</span>説明は「顔（portrait）」前提</td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/models/fal-ai/musetalk">MuseTalk</a></td>
+        <td class="yen" data-label="1本＝10秒"><span class="no">単価の表示なし</span><br><span class="no">計算秒あたり課金</span></td>
+        <td data-label="何が要るか"><strong>動画</strong>＋音声</td>
+        <td data-label="背景">元の動画の背景がそのまま。口の周りだけ書き換え</td>
+        <td data-label="解像度・尺">元動画のまま</td>
+        <td data-label="卵で使えるか"><span class="no">記載なし</span></td>
+      </tr>
+      <tr>
+        <td class="name" data-label="モデル"><a href="https://fal.ai/heygen-avatar">HeyGen Avatar</a></td>
+        <td class="yen" data-label="1本＝10秒"><span class="no">案内ページに値段なし</span></td>
+        <td data-label="何が要るか">台本／音声</td>
+        <td data-label="背景">背景を指定できると明記。ただし別レイヤーの記載は<span class="no">なし</span></td>
+        <td data-label="解像度・尺">1080p</td>
+        <td data-label="卵で使えるか"><span class="no">使えない。</span>fal経由は<strong>既製のアバターからしか選べない</strong>。卵は登録できない</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">※「記載なし」は、公式ページにそう書いていなかっただけで、使えないと決まったわけではない。憶測は書いていない。<br>
+  ※ Kling LipSync は公式ページの中で「1秒$0.014を5秒単位で切り上げ」と「5秒ごとに$0.014」の2つの書き方が混ざっている。実際に払うまで確定しないので、幅のまま置いた。<br>
+  ※ このほか Argil Avatars が $0.02/秒（約31円）と最安だが、<strong>用意された既製アバターしか使えない</strong>ので卵には使えない。</p>
+
+  <h2>その場で喋るのか、作り置きか</h2>
+  <div class="cols">
+    <div>
+      <h3>作り置き（falはほぼ全部こっち）</h3>
+      <p>卵の絵と、喋らせたい音声を渡す。しばらくすると、その台詞を喋る動画が1本返ってくる。台詞は先に決まっていないといけない。</p>
+      <p>いま案内人にやらせている「聞かれたことにその場で答える」はできない。falで作るなら、<strong>よく聞かれることへの返事を30本くらい先に作っておいて、質問に応じて出し分ける</strong>形になる。</p>
+    </div>
+    <div>
+      <h3>その場で喋る（falにあるのは1つだけ）</h3>
+      <p>Flashhead だけが「streaming」と書かれていて、絵と文章を渡すと、できた端から映像が流れてくる。10秒で約8円と、ほかの10分の1。</p>
+      <p>ただしこれは<strong>会話するAIではない</strong>。渡した文章を喋るだけで、相手の話を聞いて考えるところは別に要る。しかも公式には「顔（portrait）」としか書かれていないので、<strong>卵で通るかは書いていない</strong>。</p>
+    </div>
+  </div>
+
+  <h2>いくら用意すればいいか</h2>
+  <p class="note" style="margin-bottom:1rem">Kling AI Avatar v2 Standard、1本10秒で計算。</p>
+  <table class="est">
+    <tbody>
+      <tr><td>試しに 3本</td><td>約 265円</td></tr>
+      <tr><td>ひと通り 10本</td><td>約 880円</td></tr>
+      <tr><td>本番 30本</td><td>約 2,650円</td></tr>
+    </tbody>
+  </table>
+  <p class="note">1本20秒にすると、どれも倍。30本を20秒で作っても約5,300円。<br>
+  やり直しは毎回お金がかかるので、実際は1.5〜2倍を見ておく。<strong>本番30本を20秒で、撮り直し込みで、だいたい1万円</strong>。</p>
+
+  <h2>見た目を確かめるには</h2>
+  <p class="note" style="margin-bottom:0">各モデルのページを開くと、そのモデルが作った見本の動画がページの中で再生できる（下のリンクは全部開けることを確認済み。ログインも支払いも要らない）。生の動画ファイルのURLは叩いていないので、ここには載せていない。</p>
+
+  <h2>開いたページ</h2>
+  <ul class="links">
+    <li><a href="https://fal.ai/models/fal-ai/kling-video/ai-avatar/v2/standard">Kling AI Avatar v2 Standard</a></li>
+    <li><a href="https://fal.ai/models/fal-ai/kling-video/ai-avatar/v2/pro">Kling AI Avatar v2 Pro</a></li>
+    <li><a href="https://fal.ai/h3-max-lip-sync">H3 Max Lip Sync</a></li>
+    <li><a href="https://fal.ai/veed-lipsync-v2">VEED Lipsync v2</a></li>
+    <li><a href="https://fal.ai/veed-fabric-1.0">VEED Fabric 1.0</a></li>
+    <li><a href="https://fal.ai/models/fal-ai/bytedance/omnihuman">OmniHuman</a></li>
+    <li><a href="https://fal.ai/models/fal-ai/infinitalk">Infinitalk</a></li>
+    <li><a href="https://fal.ai/models/fal-ai/kling-video/lipsync/audio-to-video">Kling LipSync</a></li>
+    <li><a href="https://fal.ai/mirage-avatar-x">Mirage Avatar X</a></li>
+    <li><a href="https://fal.ai/models/fal-ai/flashhead">Flashhead</a></li>
+    <li><a href="https://fal.ai/models/fal-ai/musetalk">MuseTalk</a></li>
+    <li><a href="https://fal.ai/heygen-avatar">HeyGen Avatar</a></li>
+    <li><a href="https://fal.ai/realtime">fal Realtime（その場で動くものの一覧）</a></li>
+    <li><a href="https://fal.ai/explore/best-avatar-models">fal 公式のアバター一覧</a></li>
+    <li><a href="https://fal.ai/directory">fal 全ページ一覧</a></li>
+  </ul>
+
+  <footer>
+    この下調べで使った生成：0回。かかった費用：0円。<br>
+    為替は2026年9月21日朝の1ドル＝156円68銭〜156円96銭を、157円に丸めて換算した。<br>
+    値段はfalが変えることがある。発注の直前にもう一度モデルのページを見ること。
+  </footer>
+
+</div>
+</body>
+</html>

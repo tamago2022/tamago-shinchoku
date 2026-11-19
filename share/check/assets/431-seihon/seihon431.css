@@ -1,0 +1,77 @@
+/* 431番 — 承認済みPNGから切り出した画素を、正本の箱へ差し込むだけの追加分。
+   正本（docs/design/concierge-html-css/concierge.css）は1行も書き換えていない。
+   配置・余白・階層・カード比率には一切触れていない。差し替えたのは
+   「写真が無いので仮に描いてあったグラデーション」だけ。 */
+
+/* ── 02 ヒーロー：承認画像のレコード店。焼き込みの日本語コピー・案内人・木札は
+      切り出しの時点で外してあるので、正本の .record-copy / .record-owner /
+      .record-sign と二重にならない。 ───────────────────────── */
+.concept-02 .hero-record{
+  background-color:#15170f;
+  background-image:
+    radial-gradient(circle at 72% 22%,rgba(255,212,130,.30) 0 4%,transparent 16%),
+    url(img/02-hero-bg.jpg);
+  background-size:auto,cover;
+  background-position:center,center top;
+  background-repeat:no-repeat;
+}
+.concept-02 .hero-record::before{content:none}          /* カウンターは写真の中にある */
+.concept-02 .hero-record .eyebrow,
+.concept-02 .hero-record .micro{color:rgba(247,240,228,.74)}
+.record-copy{z-index:2}
+
+/* ── 08 ヒーロー：承認画像のオアシス。焼き込みの英字・案内人・ベル・金の名札・
+      本の背は切り出しの時点で外してある。 ─────────────────── */
+.concept-08 .salon-scene{
+  background-color:#e6dac4;
+  background-image:url(img/08-scene-bg.jpg);
+  background-size:cover;
+  background-position:center bottom;
+  background-repeat:no-repeat;
+}
+.concept-08 .salon-scene::before{content:none}          /* 近似の葉は写真の中にある */
+
+/* ── 案内人（承認済みの姿＝ピンク縁の3Dメガネ・ベージュの上着・短い腕）──
+      正本の .record-owner img / .salon-owner img（幅・高さ・contain・影）を
+      そのまま受けるため、img は data-slot の中に置いたままにしてある。 */
+[data-slot="concierge-avatar"]{perspective:900px}
+.tmk-stage{position:relative;display:block;transform-style:preserve-3d}
+.tmk-rig{position:relative;display:block;transform-origin:50% 100%;
+  transform-style:preserve-3d;backface-visibility:hidden;will-change:transform}
+.tmk-face{position:absolute;left:0;top:0;pointer-events:none}
+
+/* 陰影：光は店の側にあって動かない。体が回ったぶんだけ回り込みがずれる。 */
+.tmk-lit{
+  position:absolute;inset:0;pointer-events:none;opacity:.34;
+  mix-blend-mode:soft-light;
+  background:
+    radial-gradient(120% 90% at 20% 10%,rgba(255,246,226,.85),transparent 48%),
+    radial-gradient(130% 100% at 88% 72%,rgba(26,16,8,.75),transparent 54%);
+  /* ★974：口を消したPNGは使わない（消し跡が四角い染みとして出ていたため）。
+     承認済みPNGそのものを型紙にする。輪郭は同じなので影のかかり方は変わらない。 */
+  -webkit-mask-image:url(img/concierge.png);
+          mask-image:url(img/concierge.png);
+  -webkit-mask-size:contain;          mask-size:contain;
+  -webkit-mask-position:center bottom;mask-position:center bottom;
+  -webkit-mask-repeat:no-repeat;      mask-repeat:no-repeat;
+}
+/* 接地：足元に影を落とす。浮いた人形にしない。 */
+.tmk-ground{
+  position:absolute;left:50%;bottom:4px;width:70%;height:20px;
+  transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(closest-side,rgba(16,9,3,.72),rgba(16,9,3,0) 76%);
+  filter:blur(4px);
+}
+.concept-08 .tmk-ground{
+  bottom:8px;width:64%;height:18px;
+  background:radial-gradient(closest-side,rgba(72,54,34,.5),rgba(72,54,34,0) 76%);
+}
+
+/* 吹き出しの横の小さい丸も、承認済みの案内人に合わせる */
+.tmk-ava{
+  background:#efe7d6 url(img/concierge.png) no-repeat center 26%/165% auto;
+}
+
+@media (max-width:780px){
+  .tmk-ground{height:14px;bottom:2px}
+}

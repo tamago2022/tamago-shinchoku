@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1865 ごきげん補給所 重さ監査（第2回・コード変更なし・本番main実測版） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .warn{border-left:3px solid var(--aka);padding:10px 14px;margin:0 0 20px;font-size:0.95rem;background:#fff;border-radius:0 10px 10px 0;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:0.85em;word-break:break-all;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  img{max-width:100%;border:1px solid var(--line);border-radius:10px;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1865 ごきげん補給所 重さ監査（第2回・コード変更なし・本番main実測版）</div>
+<h1>#1865 ごきげん補給所 重さ監査（第2回・コード変更なし）</h1>
+<div class="date">2026-10-20 実測。前回(#881・09-26)で足りなかった指標（LCP／CLS／TTFB／転送量／request数）を埋め直した版</div>
+
+<div class="warn">
+<b>■ 前回(#881)で止まっていた点</b><br>
+前回の確認ページは「名簿データの読み込み量」「クリック検査」までしか測っておらず、依頼原文にある<b>LCP・CLS・TTFB・転送量・request数</b>が1件も載っていなかった。今回は本番(main＝joy-relief-station.lovable.app)に対して、ブラウザ標準のPerformanceObserver API（<code>largest-contentful-paint</code>・<code>layout-shift</code>・<code>longtask</code>）を直接使って計測し直した。新しいツールのインストールはしていない（この作業環境はnpm installがネットワーク制限で使えないため、既存の検品スクリプト<code>tools/verify_click.mjs</code>が内蔵していたheadless Chrome接続を延長して使った）。
+</div>
+
+<h2>① 今回新たに実測した指標（S/A/B/Cランキングの根拠）</h2>
+<p><b>S（致命的）：1件</b></p>
+<table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ重いか</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr>
+<tr><td>S-1</td><td>トップページの最大視覚コンテンツ表示(LCP)が極端に遅い</td><td>実測：<b>6,992ミリ秒</b>（一般的な目安は2,500ms以内が良好、4,000ms超は重いとされる水準）</td><td>最初の画面に表示される一番大きい要素（画像やタイトル文字）が描き終わるまでの待ち時間。これが長いほど「開いてもしばらく何も見えない」体感になる</td><td>LCP対象要素（トップの主要画像・見出し）の読み込み優先度(<code>fetchpriority="high"</code>)指定、または表示前に挟まっている処理の順序調整を調査する</td><td>未検証（原因箇所の特定が先）</td><td>調査のみなら副作用なし</td></tr>
+</table>
+
+<h3 style='color:#b5651d;'>A（大きい）</h3>
+<table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ重いか</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr>
+<tr><td>A-1</td><td>メインスレッドの詰まり（TBT＝合計ブロック時間）が3ページとも重い</td><td>実測：トップ1,246ms／曲詳細2,513ms／棚899ms（一般的な目安は200ms以内が良好、600ms超は重いとされる水準）</td><td>50ミリ秒を超える長い処理(longtask)がページ内で何度も走っている（曲詳細ページは16回）。この間はタップしても反応が遅れる。低メモリの機種ほど体感に直結しやすい</td><td>該当のlongtaskがどのJS処理か（React再レンダリング・大きい一括計算等）をパフォーマンスプロファイルで特定する</td><td>未検証（原因箇所の特定が先）</td><td>調査のみなら副作用なし</td></tr>
+<tr><td>A-2</td><td>トップページのサーバー応答待ち(TTFB)が他の2ページより長い</td><td>実測：トップ2,783ms／曲詳細1,140ms／棚1,289ms</td><td>同じサイトの中でもページによって初動の遅さに差がある。トップページだけ重い処理を初回に抱えている疑いがある</td><td>トップページの初回データ取得（Supabase問い合わせ等）が他ページより多くないか調査する</td><td>未検証</td><td>調査のみなら副作用なし</td></tr>
+</table>
+
+<h3 style='color:#8a6d1f;'>B（中程度）</h3>
+<table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ重いか</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr>
+<tr><td>B-1</td><td>曲詳細・棚ページの転送量とrequest数が前回実測より増えている</td><td>実測：曲詳細113件・約1.47MB／棚66件・約1.64MB／トップ53件・約836KB。前回(#881・09-26)はJS計だけで約640KB前後としていた</td><td>計測方法が完全に同一ではない（前回はgzipサイズの個別積み上げ、今回はブラウザが実際に受け取った圧縮後サイズをまとめて集計）単純な前後比較には向かないが、request数が100件を超えるページがあるのは軽さの余地が残っている</td><td>曲詳細ページのrequest数(113件)の内訳を種類別に仕分けし、まとめられるものがないか調べる</td><td>未検証</td><td>調査のみなら副作用なし</td></tr>
+<tr><td>B-2</td><td>音楽の扉ページのDOM要素数そのものが多い（#881から継続・未解消）</td><td>src/styles.cssのコメントに残る実測記録：1ページにDOM要素25,855個・img要素1,711個・リンク1,780本</td><td>低メモリの機種では、DOM要素数の多さ自体がメモリ確保・GCの負担になりうる</td><td>棚単位のvirtualization、または段階的レンダリング</td><td>未検証。スクロール位置復元・検索性への影響を見ながら慎重に進める必要あり</td><td>実装難度は中〜高</td></tr>
+</table>
+
+<h3 style='color:#3a7a52;'>C（軽微・良い知らせを含む）</h3>
+<table><tr><th>#</th><th>原因</th><th>現在の実装</th><th>なぜ軽微か</th><th>修正方法</th><th>改善予測</th><th>副作用</th></tr>
+<tr><td>C-1</td><td>レイアウトのガタつき(CLS)は3ページとも問題なし</td><td>実測：トップ・曲詳細・棚のいずれも<b>0.000</b>（一般的な目安は0.1以内が良好）</td><td>画像や広告の読み込みで後から文字がずれる現象は起きていない。ここは直さなくてよい</td><td>対応不要</td><td>－</td><td>－</td></tr>
+<tr><td>C-2</td><td>前回(#881)検出のReact描画エラーは、今回のクリック検査では出なかった</td><td>曲詳細ページ(<code>/room/card/ado-kawaikute-gomen</code>)を実機相当のheadless Chromeで18件クリック検査：コンソールエラー0件・無反応0件</td><td>毎回起きるものではない可能性がある。消えたと断定はせず、様子見として残す</td><td>次回監査時も同じページで再確認する</td><td>－</td><td>－</td></tr>
+</table>
+
+<h2>② 実測ログ（一次データ・この数字から上の表を作った）</h2>
+<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:12px 15px;font-size:0.78rem;overflow-x:auto;white-space:pre-wrap;line-height:1.6;">
+実測ツール: tools/verify_click.mjs（VC_PERF_PROBE=1 で新規追加した計測モード。headless Chrome + Chrome DevTools Protocolを直接叩き、ブラウザ標準のPerformanceObserver APIで取得。追加ライブラリのインストールはしていない）
+
+トップページ https://joy-relief-station.lovable.app/
+  ttfbMs: 2783 / lcpMs: 6992 / clsScore: 0 / tbtMs: 1246（longtask 11回）
+  requestCount: 53 / transferredBytes: 855824 / jsTransferredBytes: 580859
+
+曲詳細ページ https://joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen
+  ttfbMs: 1140 / lcpMs: 3500 / clsScore: 0 / tbtMs: 2513（longtask 16回）
+  requestCount: 113 / transferredBytes: 1545318 / jsTransferredBytes: 1066124
+
+棚ページ https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta
+  ttfbMs: 1289 / lcpMs: 3600 / clsScore: 0 / tbtMs: 899（longtask 9回）
+  requestCount: 66 / transferredBytes: 1716122 / jsTransferredBytes: 841463
+
+実測ツール: tools/verify_click.mjs（通常モード・押せる要素を実クリック）
+曲詳細ページ https://joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen
+  totalClickable:64 / tested:18（うち44件は確実に動くリンクとして自動OK扱い） / noResponseCount:0 / consoleErrorCount:0
+  CLICK_VERDICT: PASS - 押せる要素は全て反応しました（18件中18件・全64件）
+
+注記: INP（次の入力までの反応時間）は実際の人の操作が無いと発生しない指標のため、この自動計測では直接の値を得ていない。代わりにメインスレッドの詰まりを示すTBT（50ms超過のlongtask合計）を代用指標として載せている。
+</pre>
+
+<h2>③ スクリーンショット（曲詳細ページ・クリック検査時点の実画面）</h2>
+<img src="img/1865-song-shot.png" alt="曲詳細ページの実画面（headless Chrome・375幅のスマホサイズでの表示）">
+<p style="font-size:0.85rem;color:#7a7568;">前後比較ではなく、コード変更をしていないため1枚のみ（画面は変えていない、重さの数字だけを実測した回のため）。</p>
+
+<h2>④ 数字（本番から直接取得・実測）</h2>
+<div class="nums">
+  <div class="num"><b>6,992ms</b><span>トップページのLCP（S-1・最も重い項目）</span></div>
+  <div class="num"><b>899〜2,513ms</b><span>3ページのTBT（A-1・いずれも重いとされる水準）</span></div>
+  <div class="num"><b>0.000</b><span>3ページともCLS（C-1・問題なし）</span></div>
+  <div class="num"><b>53〜113件</b><span>3ページのrequest数</span></div>
+  <div class="num"><b>836KB〜1.64MB</b><span>3ページの転送量（B-1）</span></div>
+  <div class="num"><b>0件</b><span>前回検出のReact描画エラー、今回のクリック検査では未検出(C-2)</span></div>
+</div>
+
+<h2>⑤ 次にやること（優先度順）</h2>
+<ol>
+<li>S-1：トップページのLCPが重い原因箇所の特定（最優先）</li>
+<li>A-1：3ページ共通のTBTの原因となるlongtask処理の特定</li>
+<li>A-2：トップページだけTTFBが長い原因の調査</li>
+<li>B-1・B-2：余裕があれば着手</li>
+</ol>
+
+<h2>押せるリンク（クリック検査で正常動作を確認済みのものだけ）</h2>
+<ul class="links">
+  <li><b>本番トップ（ごきげん補給所）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+  <li><b>曲詳細ページの実例</b><a href="https://joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/room/card/ado-kawaikute-gomen</a></li>
+  <li><b>棚ページの実例</b><a href="https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/shelf/food/kattemi-yokatta</a></li>
+</ul>
+
+<footer>このページは「①実装 ②main合流 ③公開 ④本番確認 ⑤報告」のうち、今回は監査のみ（コード変更なし）のため②③は対象外。本ページ自体はGitHub Pagesとして公開・確認可能。前回の確認ページ（#881）は<a href="881-karuku-kansa.html">こちら</a>。</footer>
+</body>
+</html>

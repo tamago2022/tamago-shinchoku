@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#794 案内所コンシェルジュ 作り直し 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .warn{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.0rem;background:#fff6f4;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);font-weight:700;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #794 案内所コンシェルジュ 作り直し</div>
+<h1>#794 案内所コンシェルジュ 作り直し</h1>
+<div class="date">2026-09-15 22時台・4回目のセッションが自分でヘッドレスブラウザを操作して再確認（前回までの実装をコードは変更せず、実機相当の動作を再検証）</div>
+
+<div class="fix">
+話すボタン無反応・1件しか出ない・別ページに飛ぶ・戻れない・卵が2匹、の5点はコード上すでに直っていて、今回あらためて自分でブラウザ操作をして実際に動くことを1つずつ確認した。<b>ただしLovable本番への公開だけは、プラットフォーム側の障害でまだ止まっている。</b>
+</div>
+
+<div class="warn">
+<b>唯一終わっていないこと：Lovable本番への反映。</b> コードはGitHubのmainに入っているが、Lovable側の「公開」がずっと失敗し続けている（2026-09-13の「Publishing was blocked due to suspicious activity」から継続、2026-09-08頃からビルド自体が通っていない疑いも浮上）。AI側で試せる操作（自動での公開ボタン押下・状態確認）は出尽くしており、これ以上はLovable側の障害調査待ち。詳しくは⑤の表を参照。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1匹</b><span>卵の表示数(前:2匹)</span></div>
+  <div class="num"><b>5件</b><span>「猫」検索の結果数・安心4+知らない世界1(前:1件)</span></div>
+  <div class="num"><b>5件</b><span>「夏の日」検索の結果数</span></div>
+  <div class="num"><b>0件</b><span>型チェック(tsc)・lint(eslint)のエラー数</span></div>
+</div>
+
+<h2>③ 実際に自分でボタンを押して確かめた記録（スクリーンショット）</h2>
+<div class="shots">
+  <div class="shot plain"><b>①/cover-guideを開いた直後。卵は1匹だけ</b><img src="img/794-1-open.png" alt="①/cover-guideを開いた直後。卵は1匹だけ"></div>
+  <div class="shot plain"><b>②「話す」を押すと「●聞いています…」に変わり反応する</b><img src="img/794-2-talk-pressed.png" alt="②「話す」を押すと反応する"></div>
+  <div class="shot plain"><b>③「猫」で検索→5件表示(安心4+知らない世界1)。全体を撮ると縦に5枚並んでいるのが分かる</b><img src="img/794-3-cat-search.png" alt="③「猫」で検索→5件表示"></div>
+  <div class="shot plain"><b>④カードを押すとその場でインライン再生(URLが変わらない・別ページに飛ばない)</b><img src="img/794-4-card-clicked.png" alt="④カードを押すとその場でインライン再生"></div>
+  <div class="shot plain"><b>⑤「もっと詳しく」を押した先の詳細画面</b><img src="img/794-5a-detail-page.png" alt="⑤「もっと詳しく」の詳細画面"></div>
+  <div class="shot plain"><b>⑥ブラウザの「戻る」→ちゃんと案内所(/cover-guide)に戻る</b><img src="img/794-5b-after-back.png" alt="⑥戻る→案内所に戻る"></div>
+  <div class="shot plain"><b>⑦「夏の日」で検索→5件表示</b><img src="img/794-6-natsunohi-search.png" alt="⑦「夏の日」で検索→5件表示"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番(今はまだ直る前の古い画面)</b><a href="https://joy-relief-station.lovable.app/cover-guide" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide</a></li>
+  <li><b>Lovable編集画面(たまごさんのアカウントで開けます。「公開」の状態を直接見られます)</b><a href="https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1" target="_blank" rel="noopener">https://lovable.dev/projects/8ebdb648-3686-4457-b42c-d01c493793b1</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>話すボタンが反応する（押すと録音状態になる）</td><td class="yes">直った</td></tr>
+<tr><td>候補が4〜5件出る</td><td class="yes">直った（安心4件＋知らない世界1件＝5件を実測）</td></tr>
+<tr><td>カードがその場で再生される（別ページに飛ばない）</td><td class="yes">直った（URLが変わらずインライン再生の枠が出ることを確認）</td></tr>
+<tr><td>「もっと詳しく」→戻ると案内所に戻る</td><td class="yes">直った（トップページには飛ばない）</td></tr>
+<tr><td>卵が1匹になる</td><td class="yes">直った（案内所コンシェルジュの卵は画面内で1匹のみ）</td></tr>
+<tr><td>話した内容が入力欄に文字で入る</td><td class="yes">直った（音声認識の結果を検索欄に反映してから検索する実装を確認）</td></tr>
+<tr><td>コード側の不具合（型チェック・lint）</td><td class="yes">エラー0件</td></tr>
+<tr><td>GitHub本体(main)への反映</td><td class="yes">反映済み（コミット a href="#note1"参照）</td></tr>
+<tr><td>Lovable本番への公開反映</td><td class="no">まだ（プラットフォーム側の障害。下の注記参照）</td></tr>
+</table>
+
+<h2>⑥ Lovable本番がまだ直っていない理由（正直に書きます）</h2>
+<div class="note">
+2026-09-13に「Publishing was blocked due to suspicious activity」というLovable側のブロックが発生し、それ以来ずっと本番への公開が失敗し続けている。2026-09-14からは「連打が原因では」という疑いで自動の公開試行も止めてあり、2026-09-15にも手動で状態を確認したが、公開の仕組み自体（ビルドパイプライン）が2026-09-08頃から通っていない可能性が高いところまで分かってきた。<br><br>
+これはコードの不具合ではなく、Lovableというサービス側の障害。AI側で試せること（公開ボタンの自動操作・状態の読み取り・ダッシュボードの履歴確認）はやり尽くしていて、これ以上は<b>たまごさんがLovableの編集画面を開いて「公開」まわりのエラー詳細を見る、またはLovableのサポートに問い合わせる</b>必要がある。<br><br>
+コード自体が正しく動くことは、上の③のスクリーンショットで確認済み。公開さえ通れば、そのまま本番でも同じように動くはず。
+</div>
+
+<footer>
+自分でヘッドレスブラウザ(Playwright)を使い、たまごさんと同じ順番(開く→話す→猫→カード→もっと詳しく→戻る→夏の日)でローカル環境を実際に操作して撮影した(2026-09-15 22時台)。全ステップで期待どおりの動きを確認。型チェック(tsc --noEmit)・lint(eslint)もエラー0件。<br>
+<a id="note1"></a>main合流コミット：ff6bfde2（実機テスト指摘4点対応）→b6e428eb（卵2匹修正）。いずれも独立して`git merge-base --is-ancestor`でmainの祖先であることを複数回確認済み。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

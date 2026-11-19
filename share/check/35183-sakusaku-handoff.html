@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35183 サクサク担当、継続担当として記録しました（恒久ファイル＋Vault現在地まで反映・3回目） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35183 サクサク担当、継続担当として記録しました（恒久ファイル＋Vault現在地まで反映・3回目）</div>
+<h1>#35183 サクサク担当、継続担当として記録しました（恒久ファイル＋Vault現在地まで反映・3回目）</h1>
+<div class="date">2026-10-24 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+店主2026-08-12『今後もこの手のパフォーマンス不具合を継続的に見てもらう担当としてこのセッションを使う』を受け、新規担当は作らず既存の常設見回り役割『速さ・挙動不審の修理担当』（joy-relief-station .claude/playbooks/roles.json id:perf）へ『サクサク担当』をaliasとして統合。前回までのAI検品で指摘された『役割定義ファイル・現在地台帳(00_現在地.md)への未反映』のうち、役割定義ファイル側（roles.json・TASK_BOARD.md・プレイブック）はjoy-relief-stationの本番コードへ既に反映済みと確認できたが、Obsidian Vault正本 00_現在地.md への反映だけが今回まで未実施だったため、このセッションで tools/genzaichi_matome.py --kaku → --now を実行し、00_現在地.md 107〜117行目『自動まとめ』欄へ35183号・サクサク担当の記録を直接反映した。コード変更は無し（記録の完結のみ）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3件</b><span>roles.json・TASK_BOARD.md・プレイブックの反映確認</span></div>
+  <div class="num"><b>1件</b><span>Vault 00_現在地.md への反映（今回新規）</span></div>
+  <div class="num"><b>200</b><span>本番/admin実測HTTPステータス</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>確認ページ自身（更新履歴）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35183-sakusaku-handoff.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35183-sakusaku-handoff.html</a></li>
+  <li><b>本番 管理画面</b><a href="https://joy-relief-station.lovable.app/admin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>joy-relief-station .claude/playbooks/roles.json 381-398行目</td><td class="yes">サクサク担当/サクサク/黒画面/黒画面フリーズ/フリーズをaliasesへ追加済み</td></tr>
+<tr><td>joy-relief-station .claude/TASK_BOARD.md 3066-3081行目</td><td class="yes">案件#35181〜35183の統合経緯を記録済み</td></tr>
+<tr><td>joy-relief-station .claude/playbooks/速さ・挙動不審の修理担当.md</td><td class="yes">黒画面フリーズ原因A/B・案件#35178-35183の詳細調査記録を新設済み</td></tr>
+<tr><td>Obsidian Vault 00_現在地.md 107-117行目（自動まとめ欄）</td><td class="yes">35183号・サクサク担当の記録を本セッションで反映（今回新規）</td></tr>
+<tr><td>本番 https://joy-relief-station.lovable.app/admin</td><td class="yes">HTTP 200・本文18,519バイト（空でない）</td></tr>
+</table>
+
+<footer>
+このページは #35183 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

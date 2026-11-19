@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1521 判定が赤になった案件、代表4つに聞く 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1521 判定が赤になった案件、代表4つに聞く</div>
+<h1>#1521 判定が赤になった案件、代表4つに聞く</h1>
+<div class="date">2026-09-30 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p>1週間動かずに「赤」判定のまま止まっている案件は、この工場に現在<b>209件</b>ある。全部は読み切れないので、止まり方のパターンが違う代表4件を選び、「なぜ赤か」「今どうなっているか」「次の一手は何か」を<b>クリックすると開いて答えが読める形</b>でまとめた。</p>
+
+<details>
+<summary>Q1. #1「シェアしても画像が出ない」はなぜ赤？</summary>
+<p><b>今の状態：</b>保留（hold）。</p>
+<p><b>なぜ赤か：</b>たまごさん自身が「画像が出ないページに実際に出くわしたときに、そのURLで確認する。それまで聞かない」と条件を指定していて、その実例URLがまだ来ていない。2026-09-17の棚卸しでも「hold継続が妥当」と判断済みで、止まっているのは異常ではなく指定どおりの待機。</p>
+<p><b>次の一手：</b>画像が出ないページの実例が見つかり次第、着手。方向性はすでに決まっている（画像を表示幅に合わせて配信する仕組みに変える＝お手本サイト分析済み）。</p>
+</details>
+
+<details>
+<summary>Q2. #6「外部から入れた曲の曲名とアーティストを自動で埋める」はなぜ赤？</summary>
+<p><b>今の状態：</b>発車待ち（waiting）。redoCount 2回。</p>
+<p><b>なぜ赤か：</b>過去2回とも「バックグラウンド処理の完了通知を待ちます」と言い残して終了していたが、この工場の実行方式（claude -pの一発実行）では、その通知は構造的に来ない。中身の実装が難しいのではなく、待ち方が間違っていた。2026-09-24に「仕事ではなく報告の書き方の問題」と判定され、発車待ちへ差し戻し済み。</p>
+<p><b>次の一手：</b>バックグラウンド実行をやめ、外部コマンドはtimeout付きで前で待つ同期処理にして、最後まで実装しURLを1本報告に貼る。</p>
+</details>
+
+<details>
+<summary>Q3. #42「アーティストページの無い曲にページを作る」はなぜ赤？</summary>
+<p><b>今の状態：</b>発車待ち（waiting）。redoCount 2回。</p>
+<p><b>なぜ赤か：</b>一度は11組ぶん（都はるみ・森昌子・イルカ等）のページを実際に追加し、確認ページも公開して完了報告したが、鬼監督の検品で「確認ページに実物のスクリーンショット（&lt;img&gt;）が無い」という1点だけで差し戻された。中身の作業はほぼ終わっている。</p>
+<p><b>次の一手：</b>同じ確認ページにブラウザ内蔵スクショを1枚足して再提出すれば通る見込み。</p>
+<p><b>既存の確認ページ：</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/42-missing-artist-pages.html" target="_blank" rel="noopener">42-missing-artist-pages.html</a></p>
+</details>
+
+<details>
+<summary>Q4. #157「『飼い主大好き』が2つあるので1つに統合する」はなぜ赤？</summary>
+<p><b>今の状態：</b>発車待ち（waiting）。優先度P5（たまごさん本人が「全然後回しでいい」と指定）。redoCount 2回。</p>
+<p><b>なぜ赤か：</b>低優先度に指定されているため、他の案件が優先され続けて手つかずのまま。加えて過去2回、報告にURLが無い・バックグラウンド待ちで終了、という同じ止まり方を繰り返した。</p>
+<p><b>次の一手：</b>2つの棚の中身を全件書き出して突き合わせ、「Aに◯件・Bに◯件・重複◯件・統合後◯件」を数字で出し、統合後のページへ導線を残して確認ページを提出する。</p>
+</details>
+
+<details>
+<summary>Q5. なぜこの4件を選んだの？</summary>
+<p>209件は理由がバラバラなので、止まり方のパターンが違う4つを選んだ。①条件待ち（#1）②報告の書き方の誤解（#6）③あと1点の差し戻し（#42）④優先度による後回し（#157）。この4パターンが分かれば、残り205件の多くも同じ型に当てはまる。</p>
+</details>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>209件</b><span>1週間動かず赤になっている案件の総数（2026-09-30時点・queue.json実カウント）</span></div>
+  <div class="num"><b>4件</b><span>このページで取り上げた代表案件（#1・#6・#42・#157）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表トップ（209件全体を見る）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>#42 の既存確認ページ</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/42-missing-artist-pages.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/42-missing-artist-pages.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>#1 シェアしても画像が出ない</td><td class="yes">保留（実例URL待ち）</td></tr>
+<tr><td>#6 曲名・アーティスト自動補完</td><td class="yes">発車待ち（同期実行で再挑戦）</td></tr>
+<tr><td>#42 アーティストページ作成</td><td class="yes">発車待ち（スクショ1枚足すだけ）</td></tr>
+<tr><td>#157 飼い主大好き統合</td><td class="yes">発車待ち（優先度P5・後回し中）</td></tr>
+</table>
+
+<footer>
+このページは #1521 のセッションが、赤判定（1週間未着手）案件209件の中から代表4件を選び、質問形式でまとめた確認資料。tools/make_check_page.pyで生成。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

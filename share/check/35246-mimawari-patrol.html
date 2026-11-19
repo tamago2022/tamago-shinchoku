@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35246 判定日赤35246号：見回りパトロールの継続稼働を確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .warn{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:0.95rem;color:var(--sub);}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  pre{background:#2a2a2a;color:#e8e3d4;border-radius:10px;padding:12px 14px;font-size:0.76rem;overflow-x:auto;white-space:pre-wrap;}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35246 判定日赤35246号：見回りパトロールの継続稼働を確認</div>
+<h1>#35246 判定日赤35246号：見回りパトロールの継続稼働を確認</h1>
+<div class="date">2026-10-28 実装・main合流・本番(launchd実機)での実動作まで実測確認</div>
+
+<div class="warn">
+前回（10/27 23:20）は「動画見回り便(video-patrol)が1ヶ月停止している」と書いて「直した」と主張し、中身が矛盾していると検品で指摘された。今回、実際にログを見直して誤りだったと判明：便は止まっていなかった。
+</div>
+
+<div class="fix">
+<b>分かったこと：</b>便(launchd・30分おき)は直近も正常に動き続けていた（22:13・22:46・23:20と3回連続でexit=0）。<code>deadYoutube.generated.ts</code>へのコミットが2026-09-27で止まって見えたのは、2026-10-07の意図的な仕様変更（「変化なしの回は追跡ファイルを更新しない」）が原因で、便の停止ではなかった。
+</div>
+
+<div class="fix">
+<b>直したこと：</b>「コミットの有無」では便の生死を判定できない以上、便自身が「生きています」と毎回報告するハートビート（<code>status/public/video-patrol-heartbeat.json</code>）を追加し、2時間以上更新が無ければ検知する見張り（<code>scripts/patrol/check-patrol-heartbeat.mjs</code>）をprebuildへ組み込んだ。これで将来この便が本当に止まった時、誰も気づけない状態を防げる。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3回連続</b><span>実装前に実測したlaunchd実行ログ（22:13/22:46/23:20・全てexit=0）</span></div>
+  <div class="num"><b>約6分後</b><span>本体へ修正を反映してから、次の定期実行が実際に走るまでの時間</span></div>
+  <div class="num"><b>true</b><span>その実行で便自身が書いたハートビートの「生きています」の値</span></div>
+</div>
+
+<h2>③ 実際に動いた証拠（自己申告ではなく、便自身が残した記録）</h2>
+<div class="note">
+本体（launchdから30分おきに実行される実ファイル）へ修正を反映した直後、次の定期実行が実際に走った。そのとき便自身が「最後に動いた時刻・終了コード0（正常）・変化があった・worktreeは壊れていない」という内容を書き込み、人手を介さず本番へ自動で送った。これは報告の言葉ではなく、便が自分で書いた記録。
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+<li><b>見回り便の自己監視を追加した変更（本番mainに反映済み）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-patrol-heartbeat.mjs">https://github.com/tamago2022/joy-relief-station/blob/main/scripts/patrol/check-patrol-heartbeat.mjs</a></li>
+<li><b>便自身が実際に書いた「生きています」の記録（本番）</b><br><a href="https://github.com/tamago2022/joy-relief-station/blob/main/status/public/video-patrol-heartbeat.json">https://github.com/tamago2022/joy-relief-station/blob/main/status/public/video-patrol-heartbeat.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>launchdジョブ(com.tamago.joy-relief-station.video-patrol)が直近も実行されているか</td><td class="yes">実測：patrol.log末尾で22:13/22:46/23:20の3回連続exit=0を確認</td></tr>
+<tr><td>deadYoutube.generated.tsへのコミットが9/27で止まっていた理由</td><td class="yes">2026-10-07の仕様変更による意図的な動作。便の停止ではないと判明</td></tr>
+<tr><td>worktreeが度々壊れる問題(10/22,10/24,10/25,10/27)</td><td class="yes">既存の自己修復ロジックが毎回正しく動き、壊れても自然復旧することを確認</td></tr>
+<tr><td>見回り便自体の健全性を見張る仕組み（ハートビート・check-patrol-heartbeat.mjs）</td><td class="yes">新規実装・2時間以上古い/ファイル欠損どちらでも警告が出ることを逆テストで確認・main合流済み</td></tr>
+<tr><td>ハートビートが本当に本体(launchd)から動くか</td><td class="yes">実測：本体へ反映した直後の自動実行で実際に本番へ自動で送られたことを確認。自己申告ではなく便自身が残した記録</td></tr>
+<tr><td>scripts/patrol/配下の既存122本の継続チェック・launchd定期パトロール4種・鬼監督品質ゲート</td><td class="yes">実在・運用中（前回確認済み・変更なし）</td></tr>
+</table>
+
+<footer>
+前回の確認ページは「未解決・次回持ち越し」と書きながら完了を主張し、検品で矛盾を指摘された。今回は実際に直した内容（ハートビート監視の追加）と、それが本物のlaunchd実行で動いた証拠の両方を揃えてから完了としている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

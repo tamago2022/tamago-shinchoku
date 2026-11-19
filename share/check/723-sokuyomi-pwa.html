@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#723 即読みPWA（RSS・購読を知らなくても聞ける） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #723 即読みPWA（RSS・購読を知らなくても聞ける）</div>
+<h1>#723 即読みPWA（RSS・購読を知らなくても聞ける）</h1>
+<div class="date">2026-09-10 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+長文を貼るだけで端末の声がその場で読み上げる即読みPWAを作った。生成音声(dokudoku)は待ち時間・RSSが必要だったが、こちらは待ち時間ゼロ・購読不要・費用ゼロ。前回の検品で『実機で音が鳴る証拠が無い』と差し戻されたため、headless Chrome+CDPで▶ボタンを実クリックし、speechSynthesis(音声合成エンジン)が実際に発声を開始した証拠（speaking=true・onstartイベント発火）とスクリーンショットを新たに取得した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3種類</b><span>実機の日本語音声(Hattori/Kyoko/O-Ren)</span></div>
+  <div class="num"><b>OK</b><span>▶クリックでspeaking=true・onstart発火</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>貼り付け前（初期状態・声はKyoko）</b><img src="img/723-before.png" alt="前"></div>
+  <div class="shot after"><b>▶ボタンを実クリックした直後（一時停止ボタンに変化・3/3文・URLは読み飛ばされている）</b><img src="img/723-playing.png" alt="後"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>即読みPWA本番を開く</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/sokuyomi/</a></li>
+  <li><b>進捗表トップ（🔊即読みボタンあり）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>本番URL(share/sokuyomi/)が200で開ける</td><td class="yes">OK</td></tr>
+<tr><td>端末の日本語音声が複数から選べる（実機で3種確認: Hattori/Kyoko/O-Ren）</td><td class="yes">OK</td></tr>
+<tr><td>▶ボタンの実クリックでspeechSynthesis.speaking=trueになりonstartイベントが発火する（headless Chrome+CDPの実クリックで実測）</td><td class="yes">OK</td></tr>
+<tr><td>URL・obsidian://・長い英数字IDを読み飛ばす（実測：本文中のhttps://example.com/dummyが読み上げテキストから消えることを確認）</td><td class="yes">OK</td></tr>
+<tr><td>15秒/30秒/1分戻す・頭から・速度0.8〜1.5倍のボタンが実際に動く（クリックで文番号・ステータス表示が変化することを実測）</td><td class="yes">OK</td></tr>
+<tr><td>貼り付け(paste)で自動的に読み上げ開始（実装コードは正しく動作。ただし自動テストのsynthetic pasteイベントはブラウザのuser gesture判定に引っかかり自動検証はできない制約あり。本物の指でのペースト操作なら動作する設計）</td><td class="yes">一部確認</td></tr>
+<tr><td>manifest.webmanifest・sw.js・アイコンが200で開ける（ホーム画面に追加できる）</td><td class="yes">OK</td></tr>
+</table>
+
+<footer>
+このページは #723 のセッションが tools/make_check_page.py と tools/oni_kantoku_723_screenshot.mjs（headless Chrome+CDPでの実クリック検証）で自動生成した確認資料。証跡の生ログは share/check/723_evidence.json。<br>
+正直な注記：AIには耳が無いため「スピーカーから実際に音が聞こえるか」はこのページの実測対象に含めていない。ここで示したのは、ボタンを押した瞬間に音声合成エンジンへ本物の発声命令が渡り実際に動き出したという、機械的に検証できる最も強い証拠（speaking=true・onstartイベント発火・UIの状態変化）。最終的な「聞こえ方」の確認はたまごさん本人の実機操作にお任せしたい。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -1,0 +1,70 @@
+# 宇宙服／宇宙うんこシリーズ：Three.js のシーンを headless Chrome（SwiftShader・音なし）で連番に撮る。成果物は1日で消える。
+# 2026-11-17：宇宙うんこ×亜麻色（scene=unko-fille・data_fille）。キットの glb は暗号化して置き、secret UNKO_KIT_KEY で実行時だけ戻す（作業場ごと消える）。
+name: uchufuku-render
+on:
+  workflow_dispatch:
+    inputs:
+      total: { description: "frames", default: "4140" }
+      scene: { description: "scene", default: "unko-fille" }
+      data: { description: "data dir", default: "data_fille" }
+concurrency: { group: uchufuku-render, cancel-in-progress: true }
+jobs:
+  render:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: { chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/uchufuku
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: render
+        env:
+          K: ${{ secrets.UNKO_KIT_KEY }}
+        run: |
+          cd tools/uchufuku && npm install --no-audit --no-fund --silent
+          D=$PWD/${{ inputs.data }}
+          if [ -f $D/unko.glb.enc ]; then openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in $D/unko.glb.enc -out $D/unko.glb -pass env:K && ls -la $D/unko.glb; fi
+          N=20; C=${{ matrix.chunk }}; T=${{ inputs.total }}; K2=$(( (T+N-1)/N )); A=$((C*K2)); B=$((A+K2)); [ $B -gt $T ] && B=$T
+          echo "frames $A..$B"
+          export CHROME_PATH=$(which google-chrome || which chromium)
+          for k in 1 2; do
+            node capture.mjs data=$D scene=${{ inputs.scene }} w=1280 h=720 fps=30 gpu=0 out=$GITHUB_WORKSPACE/out from=$A to=$B && break
+          done
+          rm -f $D/unko.glb
+          ls $GITHUB_WORKSPACE/out | wc -l
+      - uses: actions/upload-artifact@v4
+        with: { name: "frames-${{ matrix.chunk }}", path: out/, retention-days: 1, if-no-files-found: ignore }
+  assemble:
+    # 連番を Actions の中で MP4 にまとめる（Mac が取りに行くのは MP4 1本だけ＝通信を小さく）
+    needs: render
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/uchufuku
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@v4
+        with: { pattern: "frames-*", path: frames, merge-multiple: true }
+      - name: encode
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          ls frames | wc -l
+          T=${{ inputs.total }}; miss=0
+          for i in $(seq 0 $((T-1))); do f=$(printf "frames/f%05d.jpg" $i); if [ ! -f $f ]; then miss=$((miss+1)); echo "MISSING $i"; [ $i -gt 0 ] && cp $(printf "frames/f%05d.jpg" $((i-1))) $f; fi; done
+          echo "KENSA missing=$miss of $T"
+          A=tools/uchufuku/${{ inputs.data }}/music.m4a
+          ffmpeg -y -loglevel error -framerate 30 -i frames/f%05d.jpg -i $A -map 0:v -map 1:a \
+            -vf "scale=in_range=pc:out_range=tv,format=yuv420p" -c:v libx264 -preset medium -crf 19 -pix_fmt yuv420p -c:a copy -shortest -movflags +faststart video.mp4
+          ffprobe -v error -show_entries format=duration:stream=nb_frames -of compact video.mp4
+          ls -la video.mp4
+      - uses: actions/upload-artifact@v4
+        with: { name: "video", path: video.mp4, retention-days: 1 }

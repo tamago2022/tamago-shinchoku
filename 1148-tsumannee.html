@@ -1,0 +1,154 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1148番：ごきげん補給所の問題点（端から端まで触った）</title>
+<style>
+:root{color-scheme:light}
+body{font-family:-apple-system,"Hiragino Mincho ProN","Hiragino Sans",serif;margin:0;background:#faf5ec;color:#1b1b1b;line-height:1.75}
+.wrap{max-width:900px;margin:0 auto;padding:22px 16px 90px}
+.kicker{font-size:11px;letter-spacing:.34em;color:#8a7f66;margin:0 0 6px}
+h1{font-size:23px;font-weight:600;margin:0 0 6px;letter-spacing:.04em}
+.lead{color:#5a5347;font-size:13px;margin:0 0 24px}
+h2{font-size:16px;font-weight:600;margin:38px 0 10px;border-left:4px solid #c1442e;padding-left:10px;letter-spacing:.04em}
+h3{font-size:14px;margin:22px 0 6px;color:#3a3529}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 6px}
+.card{background:#fff;border:1px solid #e3ddd0;border-radius:12px;padding:14px;text-align:center}
+.card .n{font-size:32px;font-weight:700;letter-spacing:-.02em}
+.card .lbl{font-size:12px;font-weight:600;color:#3a3529}
+.card .sub{font-size:11px;color:#8a7f66;margin-top:4px;line-height:1.5}
+.top{background:#fff6f4;border:1px solid #e3b5aa;border-radius:12px;padding:16px 16px 14px}
+.top .tag{display:inline-block;font-size:11px;letter-spacing:.2em;color:#c1442e;margin-bottom:6px}
+.top b{color:#a5341f}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;margin-top:8px}
+th,td{border:1px solid #e5e0d4;padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f3efe4;font-size:11.5px;font-weight:600;letter-spacing:.06em}
+td.no{width:34px;text-align:center;color:#8a7f66;font-weight:700}
+td.mi{width:34%;font-size:11.5px;color:#5a5347;word-break:break-all}
+.box{background:#fff;border:1px solid #e3ddd0;border-radius:12px;padding:13px 15px;font-size:13px}
+code{background:#f0ece0;padding:1px 5px;border-radius:4px;font-size:11.5px;font-family:ui-monospace,monospace}
+a{color:#22304A}
+.small{font-size:11.5px;color:#8a7f66}
+ul{padding-left:1.2em}
+li{margin:4px 0}
+@media(max-width:560px){.cards{grid-template-columns:1fr}td.mi{width:auto}}
+</style></head><body><div class="wrap">
+
+<p class="kicker">1148 ／ SITE INSPECTION</p>
+<h1>ごきげん補給所を、客として端から端まで触った。</h1>
+<p class="lead">2026-09-26。トップ／7つの扉／棚の一覧／曲ページ／案内所／検索／お気に入り／履歴／診断／レシピレーダー／特集／英語版を、実際に開いて数えました。<br>
+全部の行に「どこで見たか」を付けています。感想だけの行はありません。実装はしていません。本番は触っていません。</p>
+
+<h2>採点（軽さ・楽しさ・美しさ）</h2>
+<div class="cards">
+<div class="card"><div class="n">4<span style="font-size:14px;color:#8a7f66">/10</span></div><div class="lbl">軽さ</div><div class="sub">案内所が2,648組の名前を全部出す。レシピは60件を1ページに全部展開。</div></div>
+<div class="card"><div class="n">6<span style="font-size:14px;color:#8a7f66">/10</span></div><div class="lbl">楽しさ</div><div class="sub">コピーが効いている棚もある。ただし曲まで来た客が、次の一本で外に出される。</div></div>
+<div class="card"><div class="n">5<span style="font-size:14px;color:#8a7f66">/10</span></div><div class="lbl">美しさ</div><div class="sub">特集1枚は雑誌級。一覧を押すと文字だけの世界に落ちる。落差が大きい。</div></div>
+</div>
+<p class="small">※ 見出しの数字崩れ（SHELF · 0111件）と、一覧のサムネイル0枚が、3つ全部を同時に下げています。</p>
+
+<h2>一番大きい問題点：次の一本が2枚しかなく、しかも関係ない曲</h2>
+<div class="top">
+<span class="tag">THE ONE</span>
+<p style="margin:0 0 8px">曲ページの「この流れで、もう一本」が<b>2枚しか出ない</b>。基準は最低4枚。しかも中身が繋がっていない。</p>
+<p style="margin:0 0 8px">AC/DC「Back in Black」の隣に出るのは <b>Rick Astley「Never Gonna Give You Up」</b>と Radiohead「Karma Police」。しかもそのサムネイルのIDは <code>dQw4w9WgXcQ</code> ——<b>世界で一番「押したら騙された」で知られている動画</b>です。ごきげん補給所が客をひっかけているように見えます。</p>
+<p style="margin:0 0 8px">竹内まりや「プラスティック・ラブ」の隣は Ado と Night Tempo の2枚。<b>この曲の名カバーへの導線が1本もない。</b>名カバー案内所の芯が、曲ページで消えています。</p>
+<p style="margin:0" class="small">見た場所：<a href="https://joy-relief-station.lovable.app/cover-guide?artist=ac-dc&amp;song=back-in-black">/cover-guide?artist=ac-dc&amp;song=back-in-black</a>（2枚）／<a href="https://joy-relief-station.lovable.app/cover-guide?artist=mariya&amp;song=plastic-love">/cover-guide?artist=mariya&amp;song=plastic-love</a>（2枚）</p>
+<p style="margin:8px 0 0"><b>どうすればよかったか：</b>おすすめは「同アーティストの別曲 → カバー元／原曲 → 同じ棚の隣 → 特集」の順で、足りないときは枠を減らすのではなく<b>棚から補う</b>。埋まらないなら枠を出さない。無いより、関係ないものが出るほうが悪い。</p>
+</div>
+
+<h2>直すもの（効く順）</h2>
+<table>
+<thead><tr><th class="no">#</th><th>何が起きているか／どうすればよかったか</th><th class="mi">どこで見たか</th></tr></thead>
+<tbody>
+<tr><td class="no">1</td><td><b>次の一本が2枚・無関係（上記）。</b></td><td class="mi">/cover-guide?artist=ac-dc&amp;song=back-in-black ／ ?artist=mariya&amp;song=plastic-love</td></tr>
+
+<tr><td class="no">2</td><td><b>案内所が登録アーティスト2,648組の名前を、全部ベタでページに出している。</b>サムネイルは0枚、ただの文字の壁。スマホだと指が止まらない。<br><b>どうすればよかったか：</b>頭文字で畳む／検索欄だけ残して一覧は出さない。</td><td class="mi">/cover-guide（「登録アーティスト一覧を見る」＝「全2648組から探せます」の下）</td></tr>
+
+<tr><td class="no">3</td><td><b>扉の見出しの数字が読めない。</b>「SHELF · 011件」「SHELF · 0213件」「SHELF · 0125件」——章番号（01,02…12）と件数がくっついている。<b>食の扉は12棚すべて</b>、喜の扉でも同じ。<br><b>どうすればよかったか：</b>間に1文字入れるだけ。「SHELF 01 ・ 11件」。</td><td class="mi">/world/food（全12棚）／/world/joy（SHELF · 0111件）</td></tr>
+
+<tr><td class="no">4</td><td><b>「≡一覧」を押すと体験が下がる。</b>飛び先はサムネイル0枚・ヘッダー無し・言語切替無しの文字だけリスト。棚の横並びにはサムネイルがあるのに、押した客だけが損をする。パンくずも「音楽 ／ …」で途切れている。<br><b>どうすればよかったか：</b>一覧も各行にサムネイル。ヘッダーを残す。</td><td class="mi">/shelf/music/rock-n-roll（30行）／/shelf/music/covers（27行）</td></tr>
+
+<tr><td class="no">5</td><td><b>一覧に「AC 1980」という行がある。</b>AC/DCの「/」で名前が切れている。曲名も消えている。<br><b>どうすればよかったか：</b>区切りにスラッシュを使わない。</td><td class="mi">/shelf/music/rock-n-roll（23番目の行）</td></tr>
+
+<tr><td class="no">6</td><td><b>コピーが年号1個だけのカードがある。</b>AC/DC「1980」、Coldplay「2008」、Bring Me The Horizon「2023」。空ではないので、いまの空コピー検査をすり抜ける穴。<br><b>どうすればよかったか：</b>「10文字未満」「数字だけ」を空と同じ扱いにする。</td><td class="mi">/shelf/music/rock-n-roll ／ /world/food と /world/joy のおすすめ枠にも同じ3枚が出る</td></tr>
+
+<tr><td class="no">7</td><td><b>お気に入りが「読み込み中…」で終わる。</b>初めて来た人はこれしか見えない。履歴は「まだ足あとはありません。」と出せているので、お気に入りだけ空の言葉が抜けている。</td><td class="mi">/favorites（本文が「読み込み中…」のみ）／/history（正しく出ている）</td></tr>
+
+<tr><td class="no">8</td><td><b>別人のチャンネルに繋がっている。</b>レシピレーダーの「本人の発信」で、<b>中村和成シェフ・五十嵐美幸シェフ・クラシル</b>の3者が全員 <code>youtube.com/@Kurashiru</code>。シェフ本人の家に行けない。<br><b>どうすればよかったか：</b>チャンネルIDで裏を取る。取れないなら発信欄を出さない。</td><td class="mi">/food-radar（中村和成／五十嵐美幸／クラシル の各カード下）</td></tr>
+
+<tr><td class="no">9</td><td><b>押しても何も出ないフィルタが並んでいる。</b>うどん0／そば0／ラーメン0／唐揚げ・揚げ物0／餃子・点心0／春0。<br><b>どうすればよかったか：</b>0件は出さない。出すなら「準備中」と分かる見せ方に。</td><td class="mi">/food-radar（作りたい料理から探す・季節）</td></tr>
+
+<tr><td class="no">10</td><td><b>レシピ60件を1ページに全部展開している。</b>さらに同じ商品カード（塩漬け生胡椒「黒の衝撃」）が<b>1ページに10回以上</b>、うち同じ文章「家でカルボナーラを作るなら…」が3回、「焼き上がりに粒ごと乗せる胡椒。…」が5回。<br><b>どうすればよかったか：</b>絞り込むまで出さない。同じ商品は1ページ1回。</td><td class="mi">/food-radar（「60 件のレシピ」以下すべて）</td></tr>
+
+<tr><td class="no">11</td><td><b>「近くのスーパーを探す」が、どの料理でも同じ検索。</b>飛び先は Google マップの「近くのスーパー」という文字列検索で、食材と無関係。なのに説明は「この料理の食材が揃う近くのスーパーを探す」。約束と動作が違う。</td><td class="mi">/food-radar（全カード共通。<code>query=近くのスーパー</code>）</td></tr>
+
+<tr><td class="no">12</td><td><b>同じ曲が2つのページに分裂している。</b>「プラスティック・ラブ」が <code>/room/citypop/plastic-love</code> と <code>/cover-guide?artist=mariya&amp;song=plastic-love</code> の2か所にある。コピーも別で、<b>良い方（room側）</b>が「達郎が奥さんの後ろでギター。海外Z世代が先に夢中になった、逆流の一曲。」、<b>薄い方（cover-guide側）</b>が「シティポップの代表。」。客は薄い方に着く。</td><td class="mi">/room/citypop ／ /cover-guide?artist=mariya&amp;song=plastic-love</td></tr>
+
+<tr><td class="no">13</td><td><b>Spotify／Apple Music／Amazon のボタンが、曲ではなく検索ページに飛ぶ。</b>押した先でもう一回探させている。</td><td class="mi">曲ページ全般（<code>open.spotify.com/search/…</code> など）</td></tr>
+
+<tr><td class="no">14</td><td><b>「棚」と呼べる量になっていない棚が多い。</b>食の扉12棚のうち<b>7棚が中身1件</b>（世界の朝ごはん広場／カレー／足し算食堂／写真カード実験室／お土産／皿の上のエンタメ／生活のお役立ち）。扉を開けて1個は「つまんねぇ」の正体。</td><td class="mi">/world/food（各見出しの件数）</td></tr>
+
+<tr><td class="no">15</td><td><b>同じカードが同じページに2回、しかも説明文が2種類。</b>「アイスを離さない赤ちゃん」が「頭の中で小さくケンカ。」と「頭の中でケンカしている。」。「Everything tastes the same」が「甘いふりして、出てくるのは離乳食。…」と「期待のフリして、着地は離乳食。…」。同じURLなのに、どちらかが古い。</td><td class="mi">/world/food（甘いごほうび横丁 と 初めてのひと口実験室）</td></tr>
+
+<tr><td class="no">16</td><td><b>商品の写真を他社のサーバーから直に引いている。</b>富澤商店のS3・亀田製菓・楽天・maldonsalt.com・kubara.jp・pbs.twimg.com。相手が消した日に、そのまま空箱になる。<br><b>どうすればよかったか：</b>自分の倉庫に取り込んでから出す。</td><td class="mi">/world/food（買ってよかった棚の5枚）ほか</td></tr>
+
+<tr><td class="no">17</td><td><b>内部の言葉が客に見えている。</b>①アーティスト一覧に「本名以外の歌謡曲黄金期枠：チェッカーズ」（社内メモ）・「undefined」・「cleaned」・「ceroNishi」／②「MEMORY DOOR — テスト版」「※ 本日の残り回数：30 / 30」／③棚名「はじめての写真カード実験室（＝新しいカード形式のお試し置き場です）」／④棚名の「（仮）（暫定）（実験中）（WIP）」が音の扉に4本／⑤レシピ本文の「〜というカテゴリが実在する（https://…）」＝裏取りメモの口調と生URL。</td><td class="mi">/cover-guide ／ /world/music ／ /world/food ／ /food-radar</td></tr>
+
+<tr><td class="no">18</td><td><b>文字化け級の表記事故。</b>アーティスト一覧に「バーリン<b>顿</b>・リーヴィ」＝中国語の漢字が混入。ほか表記ゆれの重複：Celine Dion／Céline Dion、少女時代／Girls' Generation-HRS、Prism／プリズム、Mahavishnu Orchestra／マハヴィシュヌ・オーケストラ、島津亜矢が2回、a-haが2回。</td><td class="mi">/cover-guide（登録アーティスト一覧）</td></tr>
+
+<tr><td class="no">19</td><td><b>英語で来た人は10枚で行き止まり。</b>/en にはヘッダーの7つの扉も、検索も、言語切替も無い。10枚見たら「日本語版へ」しかない。さらに<b>ページ下半分は日本語のまま</b>（「🛍️ 買ってよかった棚もどうぞ」「🧭 今日の気分診断」「間違いを見つけた方は…」「家／検索／棚／扉／好き」）。初めて来た海外の人に渡せる飴玉が、10個で切れる。</td><td class="mi">/en</td></tr>
+
+<tr><td class="no">20</td><td><b>「カバーだけを集めた棚」に原曲が混ざっている。</b>The Jackson 5「I Want You Back」(原曲) と Carpenters が同じ棚に。しかも Carpenters の行は<b>カギカッコが閉じていない</b>（<code>Carpenters「(They Long to Be) Close to You</code>）。同じ曲の原曲とカバーが、1ページに並ばず別カードでバラバラ（I Want You Back／Close to You／Nothing Compares 2 U／エイリアンズ）。</td><td class="mi">/shelf/music/covers</td></tr>
+
+<tr><td class="no">21</td><td><b>コピーの2行目が機能説明になっている。</b>「原曲側にも戻れる。」が7枚に付いている。付いている札と付いていない札があり、基準が揺れている。読んだ人が得する事実になっていない。<br><b>どうすればよかったか：</b>文ではなく小さなマークにする。</td><td class="mi">/shelf/music/covers（大森靖子／Donny Hathaway／Sinéad／Pomplamoose／清水翔太／ゴダイゴ ほか）</td></tr>
+
+<tr><td class="no">22</td><td><b>いちばん良いページのシェア画像だけ小さい。</b>特集の og 画像が <b>480×360</b>。他のページは1280×720。X／LINEに貼ると、この1枚だけ潰れる。</td><td class="mi">/feature/sayonara-natsu-no-hi（og:image:width 480 / height 360）</td></tr>
+
+<tr><td class="no">23</td><td><b>戻るボタンの名前が4種類。</b>「案内所に戻る」「商店街に戻る」「ごきげん補給所トップへ戻る」「案内所トップ」。ここが何という店なのか、客が覚えられない。</td><td class="mi">/world/music ／ /history ／ 曲ページ ／ パンくず</td></tr>
+
+<tr><td class="no">24</td><td><b>食べ物の扉に食べ物じゃないものが置いてある。</b>「白髪が多い人の原因」（生活のお役立ち棚）。</td><td class="mi">/world/food</td></tr>
+
+<tr><td class="no">25</td><td><b>気分診断の入口が3つ、中身は同じ。</b>トップの「3つ答えて…→」、トップ下の「🧭 今日の気分診断」、/checkup。/checkup にはヘッダーも言語切替も無く、案内所の中にある同じブロックと文面が完全に同一。</td><td class="mi">/ ／ /checkup ／ /cover-guide#quick-checkup</td></tr>
+
+<tr><td class="no">26</td><td><b>同じ棚が同じ場所に2回並んでいる。</b>音の部屋「気分で選ぶ」に「心に火を戻す歌 君はまだ終わっていない18」が2つ（どちらも同じ棚）。</td><td class="mi">/world/music</td></tr>
+</tbody></table>
+
+<h2>残すもの</h2>
+<div class="box">
+<ul>
+<li><b>特集「夏は終わる。返事は、来る。」＝このサイトで唯一、雑誌の隣に置ける1枚。</b>章番号（01〜06）、リード、写真キャプション、Wikimedia のCCクレジット、<b>出典12件</b>、そして「HYBSが影響を受けたという本人発言は確認できないので書いていない」という但し書きまで入っている。<span class="small">見た場所：/feature/sayonara-natsu-no-hi</span><br><b>→ 他のページは、これを型にすればいい。</b>作り直す必要はなく、既にここにある。</li>
+<li><b>シティポップの部屋のコピー。</b>「達郎が奥さんの後ろでギター。海外Z世代が先に夢中になった、逆流の一曲。」1行目で情景、2行目で事実。型どおり効いている。<span class="small">/room/citypop</span></li>
+<li><b>買ってよかった棚の5枚。</b>「塩なのに、割れる。」「七味なのに、要冷蔵。」「『堅い』を名乗るおかき。」——短くて、押す理由になっている。<span class="small">/world/food</span></li>
+<li><b>世界の手仕事料理の13枚。</b>棚の中で唯一、全枚数のコピーが生きている。「調理は火をつける前から始まっている。」<span class="small">/world/food</span></li>
+<li><b>「棚は 57 本。どれも閉じたまま並んでいます。押した棚だけが開きます。」</b>軽さの設計を、客に分かる言葉で言えている。この一文は他の扉にも使える。<span class="small">/world/music</span></li>
+<li><b>卵の案内人の絵の出し分け。</b>音の扉ではロッカー、食の扉ではコック帽、案内所では案内人。ここは手を入れない方がいい。</li>
+</ul>
+</div>
+
+<h2>すぐ効く小技（順番に1行ずつ）</h2>
+<div class="box">
+<ol>
+<li>「SHELF · 01」と件数の間に中黒を1つ。→ 全扉の見出しが一斉に読めるようになる。</li>
+<li>区切りのスラッシュをやめる。→ 「AC」が「AC/DC」に戻る。</li>
+<li>空コピー検査に「10文字未満」「数字だけ」を足す。→ 年号だけのカードが全部引っかかる。</li>
+<li>お気に入りの空の言葉を、履歴と同じ形で置く。→ 初回の「読み込み中…」が消える。</li>
+<li>0件のフィルタを描かない。→ 押して何も起きない選択肢が6つ消える。</li>
+<li>サブスクのボタンは、曲の直リンクが取れたものだけ出す。取れないなら出さない。</li>
+<li>「（仮）（暫定）（実験中）（テスト版）」「残り回数」を公開面から外す。棚名は決めるか、閉じる。</li>
+<li>おすすめ枠を「4枚埋まらなければ出さない」に変える。→ リックロールの事故が構造的に起きなくなる。</li>
+<li>「原曲側にも戻れる。」を文からマークに。→ コピーの2行目が1枚ぶん空く。</li>
+<li>戻るボタンの名前を「案内所に戻る」1本に。</li>
+</ol>
+</div>
+
+<h2>見られなかったもの（正直に）</h2>
+<div class="box">
+<ul>
+<li><b>中文／Español／한국어の中身。</b>言語メニューには5つ並んでいますが、<code>/zh</code> は応答が返らず、<code>/ko</code> は取得が許可されませんでした。切替後に何が出るかは未確認です。</li>
+<li><b>スマホ幅の実測。</b>今回はブラウザを使わない指示だったため、画面幅での崩れは測っていません（別便が1本使用中）。上の指摘は、中身と構造から確認できたものだけです。</li>
+<li><b>下段ナビ「家／検索／棚／扉／好き」が押せるか。</b>リンクではなくボタンで作られているため、押した結果は未確認。</li>
+<li>既に台帳にある分（コピー空16,753／動画0本2,308／OG共通画像2,156／再生不可144／案内所の年代ボタン無反応）は、今回は数えず土台にしています。</li>
+</ul>
+</div>
+
+<p class="small" style="margin-top:28px">1148番 ／ 2026-09-26 作成。実装なし・本番未変更。採否はたまごさんが決めてください。</p>
+</div></body></html>

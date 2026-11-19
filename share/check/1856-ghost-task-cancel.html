@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1856 1856番：ゴーストタスクを正規にcancelledへ 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1856 1856番：ゴーストタスクを正規にcancelledへ</div>
+<h1>#1856 1856番：ゴーストタスクを正規にcancelledへ</h1>
+<div class="date">2026-10-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+「これは「なるべく」ではなく禁止です。」はたまごさんのスマホからの一般コメントが誤ってqueueに積まれた、実装対象の無いゴースト案件でした。2026-10-01に一度「対象なし」と判断済みでしたが、queue.json側のstatusが更新されずrunning/waitingのまま残り、5回以上cutされ続けてゾンビ化していました。今回、failures.jsonlに判断を <code>queueDecision:"cancel"</code> として明示し、tools/1142_fukkyuu.py に追加した naosu_taishou_nashi_kakutei() が自動で queue.json 側を実際に status:cancelled へ変更したことを実測確認しました。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>running</b><span>変更前のstatus</span></div>
+  <div class="num"><b>cancelled</b><span>変更後のstatus（実測）</span></div>
+  <div class="num"><b>27件</b><span>同時に解消された別の幽霊項目（既存ロジック）</span></div>
+</div>
+
+
+
+<h2>③ 実測の生データ（status/queue.json・1856番エントリ）</h2>
+<div class="note">
+status/ はGitHubリポジトリの.gitignore対象のためGitHub上の直リンクは出せません（911/1365番の既知事故の再発防止）。実行直後に自分のローカル環境で <code>python3 -c "import json;print(json.load(open('status/queue.json'))['items'])"</code> 相当で抜いた、変更前（カット時点の記録）と変更後（本ツール実行後）のJSON抜粋です。
+</div>
+<pre style="background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:14px;font-size:0.8rem;overflow-x:auto;">変更前（鬼監督差し戻し時点・2026-10-19 23:09時点の記録）:
+  "status": "running",
+  "cutCount": 5,
+  "redoCount": 2,
+  "urls": [],
+  "checkedAt": "2026-10-19T23:09:30+0900"
+
+変更後（tools/1142_fukkyuu.py --honban 実行後・2026-10-20 10:56:11 実測）:
+  "status": "cancelled",
+  "_preCancelStatus": "running",
+  "cancelledAt": "2026-10-20T10:56:11.455411+09:00",
+  "restoreWhy": "1142_fukkyuu：失敗台帳F-20261020103000-1856cancelで『対象なし・完了』と確定済みのため取り消し（1856番の再発防止）"</pre>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+<li><b>（リンクなし。status/配下はGitHub非公開対象のため直リンクは出せません。実測は上記③の生データで示します）</b></li>
+</ul>
+
+
+
+<footer>
+このページは #1856 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

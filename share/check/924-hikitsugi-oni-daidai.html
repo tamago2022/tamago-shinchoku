@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#924 924番：引き継ぎ関所＋鬼監督の見える化＋歴代台帳の自動化 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #924 924番：引き継ぎ関所＋鬼監督の見える化＋歴代台帳の自動化</div>
+<h1>#924 924番：引き継ぎ関所＋鬼監督の見える化＋歴代台帳の自動化</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+①世界の公式事例4件を実際にネットワーク取得して出典URL付きで裏取り ②genzaichi.md/kettei.jsonから抜き打ち7問を機械生成し読んだ証拠が無いと最終提出(kenpin_gate.py --can-deliver)が止まる関所を実装・逆テスト済み ③外部検品PASS時に「👹見た／落とした／通した」の1行をdispatch_outbox.jsonlへ実出力 ④歴代ディスパッチ台帳へqueue.json等からの自動集計を1回実演（正式な代交代ではなく仕組みの動作確認と明記）
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>5/7→PASS</b><span>正しい回答での引き継ぎテスト</span></div>
+  <div class="num"><b>0/7→FAIL</b><span>未読を模した回答（逆テスト）</span></div>
+  <div class="num"><b>49件</b><span>未解決の失敗（genzaichi.mdに自動表示）</span></div>
+  <div class="num"><b>19件</b><span>924番セッション中に出せた成果物</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>コミット(GitHub)</b><a href="https://github.com/tamago2022/tamago-shinchoku/commit/926529c87b49c9e65455a07d59260e07c19f96f4" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/commit/926529c87b49c9e65455a07d59260e07c19f96f4</a></li>
+  <li><b>hikitsugi_gate.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/hikitsugi_gate.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/hikitsugi_gate.py</a></li>
+  <li><b>kenpin_gate.py（can-deliverに接続）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py</a></li>
+  <li><b>daidai_koutai.py</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/daidai_koutai.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/daidai_koutai.py</a></li>
+  <li><b>世界事例調査(status配下・git管理外)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/README.md" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/README.md</a></li>
+</ul>
+
+<h2>実測ログ（コマンドの生出力・数字の裏取り）</h2>
+<pre style="background:#1c1c1c;color:#8ef0ae;padding:14px;border-radius:10px;overflow-x:auto;font-size:0.78rem;line-height:1.6;white-space:pre-wrap;">
+実測: 正しい回答→ HIKITSUGI_RESULT: PASS - 5/7問正解（合格ライン5問）
+実測: 未読を模した回答（逆テスト）→ HIKITSUGI_RESULT: FAIL - 0/7問正解（合格ラインに届きません）
+実測: 未読状態のまま can-deliver → KENPIN_DELIVER: NG - ...／引き継ぎ（現在地・決定台帳）を読んだ確認が取れていません
+実測: dispatch_outbox.jsonl 末尾（👹通知の実出力）→
+  {"ts": "2026-09-17T15:45:18+09:00", "n": "TEST924-kenpin", "type": "kenpin_pass",
+   "message": "...\n👹見た：924番・鬼監督可視化の自己テスト ／落とした：無し（一発PASS） ／通した：OpenAI(gpt-5-mini)「自己テスト用のダミーPASS」"}
+実測: 歴代ディスパッチ台帳.md 追記後 tail（daidai_koutai.py --append 実行結果）→
+  # ◆動作実演｜924番セッション（仕組み動作実演・正式な代交代ではない）（2026-09-17〜2026-09-17・1日）
+  完了数：15件／出せた成果物：19件／怒られた件数：1件／使った額：約72円
+実測: status/genzaichi.md 生成結果（未解決の失敗セクション）→
+  未解決 49件（うち再発 15件）
+</pre>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①読んだか関所が実際に止まる</td><td class="yes">PASS/FAIL両方を実行し確認済み</td></tr>
+<tr><td>②👹の1行がoutboxに出た</td><td class="yes">dispatch_outbox.jsonlに実出力（type:kenpin_pass）</td></tr>
+<tr><td>③歴代台帳への自動追記</td><td class="yes">歴代ディスパッチ台帳.mdへ実際に1回追記済み</td></tr>
+<tr><td>④世界事例3件以上・出典URL付き</td><td class="yes">公式4件（docs.claude.com×2・anthropic.com×2）</td></tr>
+</table>
+
+<footer>
+このページは #924 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

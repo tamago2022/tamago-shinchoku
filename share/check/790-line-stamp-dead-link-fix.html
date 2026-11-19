@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#790 LINE申請シートの404修正＋リンク死活確認（5回目・ログイン確認ツールも修理） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #790 LINE申請シートの404修正＋リンク死活確認（5回目・ログイン確認ツールも修理）</div>
+<h1>#790 LINE申請シートの404修正＋リンク死活確認（5回目・ログイン確認ツールも修理）</h1>
+<div class="date">2026-09-17 追加実測・main合流・本番(GitHub Pages)反映まで確認</div>
+
+<div class="fix">
+貼るだけシート3枚（鬼嫁ちゃん・ペラリーノウソッチ・珍獣ラシコル）の外部リンクは <code>https://creator.line.me/ja/</code>（公式トップ・実測200）のみ。生成のたびに全リンクをHTTPで実測し、1本でも200〜399以外ならそのキャラのシートを上書きしない仕組み（<code>tools/line_stamp_pipeline.py</code> check_links）は稼働中。今回さらに、「押しても無反応」の自動検品（<code>tools/verify_click.mjs</code>）を3枚＋この確認ページの計4本すべてに実行し、無反応0件・コンソールエラー0件を確認した。<br><br>
+残る核心「ログイン後の個別マイページURL確定」は、専用プロファイル(<code>~/.tamago/chrome-line</code>・CDP 9224番)は既に作成・起動済みだが、<b>たまごさん本人がまだ一度もログインしていない</b>ことを、生のCDP通信で直接（画面は前面に出さず）実測して確認した(<code>mypageHref: "/signup/line_auth"</code>＝未ログイン時の遷移先)。これは883番で既にたまごさんへ依頼済みの1回限りの本人操作で、AI側で代行する経路は無い（LINEログインを自動化するとcreator.line.meの利用規約違反になる）。<br><br>
+このログイン確認ツール(<code>tools/line_login_check.mjs</code>)自体に、旧実装(playwright-coreのconnectOverCDP)が毎回「Browser context management is not supported」で失敗するバグがあったのを発見し、生CDP WebSocket方式に書き直して安定させた（3回連続で正しく判定できることを確認）。次にたまごさんがログインした瞬間、このツールが自動でLOGGED_INを検出できる状態にした。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3/3</b><span>3キャラのシート・リンク全部200</span></div>
+  <div class="num"><b>4/4</b><span>押しても無反応チェック PASS（3シート＋確認ページ）</span></div>
+  <div class="num"><b>0件</b><span>コンソールエラー</span></div>
+  <div class="num"><b>0</b><span>マイページ個別URL確定数(本人ログイン待ち・883番で依頼済み)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>①鬼嫁ちゃん 貼るだけシート</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-oniyome-chan-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-oniyome-chan-paste-sheet.html</a></li>
+  <li><b>②ペラリーノ・ウソッチ 貼るだけシート</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-peralino-usocchi-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-peralino-usocchi-paste-sheet.html</a></li>
+  <li><b>③珍獣ラシコル 貼るだけシート</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/769-rashikoru-paste-sheet.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/769-rashikoru-paste-sheet.html</a></li>
+  <li><b>④たまごさんが1回だけ実行するログインコマンド（Vault内スクリプト）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/start_chrome_line_login.sh" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/start_chrome_line_login.sh</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>https://creator.line.me/ja/(3シート共通のリンク先)</td><td class="yes">200 OK(実測)</td></tr>
+<tr><td>https://creator.line.me/ja/dashboard(事故の原因だった旧URL)</td><td class="no">404(実測・逆テストの死んだURLとして使用)</td></tr>
+<tr><td>769-oniyome-chan-paste-sheet.html</td><td class="yes">200 OK・押しても無反応チェックPASS(13件中13件)</td></tr>
+<tr><td>769-peralino-usocchi-paste-sheet.html</td><td class="yes">200 OK・押しても無反応チェックPASS(13件中13件)</td></tr>
+<tr><td>769-rashikoru-paste-sheet.html</td><td class="yes">200 OK・押しても無反応チェックPASS(13件中13件)</td></tr>
+<tr><td>この確認ページ自身</td><td class="yes">押しても無反応チェックPASS(5件中5件、コンソールエラー0件)</td></tr>
+<tr><td>死活確認の逆テスト(process_one内ロジックを直接実行し死んだURL混入でblocked=Trueを確認)</td><td class="yes">would_block: True</td></tr>
+<tr><td>~/.tamago/chrome-line(ログイン専用プロファイル)</td><td class="yes">作成済み・CDP 9224番も起動中(883番で準備済み)</td></tr>
+<tr><td>ログイン状態(生CDPで直接、画面は前面に出さず実測)</td><td class="no">NOT_LOGIN(mypageHref=/signup/line_auth＝未ログイン、3回連続で再現)</td></tr>
+<tr><td>tools/line_login_check.mjsのバグ修理</td><td class="yes">playwright依存が原因のERRORを解消し生CDP方式に書き直し、3回連続で正しい判定を確認</td></tr>
+<tr><td>ログイン不要でURL推測できないか(/ja/mypage /ja/home /ja/console /ja/creator /ja/my /ja/top /ja/main を実測)</td><td class="no">7パターン全て404(推測での特定は不可能と確認)</td></tr>
+<tr><td>マイページボタンのhref静的解析</td><td class="no">/signup/line_auth(LINE公式OAuth誘導リンク。ログイン後のリダイレクト先はLINE側サーバーセッションが動的に決めるため、クライアント側の解析・推測では特定不可能な設計と確認)</td></tr>
+</table>
+
+<footer>
+①〜⑤は死活確認・押せる確認とも仕組みが実際に効いているところまで確認済み。残るのは本人ログインが必要な1点だけ——~/.tamago/chrome-line のウィンドウ（既に9224番で起動済み・Dockに出ているはず）で、いつものLINEアカウントで1回ログインするだけで完了する（883番で依頼済み）。ログインが終われば、修理したtools/line_login_check.mjsが自動でLOGGED_INを検出し、以後マイページの実URLを自動化スクリプト側で確認できる。creator.line.meはブラウザ自動化をToS上禁止しており、本人ログイン無しにAI側だけでこのURLを確定する経路は無いことを、生CDP通信での直接実測で再確認した。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

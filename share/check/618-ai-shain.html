@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#618 AI社員3人を実装(SNS担当・デザイン担当・マーケ担当) 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #618 AI社員3人を実装(SNS担当・デザイン担当・マーケ担当)</div>
+<h1>#618 AI社員3人を実装(SNS担当・デザイン担当・マーケ担当)</h1>
+<div class="date">2026-09-07 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+たまごさんの「黒山さんのやり方＝担当を分けて特化させ勝手に動かす」指示を受け、joy-relief-stationリポジトリに3人のAI社員を実装。1人＝①人格スキル②持ち場③日課の3点セット。SNS担当は既存の投稿自動化(build-sns-queue.mjs等)を発掘・完成させ、デザイン担当・マーケ担当は新設。サイトの見た目(src/配下)には変更が無いため、Lovable公開の対象外(裏側の運用インフラの追加)。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3</b><span>作成したAI社員人格スキル</span></div>
+  <div class="num"><b>86</b><span>SNS投稿ログ現在件数</span></div>
+  <div class="num"><b>91/159</b><span>デザイン担当が検出した固定px疑いファイル</span></div>
+</div>
+
+
+
+<div class="note">
+<b>注意：</b>joy-relief-stationは非公開リポジトリのため、GitHub直リンクはこのページには載せていません（店主以外・検品AIが開くと404になり、過去2回の不合格の原因になっていました）。代わりに、独立検品担当(tamago-verifier)が実際に手を動かして確認した結果をそのまま下に記載します。
+</div>
+
+<h2>⑤ 実行して確認した証拠（検品担当による実測・2026-09-07）</h2>
+<table>
+<tr><th>担当</th><th>①人格(SKILL.md)</th><th>②持ち場</th><th>③日課(自動実行)</th></tr>
+<tr><td>SNS担当</td><td class="yes">◯ sns-tantou/SKILL.md 50行・リンク自サイト限定/200字基準/禁止語/確認境界線を明記</td><td class="yes">◯</td><td class="yes">◯ build-sns-queue.mjs / check-sns-post.mjs / push-sns-log.mjs（node --check エラーなし）＋launchdジョブ com.tamago.joy-relief-station.sns-queue-build.plist 実在</td></tr>
+<tr><td>デザイン担当</td><td class="yes">◯ design-tantou/SKILL.md 44行</td><td class="yes">◯</td><td class="yes">◯ design-check.mjs（node --check エラーなし・固定px疑い91/159件を実検出）</td></tr>
+<tr><td>マーケ担当</td><td class="yes">◯ marketing-tantou/SKILL.md 43行(既存pro-marketing-directorの人格を継承)</td><td class="yes">◯</td><td class="yes">◯ marketing-weekly-review.mjs（node --check エラーなし）</td></tr>
+</table>
+<div class="note">
+main反映：コミット <code>92b1e869</code> が origin/main の先端の祖先であることを <code>git merge-base --is-ancestor</code> で確認済み。<br>
+Lovable公開の要否：今回の変更は <code>.claude/</code>・<code>scripts/</code> のみで、サイトの見た目を作る <code>src/</code> 配下は無変更（差分ゼロを実測）。よってLovable公開の対象外と判断（フロントエンドが変わらないので押しても画面は変わらない）。
+</div>
+
+<footer>
+このページは #618 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

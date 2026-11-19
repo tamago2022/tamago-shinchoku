@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>02 Quiet Record Counter — ごきげん補給所</title>
+<link rel="stylesheet" href="./concierge.css">
+</head>
+<body>
+<p class="prototype-note"><strong>DESIGN LOCK / No.02</strong> — Issue #431。配置・余白・階層・色・比率は固定。実装担当は data-slot / data-action に機能を接続し、再デザインしない。</p>
+
+<main class="prototype-shell concept-02" data-concept="02">
+  <header class="site-head">
+    <a class="brand" href="#" aria-label="ごきげん補給所">
+      <span class="brand-ja">ごきげん補給所</span>
+      <span class="brand-en">JOY RELIEF STATION</span>
+    </a>
+    <nav class="head-nav" aria-label="案内">
+      <a href="#">RECORDS</a><a href="#">CONVERSATION</a><a href="#">ABOUT</a>
+    </nav>
+    <button class="mobile-menu" type="button" aria-label="メニュー">☰</button>
+  </header>
+
+  <section class="hero-record" aria-labelledby="record-title">
+    <div class="record-copy">
+      <div class="eyebrow">QUIET RECORD COUNTER</div>
+      <h1 class="display" id="record-title">話してくれて、<br>ありがとう。</h1>
+      <p>ここは、ネットの砂漠にある小さなレコード店。<br>あなたの今に寄り添う、4枚を選びます。</p>
+      <div class="micro">A LITTLE OASIS<br>IN THE INTERNET DESERT.</div>
+    </div>
+
+    <div class="record-owner" data-slot="concierge-avatar">
+      <img src="./egg-concierge.png" alt="たまこコンシェルジュ">
+    </div>
+
+    <div class="record-sign">ごきげん補給所<br>レコードと、<br>ちょっといい時間を。</div>
+  </section>
+
+  <section class="conversation" aria-label="会話" data-slot="conversation">
+    <div class="conversation-row">
+      <div class="who user">あなた</div>
+      <p class="say" data-slot="user-message">沈黙も、ここでは立派な合図です。音の少ないピアノや、短い映像の小品から触れてみますか。</p>
+    </div>
+    <div class="conversation-row">
+      <div class="who">ごきげん店主</div>
+      <p class="say" data-slot="assistant-message">いいですね。今の気分に寄り添う4枚を選びました。きっと、どこかに好きが見つかるはずです。</p>
+    </div>
+  </section>
+
+  <section class="recommendations" aria-labelledby="picks-02">
+    <div class="section-head"><h2 id="picks-02">店主からのおすすめ</h2><span class="line"></span><span class="micro">PICKS FOR YOUR MOMENT</span></div>
+    <div class="recommend-grid" data-slot="recommendation-grid">
+      <a class="rec-card" href="#" data-slot="recommendation-card" data-category="music">
+        <div class="rec-no">01 / MUSIC</div>
+        <div class="rec-media record"><span class="cover thumb-sky"></span></div>
+        <h3 class="rec-title">Morning Haze</h3>
+        <p class="rec-copy">ゆっくり始まる、やさしい朝に。</p>
+        <div class="rec-meta"><span>音楽</span><span>静けさ</span></div>
+      </a>
+      <a class="rec-card" href="#" data-slot="recommendation-card" data-category="music">
+        <div class="rec-no">02 / MUSIC</div>
+        <div class="rec-media record"><span class="cover thumb-plant"></span></div>
+        <h3 class="rec-title">Room, Light, You</h3>
+        <p class="rec-copy">すこしだけ、呼吸が深くなる。</p>
+        <div class="rec-meta"><span>インスト</span><span>おだやか</span></div>
+      </a>
+      <a class="rec-card" href="#" data-slot="recommendation-card" data-category="music">
+        <div class="rec-no">03 / MUSIC</div>
+        <div class="rec-media record"><span class="cover thumb-leaves"></span></div>
+        <h3 class="rec-title">Green On Sunday</h3>
+        <p class="rec-copy">何気ない日が、少し好きになる。</p>
+        <div class="rec-meta"><span>アコースティック</span></div>
+      </a>
+      <a class="rec-card" href="#" data-slot="recommendation-card" data-category="music">
+        <div class="rec-no">04 / MUSIC</div>
+        <div class="rec-media record"><span class="cover thumb-city"></span></div>
+        <h3 class="rec-title">After the Rain</h3>
+        <p class="rec-copy">きっと、またよくなる。</p>
+        <div class="rec-meta"><span>シティポップ</span><span>夕暮れ</span></div>
+      </a>
+    </div>
+    <div class="more-wrap"><button class="more-button" type="button" data-action="more">他を見せて　↻</button></div>
+  </section>
+
+  <footer class="site-foot">
+    <div class="brand"><span class="brand-ja">ごきげん補給所</span><span class="brand-en">JOY RELIEF STATION</span></div>
+    <div class="micro">GOOD MUSIC. BRIGHTER DAYS.</div>
+  </footer>
+</main>
+</body>
+</html>

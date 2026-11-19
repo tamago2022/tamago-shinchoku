@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1431 1431号：依頼原文を要約せず外部検品AIへそのまま渡す 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1431 1431号：依頼原文を要約せず外部検品AIへそのまま渡す</div>
+<h1>#1431 1431号：依頼原文を要約せず外部検品AIへそのまま渡す</h1>
+<div class="date">2026-09-28 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p>たまごさんの言葉（2026-09-18 08:48）：「それの狙いは間違ったものを俺に確認させない…自分の依頼もそのままそのままあっちに見してね」。<br>これは926番の外部検品ゲートの目的そのもの——<b>Claudeの要約ではなく、たまごさんが言った言葉そのまま</b>を外部検品AI(ChatGPT)に渡し、条件が1つでも落ちていないか判定させる仕組み。</p><p>仕組み自体（tools/kenpin_gate.py の original_text）は前日の926番で用意済みだったが、<b>過去の案件916件のうち原文が実際に保存されていたのは12件だけ</b>だった（新規に手動登録した分のみ）。今回、既存の全案件について「what」欄（たまごさんの言葉をそのまま記録した欄）を original_text 欄へ機械的に複写し、<b>要約・言い換えを一切せずに</b>過去分まで含めて外部検品AIへ渡る状態にした。</p><h2 style='margin-top:24px'>③ 実際に組み立てたプロンプト（1431号自身で実演）</h2><pre style='white-space:pre-wrap;background:#fff;border:1px solid #e2dccd;border-radius:10px;padding:14px;font-size:0.82rem;'>【号番号】1431号 第1回（実装後ゲート）
+題名：判定日赤｜「それの狙いは間違ったものを俺に確認させない…自分の依頼もそのままそのままあっちに見してね」
+
+■依頼原文（たまごさんの言葉。要約禁止・ここに書かれた条件を1つでも落としていないか見る）
+【判定日で赤になった案件】「それの狙いは間違ったものを俺に確認させない…自分の依頼もそのままそのままあっちに見してね」
+【言われた日時】2026-09-18(金) 08:48（1回言われている）
+
+■Claudeの解釈
+ゲートの目的は店主に誤りを確認させないこと。外部検品AIには依頼原文を要約せずそのまま渡す。</pre><p>「■依頼原文」の行が、たまごさんが実際に言った言葉と一字一句同じであることが分かる（実測：tools/kenpin_gate.py の build_prompt() を1431号のデータで実行して得た生の出力）。</p>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>915/916</b><span>original_text（依頼原文）が保存済みの案件数（実施前は12件）</span></div>
+  <div class="num"><b>903件</b><span>今回このセッションで新規に原文を保存した案件数</span></div>
+  <div class="num"><b>796字</b><span>1431号自身の original_text の文字数（実測）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>この仕組みのコード（GitHub・kenpin_gate.py）</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/kenpin_gate.py</a></li>
+  <li><b>この確認ページ自身（この仕組みが本番に乗っていることの証拠）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1431-genbun-sonomama.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1431-genbun-sonomama.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>1431号に original_text が保存されているか</td><td class="yes">はい</td></tr>
+<tr><td>外部検品AIに渡すプロンプトの■依頼原文がたまごさんの言葉と一字一句一致するか</td><td class="yes">はい（上記③参照）</td></tr>
+<tr><td>既存916件のうち原文が空のまま残っている件数</td><td class="yes">1件（whatも空の特殊ケース）</td></tr>
+</table>
+
+<footer>
+対象：tools/kenpin_gate.py（926番・外部検品ゲート）。原文保存はqueue.jsonの安全な差分マージ書き込み(tools/queue_store.py)経由で行い、直接上書きはしていない。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

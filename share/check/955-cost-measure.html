@@ -1,0 +1,286 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>いくらかかるのか、同じ台本で実測する台</title>
+<style>html,body{margin:0;background:#0d0b09}</style></head><body>
+<style>
+  :root{--paper:#f4efe4;--ink:#2a2622;--sub:#8d8578;--aka:#c4483a;--midori:#3a7a52;--ao:#3a5f7a;--kin:#c9a227}
+  *{box-sizing:border-box}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 72px;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
+  .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:#e8dcc0;
+    letter-spacing:.14em;font-size:.92rem;text-align:center;margin:0 0 6px}
+  .lead{color:#8a8070;font-size:.82rem;text-align:center;margin:0 0 18px;line-height:1.85}
+  .lead a{color:var(--kin)}
+  .panel{background:var(--paper);border-radius:16px;padding:18px;margin-top:14px;border:1px solid #e2dccd}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1rem;
+     letter-spacing:.06em;margin:0 0 8px;color:var(--ink)}
+  .note{font-size:.79rem;color:var(--sub);line-height:1.8;margin-top:8px}
+  .note a{color:var(--ao)}
+  input{width:100%;padding:11px 12px;border:1px solid #d8d1c0;border-radius:10px;font-size:15px;
+    background:#fff;color:var(--ink);font-family:ui-monospace,monospace;margin-top:8px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  button{flex:1 1 200px;padding:14px 16px;border-radius:12px;border:none;cursor:pointer;
+    font-size:.98rem;font-weight:700;font-family:inherit}
+  .b-go{background:var(--midori);color:#fff}
+  .b-go:disabled{background:#c3bdb0;cursor:not-allowed}
+  .b-sub{background:#fff;color:var(--ao);border:1px solid #cfdae0}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.82rem}
+  th,td{border-bottom:1px solid #e2dccd;padding:9px 6px;text-align:left}
+  th{color:var(--sub);font-weight:700;font-size:.74rem;white-space:nowrap}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.win td{background:#e7f2ea}
+  tr.win td:first-child:before{content:"◎ ";color:var(--midori);font-weight:800}
+  .st{margin-top:10px;font-size:.82rem;color:var(--sub);line-height:1.8;white-space:pre-wrap;word-break:break-word}
+  .st.bad{color:var(--aka)} .st.good{color:var(--midori)}
+  .script{background:#fffdf7;border:1px dashed #d8d1c0;border-radius:10px;padding:10px 12px;
+    font-size:.8rem;line-height:1.9;color:#5f584c;margin-top:10px}
+</style>
+
+<div class="wrap">
+  <p class="kanban">い く ら か か る の か 、 実 測 す る 台</p>
+  <p class="lead">
+    見積もりではなく、<b>APIが「これだけ使った」と返してきたトークン数</b>から円を出します。<br>
+    3つとも<b>まったく同じ台本</b>を喋らせるので、そのまま比べられます。<br>
+    <a href="954-concierge-mini.html">案内人のページへ戻る</a>
+  </p>
+
+  <div class="panel">
+    <h2>台本（3つとも同じ）</h2>
+    <div class="script" id="scriptBox"></div>
+    <div class="note">
+      マイクは使いません。文字で3往復させて、返事は声で作らせます（＝ふだんの会話1回分に近い量）。
+      音声の入り口だけは実測に入らないので、<b>ここで出る数字は「下限」</b>です。
+      実際に声で話すと、これに音声入力のぶんが乗ります。
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>鍵</h2>
+    <input id="oaKey" type="password" placeholder="sk-...（OpenAI。mini と 本式 の2つを測ります）" autocomplete="off" spellcheck="false">
+    <input id="xaKey" type="password" placeholder="xai-...（xAI Grok。無ければ Grok だけ飛ばします）" autocomplete="off" spellcheck="false">
+    <div class="note">鍵はこの端末の中だけに保存され、送り先はそれぞれの会社のAPIだけです。</div>
+    <div class="row">
+      <button class="b-go"  id="run">3つとも実測する</button>
+      <button class="b-sub" id="clear">結果を消す</button>
+    </div>
+    <div class="st" id="st"></div>
+  </div>
+
+  <div class="panel">
+    <h2>結果（安い順）</h2>
+    <table id="tbl"><tr><th>どこの</th><th>この台本で</th><th>1分あたり</th><th>中身</th></tr></table>
+    <div class="note" id="foot"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const YEN=155;
+  try{ const k=localStorage.getItem("tamago_openai_key"); if(k) $("oaKey").value=k; }catch(e){}
+  try{ const k=localStorage.getItem("tamago_xai_key");    if(k) $("xaKey").value=k; }catch(e){}
+
+  // 3つとも、これとまったく同じことを喋らせる
+  const SCRIPT=[
+    "こんばんは。今日はちょっと疲れてて、静かなのが聴きたい気分です。",
+    "それ、いいですね。ほかにもありますか。",
+    "ありがとう。じゃあ最後にひとつだけ選んでください。"
+  ];
+  const SYS="あなたは音楽の案内人です。日本語で、やわらかく、1回の返事は2文まで。曲名は出さなくてよい。";
+  $("scriptBox").innerHTML=SCRIPT.map((s,i)=>`${i+1}. 「${s}」`).join("<br>");
+
+  const PRICE={
+    "OpenAI mini":{audioIn:10,audioCached:0.30,audioOut:20,textIn:0.60,textCached:0.06,textOut:2.40},
+    "OpenAI 本式":{audioIn:32,audioCached:0.40,audioOut:64,textIn:4.00,textCached:0.40,textOut:24.00}
+  };
+  const MODELS={"OpenAI mini":["gpt-realtime-2.1-mini","gpt-realtime-mini"],
+                "OpenAI 本式":["gpt-realtime-2.1","gpt-realtime"]};
+
+  const results=[];
+  const status=(m,k)=>{ $("st").textContent=m||""; $("st").className="st"+(k?" "+k:""); };
+
+  function paint(){
+    const rows=results.slice().sort((a,b)=>a.yen-b.yen);
+    $("tbl").innerHTML='<tr><th>どこの</th><th>この台本で</th><th>1分あたり</th><th>中身</th></tr>'
+      + rows.map((r,i)=>`<tr class="${i===0?"win":""}">
+          <td>${r.name}</td>
+          <td class="n">${r.yen.toFixed(2)}円</td>
+          <td class="n">${r.perMin? r.perMin.toFixed(0)+"円":"—"}</td>
+          <td style="font-size:.72rem;color:#8d8578">${r.detail}</td></tr>`).join("");
+    if(rows.length>1){
+      const a=rows[0], b=rows[rows.length-1];
+      $("foot").innerHTML=`いちばん安いのは <b>${a.name}</b>。いちばん高い ${b.name} の
+        <b>${(b.yen/Math.max(a.yen,1e-9)).toFixed(1)}分の1</b>でした。
+        この数字は<b>マイクの音声入力を含まない下限</b>です。`;
+    }
+  }
+
+  function costOf(name,u){
+    const p=PRICE[name];
+    const i=u.input_token_details||{}, o=u.output_token_details||{}, c=i.cached_tokens_details||{};
+    const aIn=i.audio_tokens||0, aC=c.audio_tokens||0, tIn=i.text_tokens||0, tC=c.text_tokens||0;
+    const usd=(Math.max(0,aIn-aC)*p.audioIn + aC*p.audioCached + (o.audio_tokens||0)*p.audioOut
+             + Math.max(0,tIn-tC)*p.textIn  + tC*p.textCached  + (o.text_tokens||0)*p.textOut)/1e6;
+    return {usd, detail:`音声 入${aIn}／出${o.audio_tokens||0}・文字 入${tIn}／出${o.text_tokens||0} トークン`};
+  }
+
+  /* ── OpenAI：WebRTC。マイクは無音の線を1本だけ渡す（声は録らない） ── */
+  function measureOpenAI(name){
+    return new Promise(async(resolve,reject)=>{
+      const sk=$("oaKey").value.trim();
+      if(!sk) return reject(new Error("OpenAIの鍵が空です"));
+      try{ localStorage.setItem("tamago_openai_key",sk); }catch(_){}
+      const session=m=>({type:"realtime",model:m,instructions:SYS,
+        audio:{input:{turn_detection:null},output:{voice:"marin"}}});
+      let token=sk,model=MODELS[name][0],viaEk=false,lastErr="";
+      for(const m of MODELS[name]){
+        try{
+          const r=await fetch("https://api.openai.com/v1/realtime/client_secrets",{
+            method:"POST",headers:{Authorization:"Bearer "+sk,"Content-Type":"application/json"},
+            body:JSON.stringify({session:session(m)})});
+          if(!r.ok){ lastErr=r.status+" "+(await r.text()).slice(0,140); continue; }
+          const j=await r.json(); token=j.value||(j.client_secret&&j.client_secret.value);
+          model=m; viaEk=true; break;
+        }catch(e){ lastErr=e.message; }
+      }
+      const pc=new RTCPeerConnection();
+      const au=document.createElement("audio"); au.autoplay=true; au.style.display="none";
+      au.muted=true; document.body.appendChild(au);
+      pc.ontrack=ev=>{ if(ev.streams[0]) au.srcObject=ev.streams[0]; };
+      // 無音の線（マイクは開かない）
+      const ac=new (window.AudioContext||window.webkitAudioContext)();
+      const dst=ac.createMediaStreamDestination();
+      const osc=ac.createOscillator(); const gain=ac.createGain();
+      gain.gain.value=0; osc.connect(gain); gain.connect(dst); osc.start();
+      pc.addTrack(dst.stream.getAudioTracks()[0],dst.stream);
+
+      const t0=Date.now();
+      let usd=0, details=[], step=0, done=false;
+      const finish=(err)=>{
+        if(done) return; done=true;
+        try{osc.stop()}catch(_){} try{pc.close()}catch(_){} au.remove(); try{ac.close()}catch(_){}
+        err?reject(err):resolve({name,yen:usd*YEN,sec:(Date.now()-t0)/1000,
+          detail:details[details.length-1]||""});
+      };
+      const timer=setTimeout(()=>finish(new Error(name+"：時間切れ")),90000);
+
+      const dc=pc.createDataChannel("oai-events");
+      const ask=()=>{
+        dc.send(JSON.stringify({type:"conversation.item.create",
+          item:{type:"message",role:"user",content:[{type:"input_text",text:SCRIPT[step]}]}}));
+        dc.send(JSON.stringify({type:"response.create"}));
+      };
+      dc.addEventListener("open",()=>{
+        dc.send(JSON.stringify({type:"session.update",session:{type:"realtime",instructions:SYS,
+          audio:{input:{turn_detection:null},output:{voice:"marin"}}}}));
+        setTimeout(ask,300);
+      });
+      dc.addEventListener("message",e=>{
+        let ev; try{ev=JSON.parse(e.data)}catch(_){return}
+        if(ev.type==="error"){ clearTimeout(timer);
+          return finish(new Error(name+"："+((ev.error&&ev.error.message)||"不明"))); }
+        if(ev.type==="response.done"){
+          if(ev.response&&ev.response.usage){
+            const c=costOf(name,ev.response.usage); usd+=c.usd; details.push(c.detail);
+          }
+          step++;
+          status(name+"："+step+"／"+SCRIPT.length+" 往復（いま "+(usd*YEN).toFixed(2)+"円）");
+          if(step<SCRIPT.length) setTimeout(ask,250);
+          else { clearTimeout(timer); finish(null); }
+        }
+      });
+      const offer=await pc.createOffer(); await pc.setLocalDescription(offer);
+      let answer=null, err="";
+      for(const m of (viaEk?[model]:MODELS[name])){
+        const r=await fetch("https://api.openai.com/v1/realtime/calls?model="+encodeURIComponent(m),{
+          method:"POST",body:offer.sdp,
+          headers:{Authorization:"Bearer "+token,"Content-Type":"application/sdp"}});
+        if(r.ok){ answer=await r.text(); break; }
+        err="calls "+r.status+"："+(await r.text()).slice(0,160);
+        if(r.status===401||r.status===403) break;
+      }
+      if(!answer){ clearTimeout(timer); return finish(new Error(name+"："+(err||lastErr||"つながらない"))); }
+      await pc.setRemoteDescription({type:"answer",sdp:answer});
+    });
+  }
+
+  /* ── Grok：定額なので「同じ台本にかかった秒数」で測る ── */
+  function measureGrok(){
+    return new Promise(async(resolve,reject)=>{
+      const sk=$("xaKey").value.trim();
+      if(!sk) return reject(new Error("skip"));
+      try{ localStorage.setItem("tamago_xai_key",sk); }catch(_){}
+      let token=null;
+      try{
+        const r=await fetch("https://api.x.ai/v1/realtime/client_secrets",{
+          method:"POST",headers:{Authorization:"Bearer "+sk,"Content-Type":"application/json"},
+          body:JSON.stringify({session:{type:"realtime",model:"grok-voice-latest"}})});
+        if(!r.ok) throw new Error(r.status+" "+(await r.text()).slice(0,140));
+        const j=await r.json(); token=j.value||(j.client_secret&&j.client_secret.value)||j.secret;
+        if(!token) throw new Error("使い捨て鍵が返らない");
+      }catch(e){ return reject(new Error("Grok："+e.message)); }
+
+      const ws=new WebSocket("wss://api.x.ai/v1/realtime?model=grok-voice-latest",
+                             ["xai-client-secret."+token]);
+      const t0=Date.now(); let step=0, done=false;
+      const finish=err=>{ if(done) return; done=true; try{ws.close()}catch(_){}
+        const sec=(Date.now()-t0)/1000;
+        err?reject(err):resolve({name:"xAI Grok",yen:sec/60*0.08*YEN,sec,
+          detail:`定額 $0.08／分 × ${sec.toFixed(1)}秒`}); };
+      const timer=setTimeout(()=>finish(new Error("Grok：時間切れ")),90000);
+      const ask=()=>{
+        ws.send(JSON.stringify({type:"conversation.item.create",
+          item:{type:"message",role:"user",content:[{type:"input_text",text:SCRIPT[step]}]}}));
+        ws.send(JSON.stringify({type:"response.create"}));
+      };
+      ws.onopen=()=>{
+        ws.send(JSON.stringify({type:"session.update",session:{voice:"iris",instructions:SYS,
+          output_audio_format:"pcm16",turn_detection:null}}));
+        setTimeout(ask,300);
+      };
+      ws.onmessage=e=>{
+        let ev; try{ev=JSON.parse(e.data)}catch(_){return}
+        if(ev.type==="error"){ clearTimeout(timer);
+          return finish(new Error("Grok："+((ev.error&&ev.error.message)||JSON.stringify(ev).slice(0,140)))); }
+        if(ev.type==="response.done"){
+          step++; status("Grok："+step+"／"+SCRIPT.length+" 往復");
+          if(step<SCRIPT.length) setTimeout(ask,250);
+          else { clearTimeout(timer); finish(null); }
+        }
+      };
+      ws.onerror=()=>{ clearTimeout(timer); finish(new Error("Grok：つなぎ目で切れました")); };
+      ws.onclose=ev=>{ if(!done && ev.code!==1000){ clearTimeout(timer);
+        finish(new Error("Grok：切れました code "+ev.code+" "+(ev.reason||""))); } };
+    });
+  }
+
+  $("clear").addEventListener("click",()=>{ results.length=0; paint(); status(""); });
+
+  $("run").addEventListener("click",async()=>{
+    $("run").disabled=true; results.length=0; paint();
+    for(const name of ["OpenAI mini","OpenAI 本式"]){
+      status(name+" を測っています…");
+      try{
+        const r=await measureOpenAI(name);
+        r.perMin = r.sec>1 ? r.yen/(r.sec/60) : 0;
+        results.push(r); paint();
+      }catch(e){ status(e.message,"bad"); }
+    }
+    status("Grok を測っています…");
+    try{
+      const r=await measureGrok();
+      r.perMin = 0.08*YEN;
+      results.push(r); paint();
+    }catch(e){
+      if(e.message!=="skip") status(e.message,"bad");
+    }
+    paint();
+    if(results.length) status("測り終わりました。表の◎が、この台本でいちばん安かったものです。","good");
+    $("run").disabled=false;
+  });
+
+  paint();
+})();
+</script>
+</body></html>

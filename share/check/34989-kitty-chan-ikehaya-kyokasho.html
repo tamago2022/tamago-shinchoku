@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34989 キティちゃん×結の教科書 統合 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34989 キティちゃん×結の教科書 統合</div>
+<h1>#34989 キティちゃん×結の教科書 統合</h1>
+<div class="date">2026-10-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+
+たまごさんが2026-08-08に指摘した「イケハヤ『Claude Codeの教科書』は単純にファイルをそのままコピーするのではなく、
+記事の意図（このファイル1つでAIが教材理解を済ませられる）に沿って、キティちゃんが今後この内容を踏まえて振る舞える
+ようにしてください」に対応した。原文7550行をそのまま貼らず、頼み方の型（第5章）・技の仕込み（第7章）・
+事故簿4カ条（第8章）・困った時の3手（第18章）・人格と記憶の土台（第3章）だけを要点として抜き出し、
+キティちゃんの実体であるAIエージェントスキル<code>kitty-chan-hisho</code>の<code>SKILL.md</code>本体へ
+直接追記した（会話内で毎回読み込まれる場所）。Vault側にも要点だけの1ファイル
+（<code>キティちゃん_結の教科書_教材エッセンス.md</code>）と、秘書人格メモへの参照行⑩を追加した。
+<br><br>
+<b>追記した実物（SKILL.mdからの抜粋・そのまま転記）</b>
+<pre style="white-space:pre-wrap;font-size:0.8rem;background:#f7f5ef;padding:10px;border-radius:8px;">
+### 人格・記憶の土台(第3章)
+キティちゃんの人格(名前・口調・呼び方)は、この`SKILL.md`と`秘書人格_キティちゃん.md`という「1枚のメモ」でできている。
+魔法ではなく、だから育てられる。会話の終わりの「メモに残しておいて」の一言から、記憶は積み上がる。
+このメモは完成品ではなく、たまごの指摘や事故のたびに1行ずつ書き足して育てるものと理解する。
+
+### 詰まったときの3手(第18章・どの場面でも共通)
+1. 画面(状況)を見せてもらう
+2. 「どうすればいい?」を自分の中でまず検討する(状況の整理はキティちゃんの仕事)
+3. 「直す」(自分が作ったものは自分で直せる)
+たまごに丸投げする前に、この3手を一度自分の中で回してから相談する。
+</pre>
+<br>
+<b>直した不具合</b>：既存SKILL.mdが参照していた<code>~/Downloads/claude_code_kyokasho_marugoto.md</code>は
+実在しない死んだ参照だった（原本は購入直後にVaultの<code>00 inbox/</code>へ保存されており、Downloadsには残っていない）。
+Vault内の実在パスへ修正した。
+
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>110行 / 9343字</b><span>新規: 教材エッセンス.md</span></div>
+  <div class="num"><b>102行 / 9193字</b><span>更新後: kitty-chan-hisho SKILL.md</span></div>
+  <div class="num"><b>32行 / 4238字</b><span>更新後: 秘書人格_キティちゃん.md</span></div>
+  <div class="num"><b>1本</b><span>修正した死んだ参照(Downloads→Vault)</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+<li><b>（リンクなし）</b></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>kitty-chan-hisho/SKILL.md（Cowork/Codex呼び出し実体）に第3章・第18章を追記</td><td class="yes">済み</td></tr>
+<tr><td>local-agent-mode-sessions側の同名SKILL.mdへも同期（diff 0件を確認）</td><td class="yes">済み</td></tr>
+<tr><td>死んだ参照 ~/Downloads/claude_code_kyokasho_marugoto.md を実在パスへ修正</td><td class="yes">済み</td></tr>
+<tr><td>Vaultに教材エッセンス.md（全文コピーでなく要点抜粋）を新規作成</td><td class="yes">済み</td></tr>
+<tr><td>秘書人格_キティちゃん.md に⑩として参照行を追加</td><td class="yes">済み</td></tr>
+</table>
+
+<footer>
+対象はローカルのAIエージェントスキル（Claude Desktopの会話内で読み込まれる人格設定ファイル）であり、Webサイトではないため見た目のスクリーンショットは存在しない。かわりに、追記した本文そのものをこのページに転記して証拠にしている。ファイルは /Users/mac/.codex/plugins/cache/.../kitty-chan-hisho/SKILL.md と Obsidian Vault（tamago_brain）内にあり、34989番セッションが2026-10-21に実装した。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

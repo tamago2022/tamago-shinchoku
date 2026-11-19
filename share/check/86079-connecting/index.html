@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta name=viewport content="width=device-width,initial-scale=1"><style>html,body{margin:0;background:#fff}
+.jrs-cl{position:fixed;inset:0;z-index:9999;background:#030303;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;animation:jrs-cl-in .25s ease-out .3s forwards;
+  --w:min(46vw,34vh,260px);}
+@supports (height:1svh){.jrs-cl{--w:min(46vw,34svh,260px);}}
+.jrs-cl-stack{display:flex;flex-direction:column;align-items:center}
+.jrs-cl-stage{position:relative;width:var(--w);height:calc(var(--w)*1.075)}
+.jrs-cl-rings{position:absolute;left:50%;top:94%;width:calc(var(--w)*1.9);height:calc(var(--w)*.5);transform:translate(-50%,-50%)}
+.jrs-cl-ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(247,206,135,.9);box-shadow:0 0 8px rgba(247,174,80,.55),inset 0 0 6px rgba(247,174,80,.35);transform:scale(.18);opacity:0;animation:jrs-cl-wave 3.2s ease-out infinite}
+.jrs-cl-glow{position:absolute;left:50%;top:94%;width:calc(var(--w)*.9);height:calc(var(--w)*.22);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(247,190,100,.45),rgba(247,190,100,0))}
+.jrs-cl-egg{position:relative;display:block;width:100%;height:100%;object-fit:contain;animation:jrs-cl-float 2.6s ease-in-out infinite alternate}
+.jrs-cl-text{margin-top:calc(var(--w)*.36);color:#efcf98;font:500 clamp(11px,calc(var(--w)*.075),16px)/1.2 system-ui,-apple-system,sans-serif;letter-spacing:.38em;padding-left:.38em;white-space:nowrap;text-shadow:0 0 10px rgba(240,180,90,.55)}
+.jrs-cl-dot{opacity:0;animation:jrs-cl-d1 1.6s steps(1,end) infinite}
+.jrs-cl-dot:nth-child(2){animation-name:jrs-cl-d2}
+.jrs-cl-dot:nth-child(3){animation-name:jrs-cl-d3}
+@keyframes jrs-cl-in{to{opacity:1}}
+@keyframes jrs-cl-wave{0%{transform:scale(.18);opacity:0}15%{opacity:1}100%{transform:scale(1);opacity:0}}
+@keyframes jrs-cl-float{from{transform:translateY(0)}to{transform:translateY(-3.5%)}}
+@keyframes jrs-cl-d1{0%{opacity:0}25%{opacity:1}}
+@keyframes jrs-cl-d2{0%{opacity:0}50%{opacity:1}}
+@keyframes jrs-cl-d3{0%{opacity:0}75%{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .jrs-cl-ring,.jrs-cl-egg,.jrs-cl-dot{animation:none!important}
+  .jrs-cl-ring{opacity:.6;transform:scale(var(--s,1))}
+  .jrs-cl-dot{opacity:1}
+}
+</style></head><body>
+<div class="jrs-cl" role="status" data-connecting-loader="1"><div class="jrs-cl-stack"><div class="jrs-cl-stage"><div class="jrs-cl-glow"></div><div class="jrs-cl-rings" data-cl-rings="1"><span class="jrs-cl-ring" style="animation-delay:0s;--s:0.35"></span><span class="jrs-cl-ring" style="animation-delay:-0.8s;--s:0.55"></span><span class="jrs-cl-ring" style="animation-delay:-1.6s;--s:0.78"></span><span class="jrs-cl-ring" style="animation-delay:-2.4s;--s:1"></span></div><img class="jrs-cl-egg" src="egg-connecting.webp" width=360 height=387 data-cl-egg="1"></div><span class="jrs-cl-text" data-cl-text="1">CONNECTING<span class="jrs-cl-dot">.</span><span class="jrs-cl-dot">.</span><span class="jrs-cl-dot">.</span></span></div></div></body></html>

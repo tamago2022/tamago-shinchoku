@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#892 バッジの大きさの数字を1か所にまとめて、ズレたらCIが気づく仕組み（実測データ版） 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #892 バッジの大きさの数字を1か所にまとめて、ズレたらCIが気づく仕組み（実測データ版）</div>
+<h1>#892 バッジの大きさの数字を1か所にまとめて、ズレたらCIが気づく仕組み（実測データ版）</h1>
+<div class="date">2026-09-27 関所(sekisho)の指摘を受け、実測の生データを追加</div>
+
+<div class="fix">
+見た目の数字（バッジの大きさ・サムネA/B/Cの縦横比）を <code>src/lib/designRules.ts</code> という1つのファイルだけにまとめ、文書の重複数値を消し、実際の画面を機械で測って正しいか自動でチェックする仕組み。今回、関所（sekisho）から「28・6.5という数字に実測の跡が無い」と指摘されたため、本番 <code>/design-check</code> をヘッドレスChromeで実際に開き、<code>getBoundingClientRect()</code>で測った生データをこのページに残す。<br><br><b>実測の生データ（本番 https://joy-relief-station.lovable.app/design-check を2026-09-27に実機測定）：</b><pre>実測: 16:9コンテナ(320x180) 短辺=180.0px バッジ高さ=50.39px 高さ比率=27.99%
+実測: 16:9コンテナ(320x180) 上余白=11.69px（6.49%） 左余白=11.69px（6.49%）
+実測: 正方形コンテナ(200x200) 短辺=200.0px バッジ高さ=56.00px 高さ比率=28.00%
+実測: 正方形コンテナ(200x200) 上余白=13.00px（6.50%） 左余白=13.00px（6.50%）
+実測: A(主役)幅=320.0px 高さ=180.0px 縦横比=1.778（基準16:9=1.778）
+実測: B(棚)幅=176.0px 高さ=176.0px 縦横比=1.000（基準1:1=1.000）
+実測: C(関連)幅=218.0px 高さ=122.6px 縦横比=1.778（基準16:9=1.778）</pre>この生データを、<code>src/lib/designRules.ts</code>（正本・基準値28%±1%／6.5%±1%）とNode単体で突き合わせたところ、全6項目PASS。さらに「わざと崩す」を実際に実行し、基準値だけを90%／0.1%へ改ざんした場合に同じ実測データが正しくFAILへ変わることも確認した：<pre>①現状(28%/6.5%)×本番実測 → 6/6 PASS
+②わざと崩した基準(90%/0.1%)×同じ実測 → 0/6 PASS（6件ともFAIL検知）
+BREAK_TEST_RESULT: OK - 正しい基準はPASS・わざと崩した基準はFAILを検知した</pre>正直な補足：同じ本番ページで <code>NextUpGrid</code>（3枚中2枚が2列グリッドの1行目、3枚目が単独で2行目）の高さも測った：<pre>実測: カード横並び高さ(あ/長文/い) = 392.4px, 392.4px, 370.4px
+実測: カード横並び高さ差 = 22.00px</pre>これは1行目2枚が長文タイトルに合わせて揃って伸び、2行目に単独で残った3枚目だけが揃う相手がいないために起きる現象で、バッジ比率とは別の論点。次回セッションへの申し送りとして<code>.claude/PENDING_DECISIONS.md</code>に記録する（今回のバッジ比率・余白・サムネA/B/Cの数字とは無関係）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>27.99% / 28.00%</b><span>実測：バッジ高さ比率（基準28%±1%）</span></div>
+  <div class="num"><b>6.49% / 6.50%</b><span>実測：バッジ余白（基準6.5%±1%）</span></div>
+  <div class="num"><b>1.778 / 1.000 / 1.778</b><span>実測：サムネA/B/C縦横比（基準16:9/1:1/16:9）</span></div>
+  <div class="num"><b>6/6 → 0/6</b><span>わざと崩すテスト：正基準PASS→改ざん基準FAILへ反転</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>本番/design-check（2026-09-17撮影・A/B/Cの見本が実際に表示されている）</b><img src="img/892-design-check-prod.png" alt="前"></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番の実測ページ（今すぐ開けます）</b><a href="https://joy-relief-station.lovable.app/design-check" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/design-check</a></li>
+  <li><b>正本ファイル（designRules.ts）の説明はこの確認ページ本文に転記済み。GitHubは非公開のためリンクは貼らない</b><a href="https://joy-relief-station.lovable.app/design-check" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/design-check</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>バッジ高さ比率が基準28%±1%以内か（実測）</td><td class="yes">yes</td></tr>
+<tr><td>バッジ余白が基準6.5%±1%以内か（実測）</td><td class="yes">yes</td></tr>
+<tr><td>サムネA/B/Cの縦横比が基準どおりか（実測）</td><td class="yes">yes</td></tr>
+<tr><td>わざと崩すと判定ロジックがFAILを検知するか（実行して確認）</td><td class="yes">yes</td></tr>
+<tr><td>数字の置き場所が1か所だけになっているか</td><td class="yes">yes</td></tr>
+<tr><td>GitHub Actions上でCIが赤くなる実演（店主のGitHub課金停止中のため不可）</td><td class="no">no</td></tr>
+</table>
+
+<footer>
+このページは #892 のセッションが tools/make_check_page.py で自動生成した確認資料（関所の実測データ不足指摘への対応版）。以前の版（数字の重複記載を削除した版）はshare/check/892-badge-design-rules-ci.htmlに残っている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

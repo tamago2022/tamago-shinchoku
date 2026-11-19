@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#793 「すぐ見たい」別枠＋優先順位の自動入れ替え 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #793 「すぐ見たい」別枠＋優先順位の自動入れ替え</div>
+<h1>#793 「すぐ見たい」別枠＋優先順位の自動入れ替え</h1>
+<div class="date">2026-09-14 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+進捗表の一番上に🔥「すぐ見たい」だけの別枠を作りました。urgent:trueかつ未完了のものだけが並び、0件のときは枠ごと消えます（既定で開いたまま・畳めません）。発車の順番もurgentが最優先になり、コピー修正・誤字・体裁直しのような急がない新規タスクは自動でP4（後回し）へ落ち、記録が残ります。各タスクに🔥トグルを付けたので、たまごさん自身が押すだけで「すぐ見たい」を付け外しできます。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>3件</b><span>今すぐ見たい枠に表示中（789/794/814）</span></div>
+  <div class="num"><b>9/9</b><span>自動テスト全PASS（test_urgent_lane.py含む）</span></div>
+</div>
+
+<h2>③ 実データでのスクリーンショット</h2>
+<div class="shots">
+  <div class="shot before"><b>前：赤い現在地の下にお知らせが並ぶだけ（緊急も普通も同列）</b><img src="img/793-before-375.png" alt="前"></div>
+  <div class="shot after"><b>後：一番上に🔥すぐ見たい枠だけが独立（3件・畳めない）</b><img src="img/793-after-375.png" alt="後"></div>
+  <div class="shot plain"><b>🔥トグルボタン（オンの状態・#794）</b><img src="img/793-toggle-button-375.png" alt="🔥トグルボタン（オンの状態・#794）"></div>
+  <div class="shot after"><b>再検品時点（2026-09-14 02:06）の本番実機・すぐ見たい3件（789/794/814）</b><img src="img/793-urgent-box-recheck-375.png" alt="再検品時点の本番"></div>
+</div>
+
+<h2>③-2 「触る検品」ではねられた件（1回目・09-14 01:12）の原因と直した点</h2>
+<div class="note">
+指摘：本番で「すべて」「記事」「ページ」ボタンを押しても無反応と判定された。<br>
+原因調査（実機Chromeで直接JS実行して確認）：これらは「できたもの」セクション（&lt;details&gt;、既定で閉じている）の中のボタンで、
+クリックハンドラ自体は正常（実際に押すと <code>window.__dekimonoFilter</code> が変わり一覧が正しく絞り込まれることを確認済み）。
+原因は検品ツール側：閉じた&lt;details&gt;の中身はモダンブラウザでは<code>display:none</code>ではなく<code>content-visibility:hidden</code>で隠されるため、
+<code>offsetWidth/offsetHeight</code>だけで「見える／押せる」を判定すると非ゼロを返し続け、たまごさんには見えていないボタンまで検品対象に誤って含めてしまっていた
+（この修正自体は#795で先に着手済みだったが、加えてページ読み込み直後の非同期データ取得中に検品が走ると検出要素数が実行のたびに1086件→17件→7件と大きくブレる問題も見つかったため、
+読み込み待ち時間を1.5秒→4秒に延ばし、さらにキュー一覧の自動再描画でクリック対象がすり替わって消えるケースも「無反応」に数えないよう300ms再試行を追加した：<code>tools/verify_click.mjs</code>）。<br>
+直した後、本番URLに対する<code>verify_click.mjs</code>再実行は複数回ともPASS（無反応0件）。詳細は下表参照。
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番の進捗表を開く</b><a href="https://tamago2022.github.io/tamago-shinchoku/index.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/index.html</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>1. すぐ見たい別枠が一番上・畳めない</td><td class="yes">yes</td></tr>
+<tr><td>2. 0件なら枠ごと消える</td><td class="yes">yes</td></tr>
+<tr><td>3. 375px幅で崩れない（横スクロール無し）</td><td class="yes">yes</td></tr>
+<tr><td>4. urgentが優先度より先に発車する（queue_rank_key）</td><td class="yes">yes</td></tr>
+<tr><td>5. 急がないキーワードは自動でP4・記録あり（auto_demoted.jsonl）</td><td class="yes">yes</td></tr>
+<tr><td>6. 壊れている系（404・落ちている等）は自動P4の対象外</td><td class="yes">yes</td></tr>
+<tr><td>7. たまごさんが🔥ボタンで付け外しできる</td><td class="yes">yes</td></tr>
+<tr><td>8. GitHub Pagesに反映済み（200・中身を実測）</td><td class="yes">yes</td></tr>
+<tr><td>9. verify_click.mjs（触る検品）を本番URLに再実行・「すべて/記事/ページ」等の誤FAIL解消</td><td class="yes">yes（連続2回とも無反応0件・PASS。5件中5件、7件中7件）</td></tr>
+</table>
+
+<footer>
+このページは #793 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

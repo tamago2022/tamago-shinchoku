@@ -1,0 +1,415 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>声くらべの台（案内人の声を、押して決める）</title>
+<style>html,body{margin:0;background:#0d0b09}</style></head><body>
+<style>
+  :root{ --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
+         --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227; }
+  *{box-sizing:border-box}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 72px;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
+  .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:#e8dcc0;
+    letter-spacing:.14em;font-size:.9rem;text-align:center;margin:0 0 4px}
+  .lead{color:#8a8070;font-size:.8rem;text-align:center;margin:0 0 18px;line-height:1.8}
+  .lead a{color:var(--kin)}
+  .panel{background:var(--paper);border-radius:16px;padding:18px;margin-top:14px;border:1px solid #e2dccd}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.02rem;
+     letter-spacing:.06em;margin:0 0 4px;color:var(--ink)}
+  .tag{display:inline-block;font-size:.68rem;padding:3px 9px;border-radius:999px;
+       background:#e8e1d2;color:#6d6558;margin-left:6px;vertical-align:2px;font-weight:700}
+  .tag.ok{background:#dff0e5;color:#2c6244}
+  .tag.ng{background:#f6e2e0;color:#a0392c}
+  .price{font-size:.82rem;color:var(--ink);margin:8px 0 0;font-weight:700}
+  .price small{font-weight:400;color:var(--sub)}
+  .note{font-size:.78rem;color:var(--sub);line-height:1.75;margin-top:8px}
+  .note a{color:var(--ao)}
+  input[type=password],input[type=text]{width:100%;padding:11px 12px;border:1px solid #d8d1c0;
+    border-radius:10px;font-size:15px;background:#fff;color:var(--ink);font-family:ui-monospace,monospace;margin-top:10px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .chip{padding:9px 14px;border-radius:999px;border:1px solid #d8d1c0;background:#fff;
+    font-size:.86rem;cursor:pointer;font-family:inherit;font-weight:700;color:var(--ink);flex:0 0 auto}
+  .chip:hover{border-color:#b9b0a0}
+  .chip.on{background:var(--midori);color:#fff;border-color:var(--midori)}
+  .chip.dead{opacity:.4;text-decoration:line-through}
+  .st{margin-top:12px;font-size:.82rem;min-height:1.4em;color:var(--sub);line-height:1.7;
+      white-space:pre-wrap;word-break:break-word}
+  .st.bad{color:var(--aka)}
+  .st.good{color:var(--midori)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .row button{flex:1 1 150px;padding:12px 16px;border-radius:12px;border:none;cursor:pointer;
+    font-size:.95rem;font-weight:700;font-family:inherit}
+  .b-go{background:var(--midori);color:#fff}
+  .b-sub{background:#fff;color:var(--ao);border:1px solid #cfdae0}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.8rem}
+  th,td{border-bottom:1px solid #e2dccd;padding:8px 6px;text-align:left;vertical-align:top}
+  th{color:var(--sub);font-weight:700;white-space:nowrap}
+  td b{font-size:.86rem}
+  .yen{white-space:nowrap;font-variant-numeric:tabular-nums}
+</style>
+
+<div class="wrap">
+  <p class="kanban">声 く ら べ の 台</p>
+  <p class="lead">
+    ボタンを押すと、その声で同じ一言を喋ります。押す前に「1分いくら」が見えるようにしてあります。<br>
+    気に入った声が決まったら「この声で案内人と話す」で
+    <a href="947-concierge-talk.html">案内人のページ</a>へ渡します。
+  </p>
+
+  <!-- ══════════ 比較表 ══════════ -->
+  <div class="panel">
+    <h2>まず、いくらかかるか</h2>
+    <table>
+      <tr><th>どこの</th><th>1分いくら</th><th>ブラウザで</th><th>要るもの</th></tr>
+      <tr>
+        <td><b>OpenAI gpt-realtime</b><br><span style="color:#8d8578">marin / cedar ほか10種</span></td>
+        <td class="yen"><b>約47円</b><br><small>入 $0.06＋出 $0.24</small></td>
+        <td><span class="tag ok">○ 動く</span></td>
+        <td>OpenAIの鍵</td>
+      </tr>
+      <tr>
+        <td><b>xAI Grok Voice</b><br><span style="color:#8d8578">iris / eve / luna ほか28種</span></td>
+        <td class="yen"><b>約12円</b><br><small>$0.08／分・込み</small></td>
+        <td><span class="tag ok">○ 動く</span><br><small>WebSocket</small></td>
+        <td>xAIの鍵</td>
+      </tr>
+      <tr>
+        <td><b>ElevenLabs エージェント</b></td>
+        <td class="yen"><b>約12円</b><br><small>$0.08／分＋LLM代</small><br><small>無料枠15分</small></td>
+        <td><span class="tag ok">○ 動く</span><br><small>公式の貼り付け部品</small></td>
+        <td>公開エージェントID</td>
+      </tr>
+      <tr>
+        <td><b>NVIDIA ACE</b></td>
+        <td class="yen">—</td>
+        <td><span class="tag ng">× ブラウザ不可</span></td>
+        <td>—</td>
+      </tr>
+    </table>
+    <p class="note">
+      円はすべて 1ドル=155円 での換算。実際の請求はドル建てで、為替と使い方で動きます。
+      NVIDIA ACE は、動かすのにGPU付きのサーバー（NIM／Unreal等）が要るので、
+      このページのようにブラウザだけでは動きません。だから比較表に「×」と置くだけにして、作っていません。<br>
+      出どころ：
+      <a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener">OpenAI 料金</a>／
+      <a href="https://docs.x.ai/developers/model-capabilities/audio/voice" target="_blank" rel="noopener">xAI Voice</a>／
+      <a href="https://elevenlabs.io/pricing/agents" target="_blank" rel="noopener">ElevenLabs Agents 料金</a>
+    </p>
+  </div>
+
+  <!-- ══════════ OpenAI ══════════ -->
+  <div class="panel">
+    <h2>① OpenAI gpt-realtime<span class="tag ok">約47円／分</span></h2>
+    <p class="note">
+      いま案内人が使っているのがこれです。声を押すと、その声で一言喋って自分で切れます。
+      マイクの許可を1回だけ聞かれます（この繋ぎ方はマイクの線が要るためで、録ってはいません）。
+    </p>
+    <input id="oaKey" type="password" placeholder="sk-... （OpenAIの鍵）" autocomplete="off" spellcheck="false">
+    <div class="chips" id="oaChips"></div>
+    <div class="st" id="oaSt"></div>
+    <div class="row">
+      <button class="b-sub" id="oaStop">とめる</button>
+      <button class="b-go" id="oaUse">この声で案内人と話す</button>
+    </div>
+  </div>
+
+  <!-- ══════════ xAI ══════════ -->
+  <div class="panel">
+    <h2>② xAI Grok Voice<span class="tag ok">約12円／分</span></h2>
+    <p class="note">
+      OpenAIの1/4の値段。マイクは要りません（喋らせるだけ）。
+      鍵は <a href="https://console.x.ai" target="_blank" rel="noopener">console.x.ai</a> で作れます。
+      鍵はこの端末の中だけに置かれ、送り先は api.x.ai だけです。
+    </p>
+    <input id="xaKey" type="password" placeholder="xai-... （xAIの鍵。無ければここは空のままでOK）" autocomplete="off" spellcheck="false">
+    <div class="chips" id="xaChips"></div>
+    <div class="st" id="xaSt"></div>
+    <div class="row"><button class="b-sub" id="xaStop">とめる</button></div>
+  </div>
+
+  <!-- ══════════ ElevenLabs ══════════ -->
+  <div class="panel">
+    <h2>③ ElevenLabs エージェント<span class="tag">無料枠 15分</span></h2>
+    <p class="note">
+      ここだけ作りが違って、「エージェント」を先に向こうのサイトで1つ作ります。
+      <a href="https://elevenlabs.io/app/agents" target="_blank" rel="noopener">elevenlabs.io のエージェント画面</a>
+      で作って、Widget の欄に出る <b>Agent ID</b>（agent_ で始まる文字列）を下に貼ってください。
+      公開エージェントなら鍵は要りません。貼るまで、このページは向こうの部品を一切読み込みません。
+    </p>
+    <input id="elId" type="text" placeholder="agent_xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+    <div class="row"><button class="b-go" id="elGo">この台に呼び出す</button></div>
+    <div class="st" id="elSt"></div>
+    <div id="elSlot" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const YEN=155;
+  const LINE="こんばんは。ごきげん補給所の案内人です。今日はどんな気分で来られました？";
+
+  function status(el,msg,kind){
+    el.textContent=msg||"";
+    el.className="st"+(kind?" "+kind:"");
+  }
+  function pickChip(box,btn){
+    [...box.querySelectorAll(".chip")].forEach(c=>c.classList.remove("on"));
+    if(btn) btn.classList.add("on");
+  }
+
+  /* ══════════════════════════════════════════
+     ① OpenAI — WebRTC（947と同じ繋ぎ方）
+     ══════════════════════════════════════════ */
+  const OA_VOICES=[
+    ["marin","marin"],["cedar","cedar"],["alloy","alloy"],["ash","ash"],
+    ["ballad","ballad"],["coral","coral"],["echo","echo"],["sage","sage"],
+    ["shimmer","shimmer"],["verse","verse"]
+  ];
+  const OA_MODELS=["gpt-realtime-2.1","gpt-realtime","gpt-realtime-2.1-mini"];
+  let oaPc=null, oaDc=null, oaMic=null, oaAudio=null, oaVoice="marin";
+  const oaChips=$("oaChips"), oaSt=$("oaSt");
+
+  try{ const k=localStorage.getItem("tamago_openai_key"); if(k) $("oaKey").value=k; }catch(e){}
+
+  OA_VOICES.forEach(([v,label])=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.textContent=label; b.dataset.v=v;
+    b.addEventListener("click",()=>oaTry(v,b));
+    oaChips.appendChild(b);
+  });
+
+  function oaClose(){
+    try{oaDc&&oaDc.close()}catch(e){}
+    try{oaPc&&oaPc.close()}catch(e){}
+    if(oaMic) oaMic.getTracks().forEach(t=>t.stop());
+    if(oaAudio) oaAudio.remove();
+    oaDc=oaPc=oaMic=oaAudio=null;
+  }
+  $("oaStop").addEventListener("click",()=>{ oaClose(); status(oaSt,"とめました"); });
+
+  async function oaTry(voice,btn){
+    const sk=$("oaKey").value.trim();
+    if(!sk){ status(oaSt,"OpenAIの鍵が空です。sk- で始まる鍵を貼ってください。","bad"); return; }
+    try{ localStorage.setItem("tamago_openai_key",sk); }catch(e){}
+    oaClose(); pickChip(oaChips,btn); oaVoice=voice;
+    status(oaSt,voice+" でつないでいます…");
+
+    const session=m=>({ type:"realtime", model:m,
+      instructions:"日本語で、やわらかく、ゆっくり。言われた一言だけを読み上げて、余計なことは言わない。",
+      audio:{ input:{ turn_detection:null },
+              output:{ voice:voice } } });
+
+    let token=sk, model=OA_MODELS[0], viaEk=false, lastErr="";
+    for(const m of OA_MODELS){
+      try{
+        const r=await fetch("https://api.openai.com/v1/realtime/client_secrets",{
+          method:"POST",
+          headers:{Authorization:"Bearer "+sk,"Content-Type":"application/json"},
+          body:JSON.stringify({session:session(m)})
+        });
+        if(!r.ok){ lastErr=r.status+" "+(await r.text()).slice(0,180); continue; }
+        const j=await r.json();
+        token=j.value||(j.client_secret&&j.client_secret.value);
+        model=m; viaEk=true; break;
+      }catch(e){ lastErr=e.message; }
+    }
+    if(!viaEk) status(oaSt,"使い捨て鍵は取れませんでした（"+lastErr+"）。鍵で直接つなぎます。");
+
+    try{
+      oaPc=new RTCPeerConnection();
+      oaAudio=document.createElement("audio"); oaAudio.autoplay=true;
+      oaAudio.style.display="none"; document.body.appendChild(oaAudio);
+      oaPc.ontrack=ev=>{ if(ev.streams[0]) oaAudio.srcObject=ev.streams[0]; };
+
+      oaMic=await navigator.mediaDevices.getUserMedia({audio:true});
+      oaPc.addTrack(oaMic.getAudioTracks()[0],oaMic);
+
+      oaDc=oaPc.createDataChannel("oai-events");
+      oaDc.addEventListener("open",()=>{
+        status(oaSt,voice+" が喋ります…","good");
+        oaDc.send(JSON.stringify({type:"session.update",session:{
+          type:"realtime",
+          instructions:"日本語で、やわらかく、ゆっくり。言われた一言だけを読み上げる。",
+          audio:{input:{turn_detection:null},output:{voice:voice}}}}));
+        oaDc.send(JSON.stringify({type:"conversation.item.create",
+          item:{type:"message",role:"user",content:[{type:"input_text",text:LINE}]}}));
+        oaDc.send(JSON.stringify({type:"response.create"}));
+      });
+      oaDc.addEventListener("message",e=>{
+        let ev; try{ev=JSON.parse(e.data)}catch(_){return}
+        if(ev.type==="error"){
+          const m=(ev.error&&ev.error.message)||"不明";
+          status(oaSt,voice+" は断られました → "+m,"bad");
+          if(/voice/i.test(m)) btn.classList.add("dead");
+        }
+        if(ev.type==="response.done"){
+          status(oaSt,voice+" を鳴らしました。次の声も押せます。","good");
+          setTimeout(oaClose,600);
+        }
+      });
+
+      const offer=await oaPc.createOffer();
+      await oaPc.setLocalDescription(offer);
+      let answer=null, err="";
+      for(const m of (viaEk?[model]:OA_MODELS)){
+        const r=await fetch("https://api.openai.com/v1/realtime/calls?model="+encodeURIComponent(m),{
+          method:"POST", body:offer.sdp,
+          headers:{Authorization:"Bearer "+token,"Content-Type":"application/sdp"}});
+        if(r.ok){ answer=await r.text(); break; }
+        err="calls "+r.status+"（"+m+"）: "+(await r.text()).slice(0,200);
+        if(r.status===401||r.status===403) break;
+      }
+      if(!answer) throw new Error(err||"つながりませんでした");
+      await oaPc.setRemoteDescription({type:"answer",sdp:answer});
+    }catch(e){
+      status(oaSt,voice+" はだめでした → "+e.message,"bad");
+      oaClose();
+    }
+  }
+
+  $("oaUse").addEventListener("click",()=>{
+    location.href="947-concierge-talk.html?voice="+encodeURIComponent(oaVoice);
+  });
+
+  /* ══════════════════════════════════════════
+     ② xAI Grok — WebSocket ＋ PCM を自前で鳴らす
+     ══════════════════════════════════════════ */
+  const XA_VOICES=["iris","eve","carina","luna","ara","celeste","aurora","liora",
+                   "lux","cosmo","ursa","lumen","sal","rigel","orion","atlas"];
+  const xaChips=$("xaChips"), xaSt=$("xaSt");
+  let xaWs=null, xaCtx=null, xaAt=0;
+
+  try{ const k=localStorage.getItem("tamago_xai_key"); if(k) $("xaKey").value=k; }catch(e){}
+
+  XA_VOICES.forEach(v=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.textContent=v;
+    b.addEventListener("click",()=>xaTry(v,b));
+    xaChips.appendChild(b);
+  });
+
+  function xaClose(){ try{xaWs&&xaWs.close()}catch(e){} xaWs=null; }
+  $("xaStop").addEventListener("click",()=>{ xaClose(); status(xaSt,"とめました"); });
+
+  // base64 の PCM16(24kHz) を、届いた順に切れ目なく鳴らす
+  function playPcm(b64){
+    if(!xaCtx){ xaCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000}); xaAt=0; }
+    const bin=atob(b64), n=bin.length>>1;
+    const buf=xaCtx.createBuffer(1,n,24000), ch=buf.getChannelData(0);
+    for(let i=0;i<n;i++){
+      const lo=bin.charCodeAt(i*2), hi=bin.charCodeAt(i*2+1);
+      let v=(hi<<8)|lo; if(v>=0x8000) v-=0x10000;
+      ch[i]=v/32768;
+    }
+    const src=xaCtx.createBufferSource(); src.buffer=buf; src.connect(xaCtx.destination);
+    const now=xaCtx.currentTime;
+    if(xaAt<now+0.05) xaAt=now+0.05;
+    src.start(xaAt); xaAt+=buf.duration;
+  }
+
+  async function xaTry(voice,btn){
+    const sk=$("xaKey").value.trim();
+    if(!sk){
+      status(xaSt,"xAIの鍵がまだ入っていません。上の欄に xai- で始まる鍵を貼れば、そのまま鳴らせます。","bad");
+      return;
+    }
+    try{ localStorage.setItem("tamago_xai_key",sk); }catch(e){}
+    xaClose(); pickChip(xaChips,btn);
+    status(xaSt,voice+" でつないでいます…");
+
+    // ブラウザは WebSocket にヘッダを付けられないので、使い捨て鍵を取って
+    // sec-websocket-protocol に載せる（xAI公式の手順）
+    let token=null, xaAgent="";
+    // 2026-09-20（976番）まず窓口(voice-session)から短命トークンをもらう。鍵はブラウザに来ない。
+    try{
+      const rm=await fetch("https://eecdooahvromxykbldud.supabase.co/functions/v1/voice-session",{
+        method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create"})});
+      if(rm.ok){
+        const jm=await rm.json();
+        const tm=(jm&&jm.clientSecret&&jm.clientSecret.value)||(jm&&jm.value);
+        if(tm){ token=tm; xaAgent=jm.agentId||""; }
+      }
+    }catch(_){}
+    try{
+      if(token) throw "skip";
+      const r=await fetch("https://api.x.ai/v1/realtime/client_secrets",{
+        method:"POST",
+        headers:{Authorization:"Bearer "+sk,"Content-Type":"application/json"},
+        body:JSON.stringify({session:{type:"realtime",model:"grok-voice-latest"}})
+      });
+      if(!r.ok) throw new Error(r.status+" "+(await r.text()).slice(0,200));
+      const j=await r.json();
+      token=j.value||(j.client_secret&&j.client_secret.value)||j.secret;
+      if(!token) throw new Error("使い捨て鍵が返りませんでした："+JSON.stringify(j).slice(0,160));
+    }catch(e){
+      if(e==="skip"){ /* 窓口で取れているので何もしない */ }else{
+      status(xaSt,"使い捨て鍵が取れませんでした → "+e.message
+        +"\n（鍵が正しいか、xAI側で Voice が有効かを見てください）","bad");
+      return;
+      }
+    }
+
+    try{
+      xaWs=new WebSocket(xaAgent
+                           ? "wss://api.x.ai/v1/realtime?agent_id="+encodeURIComponent(xaAgent)
+                           : "wss://api.x.ai/v1/realtime?model=grok-voice-latest",
+                         ["xai-client-secret."+token]);
+      xaCtx=null;
+      xaWs.onopen=()=>{
+        status(xaSt,voice+" が喋ります…","good");
+        xaWs.send(JSON.stringify({type:"session.update",session:{
+          voice:voice,
+          instructions:"日本語で、やわらかく、ゆっくり。言われた一言だけを読み上げる。",
+          turn_detection:null,
+          output_audio_format:"pcm16"}}));
+        xaWs.send(JSON.stringify({type:"conversation.item.create",
+          item:{type:"message",role:"user",content:[{type:"input_text",text:LINE}]}}));
+        xaWs.send(JSON.stringify({type:"response.create"}));
+      };
+      xaWs.onmessage=e=>{
+        let ev; try{ev=JSON.parse(e.data)}catch(_){return}
+        if(ev.type==="response.output_audio.delta"||ev.type==="response.audio.delta"){
+          if(ev.delta) playPcm(ev.delta);
+        }else if(ev.type==="error"){
+          status(xaSt,voice+" は断られました → "+((ev.error&&ev.error.message)||JSON.stringify(ev).slice(0,180)),"bad");
+        }else if(ev.type==="response.done"){
+          status(xaSt,voice+" を鳴らしました。次の声も押せます。","good");
+        }
+      };
+      xaWs.onerror=()=>status(xaSt,voice+"：つなぎ目で切れました。鍵とネットワークを見てください。","bad");
+      xaWs.onclose=ev=>{ if(ev.code!==1000 && ev.code!==1005)
+        status(xaSt,voice+"：切れました（code "+ev.code+" "+(ev.reason||"")+"）","bad"); };
+    }catch(e){
+      status(xaSt,voice+" はだめでした → "+e.message,"bad");
+    }
+  }
+
+  /* ══════════════════════════════════════════
+     ③ ElevenLabs — 公式の貼り付け部品（押すまで読み込まない）
+     ══════════════════════════════════════════ */
+  try{ const a=localStorage.getItem("tamago_el_agent"); if(a) $("elId").value=a; }catch(e){}
+  $("elGo").addEventListener("click",()=>{
+    const id=$("elId").value.trim();
+    const st=$("elSt"), slot=$("elSlot");
+    if(!/^agent_/.test(id)){
+      status(st,"Agent ID は agent_ で始まります。ElevenLabs の Widget 画面からそのまま貼ってください。","bad");
+      return;
+    }
+    try{ localStorage.setItem("tamago_el_agent",id); }catch(e){}
+    slot.innerHTML="";
+    const w=document.createElement("elevenlabs-convai");
+    w.setAttribute("agent-id",id);
+    slot.appendChild(w);
+    if(!document.getElementById("elScript")){
+      const s=document.createElement("script");
+      s.id="elScript"; s.async=true;
+      s.src="https://unpkg.com/@elevenlabs/convai-widget-embed";
+      s.onerror=()=>status(st,"向こうの部品が読み込めませんでした（ネットワークか、配信が止まっている）","bad");
+      document.body.appendChild(s);
+    }
+    status(st,"呼び出しました。右下か、この下に丸いボタンが出ます。出ないときは Agent ID が非公開設定です。","good");
+  });
+})();
+</script>
+</body></html>

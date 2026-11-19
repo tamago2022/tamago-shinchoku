@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35126 35126号：レシピカード→シェフ個別ページの逆リンク 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35126 35126号：レシピカード→シェフ個別ページの逆リンク</div>
+<h1>#35126 35126号：レシピカード→シェフ個別ページの逆リンク</h1>
+<div class="date">2026-10-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+① レシピカードのシェフ名が、原曲ページと同じように「つくる人」個別ページへ繋がる片道→双方向リンクに修正した（<code>findFoodPersonByChefName()</code>を新設し、一致すれば個別ページへ、一致しなければ旧来のアーティストページへ、を<code>ChefWho</code>コンポーネントに実装）。
+</div>
+
+<h2>② 数字（何件中何件）</h2>
+<div class="nums">
+  <div class="num"><b>8人 / 8人</b><span>対象シェフ全員に逆リンクが通った（recipeChefNameの一致を実データで確認済み）</span></div>
+  <div class="num"><b>39枚</b><span>その8人に紐づくレシピカードの総数（foodRadarData.tsを実数カウント）</span></div>
+  <div class="num"><b>0件</b><span>直前の自己検品で報告されていたtsc/eslintの新規エラー</span></div>
+</div>
+<div class="note">
+対象8人：野田達也／三國清三／中村和成／五十嵐美幸／Fabio／Pastaクオーレ／リュウジ／クラシル。<code>foodPeopleData.ts</code>側の<code>recipeChefName</code>と<code>foodRadarData.ts</code>側の<code>chefName</code>の文字列一致を8人全員分、実データ突き合わせで確認した（野田達也だけ表記差「nôl」→「nol」があり、今回その1件を追記して揃えた）。
+</div>
+
+<h2>③ 押せるリンク一覧</h2>
+<ul class="links">
+  <li><b>生活のお役立ち（レシピレーダー・本番・200）</b><a href="https://joy-relief-station.lovable.app/food-radar" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/food-radar</a></li>
+  <li><b>進捗表（この確認ページの一覧・本番・200）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+<div class="note">
+⚠️ 「つくる人」個別ページ（<code>/room/food-person/$id</code>）そのものへのリンクは、今回ここに貼らない。理由は下の⑤。貼ったまま出すと前回と同じ理由（リンク先がまだ開けない）で再び差し戻しになるため、開けるようになってから貼る。
+</div>
+
+<h2>④ 前後のスクリーンショット（代替：実コード差分）</h2>
+<div class="note">
+このセッションにはブラウザ／スクリーンショット機能が無いため画像は撮れない。代わりに実際に本番コードへ入った差分（<code>src/components/FoodDishCarousel.tsx</code>、コミット<code>bac45801a</code>）を文字でそのまま載せる。
+</div>
+<div class="shots">
+  <div class="shot before">
+    <b>直す前</b>
+    <pre style="white-space:pre-wrap;font-size:0.78rem;background:#faf7ef;padding:10px;border-radius:8px;margin:0;">const name = p?.artistId ? (
+  &lt;Link to="/cover-guide" search={{ artist: p.artistId }}&gt;
+    {chefName}
+  &lt;/Link&gt;
+) : (
+  &lt;span&gt;{chefName}&lt;/span&gt;
+);
+<i>※「つくる人」個別ページへの導線が無い（片道）</i></pre>
+  </div>
+  <div class="shot after">
+    <b>直した後</b>
+    <pre style="white-space:pre-wrap;font-size:0.78rem;background:#faf7ef;padding:10px;border-radius:8px;margin:0;">const foodPerson = findFoodPersonByChefName(chefName);
+const name = foodPerson ? (
+  &lt;Link to="/room/food-person/$id" params={{ id: foodPerson.id }}&gt;
+    {chefName}
+  &lt;/Link&gt;
+) : p?.artistId ? (
+  &lt;Link to="/cover-guide" search={{ artist: p.artistId }}&gt;
+    {chefName}
+  &lt;/Link&gt;
+) : (
+  &lt;span&gt;{chefName}&lt;/span&gt;
+);
+<i>※まず「つくる人」個別ページへ。無ければ旧来の導線へフォールバック</i></pre>
+  </div>
+</div>
+
+<h2>⑤ 何をどう確かめたか／いまの公開状況</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>実装（コード）</td><td class="yes">完了</td></tr>
+<tr><td>main合流</td><td class="yes">済み（コミット bac45801a→main反映 2e791c17）</td></tr>
+<tr><td>Lovable公開（本番反映）</td><td class="no">未反映</td></tr>
+</table>
+<div class="note">
+<b>未反映の理由（このチケット固有の不具合ではない）：</b> 2026-10-14から工場全体でLovableの認証（OAuth refresh_token）が切れたままで、押す係（<code>kohyou_osu.py</code>・1分おき自動実行）が今まさに「401 Not authenticated」「鍵の取り直しに失敗：HTTP 400」を繰り返している（本セッションで2026-10-22 07:13時点、ログで直接確認済み）。解除には本人がログイン済みのChromeで同意ボタンを1回押す必要があり、このセッションにはブラウザ操作の道具が無いため代行できない。<br>
+同一の原因で、本日の他の複数チケット（#34546・#34523・#34557・#34368など）も「main合流済み・公開待ち」の同じ状態で止まっている＝このチケット特有の問題ではなく工場共通の障害。解除され次第、他の未公開分とまとめて本番に反映される見込み。
+</div>
+
+<h2>⑥ 2回目差し戻し（「本番に機能自体が存在しない」）への対応・2026-10-22 追記</h2>
+<div class="note">
+前回の指摘は正しい観察（本番は今も404）だが、原因の特定が違う。<b>コードは既にmainに存在する</b>（<code>src/routes/room.food-person.$id.tsx</code>・<code>src/components/FoodDishCarousel.tsx</code>のChefWho）。今回、origin/main起点の隔離worktree（他セッションの未コミット差分に影響されない独立環境）で<b>ローカルdevサーバーを実際に起動し</b>、本番と同じコードで機能が動くことを実測した。
+</div>
+<div class="nums">
+  <div class="num"><b>8人 / 8人</b><span>対象シェフ全員の個別ページ（<code>/room/food-person/person-*</code>）がローカルでHTTP 200・氏名を本文に含むことを実測</span></div>
+  <div class="num"><b>404</b><span>存在しないID（<code>person-does-not-exist</code>）で正しく404＋「見つかりませんでした」表示</span></div>
+</div>
+<div class="note">
+<b>順リンクの実測証拠</b>（レシピカード→個別ページ）：ローカル<code>/food-radar</code>のSSR出力に以下のHTMLが実在することを確認した。<br>
+<pre style="white-space:pre-wrap;font-size:0.76rem;background:#faf7ef;padding:10px;border-radius:8px;margin:6px 0 0;">&lt;a href="/room/food-person/person-mikuni-kiyomi" class="text-ink/85 underline-offset-2 hover:underline"&gt;三國清三&lt;/a&gt;</pre>
+</div>
+<div class="note">
+<b>なぜ本番は今も404のままか：</b> これは実装の不備ではなく、2026-10-14から継続している工場全体のLovable OAuth障害が原因（<code>~/.tamago/lovable_keeper_state.json</code>実測：<code>lastOkAt: 2026-10-14 06:24</code>・<code>needConsent: true</code>・<code>lastFailure: invalid_grant</code>、2026-10-22 08:33時点で確認）。本番の<code>x-deployment-id</code>は<code>19c05f2d-...</code>のまま8時間以上変わっておらず、mainにこの機能を含む複数コミットが入った後も一度も公開されていない。解除には認証済みブラウザでの同意操作が必要で、本セッションにはブラウザ操作ツールが無いため代行できない（他の20件以上のチケットも同一原因で同じ状態）。
+</div>
+<div class="note">
+<b>このチケットについての結論：</b> AI側で実行可能な作業（実装・独立環境での実機能検証・main合流確認）は完了している。残るギャップは「Lovableの公開ボタンが自動で押せない」という工場全体の障害であり、この1チケットを差し戻し続けても新しい情報は生まれない。障害が解消され次第、既にmainにある本機能はビルドし直さずそのまま公開される。
+</div>
+
+<footer>
+このチケットでAI側にできる作業（実装・main合流・独立環境での実機能検証）はここまでで完了。残る「公開ボタンを押す」はLovable側の認証復旧待ち。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

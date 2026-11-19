@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#120051 Genspark納品の配管：届いた原稿が人の手なしで本番まで通る 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #120051 Genspark納品の配管：届いた原稿が人の手なしで本番まで通る</div>
+<h1>#120051 Genspark納品の配管：届いた原稿が人の手なしで本番まで通る</h1>
+<div class="date">2026-10-18 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+Genspark が GitHub の Issue に「【納品】」と書くと、工場が原稿を自動で受け取り、仕上げの便を積み、本番に出たら同じ Issue に「公開しました＋URL」を書きます（#1015・#1018 のコメント欄に実物あり。本体リポは非公開のためここからはリンクしません）。今日見つけた穴を4つ埋めました：①緊急の納品便が Fable 便44本に席を取られて3時間発車できなかった→Fable レーンの席を1つ貸す ②GitHub の一覧が取れなかった回に、その間に立った Issue を永久に飛ばしていた→基準線を進めない ③受領コメントが応答待ちで落ちると二度と書かなかった→次の回から書き直す ④仕上げが終わる前に「公開ボタンを押して」と知らせていた→仕事が終わってから知らせる。 ⑤（夜に追加）同じ原稿が2つの Issue（#1018・#1029）から届き、便が3本（120098・122649・122654）立って同じページを別々に仕上げていた→受付係が積む前に「中身（md5）が同じ／同じ号の便が発車待ち／同じ本番URLの便が走行中」を見て、二重には積まず先の便に合わせる（Issue にはその旨を書き、公開したら両方の Issue に本番URLを書く）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>5件中5件</b><span>10/16以降の【納品】コメントのうち受け取れた数（取りこぼし0）</span></div>
+  <div class="num"><b>2本</b><span>本番で200が返る納品ページ（月・踊る）</span></div>
+  <div class="num"><b>3本→1本</b><span>同じ原稿 uke-01.html に立っていた便の数（夜の関所で、同じ中身は先の便に合わせる）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番：人はなぜ月を見るのか vol.1（#1015 の納品が通った実物）</b><a href="https://joy-relief-station.lovable.app/magazine/hito-wa-naze-tsuki-wo-miru-01.html" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/magazine/hito-wa-naze-tsuki-wo-miru-01.html</a></li>
+  <li><b>本番：人が踊るとき vol.1（#1018 の納品が通った実物）</b><a href="https://joy-relief-station.lovable.app/magazine/hito-ga-odoru-01.html" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/magazine/hito-ga-odoru-01.html</a></li>
+  <li><b>本番：ユニークな曲たち vol.1（#1018・#1029 の同じ原稿が1本のページとして通った実物）</b><a href="https://joy-relief-station.lovable.app/magazine/uke-01.html">https://joy-relief-station.lovable.app/magazine/uke-01.html</a></li>
+<li><b>受付係の進捗（5分おきに更新・公開JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/claude_uketsuke.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/claude_uketsuke.json</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>【納品】コメントを両リポで5分おきに拾う</td><td class="yes">動いている（統計 runs=169 時点で納品2件・取り直し1件・AI Drive 1件）</td></tr>
+<tr><td>本番に出たら Issue に「公開しました＋URL」</td><td class="yes">#1015・#1018 に書けている</td></tr>
+<tr><td>緊急の納品便が Fable 便の後ろで止まらない</td><td class="yes">席貸しを入れた（回帰テスト PASS）。120098番が実際に発車するのは次に Fable レーンの席が空いた時</td></tr>
+<tr><td>同じ中身の納品を二重に積まない</td><td class="yes">関所を入れた（python3 tools/claude_uketsuke.py --self-test PASS。実データで #1029 の uke-01 は「#1018 と同じ中身・120098番」と判定）</td></tr>
+<tr><td>uke-01.html が本番に出ている</td><td class="yes">出ている（HTTP 200・10/18 10:31 公開・Issue #1018 と #1029 に本番URLを書いた）</td></tr>
+</table>
+
+<h2>⑥ 2回目の直し（10/18 22:1x）：「リンクをコピー」を押した瞬間に返事が出るように</h2>
+<div class="what">
+触る検品で「Copy link / リンクをコピー」が押しても無反応と出ました。原因は、全マガジン共通の共有ボタン（<code>tools/magazine/share_bar.py</code>）が、コピーを拒否された環境（未許可・無人ブラウザ・古い端末）で何も表示を変えず、成功したときもアイコンを✓に替えるだけで文字が出なかったこと。<br>
+直し：押した瞬間に「コピーしました」（5言語）の文字を出す。クリップボードが使えなければ旧式のコピーを試し、それも駄目ならURLを選択状態の欄で見せる。同時に共有部品の台本を書き直して軽くし、ページの送る量は増やさない（1ページあたり −8 バイト）。
+</div>
+<div class="nums">
+  <div class="num"><b>9本</b><span>直した本番マガジン（ikareru-01・naze-ongaku-01・rei-harakami・hikigatari-josh-turner・kimi-wa-hoshi-katsu・hito-wa-naze-tsuki-wo-miru-01・hito-ga-odoru-01・backnumber・uke-01）＝GitHub main に置いた</span></div>
+  <div class="num"><b>−8 バイト</b><span>1ページの送る量の増減（実測：ikareru-01 97869→97861）。後退の関所 KOUTAI_KANMON_RESULT: PASS（9件）</span></div>
+  <div class="num"><b>0件</b><span>直した版を手元で配信して押す検品（verify_click.mjs）にかけた結果の「押しても無反応」（hito-ga-odoru-01：9件中9件反応・ikareru-01：23件中23件反応）</span></div>
+</div>
+<pre>実測（2026-10-18 22:1x・node tools/verify_click.mjs / python3 tools/koutai_kanmon.py --check-files）
+hito-ga-odoru-01.html  tested=9  noResponseCount=0  consoleErrorCount=0  CLICK_VERDICT: PASS
+ikareru-01.html        tested=23 noResponseCount=0  consoleErrorCount=0  CLICK_VERDICT: PASS
+送る量（GitHub main の版 → 直した版・バイト）
+ikareru-01 97869→97861 / naze-ongaku-01-takoukan 56390→56382 / rei-harakami 83589→83581 / hikigatari-josh-turner 52803→52795
+kimi-wa-hoshi-katsu 112862→112854 / hito-wa-naze-tsuki-wo-miru-01 125932→125924 / hito-ga-odoru-01 89915→89907 / backnumber 34479→34498 / uke-01 111757→111689
+KOUTAI_KANMON_RESULT: PASS（9件、送る量は基準以内）</pre>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>GitHub main（joy-relief-station public/magazine/）に9本置いた</td><td class="yes">置いた（gh api contents・10/18 22:10）</td></tr>
+<tr><td>Lovable の「公開」を押して本番が変わった</td><td class="no">公開待ち（Lovable の鍵）。deploy_project の入口が http 403「Lovable Error」を返し押せない（22:12 実測。20:16・20:23 も同じ）。本番の deployment-id は e69ca2f5… のまま。鍵が戻り次第、公開押し係（kohyou_osu）が押す</td></tr>
+<tr><td>本番URLで押す検品（2段目）</td><td class="no">未実施（本番が変わっていないため。公開後に再検品）</td></tr>
+</table>
+
+<footer>
+技術メモ：tools/claude_uketsuke.py（受付係）・tools/auto_launcher.py fable_lane_borrow_pick（席貸し）・tools/test_urgent_lane.py ③。数字は 2026-10-18 09:4x に gh api / curl / status/claude_uketsuke_state.json から取った実測。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

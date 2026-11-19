@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#1814 「聴いて確かめていないなら書けない」を明文化＋機械ゲート化 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #1814 「聴いて確かめていないなら書けない」を明文化＋機械ゲート化</div>
+<h1>#1814 「聴いて確かめていないなら書けない」を明文化＋機械ゲート化</h1>
+<div class="date">2026-09-30 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+曲コピー担当の憲法（コピー運用手順書）に「聴いて確かめていないなら書けない」を最上位に明記した。評論型（感想）は聴いた上での感想だから自由だが、聴かずに聴いたていで具体的な音・場面を断定するのは捏造として禁止する（事実の記述と同じ扱い）。あわせて、どの曲にも貼れる手抜きの汎用文を、文言の禁止だけでなく機械検出（二重禁止）でも止める納品前ゲートを追加した。<b>ごきげん補給所（joy-relief-station）の本番コードへ既に反映済み</b>（2026-09-30 17:50 JST）。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1</b><span>機械ゲートの実測exit code（残存分を検知＝止める側として機能）</span></div>
+  <div class="num"><b>750件</b><span>強い手抜き文の残存数（実測・今回のバッチでは無く既存分）</span></div>
+  <div class="num"><b>516件</b><span>弱い手抜き文の残存数（実測・既存分）</span></div>
+  <div class="num"><b>34,657曲</b><span>点検対象の全曲数（実測）</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>確認ページ自体（この画面）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/1814-kiite-tashikamete.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/1814-kiite-tashikamete.html</a></li>
+</ul>
+
+
+
+<footer>
+<pre style="white-space:pre-wrap;font-size:0.78rem;background:#fff;border:1px solid #e2dccd;border-radius:8px;padding:10px;">実測メモ（2026-09-30・ごきげん補給所の本番コードを取得した作業場所で実行して確認）：
+
+・「聴いて確かめていないなら書けない」の一文が、コピー担当の憲法の一番大事な約束の
+　直下に、本番のコードとして既に入っていることを直接読んで確認した。
+・機械ゲート（detect-generic-copy）を実際に走らせ、既存の全34,657曲を点検した。
+　強い手抜き文が750件、弱い手抜き文が516件、既存分として残っていることを実測した。
+　このゲートは残存が1件でもあると止まる側（非ゼロ終了）で実際に動いた。
+・ごきげん補給所はスマホ・PCの画面から見える一般公開サイトではなく非公開の
+　開発リポジトリのため、この確認ページ自体を「本番に出て開けるページ」として置く。
+</pre>
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

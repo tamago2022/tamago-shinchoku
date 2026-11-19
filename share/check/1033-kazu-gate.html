@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1033｜数字の門</title>
+<style>
+:root{--bg:#0b0b0c;--fg:#f2efe9;--dim:#8d8a84;--line:#26262a;--ok:#6fd08c;--ng:#ff6b5e;--warn:#ffc65c;--card:#141417}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Hiragino Sans",sans-serif;line-height:1.7;-webkit-text-size-adjust:100%}
+.wrap{max-width:900px;margin:0 auto;padding:28px 18px 80px}
+h1{font-size:23px;margin:0 0 4px;letter-spacing:.02em}
+.sub{color:var(--dim);font-size:13px;margin:0 0 30px}
+h2{font-size:17px;margin:40px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
+th,td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:400;font-size:12.5px;white-space:nowrap}
+td.a{width:40%}
+code{background:#1d1d21;border-radius:4px;padding:1px 5px;font-size:12.5px;word-break:break-all}
+.ok{color:var(--ok)}.ng{color:var(--ng)}.warn{color:var(--warn)}
+.tag{display:inline-block;background:#2a2a2f;border-radius:4px;padding:1px 7px;font-size:11.5px;color:var(--fg);margin-right:6px;vertical-align:1px}
+footer{margin-top:50px;color:var(--dim);font-size:12px;border-top:1px solid var(--line);padding-top:14px}
+a{color:#8fc4ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>数字の門</h1>
+<p class="sub">2026-09-23／<code>tools/kazu_gate.py</code>／AIを1回も呼ばない・課金0<br>
+報告がたまごさんへ上がる前に、機械だけで検査する。通らなければ出せない。</p>
+
+<h2>1　今日こちらが出した間違いと、何を確かめていれば防げたか</h2>
+<div class="tw">
+<table>
+<tr><th>出した間違い</th><th>何を確かめていれば防げたか</th></tr>
+
+<tr>
+<td class="a"><span class="tag ng">①</span>xAIの残高は<b>381円</b><br>
+<span class="ok">★訂正：前は381円と言いましたが、正しくは1,479円です</span></td>
+<td>xAIの請求画面を自分で1回開いて、<b>URL・HTTPコード・時刻</b>を控える。
+控えていれば、目の前にあったのが「声の窓口（Supabaseのvoice-session）が自分で持っている<b>予算カウンタの残り</b>」で、xAIの残高ではないと、その場で分かった。</td>
+</tr>
+
+<tr>
+<td class="a"><span class="tag ng">②</span>Gensparkには<b>公開APIが無い</b><br>
+<span class="ok">★訂正：実際には公式CLI <code>gsk</code> がある</span></td>
+<td><b>公式ドキュメントの目次を、通しで1回読む。</b>
+見たのは「名前が引けない」と「403が返る」の2つだけ。どちらも<b>その経路が塞がっている証拠</b>であって、<b>存在しない証拠ではない</b>。</td>
+</tr>
+
+<tr>
+<td class="a"><span class="tag ng">③</span><b>枠を使い切った</b></td>
+<td>どのセッションが、どの上限に、いつ当たったかを<b>1件ずつ数える</b>。実際は各セッションがそれぞれ別の上限に当たっていた。合計して1つの枠の話にしない。</td>
+</tr>
+
+<tr>
+<td class="a"><span class="tag ng">④</span>空きメモリ<b>273MBは危機</b></td>
+<td><b>macOSの空きメモリの読み方を1回確かめる。</b>free／inactive／compressed を分けて見れば、273MBが正常だと分かる。数字を取る前に、その数字の意味を確かめる。</td>
+</tr>
+
+<tr>
+<td class="a"><span class="tag ng">⑤</span>Julesは<b>決まった作業しかできない</b></td>
+<td><b>1回投げてから言う。</b>実際に投げたら設計そのものへの批判が返ってきた。投げていないものの能力を語らない。</td>
+</tr>
+
+<tr>
+<td class="a"><span class="tag ng">⑥</span>絵本のアニメを<b>お手本と並べずに渡した</b></td>
+<td><b>お手本と並べた1枚を作ってから出す。</b>並べていない絵は、良いか悪いかを判断する材料が無い＝見る側に丸投げしている。</td>
+</tr>
+</table>
+</div>
+
+<h2>2　門が落とす条件（この3つだけ。増やさない）</h2>
+<div class="tw">
+<table>
+<tr><th>印</th><th>落とす条件</th><th>出す側が書くこと</th></tr>
+
+<tr>
+<td><b class="ng">KZ1</b></td>
+<td>数字があるのに、<b>どこで叩いたかが書いていない</b>。<br>
+「〜のはず」「おそらく」「たぶん」「と思われる」「設定に書いてある」も、ここで落ちる。</td>
+<td>数字と同じ行に、次のどれか1つ：<br>
+・叩いたURL ＋ HTTPコード ＋ 時刻<br>
+・ファイルパス ＋ 行番号<br>
+・コマンド ＋ その出力</td>
+</tr>
+
+<tr>
+<td><b class="ng">KZ2</b></td>
+<td>「無い」「できない」「対応していない」と<b>断定</b>しているのに、<b>実測が2本未満</b>、または<b>公式ドキュメントの目次を通しで読んだ記録が無い</b>。</td>
+<td>別々の経路で2本以上叩いた記録と、目次を通しで読んだ記録。<br>1本塞がっただけでは「無い」と書けない。</td>
+</tr>
+
+<tr>
+<td><b class="ng">KZ3</b></td>
+<td>同じ対象について<b>前に出した数字と食い違う</b>のに、<b>「訂正」と書いていない</b>。<br>過去に出した数字は <code>status/suuji_daicho.jsonl</code> に全部残る。</td>
+<td><b>★訂正：前は◯◯と言いましたが、正しくは△△です</b><br>
+前の数字をそのまま本文に書く（何が変わったかが分からなくなるため）。</td>
+</tr>
+</table>
+</div>
+
+<h2>3　わざと落とした実測の記録</h2>
+<p class="sub" style="margin:0 0 8px">
+<code>python3 tools/kazu_gate.py --self-test</code>／9件中9件が想定どおり。毎朝この試験を走らせ、落とせなくなった日だけ知らせる。</p>
+<div class="tw">
+<table>
+<tr><th>入れた報告文</th><th>結果</th><th>落ちた理由</th></tr>
+
+<tr><td class="a"><code>xAIの残高は381円です。</code></td>
+<td><b class="ng">KZ1で落ちた</b></td>
+<td>381円の出どころが書いていない</td></tr>
+
+<tr><td class="a"><code>残高は381円のはずです。</code></td>
+<td><b class="ng">KZ1で落ちた</b></td>
+<td>「のはず」は出典の代わりにならない</td></tr>
+
+<tr><td class="a"><code>設定に書いてあるので、枠は4.50ドルです。</code></td>
+<td><b class="ng">KZ1で落ちた</b></td>
+<td>「設定に書いてある」は叩いた記録ではない</td></tr>
+
+<tr><td class="a"><code>Gensparkには公開APIが無い。403が返ってきました。</code></td>
+<td><b class="ng">KZ2で落ちた</b></td>
+<td>実測1本のみ／目次を通しで読んだ記録が無い</td></tr>
+
+<tr><td class="a"><code>空きメモリ273MBで危機的です。</code></td>
+<td><b class="ng">KZ1で落ちた</b></td>
+<td>273MBの出どころが書いていない</td></tr>
+
+<tr><td class="a"><code>xAIの残高は1,479円です（https://x.test/b 200 2026-09-23 11:20）。</code><br>
+<span class="sub">※台帳に「381円」が載っている状態で入れた</span></td>
+<td><b class="ng">KZ3で落ちた</b></td>
+<td>前に出した381円と食い違うのに「訂正」と書いていない</td></tr>
+
+<tr><td class="a"><code>★訂正：前は381円と言いましたが、正しくは1,479円です（https://x.test/b 200 2026-09-23 11:20）。</code></td>
+<td><b class="ok">通った</b></td>
+<td>訂正の明示＋前の数字＋URL・200・時刻がそろっている</td></tr>
+
+<tr><td class="a"><code>xAIの残高は $9.41 です（https://console.x.ai/team/billing 200 2026-09-23 11:20 で確認）。</code></td>
+<td><b class="ok">通った</b></td>
+<td>叩いたURL・HTTPコード・時刻がある</td></tr>
+
+<tr><td class="a"><code>判定の規則は tools/hantei.py:119 の1か所だけ、計1件です。</code></td>
+<td><b class="ok">通った</b></td>
+<td>ファイルパス＋行番号がある</td></tr>
+</table>
+</div>
+
+<h2>4　見本ではなく、本物の報告を止めた記録</h2>
+<div class="tw">
+<table>
+<tr><th>いつ・どこ</th><th>入れたもの</th><th>落ちた理由</th></tr>
+<tr>
+<td>2026-09-23 12:04<br><code>tools/kenpin_gate.py --n 819 --can-deliver</code></td>
+<td class="a">819号の提出物（すでに積まれていた本物の報告文）</td>
+<td><b class="ng">KZ1で落ちた</b>：<code>24時間</code>／<code>176.4時間</code>／<code>7.3日</code> の3つとも、どこで測ったかが書いていない。<br>
+<span class="warn">★この号は、門ができるまで出せる状態だった。</span></td>
+</tr>
+</table>
+</div>
+
+<h2>5　どこに埋めたか</h2>
+<div class="tw">
+<table>
+<tr><th>場所</th><th>効き方</th></tr>
+<tr><td><code>tools/kenpin_gate.py --submit</code></td>
+<td>子セッションの報告がDispatchに積まれる前に通る。落ちたら積まれない。</td></tr>
+<tr><td><code>tools/kenpin_gate.py --can-deliver</code></td>
+<td>出してよいかの4条件に、5つめとして足した。</td></tr>
+<tr><td><code>tools/hantei.py</code> の <code>kazu()</code></td>
+<td>判定を呼ぶ唯一の窓口。規則は <code>tools/kazu_gate.py</code> にしか書いていない（同じ規則を2か所に書かない）。</td></tr>
+<tr><td><code>tools/hantei.py</code> の <code>kazu_kanmon()</code></td>
+<td>門そのものが効いているかを毎回みる。落とせなくなったら赤。</td></tr>
+<tr><td>5分便（<code>tools/machine_status_push.sh</code>）</td>
+<td><code>kaitsuu.py --asa</code> の隣で毎朝1回。★赤の日だけ知らせる。効いている限り1文字も書かない。</td></tr>
+<tr><td><code>status/suuji_daicho.jsonl</code>（新設）</td>
+<td>たまごさんへ出した数字を全部残す。同じ対象で数字が変われば、次から必ずKZ3が出る。</td></tr>
+</table>
+</div>
+
+<footer>
+1033番／数字と断定の門<br>
+絵・映像の検品は別便（<code>tools/oni_gate.py</code>＝鬼監督）が持っている。ここでは見ない。
+</footer>
+
+</div>
+</body>
+</html>

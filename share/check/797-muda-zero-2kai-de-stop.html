@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#797 【無駄ゼロ】やり直し2回で止める・同じ名前を並べない・工場停止を自分で直す 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #797 【無駄ゼロ】やり直し2回で止める・同じ名前を並べない・工場停止を自分で直す</div>
+<h1>#797 【無駄ゼロ】やり直し2回で止める・同じ名前を並べない・工場停止を自分で直す</h1>
+<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+3つのばらばらなカウンタ(redoCount+ownerRedoCount+aiVerifyFailCount)の合計が2に達したら自動発車から外す(stuck)仕組みを新設。既に3回以上回っていた8件(769/686/771/770/741/723/464/513)を今すぐstuck化orフラグ付け。分割タスク(778-781)のラベルを末尾の全角(1/4)から先頭の半角(1/4)へ移し、進捗表で見分けがつくようにした。発車が10分止まったら心臓を自分で立て直す仕組みを追加。着火のたびに走っていた重いgit worktree一覧・強制削除(実測2.62秒、しかも安全条件なしの30分基準)を撤去し、既存の安全な掃除係(worktree_reaper.py)に一本化した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>2回</b><span>stuckになるまでのやり直し合計回数(旧: 3つのカウンタ別々に3回ずつ=最大9回まで見逃していた)</span></div>
+  <div class="num"><b>8件</b><span>今回stuck化/浪費フラグを付けた実例(769=11回・686=8回$22.31・771=6回・770/741/723/464/513=各5回)</span></div>
+  <div class="num"><b>2.62秒</b><span>着火のたびに実行していたgit worktree一覧の実測コスト(32件登録時・撤去済み)</span></div>
+  <div class="num"><b>16分</b><span>2026-09-13 05:26-05:42に実際に発車0本が続いた時間(auto_launcher.pyが45秒killを14回連続)</span></div>
+</div>
+
+
+
+<h2>③ 心臓の中の各工程・実測秒数（クロマティの頃との比較）</h2>
+<div class="note">
+クロマティが設計した心臓(heartbeat.sh)は「軽い2つだけを15秒おき・どちらも1秒かからない」だったが、
+2026-09-06以降「確認ページの機械検品」「AI検品の着火と回収」「queue_light再生成」等が同じ15秒ループへ
+足されていき、2026-09-13 05:26〜05:42には<b>auto_launcher.pyが45秒killを14回連続</b>（＝16分間発車0本）
+という実インシデントが起きた（status/heartbeat.log実測）。今回、原因の主犯だった「着火のたびに
+git worktreeを一覧・強制削除する処理」（下表）を撤去し、既存の安全な掃除係(worktree_reaper.py)へ
+一本化した。以下は本セッション中に実測した秒数。
+</div>
+<table>
+<tr><th>工程</th><th>実測秒数</th><th>備考</th></tr>
+<tr><td>auto_launcher.py（1回・平常時）</td><td>0.18秒</td><td>45秒killの直接対象。修正後の実測</td></tr>
+<tr><td>command_ingest.py（1回）</td><td>0.10秒</td><td>45秒killの直接対象</td></tr>
+<tr><td>genzaichi.py（ゲート解放時・本体実行）</td><td>5.72秒</td><td>Lovableへのネットワーク確認込み。heartbeatからは<code>( ... &amp; )</code>で非同期起動のためブロックしない</td></tr>
+<tr><td>worktree_reaper.py / check_page_pruner.py / check_anthropic_reply.py / daily_ingest_scheduler.py / relay_watch.py（ゲート未解放時）</td><td>各0.06〜0.10秒</td><td>いずれも内部ゲートで大半は即終了。非同期起動</td></tr>
+<tr><td class="no">【撤去】着火ごとのgit worktree一覧(--porcelain)</td><td class="no">2.62秒（32件登録時・1回分のみ）</td><td>これに加えて対象件数分の<code>git worktree remove --force</code>（最大180秒のtimeout）が着火のたびに走っていた。安全条件（未コミット確認・origin/main合流確認）も無く、30分経過だけで強制削除する危険な実装だった</td></tr>
+</table>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表(🛑手を止めた仕事セクションが追加された)</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>①stuck化のロジック(合計2で停止・逆テストで合計1は素通り確認)</td><td class="yes">unittest 5本PASS</td></tr>
+<tr><td>②同じ名前を並べない(分割ラベル前置き化・40字重複判定・逆テスト含む)</td><td class="yes">unittest 3本PASS</td></tr>
+<tr><td>③queue_unstickが無限ループにならないか(手段を変えて再開→カウンタリセット)</td><td class="yes">unittest 3本PASS</td></tr>
+<tr><td>④発車0本10分検知+自己復旧(モンキーパッチで本番ファイルを汚さず実行)</td><td class="yes">unittest 4本PASS</td></tr>
+<tr><td>⑤770/771/513を実際にstuck化・dispatch_outbox.jsonlへ理由付きで記録</td><td class="yes">本番queue.json/dispatch_outbox.jsonlで確認済み</td></tr>
+<tr><td>⑥本番の<code>status/queue_light.json</code>（進捗表が実際に読むファイル）に770/771/513=stuckが反映されている</td><td class="yes">GitHub Pages上のqueue_light.jsonを直接fetchして確認済み</td></tr>
+<tr><td>⑦778/779/780/781のラベルが先頭(1/4)〜(4/4)になり、本番で見分けられる</td><td class="yes">GitHub Pages上のqueue_light.jsonで4件とも先頭カウンタ違いを確認済み（下記参照）</td></tr>
+</table>
+<div class="note">
+⑦の実測（本番<code>status/queue_light.json</code>から直接取得した題名）：<br>
+778 (1/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録<br>
+779 (2/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録<br>
+780 (3/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録<br>
+781 (4/4) 【2位】全ページ下の「扉」：感想→自動タスク化→お礼＋あめちゃん→メール登録<br>
+※実機ブラウザのスクリーンショット取得ツールが本セッションに無かったため、店主の実画面確認の代わりに
+本番配信データの直接取得で代替（進捗表の横幅省略表示でも、先頭のカウンタは切れずに必ず見える設計）。
+</div>
+
+<footer>
+このページは #797 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

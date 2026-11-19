@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#34840 仕入れ入力を止めていたDB不足・黒画面フリーズは対応済みと確認 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #34840 仕入れ入力を止めていたDB不足・黒画面フリーズは対応済みと確認</div>
+<h1>#34840 仕入れ入力を止めていたDB不足・黒画面フリーズは対応済みと確認</h1>
+<div class="date">2026-10-10 再実測（押せないリンクを削除し、本番URLの実測値に差し替え）</div>
+
+<h2>① 何を直したか</h2>
+<div class="fix">
+2026-08-08に報告された『棚編集が工事中・在庫ダッシュボードが開けない』『管理画面が黒っぽい画面で数十秒フリーズ』の2つの原因は、DB列欠け（<code>henshin_orders</code>テーブルを除く8列は適用済み。<code>henshin_orders</code>は店主自身が意図的に保留したもので仕入れ入力とは無関係）と黒画面フリーズのPhase1修正（本番JSバンドルへ配信済み）で、<b>どちらも既に解消済み</b>。今回は本番の3ページを直接開いて200・非空を再実測し、前回はねられた「店主が開けないリンク（非公開リポジトリ）」を削除して裏取り内容を本文に直接書き直した。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>1件</b><span>check-db-schema.mjsの残り欠け(henshin_ordersのみ・仕入れ入力とは無関係)</span></div>
+  <div class="num"><b>200</b><span>/admin 本番HTTP応答</span></div>
+  <div class="num"><b>200</b><span>/admin/inventory 本番HTTP応答</span></div>
+  <div class="num"><b>200</b><span>/admin/shelves 本番HTTP応答</span></div>
+</div>
+
+
+
+<h2>③ 押せるリンク</h2>
+<ul class="links">
+  <li><b>管理画面トップ(要ログイン・本番で200を再実測済み)</b><a href="https://joy-relief-station.lovable.app/admin" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin</a></li>
+  <li><b>在庫ダッシュボード(要ログイン・本番で200を再実測済み)</b><a href="https://joy-relief-station.lovable.app/admin/inventory" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/inventory</a></li>
+  <li><b>棚編集(要ログイン・本番で200を再実測済み)</b><a href="https://joy-relief-station.lovable.app/admin/shelves" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/admin/shelves</a></li>
+</ul>
+<div class="note">前回のお知らせでは、この下にたまごさんが開けない非公開リポジトリへのリンク（KNOWN_ISSUES.md・PENDING_DECISIONS.md）を貼っていました。削除し、その裏取り内容は下の表に直接書き直しました。</div>
+
+<h2>何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>本番Supabaseの列欠け(admin_song_overrides.extra_media / badge_kinds、admin_stock.deleted_at ほか計8列)</td><td class="yes">適用済み(scripts/patrol/check-db-schema.mjsで2026-10-10に再実測)</td></tr>
+<tr><td>henshin_ordersテーブル</td><td class="no">未適用。店主自身がmigrationファイル冒頭コメントで意図的に保留と明記済み・仕入れ入力とは無関係</td></tr>
+<tr><td>黒画面フリーズ修正(Suspenseローディング表示・panelOpen分岐)の本番配信</td><td class="yes">配信済み(本番JSバンドルで実測確認)</td></tr>
+<tr><td>/admin, /admin/inventory, /admin/shelves の本番HTTP応答</td><td class="yes">3つとも200・非空(2026-10-10 node fetchで再実測。本文サイズ18035/11018/17356バイト)</td></tr>
+<tr><td>店主の実端末ログイン後の棚編集/在庫ダッシュボード動作</td><td class="no">未実施(AI側はログイン不可のため、店主の実画面での最終確認は未済み)</td></tr>
+</table>
+
+<footer>
+このページは #34840 の確認資料。2026-10-10、機械検品で「開けないリンクが貼ってある」と指摘を受け、該当リンクを削除し裏取り内容を本文へ書き直した（書式は share/check/_template.html に揃えている）。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

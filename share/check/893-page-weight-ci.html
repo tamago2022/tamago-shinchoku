@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#893 重くならない：ページの重さに上限を設けてCIで落とす仕組み 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #893 重くならない：ページの重さに上限を設けてCIで落とす仕組み</div>
+<h1>#893 重くならない：ページの重さに上限を設けてCIで落とす仕組み</h1>
+<div class="date">2026-09-17 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+トップ／曲ページ／棚一覧／案内所4ページのJS量(gzip後)を測り、上限を超えたPRのCIを落とす仕組み(scripts/check-page-weight.mjs)を実装し、mainへ反映しました。今の実測値を「これ以上太らせない」上限(scripts/perf-budget.json)として確定し、わざと1.1MBのダミーを足す逆テストで、実ビルド成果物に対してCIが正しく落ちる(exit 1)ことを実地確認済みです。既存の類似の見張り(バンドル重量の検査)は無変更のまま活かし、今回のものはその補完として追加しています。
+</div>
+
+<h2>② 数字（実測・gzip後）</h2>
+<div class="nums">
+  <div class="num"><b>3988.9KB</b><span>4ページ合計の上限（今の実態）</span></div>
+  <div class="num"><b>896.0KB</b><span>トップ（/）</span></div>
+  <div class="num"><b>5.4KB</b><span>曲ページ（/room/card/$slug）</span></div>
+  <div class="num"><b>5.0KB</b><span>棚一覧（/world/$worldId）</span></div>
+  <div class="num"><b>2615.2KB</b><span>案内所（/cover-guide）※突出して重い。今回は上限固定のみ、削減は別タスク</span></div>
+</div>
+<div class="nums">
+  <div class="num"><b>PASS</b><span>逆テスト: 変更なしでCI合格</span></div>
+  <div class="num"><b>NG(exit 1)</b><span>逆テスト: 実ビルドに1.1MB追加でCI失敗を検出</span></div>
+</div>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>進捗表トップ（⚖️ページの重さ欄）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
+  <li><b>本番サイト（Lovable・今回のCI変更はUI無変更のため見た目の差分なし）</b><a href="https://joy-relief-station.lovable.app/" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>scripts/check-page-weight.mjs 新規作成</td><td class="yes">yes</td></tr>
+<tr><td>quality-gate.yml に「ページの重さチェック」ステップ追加</td><td class="yes">yes</td></tr>
+<tr><td>既存 check-perf-guards.mjs / check-bundle-weight.mjs は無変更</td><td class="yes">yes</td></tr>
+<tr><td>origin/main へ合流(コミット 5cc67070・08d7312d)</td><td class="yes">yes</td></tr>
+<tr><td>scripts/perf-budget.json に実測baselineを確定・main合流(コミット af446e62)</td><td class="yes">yes</td></tr>
+<tr><td>実ビルド成果物での逆テスト(1.1MB追加→exit 1)</td><td class="yes">yes</td></tr>
+<tr><td>進捗表(GitHub Pages)に実数値を表示</td><td class="yes">yes</td></tr>
+<tr><td>Lovableの「公開」を押す</td><td class="no">no（今回の変更はCI/データのみでUIに差分がなく、かつsuspicious activityによる既存の恒久ブロックが継続中。詳細は.claude/KNOWN_ISSUES.md先頭項目）</td></tr>
+</table>
+
+<footer>
+このページは #893 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#800 検品を「読む」から「触る」へ：3段検品を接続 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #800 検品を「読む」から「触る」へ：3段検品を接続</div>
+<h1>#800 検品を「読む」から「触る」へ：3段検品を接続</h1>
+<div class="date">2026-09-13 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+<p>検品AI(Verifier)は「curlで読め・ブラウザは使うな」と命じられていたため、押しても無反応のボタンでもHTMLにコードがあればPASSしていた。新しく <code>tools/verify_click.mjs</code>（headless Chrome・許可ダイアログ無し）を作り、実際に押せる要素を1つずつクリックして「無反応」「コンソールエラー」を機械的に検出できるようにした。</p><p>本番<code>/cover-guide</code>で実行したところ、押しても反応しない要素は無かったが、<b>本番のReact hydrationエラー(#418)を実検出</b>した（curlで読むだけの旧検品では絶対に気づけない不具合）。</p><p>harvest()を「機械検品(存在するか)→触る検品(動くか)→鬼監督(AI検品・過去の基準に照らす)」の3段に接続し、検品プロンプトから「ブラウザ禁止」を撤廃(claude-in-chrome/screencaptureのみ禁止・nodeヘッドレスは許可)。鬼監督が動いた記録は status/oni_kantoku_log.jsonl に必ず残る。</p>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>13件中0件</b><span>/cover-guide?artist=nakajima&amp;song=ito で無反応だった要素</span></div>
+  <div class="num"><b>1件</b><span>同ページで実検出したコンソールエラー(React #418)</span></div>
+  <div class="num"><b>2705件</b><span>素の/cover-guideの押せる要素の総数(実測)</span></div>
+  <div class="num"><b>3段</b><span>機械検品→触る検品→鬼監督 の接続段数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>本番/cover-guide(実際にテストしたページ)</b><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito" target="_blank" rel="noopener">https://joy-relief-station.lovable.app/cover-guide?artist=nakajima&amp;song=ito</a></li>
+  <li><b>鬼監督の実行ログ(oni_kantoku_log.jsonl・n=800の行)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/oni_kantoku_log.jsonl</a></li>
+  <li><b>触る検品の実績(touch_check_stats.json)</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/touch_check_stats.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/touch_check_stats.json</a></li>
+  <li><b>コード本体(tools/auto_launcher.py)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/auto_launcher.py" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/auto_launcher.py</a></li>
+  <li><b>検品スクリプト本体(tools/verify_click.mjs)</b><a href="https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_click.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/tamago-shinchoku/blob/main/tools/verify_click.mjs</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>確認ページ検品(1段目)→触る検品(2段目)→鬼監督(3段目)の接続</td><td class="yes">通常フロー・バックログ掃き出しフロー両方に接続済み</td></tr>
+<tr><td>検品プロンプトの「ブラウザ禁止」撤廃(nodeヘッドレス許可)</td><td class="yes">build_verify_prompt()更新済み</td></tr>
+<tr><td>無反応要素を実検出できるか(/cover-guideで実証)</td><td class="yes">コンソールエラーを実検出(React #418)・無反応0件を実測</td></tr>
+<tr><td>鬼監督が動いた記録がoni_kantoku_log.jsonlに残るか</td><td class="yes">n=800の実行を記録済み(既存の日誌/憲法点検が読む書式に合わせた)</td></tr>
+<tr><td>過去のPASS済み仕事を新検品で後追いし、何件落ちるか実測</td><td class="no">工場全体が高負荷(loadavg12〜33)のため今回は時間内に実測できず。次回の空いている時間帯にtools/_800_retro_touch_check.pyを実行すれば数字が出る</td></tr>
+</table>
+
+<footer>
+このページは #800 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
