@@ -1,9 +1,9 @@
 {
- "totalChecked": 2091,
+ "totalChecked": 2093,
  "totalPassed": 474,
- "totalFailed": 459,
- "totalErrors": 1158,
- "totalCostUsd": 342.6049,
+ "totalFailed": 460,
+ "totalErrors": 1159,
+ "totalCostUsd": 342.7509,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -447,25 +447,10 @@
   "本番URLの再生ボタンは依然`w-16 h-16 md:w-20 md:h-20": 1,
   "依頼文は既存ルールの引用で対象不明という同一セッション自身の診断（35319号）": 1,
   "mainにはコード修正が入っているが本番(Lovable)には未反映で、アーティ": 1,
-  "本番URLがHTTP 404（Lovable未公開のまま、作業側も「公開待ち」と": 1
+  "本番URLがHTTP 404（Lovable未公開のまま、作業側も「公開待ち」と": 1,
+  "本番URLが404を返している（curl実測、公開作業が未完了）": 1
  },
  "history": [
-  {
-   "ts": "2026-11-16T13:44:30+09:00",
-   "n": 35323,
-   "url": "https://joy-relief-station.lovable.app/room/card/perfume-spinning",
-   "verdict": "fail",
-   "reason": "main合流の主張が虚偽（実装commitはmainの祖先ではなく孤立ブランチのみ）で、本番にofficialUrl等の変更が未反映（作業者自身が自白）、かつ全ジャンル展開のうち2件のみで大部分が未着手",
-   "costUsd": 0.3366574
-  },
-  {
-   "ts": "2026-11-16T15:09:56+09:00",
-   "n": 35323,
-   "url": "https://tamago2022.github.io/tamago-shinchoku/share/check/35323-summer-shelf-2items.html",
-   "verdict": "fail",
-   "reason": "main合流が虚偽（実装commit 4dda08028はブランチfix/otsuka-foods-contamination上の孤立commitで、`git merge-base --is-ancestor HEAD origin/main`はNO）、かつ本番URLをcurlで実測しても公式サイトリンク(officialUrl)が山下達郎・Childish Gambino両カードとも0件で未反映",
-   "costUsd": 0.3656554
-  },
   {
    "ts": "2026-11-16T15:11:43+09:00",
    "n": 35323,
@@ -849,7 +834,23 @@
    "verdict": "fail",
    "reason": "本番URLがHTTP 404（Lovable未公開のまま、作業側も「公開待ち」と自己申告済み）",
    "costUsd": 0.1486208
+  },
+  {
+   "ts": "2026-11-19T12:38:46+09:00",
+   "n": 35632,
+   "url": "https://joy-relief-station.lovable.app/lift/aisansan-ningendamono",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-11-19T12:40:43+09:00",
+   "n": 35632,
+   "url": "https://joy-relief-station.lovable.app/lift/aisansan-ningendamono",
+   "verdict": "fail",
+   "reason": "本番URLが404を返している（curl実測、公開作業が未完了）",
+   "costUsd": 0.1459704
   }
  ],
- "updatedAt": "2026-11-19 11:59"
+ "updatedAt": "2026-11-19 12:40"
 }
