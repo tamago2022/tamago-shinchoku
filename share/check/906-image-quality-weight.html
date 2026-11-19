@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>#906 画質を指差しで決める／何が重いのか 確認ページ</title>
 <style>
-  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#b8860b;}
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);--ki:var(--t-warn);}
   *{box-sizing:border-box;}
   body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
@@ -17,38 +17,38 @@
   h3{font-size:0.95rem;color:var(--ink);margin:22px 0 8px;font-weight:700;}
   .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
   .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
-  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
   .num b{display:block;font-size:1.6rem;line-height:1.2;}
   .num span{color:var(--sub);font-size:0.8rem;}
-  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
   ul.links{list-style:none;margin:0;padding:0;}
-  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
   .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 8px;}
-  .shot{flex:1 1 160px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot{flex:1 1 160px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
   .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/16px 16px;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;background:repeating-conic-gradient(var(--t-panel) 0% 25%,var(--t-panel) 0% 50%) 50%/16px 16px;}
   .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
   .imgblock{margin:0 0 30px;}
-  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
   /* 棒グラフ */
   .barrow{margin:0 0 12px;}
   .barlabel{font-size:0.82rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-  .tag{display:inline-block;font-size:0.7rem;padding:2px 8px;border-radius:99px;font-weight:700;color:#fff;}
-  .tag.aka{background:var(--aka);}
-  .tag.midori{background:var(--midori);}
-  .tag.ki{background:var(--ki);}
-  .bartrack{background:#efe9db;border-radius:6px;height:22px;position:relative;overflow:hidden;}
+  .tag{display:inline-block;font-size:0.7rem;padding:2px 8px;border-radius:99px;font-weight:700;color:var(--t-fg);}
+  .tag.aka{background:var(--aka);color:var(--t-on-accent)}
+  .tag.midori{background:var(--midori);color:var(--t-on-accent)}
+  .tag.ki{background:var(--ki);color:var(--t-on-accent)}
+  .bartrack{background:var(--t-panel);border-radius:6px;height:22px;position:relative;overflow:hidden;}
   .barfill{height:100%;border-radius:6px;}
-  .barfill.aka{background:var(--aka);}
-  .barfill.midori{background:var(--midori);}
-  .barfill.ki{background:var(--ki);}
+  .barfill.aka{background:var(--aka);color:var(--t-on-accent)}
+  .barfill.midori{background:var(--midori);color:var(--t-on-accent)}
+  .barfill.ki{background:var(--ki);color:var(--t-on-accent)}
   .barval{position:absolute;right:8px;top:0;height:100%;display:flex;align-items:center;font-size:0.78rem;font-weight:700;color:var(--ink);}
   .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:0.78rem;margin:0 0 16px;color:var(--sub);}
   .legend span{display:inline-flex;align-items:center;gap:5px;}
@@ -58,8 +58,8 @@
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #906 画質を指差しで決める／何が重いのか</div>
@@ -119,9 +119,9 @@
 
 <h2>④ 何が重いのか（実際にビルドされた資材・大きい順10件・転送量実測）</h2>
 <div class="legend">
-  <span><i style="background:#c4483a"></i>今は要らない（検索・関連曲を使うまで届かなくていい）</span>
-  <span><i style="background:#b8860b"></i>画面に出たら要る（loading="lazy"・出ないページには届かない）</span>
-  <span><i style="background:#3a7a52"></i>要る（アプリ・デザインの動作に必須）</span>
+  <span><i style="background:var(--t-ng-bg)"></i>今は要らない（検索・関連曲を使うまで届かなくていい）</span>
+  <span><i style="background:var(--t-warn-bg)"></i>画面に出たら要る（loading="lazy"・出ないページには届かない）</span>
+  <span><i style="background:var(--t-ok-bg)"></i>要る（アプリ・デザインの動作に必須）</span>
 </div>
 
 <div class="barrow"><div class="barlabel">coverGuide.js（3万曲データ・gzip転送量）<span class="tag aka">今は要らない</span></div><div class="bartrack"><div class="barfill aka" style="width:100.0%"></div><span class="barval">2.51MB</span></div></div>
@@ -199,9 +199,11 @@
 計算: 関連カード 表示267px Retina2倍で必要534px 今配布2000px超
 </pre><p>この確認ページは #906 のセッションが tools/make_check_page.py の書式(share/check/_template.html)に揃えて手動生成。1回目のAI検品差し戻し（画像1枚のみ・棒グラフと要る/要らない分類が無い）を受け、画像を3枚（A/B/C）に増量し、④を棒グラフ＋3色タグへ作り直した。</p>
 </footer>
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

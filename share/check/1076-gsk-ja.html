@@ -9,14 +9,14 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0d0b14;
-      --surface: #17131f;
-      --surface2: #1f1930;
-      --accent: #c8a4ff;
-      --accent2: #f0c9ff;
-      --gold: #e8c97a;
-      --text: #ede8f5;
-      --muted: #9b90b0;
+      --bg: var(--t-bg);
+      --surface: var(--t-bg);
+      --surface2: var(--t-bg);
+      --accent: var(--t-purple);
+      --accent2: var(--t-purple);
+      --gold: var(--t-warn);
+      --text: var(--t-fg);
+      --muted: var(--t-mute);
       --border: rgba(200,164,255,0.15);
       --glow: rgba(200,164,255,0.08);
     }
@@ -51,10 +51,10 @@
       position: relative;
       animation: spin 18s linear infinite;
       background:
-        radial-gradient(circle at 50% 50%, #2a2040 0%, #2a2040 12%, transparent 12%),
+        radial-gradient(circle at 50% 50%, var(--t-panel) 0%, var(--t-panel) 12%, transparent 12%),
         repeating-conic-gradient(
-          #1a1428 0deg 3deg,
-          #221a35 3deg 6deg
+          var(--t-bg) 0deg 3deg,
+          var(--t-panel) 3deg 6deg
         );
       box-shadow: 0 0 40px rgba(200,164,255,0.25), 0 0 80px rgba(200,164,255,0.1);
     }
@@ -79,7 +79,7 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: radial-gradient(circle, #e8c97a 0%, #c8a260 60%, #9a7840 100%);
+      background: radial-gradient(circle, var(--t-warn-bg) 0%, var(--t-warn-bg) 60%, var(--t-warn-bg) 100%);
       box-shadow: 0 0 8px rgba(232,201,122,0.5);
     }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -96,7 +96,7 @@
       font-weight: 700;
       letter-spacing: 0.05em;
       line-height: 1.3;
-      background: linear-gradient(135deg, #e8d4ff 0%, var(--accent2) 50%, var(--gold) 100%);
+      background: linear-gradient(135deg, var(--t-purple-bg) 0%, var(--accent2) 50%, var(--gold) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -219,7 +219,7 @@
 
     /* ===== SECRET ===== */
     .secret-box {
-      background: linear-gradient(135deg, #1f1930, #2a1840);
+      background: linear-gradient(135deg, var(--t-bg), var(--t-panel));
       border: 1px solid rgba(232,201,122,0.25);
       border-radius: 16px;
       padding: 20px;
@@ -268,8 +268,7 @@
       height: 2px;
       background: linear-gradient(90deg, var(--accent), var(--gold));
       opacity: 0;
-      transition: opacity 0.2s;
-    }
+      transition: opacity 0.2s;color:var(--t-on-accent)}
     .cover-card:hover::before { opacity: 1; }
     .cover-year {
       font-size: 0.6rem;
@@ -312,8 +311,7 @@
       position: absolute;
       left: 6px; top: 6px; bottom: 6px;
       width: 1px;
-      background: linear-gradient(to bottom, var(--accent), transparent);
-    }
+      background: linear-gradient(to bottom, var(--accent), transparent);color:var(--t-on-accent)}
     .tl-item {
       position: relative;
       padding-bottom: 20px;
@@ -327,8 +325,7 @@
       width: 8px; height: 8px;
       border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 6px var(--accent);
-    }
+      box-shadow: 0 0 6px var(--accent);color:var(--t-on-accent)}
     .tl-year {
       font-size: 0.65rem;
       color: var(--gold);
@@ -575,5 +572,7 @@
   </p>
 </footer>
 
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

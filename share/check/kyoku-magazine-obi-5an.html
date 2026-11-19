@@ -6,9 +6,9 @@
 <meta name="robots" content="noindex">
 <title>曲ページ「この曲が出てくる特集」の帯・5案</title>
 <style>
-  :root{--kinari:#F6F2EA;--ink:#22201C;--mute:#8A847A;--line:rgba(34,32,28,.12);--shu:#B5452E;--card:#FFFDF9}
+  :root{--kinari:var(--t-fg);--ink:var(--t-fg2);--mute:var(--t-mute);--line:rgba(34,32,28,.12);--shu:var(--t-ng);--card:var(--t-panel)}
   *{box-sizing:border-box}
-  body{margin:0;background:#E9E4DA;color:var(--ink);font-family:-apple-system,"Hiragino Sans","Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:var(--t-panel);color:var(--ink);font-family:-apple-system,"Hiragino Sans","Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased}
   header{padding:28px 20px 8px;max-width:440px;margin:0 auto}
   header h1{font:500 17px/1.5 "Hiragino Mincho ProN","Yu Mincho",serif;margin:0 0 6px;letter-spacing:.04em}
   header p{font-size:12px;color:var(--mute);margin:0;line-height:1.7}
@@ -19,19 +19,19 @@
   .score{margin:8px 6px 0;font-size:11px;color:var(--mute);line-height:1.7}
   .score em{font-style:normal;color:var(--ink);font-weight:600}
   /* 端末の枠（スマホの曲ページの一部） */
-  .phone{background:var(--kinari);border-radius:22px;padding:14px 14px 18px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)}
+  .phone{background:var(--t-panel2);border-radius:22px;padding:14px 14px 18px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);color:var(--t-fg)}
   .song{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-  .song .v{aspect-ratio:16/9;background:#222 url(https://img.youtube.com/vi/qgcsNqlM2Co/hqdefault.jpg) center/cover}
+  .song .v{aspect-ratio:16/9;background:var(--t-panel) url(https://img.youtube.com/vi/qgcsNqlM2Co/hqdefault.jpg) center/cover}
   .song .t{padding:10px 12px;font:400 15px/1.4 "Hiragino Mincho ProN",serif}
   .song .t small{color:var(--mute);font-size:12px}
   .next{margin-top:16px;font:400 13px/1.4 "Hiragino Mincho ProN",serif;color:var(--mute)}
-  .next .ph{margin-top:8px;height:46px;border-radius:12px;background:linear-gradient(90deg,#ddd5c8,#e9e3d8)}
+  .next .ph{margin-top:8px;height:46px;border-radius:12px;background:linear-gradient(90deg,var(--t-panel),var(--t-panel))}
   .tag{display:inline-block;font:600 8.5px/1 -apple-system,"Helvetica Neue",sans-serif;letter-spacing:.22em;padding:4px 5px 3px 6px;border-radius:3px;white-space:nowrap}
   .ttl{font:400 13px/1.55 "Hiragino Mincho ProN","Yu Mincho",serif}
-  .chev{color:#B9B2A6;font-size:18px;line-height:1;font-weight:300}
+  .chev{color:var(--t-mute);font-size:18px;line-height:1;font-weight:300}
   /* 今（比較用） */
-  .now a{display:flex;align-items:center;gap:10px;margin-top:10px;background:#1C1B19;color:#F4F1EA;border-radius:8px;padding:12px 12px;text-decoration:none}
-  .now .tag{border:1px solid rgba(255,255,255,.35);color:#fff}
+  .now a{display:flex;align-items:center;gap:10px;margin-top:10px;background:var(--t-bg);color:var(--t-fg);border-radius:8px;padding:12px 12px;text-decoration:none}
+  .now .tag{border:1px solid rgba(255,255,255,.35);color:var(--t-fg)}
   /* A 罫線の行 */
   .A .list{margin-top:14px;border-top:1px solid var(--line)}
   .A a{display:flex;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
@@ -41,17 +41,17 @@
   .B .grp{margin-top:14px;background:var(--card);border-radius:12px;overflow:hidden}
   .B a{display:flex;align-items:center;gap:10px;padding:12px 12px;text-decoration:none;color:var(--ink);position:relative}
   .B a+a:before{content:"";position:absolute;left:12px;right:0;top:0;border-top:1px solid var(--line)}
-  .B .tag{background:#EFEAE1;color:var(--ink)}
+  .B .tag{background:var(--t-panel);color:var(--ink)}
   .B .ttl{flex:1}
   /* C サムネつきの行 */
   .C .list{margin-top:14px;display:grid;gap:10px}
   .C a{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
-  .C .th{position:relative;flex:none;width:96px;aspect-ratio:16/9;border-radius:6px;background:#333 center/cover}
-  .C .th .tag{position:absolute;left:5px;bottom:5px;background:rgba(0,0,0,.7);color:#fff;font-size:7px;padding:3px 4px 2px 5px}
+  .C .th{position:relative;flex:none;width:96px;aspect-ratio:16/9;border-radius:6px;background:var(--t-panel) center/cover}
+  .C .th .tag{position:absolute;left:5px;bottom:5px;background:var(--t-bg);color:var(--t-fg);font-size:7px;padding:3px 4px 2px 5px}
   .C .ttl{flex:1}
   /* D 生成りの面＋朱の一点 */
   .D .list{margin-top:14px;display:grid;gap:8px}
-  .D a{display:block;background:#EDE6DA;border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--ink)}
+  .D a{display:block;background:var(--t-panel);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--ink)}
   .D .tag{color:var(--shu);padding:0;letter-spacing:.3em;font-size:8.5px}
   .D .ttl{display:block;margin-top:5px}
   /* E 文字だけ（題名の下の小さな行） */
@@ -148,5 +148,7 @@
   推し：B（2本を1つの白い箱にまとめる）。次点 A。決まったら、その形で本番の MagazineLink（曲ページの入口）だけを差し替えます。<br>
   作成 2026-10-11 ・ 本番には未反映
 </footer>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

@@ -1,14 +1,14 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ink Explainer を超えられるか｜分析と試作（Opus 5.5）</title>
 <style>
-:root{--red:rgb(214,17,32);--paper:rgb(247,244,238);--ink:rgb(28,27,25)}
+:root{--red:var(--t-ng);--paper:var(--t-panel);--ink:var(--t-fg2)}
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.75 -apple-system,"Hiragino Sans",sans-serif}
 main{max-width:760px;margin:auto;padding:20px 16px 60px}
 h1{font-size:24px;line-height:1.35;margin:.2em 0} h2{font-size:19px;border-top:3px solid var(--ink);padding-top:10px;margin-top:36px}
-.red{color:var(--red)} .box{background:#fff;border:2px solid var(--ink);padding:12px 14px;margin:12px 0}
-.big{font-size:20px;font-weight:700} video,iframe{width:100%;aspect-ratio:16/9;background:#000;border:0;display:block}
-table{border-collapse:collapse;width:100%;font-size:14px} td,th{border-bottom:1px solid #ccc;padding:5px 4px;text-align:left;vertical-align:top} .n{text-align:right;white-space:nowrap}
-small,.s{font-size:13px;color:#555} ol li,ul li{margin:.3em 0} a{color:var(--red)}
+.red{color:var(--red)} .box{background:var(--t-panel);border:2px solid var(--ink);padding:12px 14px;margin:12px 0}
+.big{font-size:20px;font-weight:700} video,iframe{width:100%;aspect-ratio:16/9;background:var(--t-bg);border:0;display:block}
+table{border-collapse:collapse;width:100%;font-size:14px} td,th{border-bottom:1px solid var(--t-line);padding:5px 4px;text-align:left;vertical-align:top} .n{text-align:right;white-space:nowrap}
+small,.s{font-size:13px;color:var(--t-mute)} ol li,ul li{margin:.3em 0} a{color:var(--red)}
 </style></head><body><main>
 <p class=s>2026-10-10 ／ たまごさんの依頼「@Inkexplainer96 以上の質が出せるか」</p>
 <h1>棒人間解説チャンネル Ink Explainer を<span class=red>超えられるか</span>：分析と試作1本</h1>
@@ -78,13 +78,13 @@ small,.s{font-size:13px;color:#555} ol li,ul li{margin:.3em 0} a{color:var(--red
 <p class=s>作り方の記録：台本・字幕・作画コードは工場の status/ink/proto/（公開しない場所）。</p>
 <h2>8. 生データ（実測）</h2>
 <p class=s>上の％と円は、すべて以下の実測から計算した。</p>
-<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">全17本の再生合計 19,464,000 ／ 1位 12,000,000 → 61.7%（yt-dlp --flat-playlist の view_count・2026-10-10 04:07取得）
+<pre style="white-space:pre-wrap;font-size:12px;background:var(--t-panel);border:1px solid var(--t-line);padding:8px">全17本の再生合計 19,464,000 ／ 1位 12,000,000 → 61.7%（yt-dlp --flat-playlist の view_count・2026-10-10 04:07取得）
 pace.json allPct: 前 39% (04:14記録) ／ 後 39% (06:24記録) ※どちらも 10-09 05:39 の同じ古い値
 採点合計: 本家 9+8+7+6+9 = 39 ／ 試作 7+7+5+5+6 = 30
 冒頭90秒の画面切り替え（ffmpeg scene&gt;0.3）: 46回
 話速: 49_Ph2q6uIM 2516語/671秒=225語/分, SD7XyG2wd1k 2413語/696秒=208語/分, OCr6NteWSQ8 1537語/484秒=191語/分（自動字幕から）
 試作: 212語/76.9秒, 31カット, proto_web.mp4 910,013バイト(960x540 H.264 + HE-AAC)</pre>
-<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">calibration（status/quota-state.json の15分バケツ × Claudeアプリ plan-usage-history の実測%）
+<pre style="white-space:pre-wrap;font-size:12px;background:var(--t-panel);border:1px solid var(--t-line);padding:8px">calibration（status/quota-state.json の15分バケツ × Claudeアプリ plan-usage-history の実測%）
 時刻              週%(sd)  リセット以降の重みつきトークン  1%あたり
 2026-10-07 06:30   9      176.8M                        19.65M
 2026-10-07 11:03  12      261.6M                        21.80M
@@ -94,11 +94,11 @@ pace.json allPct: 前 39% (04:14記録) ／ 後 39% (06:24記録) ※どちら�
 2026-10-09 05:39  39      773.1M                        19.82M
 5時間枠: 10-08 13:18 fh=8 直近5h 38.8M(4.85M/1%) ／ 10-08 18:58 fh=12 直近5h 81.4M(6.78M/1%)
 重み: input 1.0 / cache_creation 1.25 / cache_read 0.1 / output 5.0（tools/quota_estimate.py と同じ）</pre>
-<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">子2本の重みつき合計 = 779,740
+<pre style="white-space:pre-wrap;font-size:12px;background:var(--t-panel);border:1px solid var(--t-line);padding:8px">子2本の重みつき合計 = 779,740
 週の枠   = 779,740 ÷ 20.3M  = 3.841%   （1%あたり19.65M〜21.80Mの幅で 3.577〜3.968%）
 5時間枠  = 779,740 ÷ 5.8M   = 13.444%   （幅 11.501〜16.077%）
 claude -p の結果JSON（本番の子 64ac2de9）: total_cost_usd = 2.744472</pre>
-<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">Opus 5.5 の子の会話ログ（~/.claude/projects の usage を集計）
+<pre style="white-space:pre-wrap;font-size:12px;background:var(--t-panel);border:1px solid var(--t-line);padding:8px">Opus 5.5 の子の会話ログ（~/.claude/projects の usage を集計）
 {
  &quot;2f86d951-c10f-4b7b-9edb-9db6e21f6aac&quot;: {
   &quot;msgs&quot;: 4,
@@ -125,12 +125,12 @@ claude -p の結果JSON（本番の子 64ac2de9）: total_cost_usd = 2.744472</p
   &quot;last&quot;: &quot;2026-10-09T21:02:29.034Z&quot;
  }
 }</pre>
-<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">Gemini TTS の記録（status/ink/proto/cost_log.jsonl）
+<pre style="white-space:pre-wrap;font-size:12px;background:var(--t-panel);border:1px solid var(--t-line);padding:8px">Gemini TTS の記録（status/ink/proto/cost_log.jsonl）
 {&quot;at&quot;: &quot;2026-10-10T05:00:07&quot;, &quot;model&quot;: &quot;gemini-3.8-flash-tts&quot;, &quot;input_tokens&quot;: 413, &quot;output_tokens&quot;: 2569, &quot;usd&quot;: 0.025896, &quot;yen&quot;: 4.098}</pre>
 <h2>9. 検証（10/10 12:40・推定を実数に置き換え）</h2>
 <div class=box><p class=big>1本あたり：外部API <span class=red>3.69円</span>（公式単価×実数で計算・確定。無料枠なら0円）／Claude 週枠 <span class=red>約0.08%</span>（5時間枠 約0.25%）</p>
 <p>API料金に換算すると Opus 5.5 は約481円相当。ただし定額のMaxプランの中なので、追加の請求は0円。前の「週0.04%」はトークン量だけで数えた値で、Opus の単価がSonnetの2倍なのを入れていなかったので、多めの0.08%に直した。</p></div>
-<pre style="white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:8px">Gemini 公式単価（ai.google.dev/gemini-api/docs/pricing・2026-10-10 12:27 取得）
+<pre style="white-space:pre-wrap;font-size:12px;background:var(--t-panel);border:1px solid var(--t-line);padding:8px">Gemini 公式単価（ai.google.dev/gemini-api/docs/pricing・2026-10-10 12:27 取得）
 gemini-3.8-flash-tts Standard: 無料枠=無料 ／ 有料枠 入力 $0.50/1M・音声出力 $9.00/1M（2026-12-31まで。2027-01-01から $1.00 / $18.00）
 今回の実数（APIの usageMetadata）: 入力 413 ・ 音声出力 2,569（= 102.9秒 × 25トークン/秒）
 413×0.50/1M + 2569×9.00/1M = $0.023328 × 158.23円 = 3.69円（2027年以降の単価なら 7.4円）
@@ -311,4 +311,6 @@ usage_measure.py: d80a5c61 weighted=273346 / 3b4647fd weighted=677210（公開�
 <li>声の公式値段の目安 約17円（長さ比例の概算）</li>
 </ul>
 <p class=s>記録（比較画像・プロンプト・cost_log.jsonl・見積り estimate.json・8分版の指示書 PROMPT_build.md）は工場の status/ink/long8/（公開しない場所）。</p>
-</main></body></html>
+</main>
+<!--tamago-dark 2--><link rel="stylesheet" href="../../../theme/tamago-dark.css">
+</body></html>

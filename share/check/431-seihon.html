@@ -265,7 +265,7 @@ function paintKoeList(){
   $("koeNote").innerHTML=
     "▶ を押すと、その声で同じ台詞を1本だけ作って鳴らします（1本 約0.02円）。"
     +"名前を押すと案内人の声がその場で入れ替わります（話している途中でもできます）。<br>"
-    +'<span style="color:#a8564c">'+OTHER_VOICES.map(o=>o.name).join("・")
+    +'<span style="color:var(--t-ng)">'+OTHER_VOICES.map(o=>o.name).join("・")
     +" は "+OTHER_VOICES[0].why+"（"+XAI_PROBE+"）。勝手に買い足すことはしません。</span>";
 }
 /* xAIを実際に叩いた結果。憶測ではなく、返ってきた文をそのまま置く。
@@ -447,7 +447,7 @@ function paintTempo(msg){
     "頭脳 1.21／1.29秒 ＋ 声 2.96／3.20／5.01秒 ＝ <b>約4.2〜6.3秒</b>"]);
   rows.push(["⑥ Grok Voice・Iris（xAI）","<b>測れませんでした</b>（"+XAI_PROBE+"）"]);
   let html=rows.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join("");
-  html+=`<tr><td colspan="2" style="color:#2a2622;line-height:1.85;padding-top:10px">`
+  html+=`<tr><td colspan="2" style="color:var(--t-fg2);line-height:1.85;padding-top:10px">`
     +`<b>① と ④ は測り方が違います。</b>①は「こちらが喋り終わったと機械が気づいてから」、`
     +`④は「文字で頼んでから」。①には“喋り終わりを聞き分ける時間”が入っています。`
     +`同じ物差しでは比べられないので、そのまま両方書いています。<br>`
@@ -462,13 +462,13 @@ function paintTempo(msg){
     +`</td></tr>`;
   if(TEMPO.brain.length&&TEMPO.tts.length&&hei){
     const sa=(avg(TEMPO.brain)+avg(TEMPO.tts))/1000-hei;
-    html+=`<tr><td colspan="2" style="color:#2a2622;line-height:1.8;padding-top:8px">`
+    html+=`<tr><td colspan="2" style="color:var(--t-fg2);line-height:1.8;padding-top:8px">`
       +`<b>引き換えになるもの：</b>声を選べる形（②＋③）にすると、`
       +`いまの形より<b>1回あたり ${sa>0?"約"+sa.toFixed(2)+"秒 遅くなります":"遅くなりませんでした"}</b>。`
       +`いまの形は速いかわりに<b>Googleの30人からしか選べません</b>。`
       +`</td></tr>`;
   }
-  if(msg) html+=`<tr><td colspan="2" style="color:#c4483a">${msg}</td></tr>`;
+  if(msg) html+=`<tr><td colspan="2" style="color:var(--t-ng)">${msg}</td></tr>`;
   t.innerHTML=html;
 }
 $("tempoBtn").addEventListener("click",async()=>{
@@ -656,7 +656,7 @@ function paintStock(){
   const aru=KINDS.filter(k=>s[k]>0).map(k=>KIND_JA[k]+" "+s[k]);
   const nai=KINDS.filter(k=>!s[k]).map(k=>KIND_JA[k]);
   $("stock").innerHTML="いま棚にあるもの："+aru.join("／")
-    +(nai.length?('<br><span style="color:#a8564c">'+nai.join("・")+" の棚はまだ空です（仕入れ待ち）</span>"):"");
+    +(nai.length?('<br><span style="color:var(--t-ng)">'+nai.join("・")+" の棚はまだ空です（仕入れ待ち）</span>"):"");
 }
 
 const norm=s=>String(s).normalize("NFKC").toLowerCase()
@@ -1565,7 +1565,7 @@ function paintMeter(){
   const tsuki=SAIFU.tsuki(), hi=SAIFU.tsukiHi();
   meterEl.innerHTML=`${Math.floor(sec/60)}分${String(Math.floor(sec%60)).padStart(2,"0")}秒 ／ `
     +`<b>${yen.toFixed(1)}円</b>`+(perMin?`（このペースで1分 約${perMin.toFixed(1)}円）`:"")
-    +(han?`<br><b style="color:#c9a227">このまま30分で 約${han.toFixed(0)}円</b>`
+    +(han?`<br><b style="color:var(--t-warn)">このまま30分で 約${han.toFixed(0)}円</b>`
          +`<span style="opacity:.7">（実測ペース×30。話す量が増えれば上がります）</span>`:"")
     +`<br>今日ここまで <b>${kyou.toFixed(1)}円</b> ／ 上限 ${cap.toFixed(0)}円`
     +`（あと ${nokori.toFixed(1)}円）`
@@ -2329,4 +2329,6 @@ stopEl.addEventListener("click",()=>{ closeAll(); stopPlay(false);
 })();
 </script>
 
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

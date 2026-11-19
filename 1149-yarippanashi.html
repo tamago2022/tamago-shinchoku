@@ -3,22 +3,22 @@
 <title>1149番：やりっぱなしゼロ（4帳簿・型・門）</title>
 <style>
 :root{color-scheme:light}
-body{font-family:-apple-system,"Hiragino Sans",sans-serif;margin:0;background:#faf8f4;color:#1b1b1b;line-height:1.7}
+body{font-family:-apple-system,"Hiragino Sans",sans-serif;margin:0;background:var(--t-panel);color:var(--t-fg2);line-height:1.7}
 .wrap{max-width:1000px;margin:0 auto;padding:20px 16px 80px}
-h1{font-size:22px;margin:0 0 4px} h2{font-size:17px;margin:34px 0 8px;border-left:5px solid #c9a227;padding-left:10px}
-.lead{color:#555;font-size:13px;margin:0 0 20px}
+h1{font-size:22px;margin:0 0 4px} h2{font-size:17px;margin:34px 0 8px;border-left:5px solid var(--t-warn);padding-left:10px}
+.lead{color:var(--t-mute);font-size:13px;margin:0 0 20px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.card{background:#fff;border:1px solid #e3ddd0;border-radius:12px;padding:14px;text-align:center}
-.card.aka{border-color:#d33;background:#fff6f6}
+.card{background:var(--t-panel);border:1px solid var(--t-line);border-radius:12px;padding:14px;text-align:center}
+.card.aka{border-color:var(--t-ng);background:var(--t-panel)}
 .card .n{font-size:34px;font-weight:800} .card .lbl{font-size:13px;font-weight:700}
-.card .sub{font-size:11px;color:#777;margin-top:4px}
-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;margin-top:6px}
-th,td{border:1px solid #e5e0d4;padding:6px 8px;text-align:left;vertical-align:top}
-th{background:#f3efe4;font-size:12px}
-.aka{color:#c00;font-weight:700} .ok{color:#2a7}
-.box{background:#fff;border:1px solid #e3ddd0;border-radius:12px;padding:12px 14px;font-size:13px}
-code{background:#f0ece0;padding:1px 5px;border-radius:4px;font-size:12px}
-a{color:#15c}
+.card .sub{font-size:11px;color:var(--t-mute);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--t-panel);margin-top:6px}
+th,td{border:1px solid var(--t-line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--t-panel);font-size:12px}
+.aka{color:var(--t-ng);font-weight:700} .ok{color:var(--t-ok)}
+.box{background:var(--t-panel);border:1px solid var(--t-line);border-radius:12px;padding:12px 14px;font-size:13px}
+code{background:var(--t-panel);padding:1px 5px;border-radius:4px;font-size:12px}
+a{color:var(--t-info)}
 </style></head><body><div class="wrap">
 <h1>1149番：やりっぱなしゼロ</h1>
 <p class="lead">更新 2026-10-20T16:08（機械が数えた実測。手で書いた数字は1つもありません）<br>
@@ -30,7 +30,7 @@ a{color:#15c}
 <h2>最上位の赤：動いているのに何も取れていない</h2>
 <div class="box">直近24時間 … 巡回 267周／走行 8973／<b>取れた -30</b>
 <ul><li>赤：gsk_daicho.jsonl が24時間まったく増えていない（動いているのに何も生んでいない）</li><li>赤：ai_daicho.jsonl が24時間まったく増えていない（動いているのに何も生んでいない）</li></ul>
-<p style="color:#666;font-size:12px;margin:6px 0 0">※「取れた」は台帳の<b>差分</b>で数えます。累計を足すと12万件になり、赤が永久に出ません（4日半見逃した原因がこれ）。</p></div>
+<p style="color:var(--t-mute);font-size:12px;margin:6px 0 0">※「取れた」は台帳の<b>差分</b>で数えます。累計を足すと12万件になり、赤が永久に出ません（4日半見逃した原因がこれ）。</p></div>
 
 <h2>①始めたのに終わっていない（3時間で黄・6時間で赤）</h2>
 <table><thead><tr><th>番</th><th>件名</th><th>経過</th><th>状態</th><th>色</th></tr></thead><tbody><tr><td>792</td><td><span data-sekisho="inyou">【最重要・要確認】パーソナライズ実地テスト：亮太さん＋甥っ子に「好きそうで知らないもの」を出す</span></td><td>897.6時間</td><td>draft</td><td>赤</td></tr><tr><td>1673</td><td><span data-sekisho="inyou">【禁止事項(絶対・違反しない)】</span></td><td>486.9時間</td><td>draft</td><td>赤</td></tr><tr><td>1846</td><td><span data-sekisho="inyou">頼まれた範囲を超えて余計なものを足している、または頼まれた範囲を満たしていない</span></td><td>472.9時間</td><td>draft</td><td>赤</td></tr><tr><td>35106</td><td><span data-sekisho="inyou">判定日赤｜GLIM SPANKYは現状曲数が少なすぎ(1曲程度)でアーティストページも無い状態、これは方針未達なので直し</span></td><td>19.6時間</td><td>awaiting_check</td><td>赤</td></tr></tbody></table>
@@ -47,7 +47,7 @@ a{color:#15c}
 <h2>今日壊れたものの型（件数ではなく型で数える）</h2>
 <div class="box">鳴った回数 <b>5490</b>回 ／ 種類 29 ／ <b>型は 8</b>。
 いちばん多い型：<b>A 鍵・ログインの取り合い</b><br>
-<span style="color:#666;font-size:12px">2,800回鳴っていても、直す先は8か所しかない。1件ずつ直すと2,800回の作業になる。</span></div>
+<span style="color:var(--t-mute);font-size:12px">2,800回鳴っていても、直す先は8か所しかない。1件ずつ直すと2,800回の作業になる。</span></div>
 <table><thead><tr><th>型</th><th>鳴った回数</th><th>種類</th><th>例</th></tr></thead><tbody><tr><td>A 鍵・ログインの取り合い</td><td><b>3537</b>回</td><td>3種</td><td><span data-sekisho="inyou">発車の門（鍵と本数）（1768回）<br>Claudeのログイン（1768回）<br>120063 便11：実装・照合・main合流は済みだが、Lovableの鍵（OAuth同意切れ・10-14〜）で本番に出せず、同じ案件が自動やり直しで3往復し（1回）</span></td></tr><tr><td>B トンネル・通信が切れた</td><td><b>1768</b>回</td><td>1種</td><td><span data-sekisho="inyou">中継所のトンネル（1768回）</span></td></tr><tr><td>D 動いているのに何も取れない（空回し）</td><td><b>153</b>回</td><td>7種</td><td><span data-sekisho="inyou">空回し（走ったのに取れない）（146回）<br>同時落ち／工場が空回しだけ（2回）<br>飴玉ゼロ率：85.1%（87係中 74係が「走っているのに取れた0」）（1回）</span></td></tr><tr><td>Z 未分類（型を作る候補）</td><td><b>20</b>回</td><td>9種</td><td><span data-sekisho="inyou">unknown／不明（12回）<br>嘘の完了：4件（できもの未検証3件 ＋ 途中で固まった案件1件）（1回）<br>嘘の完了：16件（できもの未検証8件 ＋ 途中で固まった案件8件）（1回）</span></td></tr><tr><td>H ファイル・ロックの事故</td><td><b>5</b>回</td><td>2種</td><td><span data-sekisho="inyou">.git/index.lock（2回）<br>落ちた／git index.lock が残っている（3回）</span></td></tr><tr><td>C 門が素通り／弾き数を数えていない</td><td><b>4</b>回</td><td>4種</td><td><span data-sekisho="inyou">1622号がkenpin_gateで7回連続FIX。oni_modoshi.pyのkenpin()がok=Trueを返すにはgaibu_shinsa.soto_（1回）<br>1740番(投げ込み箱→予約)が5回以上中断していた真因は、ask.jsonl→kotae.jsonlをつなぐ『チャッピーへの実際の問い合わせ』経路が一度も実装（1回）<br>1773_tanomanai_kanmon.pyのFURU_SIGN正規表現が、号のタイトル引用中の「やってもらう」という単語にも誤反応した（自分の報告文が自分（1回）</span></td></tr><tr><td>F 頼んだのに返ってこない</td><td><b>2</b>回</td><td>2種</td><td><span data-sekisho="inyou">1856番：2026-10-01のF-20261001024019-quickで既に『実装すべき機能・画面は存在しない（対象なし）・判断のみ記録して完了とする』（1回）<br>1856番の再発防止(naosu_taishou_nashi_kakutei)を--honbanで実行し、queue.jsonの1856番エントリがstatus（1回）</span></td></tr><tr><td>E 枠・クレジットを使い切った</td><td><b>1</b>回</td><td>1種</td><td><span data-sekisho="inyou">週の枠：None%（測れていません）（1回）</span></td></tr></tbody></table>
 
 <h2>門の死活（弾き0が続く門＝素通り＝赤）</h2>
@@ -56,10 +56,12 @@ a{color:#15c}
 <h2>落ちても続きから（自動復旧の実測）</h2>
 <div class="box">やり直し 3回／完走 8回／<b>認証で即停止 1回</b>／停止中スキップ 1回<br>
 使い方：<code>tools/1149_fukkyuu.sh &lt;名前&gt; -- &lt;コマンド&gt;</code>　解除：<code>tools/1149_fukkyuu.sh --susumu</code><br>
-<span style="color:#666;font-size:12px">認証で落ちたときだけ、やり直さずに止めます。やり直すと同じ失敗を1,403回積むからです。</span></div>
+<span style="color:var(--t-mute);font-size:12px">認証で落ちたときだけ、やり直さずに止めます。やり直すと同じ失敗を1,403回積むからです。</span></div>
 
 <h2>同時本数（機械が決めた上限）</h2>
 <div class="box">上限 <b>本</b>（基準本）／負荷 <code>0%</code>・swap <code>0GB</code>・落ちた率 <code>0%</code>（<code>status/dojisu_jougen.json</code>からの実測の生データ）
 <ul></ul></div>
 
-</div></body></html>
+</div>
+<!--tamago-dark 2--><link rel="stylesheet" href="theme/tamago-dark.css">
+</body></html>

@@ -4,22 +4,22 @@
 <meta charset="UTF-8">
 <title>確認ページ：HOME／ふるさとプレイリスト仕上げ（自動発車10番）</title>
 <style>
-  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.8;color:#222}
-  h1{font-size:20px;border-bottom:3px solid #d9534f;padding-bottom:8px}
-  .box{background:#fff3f3;border:1px solid #f0c0c0;border-radius:8px;padding:16px;margin:16px 0}
-  .num{font-size:28px;font-weight:bold;color:#d9534f}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.8;color:var(--t-fg2)}
+  h1{font-size:20px;border-bottom:3px solid var(--t-ng);padding-bottom:8px}
+  .box{background:var(--t-panel);border:1px solid var(--t-ng);border-radius:8px;padding:16px;margin:16px 0}
+  .num{font-size:28px;font-weight:bold;color:var(--t-ng)}
   table{width:100%;border-collapse:collapse;margin:12px 0}
-  td,th{border:1px solid #ddd;padding:8px;text-align:left;font-size:14px}
-  th{background:#f5f5f5}
-  .ok{color:#2a7a2a}
-  .ng{color:#d9534f;font-weight:bold}
-  code{background:#f0f0f0;padding:2px 6px;border-radius:4px}
+  td,th{border:1px solid var(--t-line);padding:8px;text-align:left;font-size:14px}
+  th{background:var(--t-panel)}
+  .ok{color:var(--t-ok)}
+  .ng{color:var(--t-ng);font-weight:bold}
+  code{background:var(--t-panel);padding:2px 6px;border-radius:4px}
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 
@@ -51,7 +51,7 @@
 <tr><td>案3</td><td>Spotify Developer Dashboardでアプリを作り、playlist-modify権限のトークンを発行して<code>.env</code>へ追記する（値はたまごさんご本人が書き込む・AI側は見ない）</td></tr>
 </table>
 
-<div class="box" style="background:#f3f8ff;border-color:#c0d8f0">
+<div class="box" style="background:var(--t-panel);border-color:var(--t-info)">
 <strong>案1の具体的な手順（コピペで2〜3分）：</strong>
 <ol>
 <li>タイトル変更：プレイリストを開く→「…」または鉛筆アイコン→編集→タイトル欄に貼り付け：<br><code>🏠 帰りたくなった夜に｜ごきげん補給所</code></li>
@@ -61,15 +61,17 @@
 </div>
 
 <h1>⑤証拠（実行結果そのままの画像）</h1>
-<p style="color:#666;font-size:13px">画面のスクリーンショットではありません。Spotify側の画面は今回一度も開いていないため撮れません。代わりに、このセッションが実際に実行したコマンドの結果をそのまま画像化しています。</p>
-<img src="img/10-home-tools-and-env.png" alt="ツール一覧とenvアクセス制限の実行結果" style="max-width:100%;border:1px solid #ccc;border-radius:6px;margin:12px 0">
-<img src="img/10-home-script-readonly.png" alt="既存Spotifyスクリプトが読み取り専用であることの実行結果" style="max-width:100%;border:1px solid #ccc;border-radius:6px;margin:12px 0">
+<p style="color:var(--t-mute);font-size:13px">画面のスクリーンショットではありません。Spotify側の画面は今回一度も開いていないため撮れません。代わりに、このセッションが実際に実行したコマンドの結果をそのまま画像化しています。</p>
+<img src="img/10-home-tools-and-env.png" alt="ツール一覧とenvアクセス制限の実行結果" style="max-width:100%;border:1px solid var(--t-line);border-radius:6px;margin:12px 0">
+<img src="img/10-home-script-readonly.png" alt="既存Spotifyスクリプトが読み取り専用であることの実行結果" style="max-width:100%;border:1px solid var(--t-line);border-radius:6px;margin:12px 0">
 
-<p style="margin-top:32px;color:#888;font-size:13px">記録：<code>.claude/PENDING_DECISIONS.md</code>（2026-09-04・2026-09-05の2回分）／<code>.claude/agent-memory/tamago-orchestrator/project_spotify_playlist_edit_blocked.md</code>／<code>.claude/TASK_BOARD.md</code>案件#153（joy-relief-stationリポジトリ・非公開のためGitHub直リンクは店主ログイン必須）</p>
+<p style="margin-top:32px;color:var(--t-mute);font-size:13px">記録：<code>.claude/PENDING_DECISIONS.md</code>（2026-09-04・2026-09-05の2回分）／<code>.claude/agent-memory/tamago-orchestrator/project_spotify_playlist_edit_blocked.md</code>／<code>.claude/TASK_BOARD.md</code>案件#153（joy-relief-stationリポジトリ・非公開のためGitHub直リンクは店主ログイン必須）</p>
 
-<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
 </div>
 <!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

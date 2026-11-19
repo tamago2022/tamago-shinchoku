@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+# tools/cloud_login.sh start から呼ばれる。claude auth login を疑似端末で動かし、URL を書き出し、コードのファイルが来たら渡す。
+set timeout 216000
+set deadline [expr {[clock seconds] + 216000}]
+set S "/Users/mac/tamago/tamago-shinchoku/status/cloud_credit"
+set D "$env(HOME)/.tamago/claude_cloud"
+log_file -noappend "$D/login.log"
+spawn claude auth login --claudeai
+expect -re {(https://claude\.com/cai/oauth/authorize[^\s\x07\x1b]*state=[A-Za-z0-9_-]{43})}
+set url $expect_out(1,string)
+set f [open "$S/login_url.txt" w]; puts $f $url; close $f
+expect -re {Paste code}
+# コードは status/cloud_credit/code.txt に1行置けば2秒以内に渡る（mac_jobs の列を待たない＝コードの寿命内に届く）
+while {![file exists "$S/code.txt"] && ![file exists "$D/code.txt"]} { if {[clock seconds] > $deadline} { exit 1 }; sleep 2 }
+if {[file exists "$S/code.txt"]} { set cf "$S/code.txt" } else { set cf "$D/code.txt" }
+set f [open $cf r]; set code [string trim [read $f]]; close $f
+file delete $cf
+send -- "$code\r"
+expect {
+  -re {(?i)success|logged in|Login successful} { set r "OK" }
+  -re {(?i)error|invalid|failed} { set r "NG" }
+  timeout { set r "TIMEOUT" }
+}
+set f [open "$S/login_result.txt" w]; puts $f $r; close $f
+expect eof

@@ -4,9 +4,9 @@
 <meta name="robots" content="noindex">
 <title>当番制コンシェルジュ たたき台 — 卵の案内人と、食の人たち</title>
 <style>
-:root{--kinari:#EDE6D6;--ai:#22304A;--shu:#C1442E;--sumi:#3a3a3a;--usui:#8a8574;--line:#d8cfbb}
+:root{--kinari:var(--t-fg);--ai:var(--t-fg2);--shu:var(--t-ng);--sumi:var(--t-fg2);--usui:var(--t-mute);--line:var(--t-line)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--kinari);color:var(--sumi);font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--t-panel2);color:var(--t-fg);font-family:"Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.85;-webkit-text-size-adjust:100%}
 .wrap{max-width:680px;margin:0 auto;padding:28px 20px 80px}
 .kicker{font-size:11px;letter-spacing:6px;color:var(--usui)}
 .kicker em{font-style:normal;color:var(--shu);letter-spacing:4px;font-size:9.5px;margin-left:10px}
@@ -22,20 +22,20 @@ th,td{border-bottom:1px solid var(--line);padding:7px 4px;text-align:left;vertic
 th{font-weight:400;color:var(--usui);font-size:11px;letter-spacing:1px}
 .note{font-size:11.5px;color:var(--usui)}
 .mikaku{color:var(--shu);font-size:11px;border:1px solid var(--shu);padding:0 5px;border-radius:2px;margin-left:4px;white-space:nowrap}
-.first{background:var(--ai);color:var(--kinari);padding:16px 18px;margin:18px 0;font-size:13.5px}
-.first b{color:#f0c9a8;font-weight:400;letter-spacing:2px;font-size:11px;display:block}
+.first{background:var(--t-panel2);color:var(--t-fg);padding:16px 18px;margin:18px 0;font-size:13.5px}
+.first b{color:var(--t-warn);font-weight:400;letter-spacing:2px;font-size:11px;display:block}
 
 /* ===== 試作：スマホ枠 ===== */
-.phone{margin:16px auto 6px;max-width:360px;background:#f6f1e6;border:1px solid var(--line);border-radius:26px;padding:16px 0 14px;box-shadow:0 1px 0 #fff inset}
+.phone{margin:16px auto 6px;max-width:360px;background:var(--t-panel);border:1px solid var(--line);border-radius:26px;padding:16px 0 14px;box-shadow:0 1px 0 #fff inset}
 .ph-top{display:flex;justify-content:space-between;padding:0 18px;font-size:10.5px;color:var(--usui);letter-spacing:1px}
 .ph-top .now{color:var(--ai)}
 .rail{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-top:6px}
 .rail::-webkit-scrollbar{display:none}
 .card{flex:0 0 100%;scroll-snap-align:center;padding:10px 22px 4px;text-align:center}
-.face{width:112px;height:112px;margin:8px auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;background:var(--kinari);border:1px solid var(--line);transition:box-shadow .6s}
+.face{width:112px;height:112px;margin:8px auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;background:var(--t-panel2);border:1px solid var(--line);transition:box-shadow .6s;color:var(--t-fg)}
 .face img{width:96px;height:96px;object-fit:contain}
 .face .moji{font-size:40px;font-weight:300;color:var(--ai)}
-.face .kari{position:absolute;bottom:-4px;right:-6px;font-size:9px;letter-spacing:1px;background:#f6f1e6;color:var(--usui);border:1px solid var(--line);padding:0 5px;border-radius:8px}
+.face .kari{position:absolute;bottom:-4px;right:-6px;font-size:9px;letter-spacing:1px;background:var(--t-panel);color:var(--usui);border:1px solid var(--line);padding:0 5px;border-radius:8px}
 .card.toban .face{box-shadow:0 0 0 3px #f6f1e6,0 0 0 4px var(--shu),0 0 26px 6px rgba(193,68,46,.28);animation:hikari 2.4s ease-in-out infinite}
 @keyframes hikari{50%{box-shadow:0 0 0 3px #f6f1e6,0 0 0 4px var(--shu),0 0 8px 2px rgba(193,68,46,.10)}}
 .badge{display:inline-block;font-size:10px;letter-spacing:3px;padding:1px 10px;border:1px solid var(--line);color:var(--usui);margin-bottom:4px}
@@ -46,7 +46,7 @@ th{font-weight:400;color:var(--usui);font-size:11px;letter-spacing:1px}
 .hours{font-size:11px;color:var(--usui);letter-spacing:1px}
 .dots{display:flex;justify-content:center;gap:7px;margin:8px 0 10px}
 .dots i{width:6px;height:6px;border-radius:50%;background:var(--line);display:block}
-.dots i.on{background:var(--ai)}
+.dots i.on{background:var(--t-panel2);color:var(--t-fg)}
 .dots i.tb{outline:1px solid var(--shu);outline-offset:2px}
 .talk{margin:0 14px;border-top:1px solid var(--line);padding-top:10px}
 .log{min-height:96px;max-height:260px;overflow-y:auto;font-size:12.5px;line-height:1.75;padding:0 4px}
@@ -58,8 +58,8 @@ th{font-weight:400;color:var(--usui);font-size:11px;letter-spacing:1px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .chips button{font:inherit;font-size:11px;background:none;border:1px solid var(--line);border-radius:14px;padding:3px 10px;color:var(--ai)}
 form{display:flex;gap:6px}
-input{flex:1;font:inherit;font-size:14px;border:1px solid var(--line);background:#fbf8f1;border-radius:18px;padding:8px 12px;color:var(--sumi)}
-form button{font:inherit;font-size:12px;border:0;background:var(--ai);color:var(--kinari);border-radius:18px;padding:0 14px;letter-spacing:2px}
+input{flex:1;font:inherit;font-size:14px;border:1px solid var(--line);background:var(--t-panel);border-radius:18px;padding:8px 12px;color:var(--sumi)}
+form button{font:inherit;font-size:12px;border:0;background:var(--t-panel2);color:var(--t-fg);border-radius:18px;padding:0 14px;letter-spacing:2px}
 .rename{font:inherit;font-size:10.5px;background:none;border:0;color:var(--usui);text-decoration:underline;margin-top:2px}
 .sim{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:8px 0}
 .sim button{font:inherit;font-size:10.5px;background:none;border:1px solid var(--line);padding:2px 8px;color:var(--usui)}
@@ -232,4 +232,6 @@ document.getElementById("sim").innerHTML='<span class="note">時刻を試す：<
 document.querySelectorAll("#sim button").forEach(b=>b.onclick=()=>{const s=sims[b.dataset.i];simD=s[1];simH=s[2];go(render())});
 window.addEventListener("load",()=>go(render(),false));
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

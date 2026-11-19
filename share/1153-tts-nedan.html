@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>読み上げ、いくら？ — 掘り起こしと値段の実測（2026-09-26）</title>
 <style>
-:root{--ink:#17150f;--sub:#6b6357;--line:#e3ddd0;--bg:#faf7f0;--hi:#b8402c;--ok:#1f6b45;--card:#fff}
+:root{--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--bg:var(--t-panel);--hi:var(--t-ng);--ok:var(--t-ok);--card:var(--t-panel)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.75;-webkit-text-size-adjust:100%}
 .wrap{max-width:760px;margin:0 auto;padding:22px 16px 80px}
@@ -19,19 +19,19 @@ p{margin:.6em 0}
 .big em{font-style:normal;color:var(--hi)}
 table{width:100%;border-collapse:collapse;font-size:.83rem;background:var(--card);margin:12px 0;display:block;overflow-x:auto;white-space:nowrap}
 th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
-th{background:#f1ece0;font-weight:600}
+th{background:var(--t-panel);font-weight:600}
 td.num{text-align:right;font-variant-numeric:tabular-nums}
-tr.best td{background:#eaf5ee;font-weight:600}
+tr.best td{background:var(--t-panel);font-weight:600}
 tr.best td:first-child::before{content:"◎ "}
 .note{font-size:.79rem;color:var(--sub);margin-top:6px}
 ul{padding-left:1.2em}li{margin:.35em 0}
 .tl{list-style:none;padding:0;margin:14px 0}
 .tl li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:8px 0}
 .tl b{display:block;font-size:.76rem;color:var(--sub);font-weight:600;letter-spacing:.04em}
-.stop{border-color:var(--hi)!important;background:#fdf2ef!important}
-.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;border:1px solid var(--line);background:#f1ece0;color:var(--sub);margin-right:5px}
-.tag.red{background:#fdf2ef;border-color:#e6bdb3;color:var(--hi)}
-.tag.grn{background:#eaf5ee;border-color:#b9ddc8;color:var(--ok)}
+.stop{border-color:var(--hi)!important;background:var(--t-panel)!important}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;border:1px solid var(--line);background:var(--t-panel);color:var(--sub);margin-right:5px}
+.tag.red{background:var(--t-panel);border-color:var(--t-ng);color:var(--hi)}
+.tag.grn{background:var(--t-panel);border-color:var(--t-line);color:var(--ok)}
 a{color:var(--hi)}
 .src{font-size:.78rem;color:var(--sub)}
 .src li{margin:.3em 0;word-break:break-all}
@@ -183,5 +183,7 @@ Extended Voice Library のほうは日本語で絞り込めるが、<b>何種類
 <p class="note">※ OpenAI の声の種類数は公式ページで数え切れなかったため「十数種」と幅で書いている。断定していない。</p>
 
 </div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../theme/tamago-dark.css">
 </body>
 </html>

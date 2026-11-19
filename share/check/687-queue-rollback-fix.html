@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>#687 status/丸ごとロールバック事故・真因と復旧 確認ページ</title>
 <style>
-  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
   body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:820px;margin-left:auto;margin-right:auto;}
@@ -15,23 +15,23 @@
   .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
   .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.02rem;}
-  .warn{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:0.98rem;background:#fff3f1;}
-  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.84rem;margin-bottom:20px;}
+  .warn{border-left:3px solid var(--aka);padding:4px 0 4px 14px;margin:0 0 20px;font-size:0.98rem;background:var(--t-panel);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.84rem;margin-bottom:20px;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
-  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.74rem;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.74rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);font-weight:700;}
-  code{background:#efe9db;border-radius:4px;padding:1px 5px;font-size:0.85em;}
-  pre{background:#1c1c1c;color:#d8d2c2;border-radius:10px;padding:14px;overflow-x:auto;font-size:0.76rem;line-height:1.5;}
-  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  code{background:var(--t-panel);border-radius:4px;padding:1px 5px;font-size:0.85em;}
+  pre{background:var(--t-bg);color:var(--t-fg);border-radius:10px;padding:14px;overflow-x:auto;font-size:0.76rem;line-height:1.5;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
 <body>
 <!-- SHINCHOKU_BACK_LINK -->
-<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
-  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #687 status/丸ごとロールバック事故・真因と復旧</div>
@@ -110,5 +110,7 @@ PASS: relay_server経由の直接queue_add()呼び出しが、
 このページは案件#687の対応記録です。<code>share/check/</code>配下・非公開扱い（noindex）。<br>
 永久保全タグ：<code>git show rescue-687-autostash-20260913:status/queue.json</code>で1回目の事故直前の完全な状態がいつでも見られる。
 </footer>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

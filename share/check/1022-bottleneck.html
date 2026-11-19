@@ -2,8 +2,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>1022 ― たまごさんはボトルネックではありませんでした。詰まっていたのは工場の口です</title>
 <style>
-:root{--paper:#EDE6D6;--ink:#22304A;--accent:#C1442E;--ok:#2F6B4F;
---rule:rgba(34,48,74,.18);--faint:rgba(34,48,74,.60)}
+:root{--paper:var(--t-panel);--ink:var(--t-fg2);--accent:var(--t-ng);--ok:var(--t-ok);
+--rule:rgba(34,48,74,.18);--faint:var(--t-fg2)}
 *{box-sizing:border-box}
 html,body{overflow-x:hidden;max-width:100%}
 html{-webkit-text-size-adjust:100%}
@@ -48,12 +48,12 @@ blockquote{margin:0 0 1.4rem;padding:0 0 0 1rem;border-left:2px solid var(--acce
 blockquote cite{display:block;font-style:normal;font-size:.72rem;letter-spacing:.16em;color:var(--faint);margin-top:.6rem}
 .bar{display:flex;width:100%;height:2.1rem;border:1px solid var(--rule);margin:0 0 .5rem;overflow:hidden}
 .bar i{font-style:normal;font-size:.62rem;letter-spacing:.08em;min-width:0;flex-shrink:1;
- display:flex;align-items:center;justify-content:center;color:#fff;white-space:nowrap;overflow:hidden}
-@media (max-width:520px){.bar i{font-size:0}.bar i::after{font-size:.62rem;color:#fff}
+ display:flex;align-items:center;justify-content:center;color:var(--t-fg);white-space:nowrap;overflow:hidden}
+@media (max-width:520px){.bar i{font-size:0}.bar i::after{font-size:.62rem;color:var(--t-fg)}
  .b1::after{content:"33"}.b2::after{content:"208"}.b3::after{content:"21"}}
 table{table-layout:fixed}
 th,td{word-break:break-word;overflow-wrap:anywhere}
-.b1{background:var(--accent)}.b2{background:#8A7B63}.b3{background:var(--ok)}
+.b1{background:var(--accent);color:var(--t-on-accent)}.b2{background:var(--t-line)}.b3{background:var(--ok);color:var(--t-on-accent)}
 .legend{font-size:.72rem;color:var(--faint);letter-spacing:.1em;margin:0 0 2rem}
 .legend s{display:inline-block;width:.7rem;height:.7rem;margin:0 .35em 0 1em;vertical-align:-.05em}
 .legend s:first-child{margin-left:0}
@@ -329,4 +329,6 @@ footer a{color:var(--faint)}
 Obsidianのノートは<b>読んだだけ</b>です。1文字も書き換えていません。
 </footer>
 
-</div></body></html>
+</div>
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body></html>

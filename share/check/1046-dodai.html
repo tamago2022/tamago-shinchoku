@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>#1046 土台を替える ― いまの卵を捨てて、Live2D にする</title>
 <style>
-:root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;--ki:#8a6a1f;--mi:#b0a894;}
+:root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);--ki:var(--t-warn);--mi:var(--t-mute);}
 *{box-sizing:border-box;}
 body{margin:0;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 44px);
   background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
@@ -15,29 +15,29 @@ h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-siz
 h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.04rem;letter-spacing:.05em;
   margin:40px 0 13px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;}
 .date{color:var(--sub);font-size:.8rem;margin-bottom:16px;word-break:break-word;}
-.ketsu{background:#fff;border-left:4px solid var(--midori);border-radius:0 12px 12px 0;padding:16px 18px;margin:0 0 14px;}
+.ketsu{background:var(--t-panel);border-left:4px solid var(--midori);border-radius:0 12px 12px 0;padding:16px 18px;margin:0 0 14px;}
 .ketsu .l1{font-family:"Hiragino Mincho ProN",serif;font-size:1.12rem;line-height:1.6;margin:0 0 8px;}
 .ketsu .l2{font-size:.92rem;color:var(--sub);margin:0;}
-.warn{background:#fff;border-left:4px solid var(--aka);border-radius:0 12px 12px 0;padding:13px 16px;font-size:.9rem;margin:0 0 14px;}
-.note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 16px;font-size:.89rem;margin:0 0 13px;}
+.warn{background:var(--t-panel);border-left:4px solid var(--aka);border-radius:0 12px 12px 0;padding:13px 16px;font-size:.9rem;margin:0 0 14px;}
+.note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:13px 16px;font-size:.89rem;margin:0 0 13px;}
 .note p{margin:0 0 8px;} .note p:last-child{margin:0;}
-.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%;}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 8px;border-radius:10px;border:1px solid var(--line);background:var(--t-panel);max-width:100%;}
 table{border-collapse:separate;border-spacing:0;font-size:.83rem;min-width:660px;}
 th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:center;vertical-align:top;line-height:1.5;}
-th{background:#efe9db;color:var(--sub);font-weight:600;font-size:.7rem;}
-th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:#fff;border-right:1px solid var(--line);
+th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:.7rem;}
+th.t,td.t{text-align:left;position:sticky;left:0;z-index:2;background:var(--t-panel);border-right:1px solid var(--line);
   font-size:.79rem;padding-left:10px;min-width:112px;font-weight:600;white-space:normal;}
-th.t{background:#efe9db;z-index:3;}
+th.t{background:var(--t-panel);z-index:3;}
 tr:last-child td{border-bottom:none;}
 td.n{font-variant-numeric:tabular-nums;white-space:nowrap;}
 .c-ok{color:var(--midori);font-weight:700;} .c-ng{color:var(--aka);font-weight:700;} .c-un{color:var(--mi);}
-.sel{background:#f6f2e6;}
+.sel{background:var(--t-panel);}
 ul.plain{list-style:none;margin:0 0 14px;padding:0;}
-ul.plain li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 9px;font-size:.89rem;line-height:1.65;}
+ul.plain li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 9px;font-size:.89rem;line-height:1.65;}
 ul.plain li b.h{display:block;margin-bottom:4px;font-size:.96rem;}
 ol.step{margin:0 0 14px;padding-left:1.2em;font-size:.9rem;}
 ol.step li{margin:0 0 9px;line-height:1.65;}
-code{background:#efe9db;padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
+code{background:var(--t-panel);padding:1px 5px;border-radius:4px;font-size:.82em;word-break:break-all;}
 .small{font-size:.8rem;color:var(--sub);line-height:1.6;}
 footer{color:var(--sub);font-size:.78rem;margin-top:48px;line-height:1.6;border-top:1px solid var(--line);padding-top:15px;}
 @media (max-width:420px){
@@ -255,5 +255,7 @@ footer{color:var(--sub);font-size:.78rem;margin-top:48px;line-height:1.6;border-
   <a href="../../index.html">進捗表に戻る</a>　／　<a href="https://tamago2022.github.io/tamago-shinchoku/share/ohon/1046-live2d.html">Live2Dの台</a>
 </footer>
 
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

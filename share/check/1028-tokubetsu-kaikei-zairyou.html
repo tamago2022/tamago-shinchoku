@@ -7,11 +7,11 @@
 <title>特別会計・材料表（第1段：調べただけ）</title>
 <style>
   :root{
-    --ink:#1b1917; --paper:#f4f1ea; --line:#d6cfc0;
-    --a:#1d5c3f;  /* 確定した事実 */
-    --b:#8a5a12;  /* 報じられていること */
-    --c:#7a2f2f;  /* 取れていない・解釈 */
-    --mute:#6d675e;
+    --ink:var(--t-fg2); --paper:var(--t-panel); --line:var(--t-line);
+    --a:var(--t-ok);  /* 確定した事実 */
+    --b:var(--t-warn);  /* 報じられていること */
+    --c:var(--t-ng);  /* 取れていない・解釈 */
+    --mute:var(--t-mute);
   }
   *{box-sizing:border-box}
   body{
@@ -27,7 +27,7 @@
   .sub{font-size:13px;color:var(--mute);margin:0}
 
   .status{
-    border:1px solid var(--line); background:#fffdf8;
+    border:1px solid var(--line); background:var(--t-panel);
     padding:14px 16px; margin:22px 0 30px; font-size:14.5px;
   }
   .status b{font-weight:600}
@@ -35,15 +35,15 @@
   .status p:last-child{margin-bottom:0}
 
   .warn{
-    border-left:5px solid var(--c); background:#fbf3f1;
+    border-left:5px solid var(--c); background:var(--t-panel);
     padding:12px 14px; font-size:13.5px; margin:0 0 30px;
   }
 
   h2{
     font-size:17px; margin:40px 0 4px; padding:8px 12px;
-    color:#fff; border-radius:2px; font-weight:600; letter-spacing:.04em;
+    color:var(--t-fg); border-radius:2px; font-weight:600; letter-spacing:.04em;
   }
-  h2.a{background:var(--a)} h2.b{background:var(--b)} h2.c{background:var(--c)}
+  h2.a{background:var(--a);color:var(--t-on-accent)} h2.b{background:var(--b);color:var(--t-on-accent)} h2.c{background:var(--c);color:var(--t-on-accent)}
   .boxnote{font-size:12.5px;color:var(--mute);margin:6px 2px 16px}
 
   h3{font-size:15px;margin:26px 0 10px;padding-left:9px;border-left:4px solid var(--line);font-weight:600}
@@ -52,22 +52,22 @@
   .item:last-child{border-bottom:none}
   .id{
     display:inline-block;font-family:ui-monospace,Menlo,monospace;
-    font-size:11px;color:#fff;background:var(--mute);
+    font-size:11px;color:var(--t-fg);background:var(--t-panel2);
     padding:1px 6px;border-radius:2px;margin-right:6px;vertical-align:2px;
   }
-  .a .id{background:var(--a)} .b .id{background:var(--b)} .c .id{background:var(--c)}
+  .a .id{background:var(--a);color:var(--t-on-accent)} .b .id{background:var(--b);color:var(--t-on-accent)} .c .id{background:var(--c);color:var(--t-on-accent)}
   .fact{margin:0 0 6px;font-size:15.5px}
   .quote{
-    margin:8px 0; padding:8px 12px; background:#eeeae1;
+    margin:8px 0; padding:8px 12px; background:var(--t-panel);
     border-left:3px solid var(--line); font-size:14px;
   }
   .src{font-size:12px;margin:4px 0 0;word-break:break-all}
-  .src a{color:#1a4f7a}
+  .src a{color:var(--t-info)}
   .src span{color:var(--mute)}
 
   table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
   th,td{border:1px solid var(--line);padding:6px 8px;text-align:left}
-  th{background:#e9e4d9;font-weight:600}
+  th{background:var(--t-panel);font-weight:600}
   td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 
   footer{margin-top:50px;border-top:3px double var(--line);padding-top:16px;font-size:12.5px;color:var(--mute)}
@@ -345,5 +345,7 @@
 </footer>
 
 </div>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>

@@ -4,13 +4,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ごきげん補給所の夜</title>
 <style>
-  html,body{margin:0;height:100%;background:#1B2A41;overflow:hidden}
+  html,body{margin:0;height:100%;background:var(--t-panel);overflow:hidden}
   body{-webkit-tap-highlight-color:transparent}
   #c{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:pointer;touch-action:manipulation}
   h1{position:fixed;left:7%;bottom:5.6%;margin:0;z-index:2;pointer-events:none;
      font-family:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
-     font-weight:400;font-size:13px;letter-spacing:7px;color:#E8DFCB;opacity:.8}
-  h1 span{display:block;margin-top:7px;font-size:9.5px;letter-spacing:4.2px;color:#D0703A;opacity:.95}
+     font-weight:400;font-size:13px;letter-spacing:7px;color:var(--t-fg);opacity:.8}
+  h1 span{display:block;margin-top:7px;font-size:9.5px;letter-spacing:4.2px;color:var(--t-warn);opacity:.95}
   @media(min-width:760px){h1{font-size:15px;letter-spacing:8px}h1 span{font-size:10px}}
 </style>
 </head><body>
@@ -223,7 +223,7 @@ var fpsEl=null, frames=0, fpsT0=0;
 window.__fps=0; window.__fpsMin=999;
 if(fpsOn){
   fpsEl=document.createElement('div');
-  fpsEl.style.cssText='position:fixed;left:8px;top:8px;z-index:9;color:#E8DFCB;font:12px monospace;background:rgba(0,0,0,.5);padding:2px 6px';
+  fpsEl.style.cssText='position:fixed;left:8px;top:8px;z-index:9;color:#e8e6e1;font:12px monospace;background:rgba(0,0,0,.5);padding:2px 6px';
   document.body.appendChild(fpsEl);
 }
 
@@ -391,4 +391,6 @@ function paint(t){
 }
 
 resize();
-</script></body></html>
+</script>
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body></html>

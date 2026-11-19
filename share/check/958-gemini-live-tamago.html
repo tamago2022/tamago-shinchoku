@@ -3,44 +3,44 @@
 <script src="assets/kagi/kagi.js"></script>
 <meta name="robots" content="noindex,nofollow">
 <title>958 ごきげん補給所・案内人（Google版・横一列／鳴らしたまま話せる）</title>
-<style>html,body{margin:0;background:#0d0b09}</style></head><body>
+<style>html,body{margin:0;background:var(--t-bg)}</style></head><body>
 <style>
   :root{
-    --bg:#12100d; --paper:#f4efe4; --ink:#2a2622; --sub:#8d8578;
-    --aka:#c4483a; --midori:#3a7a52; --ao:#3a5f7a; --kin:#c9a227;
+    --bg:var(--t-bg); --paper:var(--t-panel); --ink:var(--t-fg2); --sub:var(--t-mute);
+    --aka:var(--t-ng); --midori:var(--t-ok); --ao:var(--t-info); --kin:var(--t-warn);
   }
   *{box-sizing:border-box}
   .wrap{max-width:720px;margin:0 auto;padding:24px 14px 64px;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink)}
-  .stage{background:radial-gradient(120% 90% at 50% 20%,#1d1a15 0%,#12100d 70%);
-    border-radius:20px;padding:16px 12px 14px;border:1px solid #2b2620}
+  .stage{background:radial-gradient(120% 90% at 50% 20%,var(--t-bg) 0%,var(--t-bg) 70%);
+    border-radius:20px;padding:16px 12px 14px;border:1px solid var(--t-line)}
   @media(max-width:430px){.wrap{padding:16px 8px 56px}.stage{padding:14px 8px 12px}}
   .kanban{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
-    color:#e8dcc0;letter-spacing:.14em;font-size:.82rem;text-align:center;margin:0 0 10px}
+    color:var(--t-fg);letter-spacing:.14em;font-size:.82rem;text-align:center;margin:0 0 10px}
   #tamako{display:block;width:100%;max-width:220px;margin:0 auto}
   #tamako svg{display:block;width:100%;height:auto;overflow:visible}
-  .state{text-align:center;color:#b5aa93;font-size:.78rem;letter-spacing:.08em;margin:6px 0 2px;min-height:1.2em}
-  .meter{text-align:center;color:#9d947f;font-size:.72rem;line-height:1.7;margin:2px 0 0}
-  .panel{background:var(--paper);border-radius:16px;padding:18px 14px;margin-top:14px;border:1px solid #e2dccd}
+  .state{text-align:center;color:var(--t-mute);font-size:.78rem;letter-spacing:.08em;margin:6px 0 2px;min-height:1.2em}
+  .meter{text-align:center;color:var(--t-mute);font-size:.72rem;line-height:1.7;margin:2px 0 0}
+  .panel{background:var(--paper);border-radius:16px;padding:18px 14px;margin-top:14px;border:1px solid var(--t-line)}
   h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;
      font-size:1rem;letter-spacing:.06em;margin:0 0 10px;color:var(--sub)}
-  input[type=password],input[type=text]{width:100%;padding:11px 12px;border:1px solid #d8d1c0;
-    border-radius:10px;font-size:15px;background:#fff;color:var(--ink);font-family:ui-monospace,monospace}
+  input[type=password],input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--t-line);
+    border-radius:10px;font-size:15px;background:var(--t-panel);color:var(--ink);font-family:ui-monospace,monospace}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
   button{flex:1 1 140px;padding:14px 18px;border-radius:12px;border:none;cursor:pointer;
     font-size:16px;font-weight:700;letter-spacing:.06em;font-family:inherit}
-  #go{background:var(--midori);color:#fff}
-  #go:disabled{background:#c3bdb0;cursor:not-allowed}
-  #stop{background:#fff;color:var(--aka);border:1px solid #e0cfcb}
+  #go{background:var(--midori);color:var(--t-on-accent)}
+  #go:disabled{background:var(--t-panel);cursor:not-allowed}
+  #stop{background:var(--t-panel);color:var(--aka);border:1px solid var(--t-line)}
   .note{font-size:.78rem;color:var(--sub);line-height:1.7;margin-top:10px}
   .log{margin-top:14px;max-height:230px;overflow-y:auto}
   .line{padding:8px 12px;border-radius:12px;margin:6px 0;font-size:.92rem;line-height:1.65}
-  .line.me{background:#e7eef3;color:#22303a}
-  .line.her{background:#fff;border:1px solid #e2dccd}
-  .line.sys{background:#f7e9e7;color:var(--aka);font-size:.82rem}
+  .line.me{background:var(--t-panel);color:var(--t-fg2)}
+  .line.her{background:var(--t-panel);border:1px solid var(--t-line)}
+  .line.sys{background:var(--t-panel);color:var(--aka);font-size:.82rem}
   .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-  .chips label{font-size:.8rem;padding:6px 11px;border-radius:999px;border:1px solid #d8d1c0;
-    background:#fff;cursor:pointer}
+  .chips label{font-size:.8rem;padding:6px 11px;border-radius:999px;border:1px solid var(--t-line);
+    background:var(--t-panel);cursor:pointer}
   .chips input{display:none}
   .chips input:checked + span{font-weight:800;color:var(--midori)}
 
@@ -48,66 +48,66 @@
         （小さい定寸の札・上にサムネ・題は2行で切る・押しても画面は動かない） ── */
   .tray{margin-top:14px}
   .tray h3{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:.76rem;
-    letter-spacing:.1em;color:#b5aa93;text-align:center;margin:0 0 8px}
+    letter-spacing:.1em;color:var(--t-mute);text-align:center;margin:0 0 8px}
   .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;align-items:stretch}
-  .card{display:block;width:100%;text-align:left;padding:0;background:#1b1813;
-    border:1px solid #2f2a23;border-radius:9px;overflow:hidden;cursor:pointer;font-weight:400;
+  .card{display:block;width:100%;text-align:left;padding:0;background:var(--t-bg);
+    border:1px solid var(--t-line);border-radius:9px;overflow:hidden;cursor:pointer;font-weight:400;
     flex:none;position:relative;transition:border-color .15s,transform .15s;height:100%}
-  .card:hover{border-color:#4a4236}
+  .card:hover{border-color:var(--t-line)}
   .card.sel{border-color:var(--kin);transform:translateY(-2px)}
-  .card .thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#2a251f}
+  .card .thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--t-panel)}
   .card .body{padding:5px 6px 7px}
-  .card .tag{position:absolute;top:3px;left:3px;font-size:.54rem;letter-spacing:.04em;color:#f0e8d6;
-    background:rgba(18,16,13,.78);border-radius:999px;padding:1px 5px;line-height:1.5}
+  .card .tag{position:absolute;top:3px;left:3px;font-size:.54rem;letter-spacing:.04em;color:var(--t-fg);
+    background:var(--t-bg);border-radius:999px;padding:1px 5px;line-height:1.5}
   /* 題が1行でも2行でも札の高さを変えない（並べたときガタガタにしない） */
-  .card .t{margin:0;font-size:.6rem;line-height:1.35;font-weight:700;color:#efe7d6;
+  .card .t{margin:0;font-size:.6rem;line-height:1.35;font-weight:700;color:var(--t-fg);
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
     height:2.7em}
-  .card .a{margin:2px 0 0;font-size:.54rem;color:#9d947f;white-space:nowrap;overflow:hidden;
+  .card .a{margin:2px 0 0;font-size:.54rem;color:var(--t-mute);white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;height:1.5em;line-height:1.5}
   .card .num{position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;
-    background:rgba(18,16,13,.78);color:#e8dcc0;font-size:.55rem;line-height:14px;text-align:center}
-  .card.sel .num{background:var(--kin);color:#2a2622;font-weight:700}
+    background:var(--t-bg);color:var(--t-fg);font-size:.55rem;line-height:14px;text-align:center}
+  .card.sel .num{background:var(--kin);color:var(--t-on-accent);font-weight:700}
   @media(min-width:560px){.card .t{font-size:.72rem}.card .a{font-size:.62rem}
     .card .tag{font-size:.6rem}.cards{gap:8px}}
-  .empty{color:#8a8172;font-size:.8rem;text-align:center;line-height:1.8;padding:14px 6px}
+  .empty{color:var(--t-mute);font-size:.8rem;text-align:center;line-height:1.8;padding:14px 6px}
 
   /* ── 押した札の真下に開く（Google画像の展開と同じ。別の場所へ飛ばさない） ── */
-  .player{display:none;margin:10px 0 0;background:#0a0908;border-radius:12px;
-    border:1px solid #38332b;position:relative}
+  .player{display:none;margin:10px 0 0;background:var(--t-bg);border-radius:12px;
+    border:1px solid var(--t-line);position:relative}
   .player.on{display:block}
-  .player .caret{position:absolute;top:-7px;width:12px;height:12px;background:#0a0908;
-    border-left:1px solid #38332b;border-top:1px solid #38332b;transform:translateX(-50%) rotate(45deg);
+  .player .caret{position:absolute;top:-7px;width:12px;height:12px;background:var(--t-bg);
+    border-left:1px solid var(--t-line);border-top:1px solid var(--t-line);transform:translateX(-50%) rotate(45deg);
     transition:left .18s}
-  .player .frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;
+  .player .frame{position:relative;width:100%;aspect-ratio:16/9;background:var(--t-bg);
     border-radius:12px 12px 0 0;overflow:hidden}
   .player .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .player .meta{padding:8px 10px 0}
-  .player .pt{margin:0;color:#f0e8d6;font-size:.86rem;font-weight:700;line-height:1.4}
-  .player .pa{margin:2px 0 0;color:#9d947f;font-size:.72rem}
+  .player .pt{margin:0;color:var(--t-fg);font-size:.86rem;font-weight:700;line-height:1.4}
+  .player .pa{margin:2px 0 0;color:var(--t-mute);font-size:.72rem}
   .prow{display:flex;gap:6px;padding:8px 10px 10px;flex-wrap:wrap}
   .prow button{flex:1 1 84px;padding:9px 6px;font-size:.74rem;border-radius:9px;letter-spacing:.02em}
-  .b-skip{background:#2a2622;color:#e8dcc0;border:1px solid #3a352c}
-  .b-next{background:#2a2622;color:#e8dcc0;border:1px solid #3a352c}
-  .b-talk{background:var(--midori);color:#fff}
-  .b-big{background:var(--kin);color:#2a2622}
-  .thru{display:flex;align-items:center;gap:8px;padding:0 10px 10px;color:#9d947f;font-size:.7rem;
+  .b-skip{background:var(--t-panel);color:var(--t-fg);border:1px solid var(--t-line)}
+  .b-next{background:var(--t-panel);color:var(--t-fg);border:1px solid var(--t-line)}
+  .b-talk{background:var(--midori);color:var(--t-on-accent)}
+  .b-big{background:var(--kin);color:var(--t-on-accent)}
+  .thru{display:flex;align-items:center;gap:8px;padding:0 10px 10px;color:var(--t-mute);font-size:.7rem;
     line-height:1.5;cursor:pointer}
   .thru input{width:16px;height:16px;flex:0 0 auto;accent-color:var(--midori)}
-  .thru b{color:#e8dcc0}
-  .micdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4a4236;
+  .thru b{color:var(--t-fg)}
+  .micdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--t-panel);
     margin-right:5px;vertical-align:middle}
-  .micdot.on{background:var(--aka);box-shadow:0 0 0 3px rgba(196,72,58,.18)}
+  .micdot.on{background:var(--aka);box-shadow:0 0 0 3px rgba(196,72,58,.18);color:var(--t-on-accent)}
 
-  #more{background:#1b1813;color:#c9c0ad;border:1px solid #2f2a23;font-size:.8rem;padding:10px 14px}
+  #more{background:var(--t-bg);color:var(--t-fg);border:1px solid var(--t-line);font-size:.8rem;padding:10px 14px}
   #more:disabled{opacity:.4;cursor:not-allowed}
-  details.settings{margin-top:16px;border-top:1px dashed #ddd5c4;padding-top:12px}
+  details.settings{margin-top:16px;border-top:1px dashed var(--t-line);padding-top:12px}
   details.settings summary{cursor:pointer;font-size:.78rem;color:var(--sub)}
   table.cost{width:100%;border-collapse:collapse;margin-top:8px;font-size:.72rem}
-  table.cost td{border-top:1px solid #e6e0d1;padding:4px 2px;color:var(--sub)}
+  table.cost td{border-top:1px solid var(--t-line);padding:4px 2px;color:var(--sub)}
   table.cost td:last-child{text-align:right;font-variant-numeric:tabular-nums}
   .kv{font-size:.72rem;color:var(--sub);line-height:1.8;margin-top:8px}
-  .stock{font-size:.7rem;color:#8a8172;line-height:1.7;text-align:center;margin:8px 0 0}
+  .stock{font-size:.7rem;color:var(--t-mute);line-height:1.7;text-align:center;margin:8px 0 0}
 </style>
 
 <div class="wrap">
@@ -161,7 +161,7 @@
     </div>
     <div class="log" id="log"></div>
     <p style="text-align:right;margin:10px 0 0"><a href="#" id="devLink"
-       style="font-size:.7rem;color:#c3bdb0;text-decoration:none">・</a></p>
+       style="font-size:.7rem;color:var(--t-fg);text-decoration:none">・</a></p>
 
     <details class="settings" id="settings" hidden>
       <summary>お店の人の設定（お客さんは触らなくて大丈夫です）</summary>
@@ -262,7 +262,7 @@ function paintStock(){
   const aru=KINDS.filter(k=>s[k]>0).map(k=>KIND_JA[k]+" "+s[k]);
   const nai=KINDS.filter(k=>!s[k]).map(k=>KIND_JA[k]);
   $("stock").innerHTML="いま棚にあるもの："+aru.join("／")
-    +(nai.length?('<br><span style="color:#a8564c">'+nai.join("・")+" の棚はまだ空です（仕入れ待ち）</span>"):"");
+    +(nai.length?('<br><span style="color:var(--t-ng)">'+nai.join("・")+" の棚はまだ空です（仕入れ待ち）</span>"):"");
 }
 
 const norm=s=>String(s).normalize("NFKC").toLowerCase()
@@ -909,11 +909,11 @@ function closeAll(){
 (function(){
   try{
     const box=document.createElement("p");
-    box.style.cssText="text-align:center;color:#9d947f;font-size:.74rem;margin:6px 0 0";
+    box.style.cssText="text-align:center;color:#9aa4ae;font-size:.74rem;margin:6px 0 0";
     box.innerHTML='1日の上限 <input id="capIn" type="number" min="10" step="10" '
-      +'style="width:5.5em;background:#1a1712;color:#e8e2d4;border:1px solid #3a352c;'
+      +'style="width:5.5em;background:#0d0f12;color:#23272e;border:1px solid #23272e;'
       +'border-radius:6px;padding:2px 4px;text-align:right"> 円 '
-      +'<button id="capSet" style="background:#2a2622;color:#e8e2d4;border:1px solid #3a352c;'
+      +'<button id="capSet" style="background:var(--t-panel);color:var(--t-fg);border:1px solid var(--t-line);'
       +'border-radius:6px;padding:2px 8px;cursor:pointer;flex:0 0 auto;font-size:.74rem">決める</button>';
     meterEl.parentNode.insertBefore(box,meterEl.nextSibling);
     const inp=box.querySelector("#capIn"); inp.value=SAIFU.cap();
@@ -931,4 +931,6 @@ goEl.addEventListener("click",connect);
 stopEl.addEventListener("click",()=>{ closeAll(); stopPlay(false);
   setState("やめました"); goEl.disabled=false; });
 </script>
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body></html>

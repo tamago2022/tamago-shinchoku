@@ -1,0 +1,153 @@
+#!/usr/bin/env node
+/**
+ * 白飛び（ページ切り替えで画面が一瞬まっさらになる）を、スマホ相当でフレーム単位に測る。
+ * 2026-10-17 たまごさん「白飛びがまだ目立つ。徹底的に快適に」。
+ *
+ * 方式：headless Chrome（一時プロファイル・使用後kill。たまごさんのChrome/Braveには触れない）。
+ *   390x844・DPR3・タッチ・CPU 4倍遅く・回線「Slow 4G」相当（150ms / 1.6Mbps）。
+ *   Page.startScreencast で描かれたフレームを全部 JPEG で保存し、時刻とイベント（どこを押したか）を記録。
+ *   判定は tools/shirotobi_hantei.py（フレームの98%以上が1色＝まっさら、を数える）。
+ *
+ * 使い方: node tools/shirotobi_sokutei.mjs <出力フォルダ> [基点URL]
+ */
+import { spawn } from "node:child_process";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const OUT = process.argv[2];
+const BASE = (process.argv[3] || "https://joy-relief-station.lovable.app").replace(/\/$/, "");
+if (!OUT) { console.error("使い方: node tools/shirotobi_sokutei.mjs <出力フォルダ> [基点URL]"); process.exit(1); }
+mkdirSync(OUT, { recursive: true });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// 押す順番：トップ →（下タブ等のリンクで）案内所 → 曲ページ → 特集 → マガジン（別HTML）→ 戻る → 戻る
+// 2026-10-27 全場面版：SHIRO_STEPS=<JSON> で押す順番を差し替える（tools/shirotobi_zenbamen.json）。
+//   kind: cold（キャッシュを消し、about:blank を目印の紫に塗ってから開く＝初回アクセス）／goto／reload／click／back／play（押すだけ・遷移は待たない）
+const STEPS = process.env.SHIRO_STEPS ? JSON.parse(readFileSync(process.env.SHIRO_STEPS, "utf-8")).map((s) => (s.url && s.url.startsWith("/") ? { ...s, url: BASE + s.url } : s)) : [
+  { kind: "goto", url: BASE + "/" },
+  { kind: "click", sel: 'a[href^="/cover-guide"]', label: "トップ→案内所" },
+  { kind: "click", sel: 'a[href*="/cover-guide?artist="]', label: "案内所→曲ページ" },
+  { kind: "click", sel: 'a[href^="/feature/"]', label: "→特集", fallbackUrl: "/feature/hikigatari" },
+  { kind: "click", sel: 'a[href^="/magazine/"]', label: "→マガジン", fallbackUrl: "/magazine/kimi-wa-hoshi-katsu.html" },
+  { kind: "back", label: "戻る1" },
+  { kind: "back", label: "戻る2" },
+  { kind: "click", sel: 'a[href="/"]', label: "→トップ" },
+];
+
+const port = 9100 + Math.floor(Math.random() * 400);
+const prof = mkdtempSync(`${tmpdir()}/shiro-`);
+const chrome = spawn(CHROME, [
+  "--headless=new", "--mute-audio", `--remote-debugging-port=${port}`, `--user-data-dir=${prof}`,
+  "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--autoplay-policy=user-gesture-required",
+  "about:blank",
+], { stdio: "ignore" });
+
+let ws, idn = 0;
+const pend = new Map();
+const frames = [];
+const events = [];
+const t0 = Date.now();
+const now = () => Date.now() - t0;
+function send(method, params = {}) {
+  const id = ++idn;
+  ws.send(JSON.stringify({ id, method, params }));
+  return new Promise((res, rej) => { pend.set(id, { res, rej }); setTimeout(() => { if (pend.has(id)) { pend.delete(id); rej(new Error("timeout " + method)); } }, Number(process.env.SHIRO_TIMEOUT || 30000)); });
+}
+async function ev(expr) {
+  const r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true });
+  return r.result?.value;
+}
+
+try {
+  let target;
+  for (let i = 0; i < 300; i++) {
+    try { const l = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); target = l.find((x) => x.type === "page" && x.webSocketDebuggerUrl); if (target) break; } catch {}
+    await sleep(300);
+  }
+  if (!target) throw new Error("Chromeのデバッグ口が開かない");
+  ws = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((r) => ws.addEventListener("open", r));
+  ws.addEventListener("message", async (m) => {
+    const d = JSON.parse(m.data);
+    if (d.id && pend.has(d.id)) { const p = pend.get(d.id); pend.delete(d.id); d.error ? p.rej(new Error(JSON.stringify(d.error))) : p.res(d.result); return; }
+    if (d.method === "Page.screencastFrame") {
+      const n = frames.length;
+      const f = `f${String(n).padStart(5, "0")}.jpg`;
+      writeFileSync(join(OUT, f), Buffer.from(d.params.data, "base64"));
+      frames.push({ f, t: now(), url: null, sy: Math.round(d.params.metadata?.scrollOffsetY ?? -1) });
+      ws.send(JSON.stringify({ id: ++idn, method: "Page.screencastFrameAck", params: { sessionId: d.params.sessionId } }));
+    }
+  });
+  await send("Page.enable");
+  await send("Runtime.enable");
+  await send("Network.enable");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
+  await send("Emulation.setTouchEmulationEnabled", { enabled: true });
+  await send("Emulation.setUserAgentOverride", { userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1 shirotobi-sokutei" });
+  await send("Emulation.setCPUThrottlingRate", { rate: Number(process.env.SHIRO_CPU || 4) });
+  await send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
+  await send("Page.startScreencast", { format: "jpeg", quality: 60, maxWidth: 390, maxHeight: 844, everyNthFrame: 1 });
+
+  for (const s of STEPS) { try {
+    let at = now();
+    let done = "";
+    if (s.kind === "goto") { await send("Page.navigate", { url: s.url }); done = s.url; }
+    else if (s.kind === "cold") {
+      // 初回アクセス：キャッシュを消し、空のページを紫（#ff00ff）に塗る。以後に出る白は、すべて新しいページ側の白。
+      await send("Network.clearBrowserCache").catch(() => {});
+      await send("Page.navigate", { url: "about:blank" });
+      await sleep(400);
+      await ev("document.documentElement.style.background='#ff00ff';document.documentElement.style.minHeight='100%';1").catch(() => {});
+      await sleep(400);
+      at = now();
+      await send("Page.navigate", { url: s.url }); done = s.url;
+    }
+    else if (s.kind === "reload") { await send("Page.reload", { ignoreCache: false }); done = "reload"; }
+    else if (s.kind === "play") {
+      const hit = await ev(`(()=>{const sels=${JSON.stringify(s.sel)}.split("||");for(const q of sels){const a=[...document.querySelectorAll(q)].find(x=>{const r=x.getBoundingClientRect();return r.width>40&&r.height>40});if(a){a.scrollIntoView({block:"center"});setTimeout(()=>a.click(),300);return q}}return null})()`).catch(() => null);
+      done = hit ? "押した " + hit : "押す所なし";
+      events.push({ t: now(), label: s.label || "再生", target: done });
+      await sleep(s.wait || 6000);
+      events[events.length - 1].landed = await ev("location.href").catch(() => "?");
+      continue;
+    }
+    else if (s.kind === "back") { done = String(await ev("history.back(),location.href")); }
+    else {
+      // 人が押すのは画面が動く状態になってから。マガジン（別のHTML）以外では、最初の描画が終わった印（__jrsHydrated）を最大20秒待つ。
+      for (let k = 0; k < 40; k++) {
+        const ok = await Promise.race([ev("location.pathname.startsWith('/magazine/') || window.__jrsHydrated===true").catch(() => false), sleep(2000).then(() => false)]);
+        if (ok) break;
+        await sleep(500);
+      }
+      const href = await ev(`(()=>{const a=[...document.querySelectorAll(${JSON.stringify(s.sel)})].find(x=>{const r=x.getBoundingClientRect();return r.width>0&&r.height>0});if(!a)return null;a.scrollIntoView({block:"center"});const h=a.getAttribute("href");setTimeout(()=>a.click(),50);return h})()`);
+      if (href) done = href;
+      else if (s.fallbackUrl) { await ev(`(()=>{const a=document.createElement("a");a.href=${JSON.stringify(s.fallbackUrl)};document.body.appendChild(a);setTimeout(()=>a.click(),50);return 1})()`); done = s.fallbackUrl + "（リンクが無いので同じページ内からリンクを足して押した）"; }
+    }
+    events.push({ t: at, label: s.label || "開く", target: done });
+    // 着くまで待つ：進行バー（data-nav-progress）が消え、骨組み（data-route-skeleton）も無くなるまで（最大20秒）。そのあと1.5秒見る。
+    await sleep(s.kind === "goto" || s.kind === "cold" || s.kind === "reload" ? (s.wait || 6000) : 600);
+    const until = Date.now() + 20000;
+    while (Date.now() < until) {
+      const busy = await Promise.race([
+        ev("!!document.querySelector('[data-nav-progress],[data-route-skeleton]') || document.readyState!=='complete'").catch(() => true),
+        sleep(2000).then(() => true),
+      ]);
+      if (!busy) break;
+      await sleep(250);
+    }
+    await sleep(1500);
+    const u = await ev("location.href").catch(() => "?");
+    events[events.length - 1].landed = u;
+  } catch (e) { events.push({ error: String(e), step: s.label }); } }
+  await send("Page.stopScreencast");
+  await sleep(500);
+} catch (e) {
+  events.push({ error: String(e) });
+} finally {
+  writeFileSync(join(OUT, "kiroku.json"), JSON.stringify({ base: BASE, frames, events }, null, 1));
+  try { chrome.kill("SIGKILL"); } catch {}
+  try { rmSync(prof, { recursive: true, force: true }); } catch {}
+  console.log(JSON.stringify({ frames: frames.length, events }, null, 1));
+}
