@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#35662 今後2週間分のSNS投稿候補曲リストを事前提示 確認ページ</title>
+<title>#35662 今後2週間分のSNS投稿候補曲リストを事前提示（やり直し） 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -47,20 +47,20 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35662 今後2週間分のSNS投稿候補曲リストを事前提示</div>
-<h1>#35662 今後2週間分のSNS投稿候補曲リストを事前提示</h1>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35662 今後2週間分のSNS投稿候補曲リストを事前提示（やり直し）</div>
+<h1>#35662 今後2週間分のSNS投稿候補曲リストを事前提示（やり直し）</h1>
 <div class="date">2026-11-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-2026-08-15の店主発言『日々の下書きではなく、今後2週間分(14日分)の候補曲リストを先にまとめて出してほしい』への対応。運用方針は2026-08-15に<code>docs/operations/sns-pr-playbook.md</code>へ14日表として一度文書化され、2026-09-27にさらに進化して<code>tools/buffer_hokyuu.py</code>（Buffer予約欄を常に8〜10本に保つ補充便）という実働システムになった。今回、その実データ(<code>status/buffer_queue/machi.json</code>)から『今すぐ投稿に出せる候補曲』を実測で集計し、単発の下書きではなく一覧で事前に見られる形にまとめた。
+2026-08-15の店主発言『日々の下書きではなく、今後2週間分(14日分)の候補曲リストを先にまとめて出してほしい』への対応。1回目のAI検品で『候補が9件しかなく14日分を満たしていない』と指摘されたため、既存の候補ソース2本（<code>status/1166/kouho_list.json</code> 24件・<code>machi.json</code>内の機械選出保留8件）を統合・重複除去して候補プール30件（日本語曲14件・英語曲16件）を確保。朝09:00＝日本語曲、夜21:00＝英語曲という既存のスロット規則（<code>tools/buffer_hokyuu.py</code>のSLOTS・machi.jsonのslots_lang）に沿って、本日から14日間×2枠＝28枠を<b>全て候補で埋めた</b>。曲は一切Buffer予約（machi.json）やBuffer本体へは投入していない——status/1166.stop（2026-09-27『機械が勝手に選んで入れるのは禁止』）の方針どおり、候補を見せるだけで、どの曲を実際に予約するかはこれまで通り店主が決める。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>9件</b><span>今すぐ提示できる投稿候補の総数（実データ集計）</span></div>
-  <div class="num"><b>1件</b><span>Buffer予約に投入済み（09:00枠）</span></div>
-  <div class="num"><b>8件</b><span>機械が選び、まだたまごさんの判断待ちのまま残っている候補</span></div>
-  <div class="num"><b>8〜10本</b><span>運用が目標とする在庫数（buffer_hokyuu.pyのfloor/target）</span></div>
+  <div class="num"><b>28/28</b><span>14日分(28枠)のうち候補が埋まった枠数</span></div>
+  <div class="num"><b>30</b><span>統合後の候補プール総数（重複除去済み）</span></div>
+  <div class="num"><b>14</b><span>日本語曲プール</span></div>
+  <div class="num"><b>16</b><span>英語曲プール</span></div>
 </div>
 
 
@@ -68,26 +68,45 @@
 <h2>④ 押せるリンク</h2>
 <ul class="links">
   <li><b>この確認ページ自身</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35662-sns-2shukan-kouho-list.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35662-sns-2shukan-kouho-list.html</a></li>
-  <li><b>姉妹案件#35661（5原則への適合判断）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35661-sns-5gensoku-hantei.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35661-sns-5gensoku-hantei.html</a></li>
-  <li><b>X本体（@oasisjoyrelief）</b><a href="https://x.com/oasisjoyrelief" target="_blank" rel="noopener">https://x.com/oasisjoyrelief</a></li>
+  <li><b>14日分の候補データ（公開JSON）</b><a href="https://tamago2022.github.io/tamago-shinchoku/status/public/35662_kouho_2shukan.json" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/status/public/35662_kouho_2shukan.json</a></li>
+  <li><b>候補ソース1：kouho_list.json(24件)の元データが積まれた仕組み</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35661-sns-5gensoku-hantei.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35661-sns-5gensoku-hantei.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>山下達郎「さよなら夏の日」</td><td class="yes">Buffer予約投入済み（09:00・日本語枠）</td></tr>
-<tr><td>Off Course「秋の気配」</td><td class="no">機械選出・未投入（判断待ち）</td></tr>
-<tr><td>Taylor Swift「cardigan」</td><td class="no">機械選出・未投入（判断待ち）</td></tr>
-<tr><td>山崎まさよし「One more time, One more chance」</td><td class="no">機械選出・未投入（判断待ち）</td></tr>
-<tr><td>Don Henley「The Boys of Summer」</td><td class="no">機械選出・未投入（判断待ち）</td></tr>
-<tr><td>エレファントカシマシ「今宵の月のように」</td><td class="no">機械選出・未投入（判断待ち）</td></tr>
-<tr><td>優里「ドライフラワー」</td><td class="no">機械選出・未投入（判断待ち）</td></tr>
-<tr><td>Carpenters「Rainy Days and Mondays」</td><td class="no">機械選出・未投入（判断待ち）</td></tr>
-<tr><td>Eagles「Desperado」</td><td class="no">機械選出・未投入（判断待ち）</td></tr>
+<tr><td>2026-11-20(Fri) 09:00(ja)</td><td class="yes">Hikaru Utada「First Love」</td></tr>
+<tr><td>2026-11-20(Fri) 21:00(en)</td><td class="yes">Carpenters「Rainy Days and Mondays」</td></tr>
+<tr><td>2026-11-21(Sat) 09:00(ja)</td><td class="yes">Akina Nakamori「難破船」</td></tr>
+<tr><td>2026-11-21(Sat) 21:00(en)</td><td class="yes">Eagles「Desperado」</td></tr>
+<tr><td>2026-11-22(Sun) 09:00(ja)</td><td class="yes">Seiko Matsuda「SWEET MEMORIES」</td></tr>
+<tr><td>2026-11-22(Sun) 21:00(en)</td><td class="yes">The Beatles「In My Life」</td></tr>
+<tr><td>2026-11-23(Mon) 09:00(ja)</td><td class="yes">MISIA「逢いたくていま」</td></tr>
+<tr><td>2026-11-23(Mon) 21:00(en)</td><td class="yes">Sade「Smooth Operator」</td></tr>
+<tr><td>2026-11-24(Tue) 09:00(ja)</td><td class="yes">Sheena Ringo「丸の内サディスティック」</td></tr>
+<tr><td>2026-11-24(Tue) 21:00(en)</td><td class="yes">Bob Dylan「Don&#x27;t Think Twice, It&#x27;s All Right」</td></tr>
+<tr><td>2026-11-25(Wed) 09:00(ja)</td><td class="yes">Mariya Takeuchi「駅」</td></tr>
+<tr><td>2026-11-25(Wed) 21:00(en)</td><td class="yes">Stevie Wonder「Lately」</td></tr>
+<tr><td>2026-11-26(Thu) 09:00(ja)</td><td class="yes">Yumi Matsutoya「ひこうき雲」</td></tr>
+<tr><td>2026-11-26(Thu) 21:00(en)</td><td class="yes">Donny Hathaway「A Song for You」</td></tr>
+<tr><td>2026-11-27(Fri) 09:00(ja)</td><td class="yes">Miyuki Nakajima「糸」</td></tr>
+<tr><td>2026-11-27(Fri) 21:00(en)</td><td class="yes">The Beatles「Blackbird」</td></tr>
+<tr><td>2026-11-28(Sat) 09:00(ja)</td><td class="yes">Yosui Inoue「少年時代」</td></tr>
+<tr><td>2026-11-28(Sat) 21:00(en)</td><td class="yes">Marvin Gaye「What&#x27;s Going On」</td></tr>
+<tr><td>2026-11-29(Sun) 09:00(ja)</td><td class="yes">Hibari Misora「川の流れのように」</td></tr>
+<tr><td>2026-11-29(Sun) 21:00(en)</td><td class="yes">Queen「Somebody to Love」</td></tr>
+<tr><td>2026-11-30(Mon) 09:00(ja)</td><td class="yes">Off Course「秋の気配」</td></tr>
+<tr><td>2026-11-30(Mon) 21:00(en)</td><td class="yes">Carpenters「Yesterday Once More」</td></tr>
+<tr><td>2026-12-01(Tue) 09:00(ja)</td><td class="yes">Masayoshi Yamazaki「One more time, One more chance」</td></tr>
+<tr><td>2026-12-01(Tue) 21:00(en)</td><td class="yes">Eagles「Hotel California」</td></tr>
+<tr><td>2026-12-02(Wed) 09:00(ja)</td><td class="yes">Elephant Kashimashi「今宵の月のように」</td></tr>
+<tr><td>2026-12-02(Wed) 21:00(en)</td><td class="yes">Bob Dylan「Knockin&#x27; on Heaven&#x27;s Door」</td></tr>
+<tr><td>2026-12-03(Thu) 09:00(ja)</td><td class="yes">Yuuri「ドライフラワー」</td></tr>
+<tr><td>2026-12-03(Thu) 21:00(en)</td><td class="yes">Sade「No Ordinary Love」</td></tr>
 </table>
 
 <footer>
-正本：status/buffer_queue/machi.json（投稿待ち行列・機械選出保留列）、tools/buffer_hokyuu.py（2週間分をまとめて管理する補充便の設計）、docs/operations/sns-pr-playbook.md「②今後14日分の投稿候補リスト」（2026-08-15時点の最初の14日表）。★正直な現状：status/buffer_queue/.TOMERU（止め札）が2026-09-28から残っており、たまごさんが『二重投稿の心配は無い』と一言言うまで新規予約の自動投入は控えている（2026-10-03実測では重複リスクは既に解消済み）。今回の対応は『候補曲を事前に一覧で見せる』ことで、どの曲をmachiへ進めるかはこれまで通りたまごさんが決める。
+正本：status/buffer_queue/kouho_2shukan.json（14日割当・自動生成。ソースは status/1166/kouho_list.json と status/buffer_queue/machi.json の kikai_ga_eranda_horyu）。machi.json・Buffer予約には一切書き込んでいない（たまごさんが選ぶまで待機）。再生成したい時は同じ統合ロジック（kouho_list.json ＋ kikai_ga_eranda_horyu を重複除去し09:00=ja/21:00=enへ14日×2枠で割り当てる）を回せば、候補プールが増えるたびに14日表が更新できる。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
