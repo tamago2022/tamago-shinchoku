@@ -65,7 +65,10 @@ FURU_SIGN = re.compile(
 
 # ①止めてよい4カテゴリ
 CATEGORY = {
-    "money": re.compile(r"(お金|課金|購入|送金|円|決済|支払い|有料API)"),
+    # 2026-11-20実測バグ修正：「解決済み」「未解決」等の地の文に「決済」が部分一致して
+    # 誤ってmoneyカテゴリを立てる事故（35642号対応報告でFAIL誤判定・status/failures.md記録）。
+    # 「解決済み」の直前が「解」の時だけ除外する最小修正（他の「決済」はそのまま拾う）。
+    "money": re.compile(r"(お金|課金|購入|送金|円|(?<!解)決済|支払い|有料API)"),
     "delete": re.compile(r"(削除|消す|作り直せない|不可逆|元に戻せない)"),
     "publish": re.compile(r"(外部公開|SNS投稿|送信|投稿する|公開する|メール送信)"),
     "auth": re.compile(
