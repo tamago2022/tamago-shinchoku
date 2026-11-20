@@ -1,9 +1,9 @@
 {
- "totalChecked": 2140,
- "totalPassed": 492,
- "totalFailed": 474,
- "totalErrors": 1174,
- "totalCostUsd": 355.9178,
+ "totalChecked": 2143,
+ "totalPassed": 493,
+ "totalFailed": 475,
+ "totalErrors": 1175,
+ "totalCostUsd": 356.6838,
  "reasonCounts": {
   "報告文は#420も検品済み・合計2件$0.40と主張しているが、実データ(sta": 1,
   "確認ページのコミットリンクが無関係な別作業(409番のMac負荷ステータス更新)": 1,
@@ -461,33 +461,10 @@
   "依頼は「14日分」の候補を先出しする運用変更だが、実装(buffer_hokyu": 1,
   "件数(28枠/14日)は満たしたが、依頼の核心「運用に変更」が未実装。生成用スク": 1,
   "35636号の実装が架空ブランド「生七味の勘違い」と架空の店主口コミを実在として": 1,
-  "本番URLを実測したところThe AnimalsページにKATSEYE「Anim": 1
+  "本番URLを実測したところThe AnimalsページにKATSEYE「Anim": 1,
+  "実装・push済みだがLovable未公開で、本番配信中のJSバンドルに該当機能": 1
  },
  "history": [
-  {
-   "ts": "2026-11-19T11:59:40+09:00",
-   "n": 35630,
-   "url": "https://joy-relief-station.lovable.app/lift/aisansan-ningendamono",
-   "verdict": "fail",
-   "reason": "本番URLがHTTP 404（Lovable未公開のまま、作業側も「公開待ち」と自己申告済み）",
-   "costUsd": 0.1486208
-  },
-  {
-   "ts": "2026-11-19T12:38:46+09:00",
-   "n": 35632,
-   "url": "https://joy-relief-station.lovable.app/lift/aisansan-ningendamono",
-   "verdict": "error",
-   "reason": "AI検品がタイムアウトしました（600秒超）",
-   "costUsd": null
-  },
-  {
-   "ts": "2026-11-19T12:40:43+09:00",
-   "n": 35632,
-   "url": "https://joy-relief-station.lovable.app/lift/aisansan-ningendamono",
-   "verdict": "fail",
-   "reason": "本番URLが404を返している（curl実測、公開作業が未完了）",
-   "costUsd": 0.1459704
-  },
   {
    "ts": "2026-11-19T12:59:12+09:00",
    "n": 35633,
@@ -863,7 +840,31 @@
    "verdict": "fail",
    "reason": "本番URLを実測したところThe AnimalsページにKATSEYE「Animal」(youtubeId: m7k9UMcHbr0)の誤混入データが現存し、前回(1回目)と同じ不合格理由が解消されていない",
    "costUsd": 0.3217678
+  },
+  {
+   "ts": "2026-11-20T23:45:06+09:00",
+   "n": 35680,
+   "url": "https://joy-relief-station.lovable.app/cover-guide?artist=domenico-modugno&song=volare",
+   "verdict": "fail",
+   "reason": "実装・push済みだがLovable未公開で、本番配信中のJSバンドルに該当機能コード(getMutuallyLinkedKeys等)が存在せず、依頼されたおすすめボーナス機能は本番で未反映",
+   "costUsd": 0.3308732
+  },
+  {
+   "ts": "2026-11-20T23:55:05+09:00",
+   "n": 35636,
+   "url": "https://joy-relief-station.lovable.app/room/tashizan/karatto-okara",
+   "verdict": "error",
+   "reason": "AI検品がタイムアウトしました（600秒超）",
+   "costUsd": null
+  },
+  {
+   "ts": "2026-11-21T00:04:25+09:00",
+   "n": 35636,
+   "url": "https://joy-relief-station.lovable.app/room/tashizan/karatto-okara",
+   "verdict": "pass",
+   "reason": "本番URL(200・空でない)に鍋×生七味(コーディネート05)が実装され既存4件は無変更(commit 9a14f4ae7で33行追加のみ)、ブランド名は茅乃舎で正確(後続修正fdb9d8af2も含めてorigin/mainに反映済み)、触る検品も無反応・コンソールエラー0件",
+   "costUsd": 0.43510080000000007
   }
  ],
- "updatedAt": "2026-11-20 18:24"
+ "updatedAt": "2026-11-21 00:04"
 }
