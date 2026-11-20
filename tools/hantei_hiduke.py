@@ -601,6 +601,7 @@ def kuriageru(r, naze):
             "【完了条件】本番URLが200で返り、中身が空でないこと。",
             "★自己申告では完了になりません（tools/oni_modoshi.py の検品を通ること）。",
             "たまごさんに質問しない。直して、URLを報告に貼る。",
+            "★判定日赤｜報告・ログは全文を貼らず、前提が何から何へ変わったかを短く書くことを優先する。",
         ])
         s, msg = command_ingest.queue_add(body, priority=1,
                                           label=("判定日赤｜" + (r.get("title") or ""))[:60],
