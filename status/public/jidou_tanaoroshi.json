@@ -1,16 +1,20 @@
 {
- "at": "2026-11-12 03:47:06",
- "total": 154,
+ "at": "2026-11-20 15:03:42",
+ "total": 159,
  "kinds": {
   "心臓": 90,
-  "心臓の相乗り": 37,
+  "心臓の相乗り": 38,
   "launchd": 15,
-  "Claudeの定期タスク（画面に通知が出る）": 1,
-  "GitHub Actions": 11
+  "Claudeの定期タスク（画面に通知が出る）": 2,
+  "GitHub Actions": 14
  },
  "mitouroku": [],
- "kari": 105,
+ "kari": 107,
  "zure": [
+  {
+   "name": "teiki_jougen.py",
+   "zure": "下見では youryou_jougen が要りそう"
+  },
   {
    "name": "jidou_tanaoroshi.py",
    "zure": "下見では chukan_shimau・claude_nouhin・shimau・worktree_taihi・youryou_jougen が要りそう"
@@ -40,8 +44,8 @@
    "zure": "下見では chukan_shimau・claude_nouhin・shimau・worktree_taihi・youryou_jougen が要りそう"
   },
   {
-   "name": "claude-teiki:rusuban-mimawari-30min",
-   "zure": "下見では claude_nouhin が要りそう"
+   "name": "claude-teiki:weekly-reset-wakeup",
+   "zure": "下見では claude_nouhin・worktree_taihi が要りそう"
   }
  ],
  "rows": [
@@ -104,7 +108,7 @@
   {
    "name": "check_page_pruner.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "6時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -112,7 +116,7 @@
   {
    "name": "check_anthropic_reply.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "6時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -120,7 +124,7 @@
   {
    "name": "check_line_reply.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "6時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -128,7 +132,7 @@
   {
    "name": "check_line_shinsa.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "6時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -152,7 +156,7 @@
   {
    "name": "daily_ingest_scheduler.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "3時間おき",
    "tsukuru": "動画・音の中間物",
    "okiba": "動画・音の中間物",
    "kesu": "chukan_shimau（中間物2時間）"
@@ -160,7 +164,7 @@
   {
    "name": "zeikin_kakari.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "3時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -168,7 +172,7 @@
   {
    "name": "1140_mainichi.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "3時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -176,7 +180,7 @@
   {
    "name": "1141_mainichi.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "3時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -190,9 +194,17 @@
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
   },
   {
+   "name": "teiki_jougen.py",
+   "kind": "心臓",
+   "freq": "24時間おき",
+   "tsukuru": "記録だけ（status/public/teiki_jougen.json 上書き）・止めた定期の中身を移した時だけ ~/.tamago/backup/teiki_jougen/",
+   "okiba": "tamago-shinchoku/status/public・~/.tamago/backup",
+   "kesu": "不要（上書き・増えない。控えは移した時だけ1個）"
+  },
+  {
    "name": "1192_title_romaji.py",
    "kind": "心臓",
-   "freq": "3分おき",
+   "freq": "24時間おき",
    "tsukuru": "$TMPDIR の一時フォルダ",
    "okiba": "$TMPDIR の一時フォルダ",
    "kesu": "youryou_jougen（使い捨て1時間・$TMPDIR上限5GB）"
@@ -208,7 +220,7 @@
   {
    "name": "hyoudai.py",
    "kind": "心臓",
-   "freq": "10分おき",
+   "freq": "24時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -336,7 +348,7 @@
   {
    "name": "soto_hatarakite.py",
    "kind": "心臓",
-   "freq": "60分おき",
+   "freq": "6時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -344,7 +356,7 @@
   {
    "name": "subsc_shirase.py",
    "kind": "心臓",
-   "freq": "60分おき",
+   "freq": "6時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -352,7 +364,7 @@
   {
    "name": "subsc_calendar.py",
    "kind": "心臓",
-   "freq": "60分おき",
+   "freq": "4時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -360,7 +372,7 @@
   {
    "name": "gokigen_tane.py",
    "kind": "心臓",
-   "freq": "5分おき",
+   "freq": "6時間おき",
    "tsukuru": "号ごとの下書き json（status/gokigen_tane/gou/）・送った記録 sent.jsonl・納品用の md（status/gokigen_tane/nouhin/ は claude_nouhin put --move で即移動）・ログ status/gokigen_tane.log",
    "okiba": "tamago-shinchoku/status/gokigen_tane",
    "kesu": "md は claude_nouhin（--move）がその場で持っていく。json は号ごとに1つ（週1個・数KB）で残す＝配信の控え。ログは youryou_jougen（status/*.log 上限50MB）"
@@ -374,17 +386,9 @@
    "kesu": "log は自分で300行に刈る。kiroku は1配信1件（数KB）で残す＝配信の控え。一時ファイルは作らない（.tmp はその場で置き換え）"
   },
   {
-   "name": "cloud_mainichi.py",
-   "kind": "心臓",
-   "freq": "60分おき",
-   "tsukuru": "status/cloud_credit/mainichi_state.json・done.txt・mainichi.log（数KB）。起動は cloud_hassha.sh",
-   "okiba": "status/cloud_credit",
-   "kesu": "11/1で自動停止。11/5の期限後に cloud_credit ごと人が判断"
-  },
-  {
    "name": "cloud_credit_henji.py",
    "kind": "心臓",
-   "freq": "60分おき",
+   "freq": "24時間おき",
    "tsukuru": "$TMPDIR の一時フォルダ",
    "okiba": "$TMPDIR の一時フォルダ",
    "kesu": "youryou_jougen（使い捨て1時間・$TMPDIR上限5GB）"
@@ -528,7 +532,7 @@
   {
    "name": "kakeibo.py",
    "kind": "心臓",
-   "freq": "20分おき",
+   "freq": "6時間おき",
    "tsukuru": "$TMPDIR の一時フォルダ",
    "okiba": "$TMPDIR の一時フォルダ",
    "kesu": "youryou_jougen（使い捨て1時間・$TMPDIR上限5GB）"
@@ -536,7 +540,7 @@
   {
    "name": "tokushu.py",
    "kind": "心臓",
-   "freq": "20分おき",
+   "freq": "6時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -552,7 +556,7 @@
   {
    "name": "genzaichi_matome.py",
    "kind": "心臓",
-   "freq": "60分おき",
+   "freq": "6時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -616,7 +620,7 @@
   {
    "name": "obsidian_mamoru.py",
    "kind": "心臓",
-   "freq": "60分おき",
+   "freq": "6時間おき",
    "tsukuru": "iMac HDD",
    "okiba": "iMac HDD",
    "kesu": "shimau（HDDの置き場を日数で）"
@@ -624,7 +628,7 @@
   {
    "name": "git_souji.py",
    "kind": "心臓",
-   "freq": "60分おき",
+   "freq": "24時間おき",
    "tsukuru": "記録だけ（status/ のファイル）",
    "okiba": "tamago-shinchoku/status",
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
@@ -1062,6 +1066,14 @@
    "kesu": "自分で止まる（全部そろうか7日で見に行かない）。台帳は小さいので消さない"
   },
   {
+   "name": "muse_renraku.py",
+   "kind": "心臓の相乗り",
+   "freq": "毎周（15秒・中で間引くものあり）",
+   "tsukuru": "Museから届いた画像（status/muse_renraku/uketori/<tag>/）と依頼の控えjson",
+   "okiba": "tamago-shinchoku/status/muse_renraku",
+   "kesu": "使い終わったら claude_nouhin で納品・youryou_jougen の上限で見張る"
+  },
+  {
    "name": "com.tamago.auth1177",
    "kind": "launchd",
    "freq": "1440分おき",
@@ -1182,6 +1194,14 @@
    "kesu": "youryou_jougen（status/*.log 上限50MB）＋gomi_assyuku（控え箱）"
   },
   {
+   "name": "claude-teiki:weekly-reset-wakeup",
+   "kind": "Claudeの定期タスク（画面に通知が出る）",
+   "freq": "3 18 * * 2",
+   "tsukuru": "Claudeの定期タスクが週1回だけ短いセッションを作る（週次リセット後の再起動確認の呼び鈴。ファイルは作らない）",
+   "okiba": "Claude アプリのセッション（~/Library/Application Support/Claude/local-agent-mode-sessions）",
+   "kesu": "youryou_jougen（Claude の古いセッション outputs 15GB 上限）＋shimau（古いセッションの outputs を毎日片付け）"
+  },
+  {
    "name": "claude-teiki:rusuban-mimawari-30min",
    "kind": "Claudeの定期タスク（画面に通知が出る）",
    "freq": "7,37 * * * *",
@@ -1265,6 +1285,30 @@
    "name": "actions:uchu-unko-v5-1-test.yml",
    "kind": "GitHub Actions",
    "freq": "push のたび",
+   "tsukuru": "GitHub のサーバー上だけ（Mac には作らない）",
+   "okiba": "GitHub",
+   "kesu": "GitHub（実行ごとに捨てられる）"
+  },
+  {
+   "name": "actions:uchu-unko-v5-render.yml",
+   "kind": "GitHub Actions",
+   "freq": "push のたび",
+   "tsukuru": "GitHub のサーバー上だけ（Mac には作らない）",
+   "okiba": "GitHub",
+   "kesu": "GitHub（実行ごとに捨てられる）"
+  },
+  {
+   "name": "actions:uchu-unko-v6-render.yml",
+   "kind": "GitHub Actions",
+   "freq": "手動・その他",
+   "tsukuru": "GitHub のサーバー上だけ（Mac には作らない）",
+   "okiba": "GitHub",
+   "kesu": "GitHub（実行ごとに捨てられる）"
+  },
+  {
+   "name": "actions:uchufuku-render.yml",
+   "kind": "GitHub Actions",
+   "freq": "手動・その他",
    "tsukuru": "GitHub のサーバー上だけ（Mac には作らない）",
    "okiba": "GitHub",
    "kesu": "GitHub（実行ごとに捨てられる）"
