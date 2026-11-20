@@ -2,7 +2,54 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-20 11:57
+更新：2026-11-20 12:03
+
+---
+## 2026-11-20 12:03  
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-7029044495
+
+工場の受付（status/queue.json）に入った新しい指示 84件（古い44件は省略）。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
+
+- 11-20 11:49｜257142番｜判定日赤｜vault=tamago_brain&file=%E7%A7%8B%E3%80%80%E3%81%A8%E3%
+- 11-20 11:50｜257143番｜判定日赤｜題名が英語のままなので、同じ棚の他の3件と同じ型（日本語・1行・事実だけで誘う、例「白菜と肉を重ねるだけで、鍋
+- 11-20 11:50｜257144番｜判定日赤｜リポ /Users/mac/Desktop/joy-relief-station の git log・未コミッ
+- 11-20 11:50｜257145番｜判定日赤｜渡す前に、そのURLを iPhone幅とPC幅の両方で headless で開いて、本文・画像・動画枠が出るの
+- 11-20 11:50｜257146番｜判定日赤｜工場の gh-pages 公開で消えないように、同じファイルを工場側の share/（公開の元になる場所）にも
+- 11-20 11:50｜257147番｜判定日赤｜作り方：記事はサイト（joy-relief-station）の特集ページとして作り、曲ページの追加・リンク・関
+- 11-20 11:50｜257148番｜判定日赤｜CLAUDE.md / AGENTS.md / ai-brain/pm_brief.md / .claude/
+- 11-20 11:51｜257149番｜判定日赤｜作業ツリーが他セッションの未commit編集（225ファイル）と混在していたため、git apply --c
+- 11-20 11:51｜257150番｜判定日赤｜第二条「できないは最終手段」に照らすと、打開策は2択：①友近・品川ヒロシの新規アーティストページを出典付きで仕
+- 11-20 11:51｜257151番｜判定日赤｜新しい依頼（たまごさん原文）：「https://youtu.be/UySBUuyjLRA 『AIカバーのポリリ
+- 11-20 11:51｜257152番｜判定日赤｜｜本文：【タスク】判定日赤｜仕事を増やしちゃだめだよ。
+- 11-20 11:51｜257153番｜判定日赤｜今すぐ commit→push→工場 tools/1144_osu_chokusetsu.py で公開→本番で
+- 11-20 11:52｜257154番｜判定日赤｜残り：①カバー曲ページで原曲をフル幅サムネイル、別バージョンはハーフ（Adoのページ：原曲=松原みき、別=Ra
+- 11-20 11:52｜257155番｜判定日赤｜→ 調べて一覧に：直近14日でAI/工場がVaultに新規作成・更新したファイルを、①どの道具/セッションが書
+- 11-20 11:52｜257156番｜判定日赤｜韓国語・スペイン語のクラウドが403で失敗した件は、別セッション（local_f440b986）がクラウドの許
+- 11-20 11:52｜257157番｜判定日赤｜他セッションの未commit編集225+ファイルと混在していたため git apply --cached
+- 11-20 11:52｜257158番｜判定日赤｜34629番の検品は、/Users/mac/Documents/AI作業/.worktrees/q34629
+- 11-20 11:52｜257159番｜判定日赤｜今勝手にシャットダウンした Brave が、2.1.278（バージョン）で「このコンピューターの画面とオーディ
+- 11-20 11:53｜257160番｜判定日赤｜工場の子セッションの指示書テンプレート（auto_launcher が使っている起動文、tools/ 配下、な
+- 11-20 11:53｜257161番｜判定日赤｜作業ツリーに混在していた他セッションの200件超の未commit編集には一切触れず、git diff -U0
+- 11-20 11:53｜257162番｜判定日赤｜get_project の次から、deploy_project で公開し、本番URLを web_fetch で
+- 11-20 11:53｜257163番｜判定日赤｜過去セッション（local_554eaf6a「Gensparkに記事と覆面調査」、local_71ab0946
+- 11-20 11:53｜257164番｜判定日赤｜同時に実行したこの案件専用の検出スクリプトscripts/scan-cm-movie-links.tsも同
+- 11-20 11:54｜257165番｜判定日赤｜布袋寅泰の「202X」と「Dancing with the Moonlight」の曲ページ、hikigatar
+- 11-20 11:55｜257166番｜判定日赤｜前のセッション「コンシェルジュ 話せる＋口パク」（code: local_f3d334f4、cowork: l
+- 11-20 11:55｜257167番｜判定日赤｜si=PxBhjkDPmDQTXAJ3あと、今これと YouTube リンクを、「踊れるアジア」っていう棚を音
+- 11-20 11:56｜257168番｜判定日赤｜issue が無ければ、テスト用の issue を1件（作者 tamago2022、ラベル go、内容「ep0
+- 11-20 11:56｜257169番｜判定日赤｜名カバーの棚の作業（local_932001ef）も同じ決まりで動いているので、部品を共通にして、main の
+- 11-20 11:57｜257170番｜判定日赤｜もし無理そうなら ChatGPT にやってもらうけど、「日本、アジア、世界🌏」（地球マーク）っていうプレイリス
+- 11-20 11:57｜257171番｜判定日赤｜調査対象: /Users/mac/Desktop/joy-relief-station（2026-08-08依
+- 11-20 11:57｜257172番｜判定日赤｜さらに、サイト全体の内部リンクを機械で総当たりし、「工事中」や404、中身の無いページに飛ぶリンクを全部洗い出
+- 11-20 11:57｜257173番｜判定日赤｜上り回線の件の手順書として読み（読むだけ、Vault には書かない）、書かれている診断を、許可ダイアログや管理
+- 11-20 11:58｜257174番｜判定日赤｜描き方の型（例：水彩絵本／ドタバタ誇張／スーパーミニマム／リアル顔＋シンプルな体 など）ごとに同じ場面を1枚ず
+- 11-20 11:58｜257175番｜判定日赤｜番号1234｜原文：鍵の正本を1か所（~/.tamago/keys/api_keys.env）に決めて、他は読
+- 11-20 11:58｜257176番｜判定日赤｜｜本文：【タスク】鍵の正本を1か所（~/.tamago/keys/api_keys.env）に決めて、他は読む
+- 11-20 11:58｜257177番｜判定日赤｜追加でひとつ：Googleドライブ（パソコン版）が「同期できなかった3個のアイテムを一時保管場所フォルダに移動
+- 11-20 11:58｜257178番｜判定日赤｜まずは確認ページ（GitHub Pages の share/check）に下書きを置き、開けることを自分で確か
+- 11-20 11:59｜257179番｜判定日赤｜vault=tamago_brain&file=%E5%9C%8B%E5%85%89%E3%81%95%E3%
+- 11-20 12:01｜257180番｜判定日赤｜たまごさんの候補：https://youtu.be/DcwdUXZkfTw と https://youtu.b
+- 11-20 12:02｜257181番｜判定日赤｜Claude の成果物（俺が「棒人間」って呼んでるやつ）の最新がどこにあるのかパッと見たいから、例えば Goo
 
 ---
 ## 2026-11-20 09:03  
@@ -2167,17 +2214,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-686596
 - 11-14 06:55｜246186番｜判定日赤｜まずは確認ページ（GitHub Pages の share/check）に下書きを置き、開けることを自分で確か
 - 11-14 06:56｜246187番｜判定日赤｜vault=tamago_brain&file=%E5%9C%8B%E5%85%89%E3%81%95%E3%
 - 11-14 06:58｜246188番｜判定日赤｜たまごさんの候補：https://youtu.be/DcwdUXZkfTw と https://youtu.b
-
----
-## 2026-11-14 06:46 ［Reason Network］ Grok Botの招待リンク・参加手順
-https://github.com/tamago2022/joy-relief-station/issues/1192#issuecomment-6865773444
-
-GitHub Issue #1035(joy-relief-station)の依頼に対応済み。Reason Networkはこの工場Macに既に導入・daemon稼働中(team名 gokigen)。Grok Bot(SNS担当)がこのネットワークに参加する手順：自分のコーディングエージェントのシェルに下記の行をそのまま貼り付けて実行する。
-
-Join the Reason Network: https://reasonmachines.com/network/join/#rn1-z1WUh-BW_ug4qpax1sofJQ-qAr7UnySes0h4-3eW19wHZ29raWdlbgAuaHR0cHM6Ly9yZWxheS1zaW4xLmNvbXB1dGUucmVhc29ubWFjaGluZXMuY29tLwEEwKgALt6R-k2nXX53M5gX5pgmqWkqF70LP-xiOMdJ3vMwKmgANGg
-
-参加後にできること：reason-network who でチームの稼働一覧確認、reason-network send <person/session> "<message>" で他セッションへ依頼。外から来たメッセージは保留(hold)設定済みなので安全。失効時はこちら側で reason network link --new で再発行する。
-
-詳細・確認ページ：https://tamago2022.github.io/tamago-shinchoku/share/check/152723-reason-network.html
-Issueコメント：https://github.com/tamago2022/joy-relief-station/issues/1035#issuecomment-6865667644
 
