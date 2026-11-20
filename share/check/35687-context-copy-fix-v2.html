@@ -77,7 +77,7 @@ coverGuide.tsの「彼らの代表曲。」8件修正(前便)は本番で7/8件�
 <tr><td>Hush(Kula Shaker・coverGuide.ts aiCovers whisper)</td><td class="yes">yes</td></tr>
 <tr><td>Still a Friend of Mine(Incognito)</td><td class="yes">yes</td></tr>
 <tr><td>Apparently Nothin&#x27;(Incognito)</td><td class="yes">yes</td></tr>
-<tr><td>Man In The Box(Alice in Chains)</td><td class="yes">yes(今回の修正で反映待ち)</td></tr>
+<tr><td>Man In The Box(Alice in Chains)</td><td class="no">反映待ち(05:03時点でまだ旧テキスト)</td></tr>
 <tr><td>Can I Kick It?(A Tribe Called Quest)</td><td class="yes">yes</td></tr>
 <tr><td>Ms. Jackson(OutKast)</td><td class="yes">yes</td></tr>
 <tr><td>Release the Pressure(Leftfield)</td><td class="yes">yes</td></tr>
@@ -96,14 +96,16 @@ coverGuide.tsの「彼らの代表曲。」8件修正(前便)は本番で7/8件�
 2) 「1997。怒涛のオルガンとグルーヴで、カバーを彼らの代表曲にした。」
  → 「1997。怒涛のオルガンとグルーヴで、カバーを超えて愛される一曲にした。」</pre>
 <b>本番実測（node fetch・cache:no-store）の経緯：</b>
-<pre style="white-space:pre-wrap;font-size:0.82rem;background:#f8f5ec;padding:10px;border-radius:8px;">前便(commit 5b73879ad)直後：8件中7件は本番で「彼らの代表曲」が消えていることを確認。
-alice-in-chainsのみ残存（3箇所に同一文言が出現、x-jrs-ssr:full・x-jrs-cache:MISSでキャッシュ起因ではないと確認）。
-原因：public/data/song/01c.json（静的スナップショット）が旧テキストを保持していた。
-今回のcommitをpush直後は本番にまだ反映されておらず、Lovableの自動ビルド反映を待っている状態。</pre>
+<pre style="white-space:pre-wrap;font-size:0.82rem;background:#f8f5ec;padding:10px;border-radius:8px;">04:4x 前便(commit 5b73879ad)実測：8件中7件は本番で「彼らの代表曲」が消えていることを確認。
+      alice-in-chainsのみ残存（3箇所に同一文言が出現、x-jrs-ssr:full・x-jrs-cache:MISSでキャッシュ起因ではないと確認）。
+      原因：public/data/song/01c.json（静的スナップショット、/data/song/01c.json としてそのまま配信されている）が旧テキストを保持。
+04:58 commit 4b10f6d0dをpush（01c.json・shelf/5d.json・shelf/35.jsonの派生データ＋worlds.ts本体を修正）。
+05:03 再実測：public/data/song/01c.jsonはまだ本番で旧テキストのまま（/data/song/01c.jsonを直接fetchしても残存）。
+      Lovableのビルド反映には実測で最大1時間弱の遅れが出ることが過去にもあり、今回も反映待ちの範囲内と判断。</pre>
 </div>
 
 <footer>
-本番SSRは『x-jrs-ssr: full』でリクエストごとにレンダリングされており、キャッシュ(x-jrs-cache: MISS)の問題ではない。原因は、coverGuide.ts/worlds.tsを直しただけでは更新されない静的スナップショットファイル(public/data/song・public/data/shelf)に古いテキストが残っていたこと。今回その3ファイルも直接修正してpush済み。本番反映の実測は数分後に再確認する。
+本番SSRは『x-jrs-ssr: full』でリクエストごとにレンダリングされており、キャッシュ(x-jrs-cache: MISS)の問題ではない。原因は、coverGuide.ts/worlds.tsを直しただけでは更新されない静的スナップショットファイル(public/data/song・public/data/shelf)に古いテキストが残っていたこと。該当3ファイル＋worlds.ts本体はcommit 4b10f6d0dで修正しmainへpush済み。8/9箇所(本文中「彼らの代表曲」の対象9箇所)は本番で修正を確認済み、残り1箇所(Alice in Chains Man In The Box)はLovableのビルド反映待ち（正直に未反映と明記する）。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
