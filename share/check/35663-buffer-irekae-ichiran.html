@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35663 今後2週間分の投稿候補を日付・曲・アーティスト・メモで一覧化 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35663 今後2週間分の投稿候補を日付・曲・アーティスト・メモで一覧化</div>
+<h1>#35663 今後2週間分の投稿候補を日付・曲・アーティスト・メモで一覧化</h1>
+<div class="date">2026-11-20 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+2026-08-15の店主発言「たまごが『この曲よりこれ』と入れ替えできるように、日付・曲・アーティスト・簡単なメモの形で一覧化してください」への対応。Buffer GraphQL API（読み取り専用・@oasisjoyrelief channel）から実際に予約済みの投稿を直接取得し、今後14日分（2026-11-20〜2026-12-03・28件）を日付・アーティスト・曲名・投稿文冒頭（メモ）の表にした。姉妹案件#35662（本日完了・件数集計版）とは別角度で、こちらは1本ずつ見て『この曲よりこれ』と入れ替え判断できる表形式にした。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>57件</b><span>Buffer予約済み投稿の総数（実測・API集計、2026-11-20〜12-18分）</span></div>
+  <div class="num"><b>28件</b><span>今後14日分（2026-11-20〜12-03）の候補・この表に全件掲載</span></div>
+  <div class="num"><b>29件</b><span>14日より先（12-04〜12-18）に予約済みの残り（表は未掲載・件数のみ）</span></div>
+  <div class="num"><b>2本</b><span>1日あたりの投稿本数（朝09:00=邦楽寄り／夜21:00=洋楽寄り）</span></div>
+</div>
+
+
+
+<h2>③ 日付・曲・アーティスト・メモ（直近14日・28件）</h2>
+<table data-sekisho="inyou">
+<tr><th>日付</th><th>曲</th><th>アーティスト</th><th>メモ（投稿文の書き出し）</th></tr>
+<tr><td>11/20(金)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=tomoko-aran&amp;song=midnight-pretenders" target="_blank" rel="noopener">Midnight Pretenders</a></td><td>Tomoko Aran</td><td>One song to start your city pop journey? 🌃</td></tr>
+<tr><td>11/21(土)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=elton-john&amp;song=goodbye-yellow-brick-road" target="_blank" rel="noopener">Goodbye Yellow Brick Road</a></td><td>Elton John</td><td>A yellow brick road that still leads somewhere honest.</td></tr>
+<tr><td>11/21(土)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=glenn-miller&amp;song=moonlight-serenade" target="_blank" rel="noopener">Moonlight Serenade</a></td><td>Glenn Miller</td><td>Moonlight, brass, and a slow glide.</td></tr>
+<tr><td>11/22(日)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=jodeci&amp;song=lately" target="_blank" rel="noopener">Lately</a></td><td>Jodeci</td><td>A cover that must never be buried.</td></tr>
+<tr><td>11/22(日)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=nujabes&amp;song=reflection-eternal" target="_blank" rel="noopener">reflection eternal</a></td><td>Nujabes</td><td>Beautiful beats only.</td></tr>
+<tr><td>11/23(月)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=soundgarden&amp;song=black-hole-sun" target="_blank" rel="noopener">Black Hole Sun</a></td><td>Soundgarden</td><td>Where would you want to hear this? ☀️</td></tr>
+<tr><td>11/23(月)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=led-zeppelin&amp;song=the-rain-song" target="_blank" rel="noopener">The Rain Song</a></td><td>Led Zeppelin</td><td>Can a song feel like a whole story?</td></tr>
+<tr><td>11/24(火)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=miki-matsubara&amp;song=stay-with-me" target="_blank" rel="noopener">Mayonaka no Door – Stay With Me</a></td><td>Miki Matsubara</td><td>What&#x27;s the ultimate city pop staple?</td></tr>
+<tr><td>11/24(火)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=utada&amp;song=hanataba-wo-kimini" target="_blank" rel="noopener">Hanataba wo Kimi ni</a></td><td>Hikaru Utada</td><td>Isn&#x27;t there something soothing about a bittersweet voice?</td></tr>
+<tr><td>11/25(水)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=%E5%A4%A7%E6%A9%8B%E3%83%88%E3%83%AA%E3%82%AA&amp;song=okuru-kotoba" target="_blank" rel="noopener">Okuru Kotoba</a></td><td>Ohashi Trio</td><td>Passing great songs on to the next generation.</td></tr>
+<tr><td>11/25(水)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ms-ooja&amp;song=fly-day-chinatown" target="_blank" rel="noopener">Fly-day Chinatown</a></td><td>Ms.OOJA</td><td>A Chinatown Friday, sung anew.</td></tr>
+<tr><td>11/26(木)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=maroon-5&amp;song=sugar" target="_blank" rel="noopener">Sugar</a></td><td>Maroon 5</td><td>Need a dose of pure happiness?</td></tr>
+<tr><td>11/26(木)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=night-tempo&amp;song=plastic-love-night-tempo-edit" target="_blank" rel="noopener">Plastic Love (100% Pure Remastered)</a></td><td>Night Tempo</td><td>Plastic Love, remastered for a new dancefloor.</td></tr>
+<tr><td>11/27(金)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ayaka&amp;song=mikazuki" target="_blank" rel="noopener">Mikazuki</a></td><td>Ayaka</td><td>A crescent moon for a quiet morning.</td></tr>
+<tr><td>11/27(金)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=king-gnu&amp;song=kazari-janai" target="_blank" rel="noopener">Kazari ja Nai no yo Namida wa</a></td><td>King Gnu</td><td>A Showa-era classic, played by a band of today.</td></tr>
+<tr><td>11/28(土)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=prince&amp;song=how-come-u-dont-call-me-anymore" target="_blank" rel="noopener">How Come U Don&#x27;t Call Me Anymore</a></td><td>Prince</td><td>Just voice, piano, and a question that stings.</td></tr>
+<tr><td>11/28(土)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=rei-harakami&amp;song=unrest" target="_blank" rel="noopener">unrest</a></td><td>rei harakami</td><td>Electronic hush for a late November night.</td></tr>
+<tr><td>11/29(日)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=intro&amp;song=ribbon-in-the-sky" target="_blank" rel="noopener">Ribbon in the Sky</a></td><td>Intro</td><td>Which song takes you up into the sky? ☁️</td></tr>
+<tr><td>11/29(日)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ray-charles&amp;song=georgia-on-my-mind" target="_blank" rel="noopener">Georgia on My Mind</a></td><td>Ray Charles</td><td>Home, sung like a prayer.</td></tr>
+<tr><td>11/30(月)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=eagles&amp;song=hotel-california" target="_blank" rel="noopener">Hotel California</a></td><td>Eagles</td><td>A hotel you can check out of — but not leave.</td></tr>
+<tr><td>11/30(月)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=audrey-hepburn&amp;song=moon-river" target="_blank" rel="noopener">Moon River</a></td><td>Audrey Hepburn</td><td>A river of moonlight in under three minutes.</td></tr>
+<tr><td>12/1(火)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=friday-night-plans&amp;song=plastic-love-cover" target="_blank" rel="noopener">Plastic Love</a></td><td>Friday Night Plans</td><td>Plastic Love, live and feather-light.</td></tr>
+<tr><td>12/1(火)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=rei-harakami&amp;song=cape" target="_blank" rel="noopener">cape</a></td><td>rei harakami</td><td>Soft electronics with a long horizon.</td></tr>
+<tr><td>12/2(水)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=weeknd&amp;song=out-of-time" target="_blank" rel="noopener">Out of Time</a></td><td>The Weeknd</td><td>City pop under a 2022 chart hit.</td></tr>
+<tr><td>12/2(水)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=ogura-kei&amp;song=cyclamen-no-kahori" target="_blank" rel="noopener">Cyclamen no Kahori</a></td><td>Kei Ogura</td><td>A fragrance of cyclamen, arranged by Hoshi Kats.</td></tr>
+<tr><td>12/3(木)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=pentatonix&amp;song=hallelujah" target="_blank" rel="noopener">Hallelujah</a></td><td>Pentatonix</td><td>Ever been overwhelmed by a wall of voices? ❄️</td></tr>
+<tr><td>12/3(木)21:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=sara-bareilles&amp;song=goodbye-yellow-brick-road" target="_blank" rel="noopener">Goodbye Yellow Brick Road</a></td><td>Sara Bareilles</td><td>Yellow brick road, sung from a piano bench.</td></tr>
+<tr><td>12/4(金)09:00</td><td><a href="https://joy-relief-station.lovable.app/cover-guide?artist=rc-succession&amp;song=slow-ballad" target="_blank" rel="noopener">Slow Ballad</a></td><td>RC Succession</td><td>A slow ballad that still burns quietly.</td></tr>
+</table>
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>このページ自身</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35663-buffer-irekae-ichiran.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35663-buffer-irekae-ichiran.html</a></li>
+  <li><b>姉妹案件#35662（件数集計版・本日完了）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35662-sns-2shukan-kouho-list.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35662-sns-2shukan-kouho-list.html</a></li>
+  <li><b>X本体（@oasisjoyrelief）</b><a href="https://x.com/oasisjoyrelief" target="_blank" rel="noopener">https://x.com/oasisjoyrelief</a></li>
+</ul>
+
+
+
+<footer>
+正本：Buffer GraphQL API（posts query・読み取り専用、oasisjoyreliefチャンネル）。入れ替えたい時はたまごさんが気になる曲を1行指定するだけでよく、実行は tools/1170_torikeshi.py（該当予約を取り消す）→ tools/1170_hako.py（待機列から次の1本を繰り上げる）の既存運用で対応できる。取得コマンドの実測ログはこのページ生成時点（2026-11-20）のBuffer予約そのもの。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
