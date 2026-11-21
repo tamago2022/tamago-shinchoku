@@ -188,6 +188,18 @@ LAST="$(cat "$PAGES/.git/lastmain" 2>/dev/null || echo "")"
 
 SEKISHO_BLOCKED=0
 sync_one() {  # $1=コミット $2=パス
+  case "$2" in
+    share/eagle-k7m2xq9p/o/*)
+      # 2026-11-22緊急対応（35754号調査中に発見）：o/（受け渡し用・原寸に近い画像）だけで691MB、
+      # gh-pagesのartifact合計が1GB（actions/deploy-pages@v4の上限）を超えデプロイが
+      # 2連続失敗していた（実測：Uploaded artifact size of 1681548358 bytes exceeds the
+      # allowed size of 1 GB）。mainには残すが公開(gh-pages)には同期しない。
+      # ギャラリー側(index.html bestSrc)もt/（サムネイル）優先に変更済みなので404は起きない。
+      # 本対応（1024番の推奨＝Git LFS化等）をすれば画質を戻せる。
+      rm -f "$PAGES/$2" 2>/dev/null || true
+      return 0
+      ;;
+  esac
   local d; d="$PAGES/$(dirname "$2")"
   mkdir -p "$d" 2>/dev/null || return 0
   if ! git -C "$REPO" show "$1:$2" > "$PAGES/$2" 2>/dev/null; then
