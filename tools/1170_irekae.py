@@ -49,6 +49,9 @@ D = os.path.join(REPO, "status", "1170")
 FIELD = os.path.join(D, ".irekae_field.json")
 HIKAE = os.path.join(D, "irekae_hikae.json")
 LOG = os.path.join(D, "irekae.jsonl")
+# ★35743番（2026-08-19に言われ3ヶ月未着手だった件）：消す前に必ず
+#   予約ID・日時・画像ファイル名・キャプションの4項目をここへ書き出してから消す。
+KESU_KIROKU_DIR = os.path.join(REPO, "status", "buffer_queue", "kesu_kiroku")
 WANT = "oasisjoyrelief"
 FORBID = ["eggypop2014"]
 
@@ -68,7 +71,8 @@ Q_SCHED = """
 query($o: OrganizationId!, $c: [ChannelId!]) {
   posts(input: { organizationId: $o, sort: [{ field: dueAt, direction: asc }],
                  filter: { status: [scheduled], channelIds: $c } }) {
-    edges { node { id text dueAt channelId status } }
+    edges { node { id text dueAt channelId status
+      assets { ... on ImageAsset { source thumbnail mimeType } } } }
   }
 }
 """
@@ -179,6 +183,46 @@ def hikisuu(name):
         if a == name and i + 1 < len(sys.argv):
             return sys.argv[i + 1]
     return ""
+
+
+# ───────────────────────── 35743番：消す前の書き出し保存（先に置かないと消させない）
+
+def gazou_filename(node):
+    """assetsのsource URLからファイル名だけ取り出す。画像が無ければ明示的に書く。"""
+    for a in (node.get("assets") or []):
+        src = (a or {}).get("source") or (a or {}).get("thumbnail") or ""
+        if src:
+            name = src.split("?")[0].rstrip("/").split("/")[-1]
+            if name:
+                return name
+    return "(画像なし)"
+
+
+def kesu_taisho_kiroku(nodes, naze=""):
+    """★削除対象の全件を、消す前にここへ書き出して保存する。
+    予約ID・日時・画像ファイル名・キャプションの4項目を1件も漏らさない。
+    戻り値：保存したファイルのパス。1件も書けなければ例外を上げて呼び出し元に消させない。
+    """
+    taisho = []
+    for n in nodes:
+        taisho.append({
+            "yoyaku_id": n.get("id") or "",
+            "nichiji": (jst(n.get("dueAt")) or now()).strftime("%F %H:%M") if n.get("dueAt") else "",
+            "gazou_filename": gazou_filename(n),
+            "caption": n.get("text") or "",
+        })
+    rec = {
+        "at": now().strftime("%F %T"),
+        "naze": naze,
+        "kensu": len(taisho),
+        "taisho": taisho,
+    }
+    os.makedirs(KESU_KIROKU_DIR, exist_ok=True)
+    fn = "kesu_%s.json" % now().strftime("%Y%m%d_%H%M%S_%f")
+    path = os.path.join(KESU_KIROKU_DIR, fn)
+    jsave(path, rec)
+    kiroku({"result": "削除対象リストを書き出した", "path": path, "kensu": len(taisho), "naze": naze})
+    return path
 
 
 # ───────────────────────── 待機列の入れ替え（0叩き・失敗しようがない）
@@ -331,6 +375,8 @@ def yoyaku_irekae():
     else:
         # ② 消して作り直す。★控えは上に保存済み
         print("  時刻だけの書き換えは通らなかった。消して作り直します（控えは保存済み）")
+        # ★35743番：消す前に、消す全件を書き出して保存する（ここを飛ばさない）
+        kesu_taisho_kiroku([A, B], naze="1170_irekae: 時刻入れ替えで消して作り直す")
         for P, t in ((A, tb), (B, ta)):
             r = gql(tok, M_DEL, {"input": {"id": P["id"]}})
             dp = (r.get("data") or {}).get("deletePost") or {}
@@ -375,7 +421,31 @@ def miru():
     return 0
 
 
+def kiroku_dake():
+    """★35743番：今スケジュールされている分を、消さずに
+    予約ID・日時・画像ファイル名・キャプションの4項目で書き出して保存するだけ。
+    0件のときも『0件だった』という記録を残す（中身が空のまま報告しない）。
+    """
+    tok = kagi.get("BUFFER_ACCESS_TOKEN")
+    if not tok:
+        print("鍵が無い")
+        return 2
+    org, chid = channel(tok)
+    e = ((gql(tok, Q_SCHED, {"o": org, "c": [chid]})
+          .get("data") or {}).get("posts") or {}).get("edges") or []
+    ps = sorted([x["node"] for x in e], key=lambda x: x.get("dueAt") or "")
+    path = kesu_taisho_kiroku(ps, naze="--kiroku-dake：削除せず現状の一覧を書き出しただけ")
+    print("書き出した: %s（%d件）" % (path, len(ps)))
+    for i, p in enumerate(ps, 1):
+        print("  %2d %s %s %s" % (i, p.get("id"),
+                                   (jst(p.get("dueAt")) or now()).strftime("%F %H:%M"),
+                                   midashi(p.get("text"))))
+    return 0
+
+
 def main():
+    if "--kiroku-dake" in sys.argv:
+        return kiroku_dake()
     if hikisuu("--retsu") or hikisuu("--retsu-ue"):
         return retsu_irekae()
     if hikisuu("--yoyaku"):

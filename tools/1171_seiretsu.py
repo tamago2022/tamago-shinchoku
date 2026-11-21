@@ -241,6 +241,11 @@ def main():
             print("  %s %s → %s  %s" % ("○" if ok else "★失敗",
                                         e["ima"], e["saki"], e["midashi"]))
         elif e["dou"] == "外す":
+            # ★35743番：消す前に、消す1件を書き出して保存する（ここを飛ばさない）
+            irekae.kesu_taisho_kiroku(
+                [{"id": e["id"], "dueAt": None,
+                  "text": e.get("text") or e.get("midashi") or "", "assets": []}],
+                naze="1171_seiretsu: 整列のため外す（元の予定=%s）" % e.get("ima"))
             r = irekae.gql(tok, irekae.M_DEL, {"input": {"id": e["id"]}})
             dp = (r.get("data") or {}).get("deletePost") or {}
             ok = bool((dp.get("post") or {}).get("id"))
