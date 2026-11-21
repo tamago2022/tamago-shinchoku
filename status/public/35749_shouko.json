@@ -1,0 +1,37 @@
+{
+  "n": 35749,
+  "what": "本体リポの『詰まり見回り』が、報告（Issue本文）の文字数過多で書き込みに失敗し、失敗が止まらなかった問題。報告の長さに上限を設けて直した。",
+  "measuredAt": "2026-11-22T00:20:00+09:00",
+  "measuredBy": "gh api / gh run list （本ツール gh の認証アカウント tamago2022 で実測。GitHub API 直読み）",
+  "before": {
+    "consecutiveScheduleFailures": 50,
+    "firstFailureAt": "2026-09-05T22:02:02Z",
+    "lastFailureAt": "2026-11-20T01:45:29Z",
+    "errorMessage": "GraphQL: Body is too long, Body is too long (maximum is 65536 characters) (createIssue)",
+    "reportBodyChars": 87560,
+    "reportBodyLimitChars": 65536
+  },
+  "last100Runs": {
+    "total": 100,
+    "failure": 94,
+    "success": 6,
+    "note": "直近100回中94回失敗。残り6回の成功も、本修正の前は『今回たまたま件数が少なく上限内に収まった日』だけで、原因は未解決のまま毎回再発していた"
+  },
+  "fix": {
+    "whatChanged": "報告(Issue本文)の文字数に6万字の上限を設け、超えた分は『全件は別の記録を見てください』と省略案内する形にした",
+    "commitHash": "26b0d13d28",
+    "commitMessageFirstLine": "fix: 詰まり見回りIssue本文がGraphQL上限65536文字超で毎日失敗していたのを修正",
+    "committedAt": "2026-11-21T14:22:49Z"
+  },
+  "after": {
+    "verificationRuns": [
+      { "runId": 44913698123, "event": "workflow_dispatch", "startedAt": "2026-11-21T14:23:37Z", "conclusion": "success" },
+      { "runId": 44914561689, "event": "workflow_dispatch", "startedAt": "2026-11-21T14:33:39Z", "conclusion": "success" }
+    ],
+    "verificationRunsSuccessCount": "2/2",
+    "reportBodyCharsAfterFix": 59900,
+    "reportBodyLimitChars": 65536,
+    "issueUpdatedAt": "2026-11-21T14:35:15Z",
+    "note": "本修正を含むコードが反映された本番の本体リポ上で、手動実行(workflow_dispatch)を2回行い、2回とも成功。報告(Issue)の本文長さも上限の内側(59900字)で書き込みに成功したことを確認した。本体リポは非公開のため、この実測結果の生データのみをここ(公開リポ tamago-shinchoku の status/public/)へ書き出している。"
+  }
+}
