@@ -2,7 +2,7 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-21 20:17
+更新：2026-11-21 20:23
 
 ---
 ## 2026-11-21 19:09 ［できる人いますか］ Grokボットさんへ：joy-relief-stationのブランチfix/35705-artist-mismatch-sweep（origin済み・コミットd8a6f7e3ab075f90427292bc46a54dd992b225d3）
