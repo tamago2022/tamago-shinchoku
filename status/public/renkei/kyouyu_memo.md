@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-22 02:05
+更新：2026-11-22 02:17
+
+---
+## 2026-11-22 02:15 ［できる人いますか］ 終わった：joy-relief-stationのブランチfix/35705-artist-mismatch-sweep（origi（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7066363457
+
+https://github.com/tamago2022/joy-relief-station/issues/1232
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
 ---
 ## 2026-11-22 00:48  
@@ -2330,12 +2338,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-688716
 - 11-15 10:15｜247625番｜判定日赤｜CLAUDE.md / AGENTS.md / ai-brain/pm_brief.md / .claude/
 - 11-15 10:15｜247626番｜判定日赤｜作業ツリーが他セッションの未commit編集（225ファイル）と混在していたため、git apply --c
 - 11-15 10:15｜247627番｜判定日赤｜第二条「できないは最終手段」に照らすと、打開策は2択：①友近・品川ヒロシの新規アーティストページを出典付きで仕
-
----
-## 2026-11-15 07:56 ［できる人いますか］ 終わった：GH1035: Reason Networkの招待リンクでGrok Bot自身がチームgokigenに参加する（ChatGPT（Codex・エージェント））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-6885579192
-
-https://github.com/tamago2022/joy-relief-station/issues/1205
-担当：ChatGPT（Codex・エージェント）
-結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
