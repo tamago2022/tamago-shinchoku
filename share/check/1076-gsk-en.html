@@ -9,24 +9,24 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --cream: #fdf8f2;
-      --warm: #f5ede0;
-      --rust: #c4623a;
-      --rust-light: #e8845e;
-      --rust-dark: #8b3a1e;
-      --gold: #d4a84b;
-      --ink: #1e1612;
-      --ink-soft: #4a3728;
-      --ink-muted: #8a7060;
-      --line: #e8d8c8;
-      --white: #ffffff;
+      --cream: var(--t-fg);
+      --warm: var(--t-fg);
+      --rust: var(--t-warn);
+      --rust-light: var(--t-warn);
+      --rust-dark: var(--t-warn);
+      --gold: var(--t-warn);
+      --ink: var(--t-fg2);
+      --ink-soft: var(--t-fg2);
+      --ink-muted: var(--t-warn);
+      --line: var(--t-line);
+      --white: var(--t-fg);
     }
 
     html { font-size: 16px; }
 
     body {
-      background: var(--cream);
-      color: var(--ink);
+      background:var(--t-panel2);
+      color:var(--t-fg);
       font-family: Georgia, 'Times New Roman', serif;
       max-width: 430px;
       margin: 0 auto;
@@ -36,14 +36,13 @@
 
     .hero {
       position: relative;
-      background: var(--ink);
+      background:var(--t-panel2);
       padding: 0;
       overflow: hidden;
       min-height: 300px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-    }
+      justify-content: flex-end;color:var(--t-fg)}
 
     .hero-art {
       position: absolute;
@@ -117,17 +116,17 @@
     .hero-byline {
       font-family: 'Helvetica Neue', Arial, sans-serif;
       font-size: 13px;
-      color: rgba(255,255,255,0.65);
+      color: var(--t-fg);
       line-height: 1.5;
     }
 
     .hero-byline strong {
-      color: rgba(255,255,255,0.9);
+      color: var(--t-fg);
     }
 
     .hook {
       background: var(--rust);
-      color: var(--white);
+      color:var(--t-on-accent);
       padding: 22px 24px;
       font-size: 15px;
       line-height: 1.65;
@@ -169,11 +168,10 @@
 
     .stat-box {
       flex: 1;
-      background: var(--warm);
+      background:var(--t-panel2);
       border-radius: 10px;
       padding: 14px 12px;
-      text-align: center;
-    }
+      text-align: center;color:var(--t-fg)}
 
     .stat-box .num {
       font-size: 22px;
@@ -226,8 +224,8 @@
     }
 
     .trivia {
-      background: var(--ink);
-      color: var(--white);
+      background:var(--t-panel2);
+      color:var(--t-fg);
       border-radius: 12px;
       padding: 20px 20px 16px;
       margin: 20px 0;
@@ -262,13 +260,12 @@
     .trivia .source-link:hover { opacity: 1; }
 
     .cover-card {
-      background: var(--white);
+      background:var(--t-panel2);
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: 16px 18px;
       margin-bottom: 12px;
-      position: relative;
-    }
+      position: relative;color:var(--t-fg)}
 
     .cover-card:last-child { margin-bottom: 0; }
 
@@ -369,7 +366,7 @@
     }
 
     .sky-box {
-      background: linear-gradient(135deg, #1a2a3a 0%, #0d1a26 100%);
+      background: linear-gradient(135deg, var(--t-panel) 0%, var(--t-bg) 100%);
       color: var(--white);
       border-radius: 14px;
       padding: 22px 20px;
@@ -387,7 +384,7 @@
     .sky-box p {
       font-size: 13px;
       line-height: 1.65;
-      color: rgba(255,255,255,0.85);
+      color: var(--t-fg);
     }
 
     .sky-box .sky-src {
@@ -417,7 +414,7 @@
       height: 28px;
       border-radius: 50%;
       background: var(--rust);
-      color: var(--white);
+      color:var(--t-on-accent);
       font-size: 13px;
       font-weight: bold;
       font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -443,14 +440,13 @@
     }
 
     footer {
-      background: var(--ink);
+      background:var(--t-panel2);
       color: rgba(255,255,255,0.45);
       padding: 24px;
       font-family: 'Helvetica Neue', Arial, sans-serif;
       font-size: 11px;
       line-height: 1.7;
-      text-align: center;
-    }
+      text-align: center;color:var(--t-fg)}
 
     footer a {
       color: var(--gold);
@@ -481,8 +477,7 @@
       height: 2px;
       background: var(--rust);
       margin: 14px 0;
-      border-radius: 2px;
-    }
+      border-radius: 2px;color:var(--t-on-accent)}
   </style>
 </head>
 <body>
@@ -490,17 +485,17 @@
 <header class="hero">
   <div class="hero-art" aria-hidden="true">
     <svg class="vinyl-wrap" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="130" cy="130" r="128" fill="#222" stroke="#fff" stroke-width="1"/>
-      <circle cx="130" cy="130" r="100" fill="none" stroke="#fff" stroke-width="0.6"/>
-      <circle cx="130" cy="130" r="80"  fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="130" cy="130" r="60"  fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="130" cy="130" r="40"  fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="130" cy="130" r="24"  fill="#555"/>
-      <circle cx="130" cy="130" r="8"   fill="#111"/>
+      <circle cx="130" cy="130" r="128" fill="var(--t-fg2)" stroke="var(--t-fg)" stroke-width="1"/>
+      <circle cx="130" cy="130" r="100" fill="none" stroke="var(--t-fg)" stroke-width="0.6"/>
+      <circle cx="130" cy="130" r="80"  fill="none" stroke="var(--t-fg)" stroke-width="0.5"/>
+      <circle cx="130" cy="130" r="60"  fill="none" stroke="var(--t-fg)" stroke-width="0.5"/>
+      <circle cx="130" cy="130" r="40"  fill="none" stroke="var(--t-fg)" stroke-width="0.5"/>
+      <circle cx="130" cy="130" r="24"  fill="var(--t-mute)"/>
+      <circle cx="130" cy="130" r="8"   fill="var(--t-fg2)"/>
     </svg>
     <svg class="wave-lines" viewBox="0 0 430 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 40 Q54 20 108 40 T216 40 T324 40 T430 40" fill="none" stroke="#fff" stroke-width="1.5"/>
-      <path d="M0 50 Q54 30 108 50 T216 50 T324 50 T430 50" fill="none" stroke="#fff" stroke-width="1"/>
+      <path d="M0 40 Q54 20 108 40 T216 40 T324 40 T430 40" fill="none" stroke="var(--t-fg)" stroke-width="1.5"/>
+      <path d="M0 50 Q54 30 108 50 T216 50 T324 50 T430 50" fill="none" stroke="var(--t-fg)" stroke-width="1"/>
     </svg>
   </div>
 
@@ -867,5 +862,7 @@
   <p style="margin-top:6px; opacity:0.4;">No lyrics reproduced on this page.</p>
 </footer>
 
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
 </body>
 </html>
