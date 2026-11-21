@@ -397,6 +397,12 @@ def tick(q, its_t=None):
         k = shurui(it)
         if k and k != "grok" and it.get("status") in ("waiting", "running"):
             ch += 1 if _tag(it, k) else 0
+    # 店主本人のIssue・返信（GHxxxx tamago2022さんの返信）は店主の言葉＝見たいもの。週末の裏方止めに掛けない
+    for it in q.get("items", []):
+        if (it.get("status") == "waiting" and not it.get("kubun")
+                and re.match(r"GH\d+ tamago2022さんの返信", str(it.get("title") or ""))):
+            it["kubun"] = "mitai"
+            ch += 1
     t = _load(TSUNDA, {})
     its_t = its_t if its_t is not None else {}
     m = _machi(q)
