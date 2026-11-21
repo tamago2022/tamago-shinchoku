@@ -24,20 +24,15 @@
   ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  .warn{background:var(--t-panel);border:1px solid var(--t-warn);border-radius:10px;padding:12px 15px;margin:0 0 10px;font-size:0.92rem;}
+  pre{background:var(--t-bg);color:var(--t-fg);border-radius:10px;padding:14px;overflow-x:auto;font-size:0.76rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
   table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
+  details summary{cursor:pointer;color:var(--ao);font-weight:600;margin:0 0 10px;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
@@ -49,35 +44,219 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35721 仕入れの入口に機械チェックを追加</div>
 <h1>#35721 仕入れの入口に機械チェックを追加</h1>
-<div class="date">2026-11-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-11-21 実装・main合流まで実測確認（1回目の指摘を受けて作り直し）</div>
 
+<div class="warn">
+前回この確認ページには、たまごさんが開けないリンク（joy-relief-stationは非公開リポジトリのため、GitHubのコミット画面は本人が押すと404になる）を貼っていました。今回はそのリンクを削除し、代わりに仕組みの中身と実際に動かした結果を、このページの中にそのまま貼りました。このページを開くだけで全部読めます。
+</div>
+
+<h2>① 何を直したか</h2>
 <div class="fix">
-ごきげん補給所(joy-relief-station)で、仕入れデータの事故を送信直前に止める仕組みを作りました。これまでは仕入れ検品(check-ingest.ts)がCIにはありましたが、工場の運用(AIがmainへ直接送信)ではCIが事後に落ちても止められませんでした。今回、git送信の直前に自動で検品を走らせ、新しい事故があれば送信自体をブロックするようにしました。既存の軽い不具合(直すまで時間がかかるもの)は許容し、新しく増えた事故だけを止めます。
+ごきげん補給所(joy-relief-station)で、仕入れデータの事故を「送信する直前」に止める仕組みを新しく作りました。これまで仕入れ検品（check-ingest.ts）はCI（GitHub上での事後チェック）には既にありましたが、工場の実際の運用（AIがmainへ直接pushする）では、CIが後から落ちてもpush自体は止まりませんでした。今回、git push の直前に自動でこの検品を走らせ、新しく増えた事故があればpush自体をブロックするようにしました。すでにある古い不具合（直すまで時間がかかるもの）は許容し、新しく増えた事故だけを止めます。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+  <div class="num"><b>5種</b><span>検品している不具合の種類（×レベル）</span></div>
+  <div class="num"><b>4種</b><span>今は「既存の借金」として許容している種類（IDマップ・動画ID・名カバーの曲名不一致・原曲リンク）</span></div>
+  <div class="num"><b>3種</b><span>許容リストを空にして試した時に「新しい事故」としてpushを止めた種類</span></div>
+</div>
+<div class="note">
+今の正常な状態（origin/main）で動かすと exit 0（push継続）。許容リストを一時的に空にして「新しい事故が混ざった」状態を再現すると exit 2（push停止）。下の「⑤実測ログ」に、その場で実際に動かした生の出力をそのまま貼っています。
 </div>
 
-
-
-<h2>④ 押せるリンク</h2>
+<h2>③ 押せるリンク</h2>
 <ul class="links">
-  <li><b>mainへ合流したコミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/e0b743a6b" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/e0b743a6b</a></li>
-  <li><b>新設した仕組み本体</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/.claude/hooks/pre-push-ingest-check.mjs" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/.claude/hooks/pre-push-ingest-check.mjs</a></li>
+  <li><b>このページ自身（店主が開けるリンクはこれだけです）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35721-ingest-entrance-gate.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35721-ingest-entrance-gate.html</a></li>
 </ul>
+<div class="note">
+joy-relief-stationは非公開リポジトリのため、GitHubのコミット・ファイルへのリンクは店主本人が押しても開けません（API確認済み：未認証アクセスは404）。仕組みの中身・実行結果は下に全文そのまま貼りました。これはClaude Codeの開発環境側の関所（git push の入口）で、画面としてはLovable本番に出ません。
+</div>
 
-<h2>⑤ 何をどう確かめたか</h2>
+<h2>④ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>既存借金のみの状態で送信を試す</td><td class="yes">exit 0(通る)</td></tr>
-<tr><td>新しい事故(原曲リンク切れ)が混ざった状態で送信を試す</td><td class="yes">exit 2(止まる)</td></tr>
+<tr><td>既存借金のみの状態（origin/main そのまま）で push を試す</td><td class="yes">exit 0（通る）</td></tr>
+<tr><td>許容リストを空にして「新しい事故」を再現した状態で push を試す</td><td class="no">exit 2（止まる）</td></tr>
 <tr><td>既存の仕入れ検品スクリプト・CIは変更していない</td><td class="yes">差分なしを確認済み</td></tr>
+<tr><td>対象外の環境（tamago-shinchoku等、check-ingest.tsが無いリポジトリ）</td><td class="yes">何もせず通す（exit 0）</td></tr>
 </table>
 
+<h2>⑤ 実測ログ（たまごさんの手元で再現した生の出力）</h2>
+<p style="font-size:0.88rem;color:var(--sub);">origin/main を新しく取り直したクリーンな場所（他の作業の混入なし）で、実際にこのhookを動かして確認しました。</p>
+
+<details open>
+<summary>テスト①：今のまま（既存借金のみ）→ exit 0</summary>
+<pre>$ echo '{"tool_input":{"command":"git push origin main"}}' | node .claude/hooks/pre-push-ingest-check.mjs
+（標準出力・標準エラーとも空。終了コード 0 ＝ push はブロックされず続行）</pre>
+</details>
+
+<details open>
+<summary>テスト②：許容リストを一時的に空にして「新しい事故」を再現 → exit 2</summary>
+<pre>仕入れ検品で新しい × が 3 件出たため push をブロックした。（新規: IDマップ、動画ID、名カバーの曲名不一致）
+直すか、本当に既存借金に追加してよいなら .claude/hooks/ingest-check-baseline.txt に チェック名を1行足してから push すること。
+
+
+仕入れ検品（アーティスト2874組・ハブ144件）
+
+  × IDマップ: 生成ファイルが古いままです（38404件ずれ）。例: 112/it-s-over-now, 112/peaches-cream-feat-p-diddy, 112/come-see-me
+      → npx tsx scripts/generate-youtube-id-map.ts を実行して一緒にコミットしてください
+
+  × 動画ID: 本物でない動画IDが12件あります（灰色サムネになります）
+      - yusef-lateef/the-plum-blossom（PENDING）
+      - yusef-lateef/morning（PENDING）
+      - yusef-lateef/snafu（PENDING）
+      - yusef-lateef/from-within（PENDING）
+      - alex-north/singing-in-the-rain-love-theme（PENDING）
+      - alex-north/a-streetcar-named-desire（PENDING）
+      - jocelyn-brown/aint-no-mountain-high-enough（PENDING）
+      - jocelyn-brown/loves-hypocrisy（PENDING）
+
+  △ ハブの名前: 棚に登録のない名前が8種あります。名カバー欄に出ません
+      - 「Taka」（ayaka/mikazuki ほか0件）
+      - 「張國榮（レスリー・チャン）」（yoshikawa-koji/モニカ ほか0件）
+      - 「スピッツ（草野マサムネ）」（puffy/愛のしるし-official-music-video ほか0件）
+      - 「Rufus Wainwright」（beatles/across-the-universe ほか0件）
+      - 「Lady Gaga feat. Beyoncé」（glee-cast/telephone ほか0件）
+      - 「Antônio Carlos Jobim」（akiko/waters-of-march ほか0件）
+      - 「安藤裕子 feat.池田貴史（レキシ）」（hiromi-go-90s/ringo-satsujin-jiken ほか0件）
+      - 「Prince, Tom Petty, Steve Winwood ほか」（beatles/while-my-guitar-gently-weeps ほか0件）
+
+  △ 名カバー欄: 原曲を指しているのに名カバー欄に出ない曲が276件あります
+      （カバー側と原曲側で曲IDを揃えるか、ハブの covers に by: を足してください）
+      - hikawa-kiyoshi/aisansan（原曲は misora-hibari/aisansan）
+      - sarah-mclachlan/blackbird（原曲は beatles/blackbird）
+      - tokunaga-hideaki/sailor-fuku-to-kikanju（原曲は rufus-gumede/yumeno-tochu）
+      - ronny-jordan/come-with-me（原曲は tania-maria/come-with-me-tania）
+      - vanessa-moreno/come-with-me（原曲は tania-maria/come-with-me-tania）
+      - ehara-masahiro/ito-diggy-mo-monomane（原曲は nakajima/ito）
+      - ehara-masahiro/yano-tsunami-monomane（原曲は southern/tsunami）
+      - mariya/kenka-yamete（原曲は naoko-kawai/kenka-o-yamete）
+
+  △ 棚から消えるカード: 19棚でカードが減っています（死んだ動画の除外なら正常です）
+      - music/origin-song-journey「原曲を巡る旅」: 定義27枚 → 公開26枚
+      - music/healing-music「癒しの音楽」: 定義40枚 → 公開39枚
+      - music/dance「踊る阿呆に見る阿呆 〜勝手に体が動く棚〜」: 定義32枚 → 公開31枚
+      - music/club-disco「午前2時のディスコ棚」: 定義40枚 → 公開39枚
+      - music/ai-covers「AIカバーの棚（架空のカバー）」: 定義8枚 → 公開7枚
+      - music/kuchigei-beatbox「口芸・ビートボックス」: 定義13枚 → 公開12枚
+      - music/intro-riff-wip「イントロ・リフの棚」: 定義45枚 → 公開44枚
+      - music/cm「CM の名場面 — 音楽と一緒に」: 定義18枚 → 公開17枚
+      - music/farewell「さよならの棚 〜別れ・卒業・追悼・会いたい〜」: 定義27枚 → 公開26枚
+      - music/drive「ドライブの棚」: 定義5枚 → 公開4枚
+
+  × 名カバーの曲名不一致: 親曲と関係のなさそうな曲名がdisplayTitleに4件あります（同アーティストというだけで別の曲のカバーを繋いでいないか確認してください）
+      - candy-dulfer/pick-up-the-pieces の「The Headhunters」displayTitle=「God Make Me Funky (The Headhunters, 1975)」（親曲=「Pick Up The Pieces (Live at Leverkusener Jazztage 2009)」）
+      - candy-dulfer/pick-up-the-pieces の「Jamiroquai」displayTitle=「God Make Me Funky (Jamiroquai, Live 1993)」（親曲=「Pick Up The Pieces (Live at Leverkusener Jazztage 2009)」）
+      - the-headhunters/god-make-me-funky の「Candy Dulfer」displayTitle=「Pick Up The Pieces (Candy Dulfer, Live 2009)」（親曲=「God Make Me Funky」）
+      - jamiroquai/god-make-me-funky の「Candy Dulfer」displayTitle=「Pick Up The Pieces (Candy Dulfer, Live at Leverkusener Jazztage 2009)」（親曲=「God Make Me Funky (Live 1993)」）
+
+  × 3件 / △ 3件（× は直してからコミット、△ は目で見て判断）
+
+
+</pre>
+</details>
+
+<h2>⑥ 新設した仕組み本体（全文）</h2>
+<p style="font-size:0.88rem;color:var(--sub);">.claude/hooks/pre-push-ingest-check.mjs（joy-relief-station リポジトリ内。GitHubのリンクは開けないため、ここに全文を貼りました）</p>
+<details>
+<summary>コード全文を見る（91行）</summary>
+<pre>#!/usr/bin/env node
+// PreToolUse(Bash): git push の直前に「仕入れ検品」(scripts/check-ingest.ts) を走らせ、
+// 既知でない新しい × (error) があれば push をブロックする（35721号）。
+//
+// 背景：npm run ingest:check / CIの「仕入れ検品」ステップは既に存在するが、この工場の
+// 実運用（憲法第四条）はAIセッションがmainへ直接pushする形で、CIが事後に落ちても
+// 反映そのものは止まらない。pre-push-typecheck.mjs と同じ「push直前に入口で止める」
+// パターンをコピーして、仕入れ検品にも同じ防御を足す。
+//
+// 既知のエラー（直すまで許容する既存借金）は隣の ingest-check-baseline.txt に
+// check名を1行ずつ書く（typecheckのTSコード単位より粗い粒度。check名が一致していれば
+// detail内の個別曲が増えても既存借金として許容する。35721号指示どおりのシンプル粒度）。
+//
+// 依存が無い環境（npx/tsx自体が無い等）や対象外リポジトリ（scripts/check-ingest.tsが
+// 無いworktree等）では黒く通す（push を道連れにしない。pre-push-typecheck.mjsと同じ安全策）。
+import { readFileSync, existsSync } from &quot;node:fs&quot;;
+import { execFileSync } from &quot;node:child_process&quot;;
+import { join, dirname } from &quot;node:path&quot;;
+import { fileURLToPath } from &quot;node:url&quot;;
+
+let input = {};
+try { input = JSON.parse(readFileSync(0, &quot;utf8&quot;)); } catch { process.exit(0); }
+const cmd = String(input?.tool_input?.command ?? &quot;&quot;);
+if (!/\bgit\b[^;|&amp;]*\bpush\b/.test(cmd)) process.exit(0);
+
+const here = dirname(fileURLToPath(import.meta.url));
+// pre-push-typecheck.mjs と同じ補正：`cd /path/to/worktree &amp;&amp; ... git push ...` の形で
+// 別ディレクトリへ明示的に移動している場合、そこを検査対象にする。
+let root = process.env.CLAUDE_PROJECT_DIR || join(here, &quot;..&quot;, &quot;..&quot;);
+const cdMatch = cmd.match(/\bcd\s+(&quot;[^&quot;]+&quot;|&#x27;[^&#x27;]+&#x27;|\S+)/);
+if (cdMatch) {
+  const candidate = cdMatch[1].replace(/^[&#x27;&quot;]|[&#x27;&quot;]$/g, &quot;&quot;);
+  if (existsSync(join(candidate, &quot;.git&quot;))) {
+    root = candidate;
+  }
+}
+
+const checkScript = join(root, &quot;scripts&quot;, &quot;check-ingest.ts&quot;);
+const assetStub = join(root, &quot;scripts&quot;, &quot;_asset-stub.mjs&quot;);
+// この仕組みが前提とするファイルが無いリポジトリ（tamago-shinchoku等）やworktreeは対象外。
+if (!existsSync(checkScript)) process.exit(0);
+
+// 実運用の joy-relief-station では tsx は npm install では入らず、npx が内部キャッシュ
+// (~/.npm/_npx) 経由で解決する（node_modules/.bin/tsx は存在しない）。そのため
+// node_modules/.bin/tsx の有無では判定せず、実行を試みて「npx自体が無い(ENOENT)」場合
+// だけを依存欠落として黒く通す。これならworktreeでも、一度でもこの機種でtsxが
+// 解決できていれば実際にチェックが走る。
+const args = existsSync(assetStub)
+  ? [&quot;tsx&quot;, &quot;--import&quot;, &quot;./scripts/_asset-stub.mjs&quot;, &quot;scripts/check-ingest.ts&quot;]
+  : [&quot;tsx&quot;, &quot;scripts/check-ingest.ts&quot;];
+
+let out = &quot;&quot;;
+try {
+  execFileSync(&quot;npx&quot;, args, { cwd: root, encoding: &quot;utf8&quot;, stdio: [&quot;ignore&quot;, &quot;pipe&quot;, &quot;pipe&quot;], timeout: 150000 });
+  process.exit(0); // 問題なし（exit 0 = ×なし）
+} catch (e) {
+  if (e.code === &quot;ENOENT&quot;) process.exit(0); // npx自体が無い環境は道連れにしない
+  out = `${e.stdout ?? &quot;&quot;}${e.stderr ?? &quot;&quot;}`;
+}
+
+// 「  × チェック名: 詳細...」の行からチェック名だけを拾う（詳細は複数行に渡ることがあるが、
+// 新しい × 行は必ず先頭が &quot;  × &quot; で始まる）。
+const foundChecks = new Set(
+  [...out.matchAll(/^\s*×\s+([^:]+):/gm)].map((m) =&gt; m[1].trim())
+);
+
+if (foundChecks.size === 0) {
+  // × の出力形式を認識できなかった（将来のスクリプト変更やnpxの想定外の失敗）。
+  // 何が起きたか判別できない状態でpushを人質にしない（pre-push-typecheck.mjsの
+  // 「out.includes(&#x27;error TS&#x27;)で判定できない時は通す」と同じ方針）。
+  process.exit(0);
+}
+
+const baselinePath = join(here, &quot;ingest-check-baseline.txt&quot;);
+const baseline = new Set(
+  existsSync(baselinePath)
+    ? readFileSync(baselinePath, &quot;utf8&quot;).split(&quot;\n&quot;).map((l) =&gt; l.trim()).filter(Boolean)
+    : []
+);
+
+const fresh = [...foundChecks].filter((c) =&gt; !baseline.has(c));
+if (fresh.length === 0) process.exit(0); // 既存借金のみ
+
+process.stderr.write(
+  `仕入れ検品で新しい × が ${fresh.length} 件出たため push をブロックした。` +
+  `（新規: ${fresh.join(&quot;、&quot;)}）\n` +
+  `直すか、本当に既存借金に追加してよいなら .claude/hooks/ingest-check-baseline.txt に ` +
+  `チェック名を1行足してから push すること。\n\n` +
+  out.slice(0, 4000) + &quot;\n&quot;
+);
+process.exit(2);
+</pre>
+</details>
+
 <footer>
-店主確認：この仕組みはClaude Codeの開発環境側の関所のため、見える画面(Lovable本番)はありません。mainリポジトリへの合流が完了地点です。
+店主確認：この仕組みはClaude Codeの開発環境側の関所（git push の入口）のため、見える画面(Lovable本番)はありません。main合流（commit e0b743a6b）が完了地点です。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
