@@ -497,5 +497,164 @@ document.getElementById("btnSlow").onclick=function(){
 };
 document.getElementById("btnVoice").onclick=function(){
   useVoice=!useVoice; document.getElementById("voiceState").textContent=useVoice?"入":"切";
-  say(kSay,useVoice?"声を出します。":"口だけ動かします（無音�
+  say(kSay,useVoice?"声を出します。":"口だけ動かします（無音）。");
+};
+try{ window.speechSynthesis.onvoiceschanged=function(){}; }catch(e){}
+
+/* ═══════════════════════════════════════════════════════════════
+   本物の音声（Gemini TTS）→ 実際の音から左右の口を動かす
+   繋ぎ方は #966（Google公式サンプル準拠）から移植
+   ═══════════════════════════════════════════════════════════════ */
+var Lipsync=null;
+(function(){
+  var s=document.createElement("script");
+  s.type="module";
+  s.textContent='import { Lipsync } from "https://cdn.jsdelivr.net/npm/wawa-lipsync@0.0.2/dist/wawa-lipsync.es.js"; window.__Lipsync = Lipsync;';
+  document.head.appendChild(s);
+})();
+
+var actx=null, lip=null, realAudio=null, wired=false;
+function b64ToBytes(b64){ var s=atob(b64), a=new Uint8Array(s.length);
+  for(var i=0;i<s.length;i++) a[i]=s.charCodeAt(i); return a; }
+function wavFromPcm16(bytes,rate){
+  var n=bytes.length, buf=new ArrayBuffer(44+n), v=new DataView(buf);
+  var w=function(o,s){ for(var i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  w(0,"RIFF"); v.setUint32(4,36+n,true); w(8,"WAVEfmt "); v.setUint32(16,16,true);
+  v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,rate,true);
+  v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  w(36,"data"); v.setUint32(40,n,true);
+  new Uint8Array(buf,44).set(bytes);
+  return new Blob([buf],{type:"audio/wav"});
+}
+function hirouOto(obj){
+  var best=null, mime="";
+  (function walk(o){
+    if(!o||typeof o!=="object") return;
+    for(var k in o){ var v=o[k];
+      if(typeof v==="string"){
+        if((k==="data"||k==="audio"||k==="b64_json")&&v.length>2000&&(!best||v.length>best.length)) best=v;
+        if(/mime/i.test(k)) mime=v;
+      } else walk(v);
+    }
+  })(obj);
+  return {b64:best, mime:mime};
+}
+function getKey(){
+  try{ return (window.TamagoKagi&&window.TamagoKagi.get())||""; }catch(e){ return ""; }
+}
+async function tsukuruKoe(voice,key,serifu){
+  var r=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{
+    method:"POST",
+    headers:{"x-goog-api-key":key,"Content-Type":"application/json"},
+    body:JSON.stringify({ model:"gemini-2.5-flash-preview-tts", input:serifu,
+      response_format:{type:"audio"}, generation_config:{ speech_config:[{voice:voice}] } })
+  });
+  if(!r.ok){ var t=await r.text().catch(function(){return "";}); throw new Error(r.status+" "+t.slice(0,180)); }
+  var ct=r.headers.get("content-type")||"", blob;
+  if(ct.indexOf("json")>=0){
+    var j=await r.json(), got=hirouOto(j);
+    if(!got.b64) throw new Error("音が入っていませんでした");
+    var bytes=b64ToBytes(got.b64), m=/rate=(\d+)/.exec(got.mime||"");
+    blob=(got.mime&&/mpeg|mp3|wav|ogg/i.test(got.mime))?new Blob([bytes],{type:got.mime})
+        :wavFromPcm16(bytes, m?parseInt(m[1],10):24000);
+  }else blob=await r.blob();
+  return URL.createObjectURL(blob);
+}
+function wireAudio(){
+  if(wired) return true;
+  if(!window.__Lipsync) return false;
+  Lipsync=window.__Lipsync;
+  lip=new Lipsync({fftSize:2048,historySize:10});
+  actx=lip.audioContext;
+  lip.analyser.connect(actx.destination);
+  faceA.attach(lip.analyser); faceB.attach(lip.analyser);
+  (function tick(){ try{ lip.processAudio(); var v=lip.viseme;
+    if(v){ faceA.viseme(v); faceB.viseme(v); } }catch(e){}
+    requestAnimationFrame(tick); })();
+  wired=true; return true;
+}
+async function honmonoNoKoe(targetSayEl, serifu){
+  var key=getKey();
+  if(!key){ say(targetSayEl,"Geminiの鍵がまだ入っていません。画面の「・」（鍵）から入れてください。");
+            try{ window.TamagoKagi&&window.TamagoKagi.ask(); }catch(e){} return; }
+  if(!wireAudio()){ say(targetSayEl,"音の解析部品（wawa-lipsync）がまだ届いていません。数秒おいてもう一度押してください。"); return; }
+  stopAll();
+  say(targetSayEl,"声を作っています…");
+  try{
+    var url=await tsukuruKoe("Kore",key,serifu||SERIFU);
+    try{ realAudio&&realAudio.pause(); }catch(e){}
+    realAudio=new Audio(url);
+    try{ var src=actx.createMediaElementSource(realAudio); src.connect(lip.analyser); }catch(e){}
+    if(actx.state==="suspended"){ try{ await actx.resume(); }catch(e){} }
+    await realAudio.play();
+    say(targetSayEl,"本物の音声で口が動いています（左＝音の大きさ／右＝母音）。およそ0.02円。");
+  }catch(e){
+    say(targetSayEl,"出ませんでした → "+e.message);
+  }
+}
+document.getElementById("btnRealVoice").onclick=function(){ honmonoNoKoe(document.getElementById("realSay"),SERIFU); };
+
+/* ═══════════════════════════════════════════════════════════════
+   A・B・C・D のボタン
+   ═══════════════════════════════════════════════════════════════ */
+var VOICE_EP="https://eecdooahvromxykbldud.supabase.co/functions/v1/voice-session";
+var YEN=157.18;
+
+document.getElementById("btnA").onclick=function(){
+  window.open("https://joy-relief-station.lovable.app/cover-guide","_blank","noopener");
+  say(document.getElementById("sayA"),"別のタブで本番の案内人を開きました。「話す」を押すとアイリスが鳴ります。残り約31分ぶんです。");
+};
+document.getElementById("btnABal").onclick=async function(){
+  var el=document.getElementById("sayA");
+  say(el,"窓口に聞いています…");
+  try{
+    var r=await fetch(VOICE_EP,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"create"})});
+    var j=await r.json();
+    if(!j || j.ok===false){ say(el,"窓口は生きていますが断られました（"+(j&&j.error||r.status)+"）"); return; }
+    var spent=j.spentUsd, cap=j.budgetLimitUsd;
+    if(typeof spent==="number"&&typeof cap==="number"){
+      var nokori=Math.max(0,cap-spent);
+      say(el,"残り $"+nokori.toFixed(2)+" ＝ 約"+Math.round(nokori*YEN)+"円 ＝ 約"+Math.floor(nokori/0.08)+"分（$0.08/分）");
+      document.getElementById("tagA").textContent="残り約"+Math.floor(nokori/0.08)+"分";
+    } else say(el,"窓口は 200 を返しましたが、財布の数字は入っていませんでした。");
+  }catch(e){ say(el,"窓口に届きませんでした → "+e.message); }
+};
+
+document.getElementById("btnB").onclick=function(){
+  var el=document.getElementById("sayB");
+  var perMin=0.0192+0.0768;               /* $/分（聞く1分＋喋る1分） */
+  var yenMin=perMin*YEN;
+  var lines=[];
+  [1000,3000,5000].forEach(function(y){
+    lines.push(y.toLocaleString()+"円 → 約"+Math.floor(y/yenMin)+"分");
+  });
+  say(el,"1分 約"+yenMin.toFixed(1)+"円（上限）。"+lines.join("／")+"。★いまは残高切れ（429）なので鳴りません。");
+};
+
+document.getElementById("btnC").onclick=function(){ honmonoNoKoe(document.getElementById("sayC"),SERIFU); };
+document.getElementById("btnCLive").onclick=function(){
+  window.open("./966-gemini-live-tamago.html","_blank","noopener");
+  say(document.getElementById("sayC"),"別のタブで #966 の台を開きました。こちらは会話ができます。");
+};
+
+document.getElementById("btnD").onclick=function(){
+  say(document.getElementById("sayD"),"この端末の声で喋っています。0円・通信なし。");
+  useVoice=true; document.getElementById("voiceState").textContent="入";
+  runSteps(SERIFU,SERIFU_KANA);
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+/* 鍵が入っているかを見て、Cの札を塗り替える */
+(function(){
+  function paint(){
+    if(getKey()){ var t=document.getElementById("tagC");
+      t.textContent="鍵は入っている"; t.className="tag t-ok"; }
+  }
+  paint(); window.addEventListener("load",function(){ setTimeout(paint,400); });
+})();
+</script>
+
 <!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
