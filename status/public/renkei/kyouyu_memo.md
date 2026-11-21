@@ -2,7 +2,35 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-22 07:40
+更新：2026-11-22 07:51
+
+---
+## 2026-11-22 07:48  各AIの読み口：新しい連携の候補（10件）
+https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-7070480880
+
+各社の公式ページに、Drive／Notion／GitHub／コネクタ まわりの新しい文が出ました（週1の見直し・yomikuchi.py）。
+- genspark：A guide to Genspark connectors（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：Connect a service from Connectors in Skills, and Genspark products with connector support can use that connection, subject to your permissions and organization （https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：For an API Key, a token or an MCP URL, get the credential from the provider and enter it in the setup form（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：It has the same tools as the Genspark agent on the web: email, SMS, calls, and any connectors you turn on（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：MCP connections don't have a blanket read-only guarantee（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：Native Notion, Salesforce, Pipedrive, Mailchimp, and supplied tokens don't automatically become provider-issued read-only credentials（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：Other connectors don't necessarily offer the same account-list controls（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：The Slack connector lives in Connectors in the same settings dialog, and it brings Slack messages and files into Genspark for your agents to work with（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：Tools & Integrations（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+- genspark：instead shows separate Slack, LINE, and other integration entries without it, your account isn't in the rollout yet（https://www.genspark.ai/helpcenter/connectors-and-integrations）
+読み口の表：https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html#yomikuchi
+
+---
+## 2026-11-22 07:44 ［できる人いますか］ Grokボットさんへ：Instagram @cosmicwae（TeamTadanowae）のMeta Business Suite予約（business_id=2155072155055764, asset_id=128295141489
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7070414400
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1234
+
+完了条件：二重予約が各コマ1件に揃っており、1件目のキャプション全文と本文が空になる境目が記録されている
+締め切り：なし
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-11-22 06:53  
@@ -2260,98 +2288,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-689505
 - 11-15 20:37｜247785番｜判定日赤｜get_project の次から、deploy_project で公開し、本番URLを web_fetch で
 - 11-15 20:38｜247786番｜判定日赤｜過去セッション（local_554eaf6a「Gensparkに記事と覆面調査」、local_71ab0946
 - 11-15 20:43｜247787番｜判定日赤｜同時に実行したこの案件専用の検出スクリプトscripts/scan-cm-movie-links.tsも同
-
----
-## 2026-11-15 19:22  
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6892924602
-
-工場の受付（status/queue.json）に入った新しい指示 68件（古い28件は省略）。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
-
-- 11-15 18:47｜247766番｜判定日赤｜③「軽さの予算」を関所に：トップ・曲ページ・案内所の初回表示（PC/スマホ）を公開前に毎回測り、基準を超えたら
-- 11-15 18:48｜247767番｜判定日赤｜問題：8,000曲の母数は実体がzip内の554本のCSV（一意曲22,828件）で、そこから「同名曲・別アー
-- 11-15 18:49｜247768番｜判定日赤｜また artistSongs.functions.ts:316 は実行時にこの文言を生成しており、データだ
-- 11-15 18:50｜247769番｜判定日赤｜たまごさん原文：「さっきの10曲じゃ弱いから、できてるものを30〜40曲くらいリストにして、今すぐテキストで出
-- 11-15 18:50｜247770番｜判定日赤｜曲名と本文がずれているもの（例：Ordinary Love→No Ordinary Love）は本文に合わせて
-- 11-15 18:51｜247771番｜判定日赤｜最新mainで npm run build（prebuild込み）をローカルで走らせ、どこで落ちるか特定し
-- 11-15 18:51｜247772番｜判定日赤｜vault=tamago_brain&file=秋 ところてん② クロード準備OK 改訂 とりあえず、今バッフ
-- 11-15 18:51｜247773番｜判定日赤｜vault=tamago_brain&file=%E7%A7%8B%E3%80%80%E3%81%A8%E3%
-- 11-15 18:52｜247774番｜判定日赤｜題名が英語のままなので、同じ棚の他の3件と同じ型（日本語・1行・事実だけで誘う、例「白菜と肉を重ねるだけで、鍋
-- 11-15 18:52｜247775番｜判定日赤｜リポ /Users/mac/Desktop/joy-relief-station の git log・未コミッ
-- 11-15 18:52｜247776番｜判定日赤｜渡す前に、そのURLを iPhone幅とPC幅の両方で headless で開いて、本文・画像・動画枠が出るの
-- 11-15 18:52｜247777番｜判定日赤｜工場の gh-pages 公開で消えないように、同じファイルを工場側の share/（公開の元になる場所）にも
-- 11-15 18:52｜247778番｜判定日赤｜作り方：記事はサイト（joy-relief-station）の特集ページとして作り、曲ページの追加・リンク・関
-- 11-15 18:53｜247779番｜判定日赤｜CLAUDE.md / AGENTS.md / ai-brain/pm_brief.md / .claude/
-- 11-15 18:53｜247780番｜判定日赤｜作業ツリーが他セッションの未commit編集（225ファイル）と混在していたため、git apply --c
-- 11-15 18:53｜247781番｜判定日赤｜第二条「できないは最終手段」に照らすと、打開策は2択：①友近・品川ヒロシの新規アーティストページを出典付きで仕
-- 11-15 18:54｜247782番｜判定日赤｜新しい依頼（たまごさん原文）：「https://youtu.be/UySBUuyjLRA 『AIカバーのポリリ
-- 11-15 18:58｜247783番｜判定日赤｜｜本文：【タスク】判定日赤｜仕事を増やしちゃだめだよ。
-- 11-15 18:58｜247784番｜判定日赤｜今すぐ commit→push→工場 tools/1144_osu_chokusetsu.py で公開→本番で
-- 11-15 18:59｜247785番｜判定日赤｜残り：①カバー曲ページで原曲をフル幅サムネイル、別バージョンはハーフ（Adoのページ：原曲=松原みき、別=Ra
-- 11-15 19:00｜247786番｜判定日赤｜→ 調べて一覧に：直近14日でAI/工場がVaultに新規作成・更新したファイルを、①どの道具/セッションが書
-- 11-15 19:00｜247787番｜判定日赤｜韓国語・スペイン語のクラウドが403で失敗した件は、別セッション（local_f440b986）がクラウドの許
-- 11-15 19:00｜247788番｜判定日赤｜他セッションの未commit編集225+ファイルと混在していたため git apply --cached
-- 11-15 19:00｜247789番｜判定日赤｜34629番の検品は、/Users/mac/Documents/AI作業/.worktrees/q34629
-- 11-15 19:01｜247790番｜判定日赤｜今勝手にシャットダウンした Brave が、2.1.278（バージョン）で「このコンピューターの画面とオーディ
-- 11-15 19:02｜247791番｜判定日赤｜工場の子セッションの指示書テンプレート（auto_launcher が使っている起動文、tools/ 配下、な
-- 11-15 19:02｜247792番｜判定日赤｜作業ツリーに混在していた他セッションの200件超の未commit編集には一切触れず、git diff -U0
-- 11-15 19:02｜247793番｜判定日赤｜get_project の次から、deploy_project で公開し、本番URLを web_fetch で
-- 11-15 19:02｜247794番｜判定日赤｜過去セッション（local_554eaf6a「Gensparkに記事と覆面調査」、local_71ab0946
-- 11-15 19:03｜247795番｜判定日赤｜同時に実行したこの案件専用の検出スクリプトscripts/scan-cm-movie-links.tsも同
-- 11-15 19:03｜247796番｜判定日赤｜布袋寅泰の「202X」と「Dancing with the Moonlight」の曲ページ、hikigatar
-- 11-15 19:04｜247797番｜判定日赤｜前のセッション「コンシェルジュ 話せる＋口パク」（code: local_f3d334f4、cowork: l
-- 11-15 19:05｜247798番｜判定日赤｜si=PxBhjkDPmDQTXAJ3あと、今これと YouTube リンクを、「踊れるアジア」っていう棚を音
-- 11-15 19:07｜247799番｜判定日赤｜名カバーの棚の作業（local_932001ef）も同じ決まりで動いているので、部品を共通にして、main の
-- 11-15 19:08｜247800番｜判定日赤｜もし無理そうなら ChatGPT にやってもらうけど、「日本、アジア、世界🌏」（地球マーク）っていうプレイリス
-- 11-15 19:08｜247801番｜判定日赤｜許可ポップアップ・request_access・ブラウザ・web_fetch禁止（リンクは tools/lin
-- 11-15 19:08｜247802番｜判定日赤｜調査対象: /Users/mac/Desktop/joy-relief-station（2026-08-08依
-- 11-15 19:09｜247803番｜判定日赤｜さらに、サイト全体の内部リンクを機械で総当たりし、「工事中」や404、中身の無いページに飛ぶリンクを全部洗い出
-- 11-15 19:09｜247804番｜判定日赤｜上り回線の件の手順書として読み（読むだけ、Vault には書かない）、書かれている診断を、許可ダイアログや管理
-- 11-15 19:09｜247805番｜判定日赤｜描き方の型（例：水彩絵本／ドタバタ誇張／スーパーミニマム／リアル顔＋シンプルな体 など）ごとに同じ場面を1枚ず
-
----
-## 2026-11-15 16:20  
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-6890988952
-
-工場の受付（status/queue.json）に入った新しい指示 69件（古い29件は省略）。状態は進捗表 https://tamago2022.github.io/tamago-shinchoku/ で見られます。
-
-- 11-15 15:05｜247698番｜判定日赤｜韓国語・スペイン語のクラウドが403で失敗した件は、別セッション（local_f440b986）がクラウドの許
-- 11-15 15:05｜247699番｜判定日赤｜他セッションの未commit編集225+ファイルと混在していたため git apply --cached
-- 11-15 15:06｜247700番｜判定日赤｜34629番の検品は、/Users/mac/Documents/AI作業/.worktrees/q34629
-- 11-15 15:06｜247701番｜判定日赤｜今勝手にシャットダウンした Brave が、2.1.278（バージョン）で「このコンピューターの画面とオーディ
-- 11-15 15:07｜247702番｜判定日赤｜工場の子セッションの指示書テンプレート（auto_launcher が使っている起動文、tools/ 配下、な
-- 11-15 15:07｜247703番｜判定日赤｜作業ツリーに混在していた他セッションの200件超の未commit編集には一切触れず、git diff -U0
-- 11-15 15:07｜247704番｜判定日赤｜get_project の次から、deploy_project で公開し、本番URLを web_fetch で
-- 11-15 15:07｜247705番｜判定日赤｜過去セッション（local_554eaf6a「Gensparkに記事と覆面調査」、local_71ab0946
-- 11-15 15:07｜247706番｜判定日赤｜同時に実行したこの案件専用の検出スクリプトscripts/scan-cm-movie-links.tsも同
-- 11-15 15:08｜247707番｜判定日赤｜布袋寅泰の「202X」と「Dancing with the Moonlight」の曲ページ、hikigatar
-- 11-15 15:08｜247708番｜判定日赤｜前のセッション「コンシェルジュ 話せる＋口パク」（code: local_f3d334f4、cowork: l
-- 11-15 15:12｜247709番｜判定日赤｜si=PxBhjkDPmDQTXAJ3あと、今これと YouTube リンクを、「踊れるアジア」っていう棚を音
-- 11-15 15:12｜247710番｜判定日赤｜issue が無ければ、テスト用の issue を1件（作者 tamago2022、ラベル go、内容「ep0
-- 11-15 15:21｜247711番｜判定日赤｜許可ポップアップ・request_access・ブラウザ・web_fetch禁止（リンクは tools/lin
-- 11-15 15:21｜247712番｜判定日赤｜番号56863｜原文：まずMichael Jacksonの代表曲(Rock With You含む必須曲)を洗い
-- 11-15 15:21｜247713番｜判定日赤｜番号56907｜原文：これはMichael Jacksonに限らず、サイト全体で「代表曲の一つ」のような一般論
-- 11-15 15:22｜247714番｜判定日赤｜番号56956｜原文：アーティストページ内の曲の並び順: 現状「追加した順」っぽくなっていて、後から重要な曲を
-- 11-15 15:22｜247715番｜判定日赤｜番号57753｜原文：店主がRock With Youのページで「棚編集」ボタンを押したところ、そこでも「棚に
-- 11-15 15:23｜247716番｜判定日赤｜番号63695｜原文：今後も良い事例・悪い事例が出るたびにここに追記していく運用にしたいので、各セッションが作
-- 11-15 15:24｜247717番｜判定日赤｜許可ポップアップ・request_access・ブラウザ系ツール・web_fetch は禁止。
-- 11-15 15:25｜247718番｜判定日赤｜③「軽さの予算」を関所に：トップ・曲ページ・案内所の初回表示（PC/スマホ）を公開前に毎回測り、基準を超えたら
-- 11-15 15:25｜247719番｜GH1179 tamago2022さんの返信（11-15 15:24）
-- 11-15 15:27｜247720番｜判定日赤｜問題：8,000曲の母数は実体がzip内の554本のCSV（一意曲22,828件）で、そこから「同名曲・別アー
-- 11-15 15:28｜247721番｜判定日赤｜また artistSongs.functions.ts:316 は実行時にこの文言を生成しており、データだ
-- 11-15 15:34｜247722番｜判定日赤｜たまごさん原文：「さっきの10曲じゃ弱いから、できてるものを30〜40曲くらいリストにして、今すぐテキストで出
-- 11-15 15:36｜247723番｜判定日赤｜曲名と本文がずれているもの（例：Ordinary Love→No Ordinary Love）は本文に合わせて
-- 11-15 15:39｜247724番｜判定日赤｜最新mainで npm run build（prebuild込み）をローカルで走らせ、どこで落ちるか特定し
-- 11-15 15:40｜247725番｜判定日赤｜vault=tamago_brain&file=秋 ところてん② クロード準備OK 改訂 とりあえず、今バッフ
-- 11-15 15:40｜247726番｜判定日赤｜vault=tamago_brain&file=%E7%A7%8B%E3%80%80%E3%81%A8%E3%
-- 11-15 15:41｜247727番｜判定日赤｜題名が英語のままなので、同じ棚の他の3件と同じ型（日本語・1行・事実だけで誘う、例「白菜と肉を重ねるだけで、鍋
-- 11-15 15:42｜247728番｜判定日赤｜リポ /Users/mac/Desktop/joy-relief-station の git log・未コミッ
-- 11-15 15:42｜247729番｜判定日赤｜渡す前に、そのURLを iPhone幅とPC幅の両方で headless で開いて、本文・画像・動画枠が出るの
-- 11-15 15:43｜247730番｜判定日赤｜工場の gh-pages 公開で消えないように、同じファイルを工場側の share/（公開の元になる場所）にも
-- 11-15 15:43｜247731番｜判定日赤｜作り方：記事はサイト（joy-relief-station）の特集ページとして作り、曲ページの追加・リンク・関
-- 11-15 15:44｜247732番｜判定日赤｜CLAUDE.md / AGENTS.md / ai-brain/pm_brief.md / .claude/
-- 11-15 15:44｜247733番｜判定日赤｜作業ツリーが他セッションの未commit編集（225ファイル）と混在していたため、git apply --c
-- 11-15 15:44｜247734番｜判定日赤｜第二条「できないは最終手段」に照らすと、打開策は2択：①友近・品川ヒロシの新規アーティストページを出典付きで仕
-- 11-15 16:11｜247735番｜判定日赤｜許可ポップアップ・request_access・ブラウザ・web_fetch禁止（リンクは tools/lin
-- 11-15 16:15｜247736番｜判定日赤｜番号56863｜原文：まずMichael Jacksonの代表曲(Rock With You含む必須曲)を洗い
-- 11-15 16:17｜247737番｜判定日赤｜番号56907｜原文：これはMichael Jacksonに限らず、サイト全体で「代表曲の一つ」のような一般論
 

@@ -312,8 +312,16 @@ def kenpin(title, text, go=None, tatakanai=False):
     """
     go = kinshi_go() if go is None else go
     us = urls_in(text)
+    # 2026-11-22 本番の関所：確認ページ（share/check 等）は作った本人がいつでも置けるので本番の証拠に数えない。
+    try:
+        import honban_kanmon
+        _kakunin = [u for u in us if honban_kanmon.KAKUNIN.search(u)]
+        us = [u for u in us if not honban_kanmon.KAKUNIN.search(u)]
+    except Exception:
+        _kakunin = []
     if not us:
-        return {"ok": False, "naze": "報告に本番URLが無い（自己申告だけでは完了にしない）",
+        return {"ok": False, "naze": ("報告のURLが確認ページだけで本番URLが無い" if _kakunin
+                                      else "報告に本番URLが無い（自己申告だけでは完了にしない）"),
                 "url": None, "code": None}
     if tatakanai:
         # 自己試験のときだけ。★本番では必ず叩く（叩かない検品は検品ではない）

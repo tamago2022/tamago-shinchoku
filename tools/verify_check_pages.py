@@ -206,6 +206,21 @@ def apply_results(results, task_tag):
     """queue.jsonをロックして最新を読み直し、判定結果だけを反映する。
     書き込みは queue_store.save_queue()（差分マージ・件数減少ガード・世代バックアップ・
     自己修復つき）に委譲する（案件#687：以前は丸ごと上書きで、事故の入口の1つだった）。"""
+    # 2026-11-22 本番の関所：確認ページのPASSは完了ではない。本番URLで中身を確かめたものだけ done。
+    #   ロックの外で先に測る（ロック中に回線を待たない）。
+    honban = {}
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import honban_kanmon
+        _d0 = queue_store.load_queue()
+        _passed = set(r["n"] for r in results if r.get("passed"))
+        for _it in _d0.get("items") or []:
+            if _it.get("n") in _passed:
+                _res = honban_kanmon.hantei(_it)
+                honban_kanmon.kiroku(_it, _res, "verify_check_pages")
+                honban[_it.get("n")] = _res
+    except Exception as _e:
+        print("本番の関所が読めない：%r（PASSでもdoneにしない）" % (_e,))
     with queue_lock():
         d = queue_store.load_queue()
         snapshot = queue_store.snapshot_items(d)
@@ -218,7 +233,13 @@ def apply_results(results, task_tag):
                 continue
             r = by_n[n]
             summary = " / ".join(r["reasons"])
-            if r["passed"]:
+            if r["passed"] and (honban.get(n) or {}).get("ok") is not True:
+                item["verifyNote"] = "確認ページはPASS／本番の関所で止めた：%s" % (
+                    (honban.get(n) or {}).get("naze") or "本番を測れていない")
+                item["checkedAt"] = now_iso()
+                decision = "honban-ng(status据え置き)"
+            elif r["passed"]:
+                item["honbanUrl"] = honban[n].get("url")
                 item["status"] = "done"
                 item["okBy"] = "oni-kantoku-verify_check_pages-%s" % task_tag
                 item["okNote"] = "機械検品PASS(①②③すべて満たす): " + summary
