@@ -56,6 +56,9 @@ def kinshi(item):
     j = jougen()
     if j is None or item.get("test"):
         return False
+    # 2026-11-22 店主の名指し：常備の列①で保留を外した店主の依頼は、外してから2回まで出してよい（tools/joubi.py）
+    if item.get("joubiKaijo"):
+        return kaisuu(item) >= max(int(item.get("joubiKaijoKaisuu") or 0), j) + 2
     return kaisuu(item) >= j
 
 

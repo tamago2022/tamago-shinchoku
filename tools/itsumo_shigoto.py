@@ -231,8 +231,14 @@ def what_koukai(rows):
 def _queue_add(text, label, kind):
     sys.path.insert(0, HERE)
     import command_ingest
-    st, msg = command_ingest.queue_add(text, priority=1, label=label, origin="factory", urgent=True)
+    st, msg = command_ingest.queue_add(text, priority=1, label=label, origin="factory", urgent=False)
     _append(KIROKU, {"at": now(), "shita": "積んだ", "kind": kind, "label": label, "st": st, "msg": str(msg)[:160]})
+    if st != "failed" and kind in ("kara", "naoshi", "shiire"):
+        try:
+            import joubi as _jb      # 2026-11-22 常備の列の印（見たいもの・順番・週枠の線は守る）
+            _jb.tag_on_disk(label, kind)
+        except Exception:
+            pass
     return st
 
 
@@ -546,17 +552,12 @@ def tick(q, force=False):
     m = _machi(q)
     tsunda = {}
     try:
-        try:
-            import mudacut as _mc
-            _kara_ok = not _mc.kara_teishi()  # 2026-11-08 無駄カット：空カードの自動補充を止める
-        except Exception:
-            _kara_ok = True
-        if _kara_ok and m["kara"] < SHITA["kara"]:
-            tsunda["kara"] = tsumu_kara(TSUMU["kara"], t)
-        if m["naoshi"] < SHITA["naoshi"]:
-            tsunda["naoshi"] = tsumu_naoshi(TSUMU["naoshi"], t)
-        if m["shiire"] < SHITA["shiire"]:
-            tsunda["shiire"] = tsumu_shiire(TSUMU["shiire"], t)
+        # 2026-11-22 店主「俺が言わなきゃ動かないのは点数が低い」→ 積む順は常備の列（tools/joubi.py）が決める。
+        #   ①店主の依頼の残り→②関連埋め→③空コピー埋め→コピー直し→④動画差し替え→⑤SNS曲80点→⑥マガジン曲→⑦仕入れ。
+        #   ここ（空カード・コピー直し・仕入れの下限で積む旧ルール）は常備の列に置き換えた。
+        sys.path.insert(0, HERE)
+        import joubi as _jb
+        tsunda["joubi"] = _jb.tick(q, t)
         tsunda["koukai"] = tsumu_koukai(q, t)
     finally:
         _save(TSUNDA, t)
@@ -568,7 +569,7 @@ def tick(q, force=False):
                    "spotify_lists": len(_lists()), "shiire_tsunda": len(t.get("shiire", [])),
                    "naoshi_tsunda": len(t.get("naoshi", [])),
                    "saisho_1jikan": ichijikan(t.get("hajimari"))})
-    return ch > 0
+    return ch > 0 or bool(tsunda.get("joubi"))
 
 
 def ichijikan(hajimari):

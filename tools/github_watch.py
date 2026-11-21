@@ -390,6 +390,28 @@ def api_post_issue_comment(repo, issue_no, token, body, timeout=20):
     return False
 
 
+def is_pr_item(it):
+    return bool(it.get("pull_request"))
+
+
+def api_close_issue(repo, issue_no, token, timeout=20):
+    """wake-dispatch の札を閉じる（2026-11-22）。"""
+    url = "https://api.github.com/repos/%s/issues/%s" % (repo, issue_no)
+    req = urllib.request.Request(url, data=json.dumps({"state": "closed", "state_reason": "completed"}).encode("utf-8"),
+                                 method="PATCH")
+    req.add_header("Authorization", "Bearer %s" % token)
+    req.add_header("Accept", "application/vnd.github+json")
+    req.add_header("X-GitHub-Api-Version", "2022-11-28")
+    req.add_header("User-Agent", "tamago-github-watch")
+    req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.getcode() == 200
+    except Exception as e:
+        log("wake-dispatch を閉じられない (%s #%s): %s" % (repo, issue_no, e))
+    return False
+
+
 def _extract_queue_n(message):
     """Extract a queue ticket only from the known queue_add receipt format."""
     m = re.search(r"(?<!\d)(\d{1,9})番として発車待ち", str(message or ""))
@@ -961,6 +983,20 @@ def check_repo(repo, token, st, budget):
             _labels = [(l.get("name") or "").lower() for l in (it.get("labels") or []) if isinstance(l, dict)]
             if "muse" in _labels:
                 seen.add(key)
+                continue
+            # 2026-11-22 店主：Grok Bot が進捗表を見て止まっていたら「wake-dispatch」札の Issue を立てる。
+            #   受け口はここ（新しい定期処理は足さない）。原因を見分けて直し→常備の列から発車→1行コメントして閉じる。
+            if "wake-dispatch" in _labels and not is_pr_item(it):
+                seen.add(key)
+                try:
+                    if TOOLS not in sys.path:
+                        sys.path.insert(0, TOOLS)
+                    import joubi as _jb
+                    log("wake-dispatch %s#%s → %s" % (repo, num, _jb.wake_issue(
+                        repo, num, token, api_post_issue_comment, api_close_issue)))
+                except Exception as e:
+                    log("wake-dispatch %s#%s で例外: %s" % (repo, num, e))
+                    seen.discard(key)
                 continue
             # 基準線より前に置かれた号は拾わない（昔から開いている棚卸し待ちを掘り返さない）
             if _iso_to_epoch(it.get("created_at") or "") < cutoff:
