@@ -72,6 +72,26 @@ mutation($input: DeletePostInput!) {
   }
 }
 """
+# ★35743番（2026-08-19に言われ3ヶ月未着手だった件）：消す前に必ず
+#   予約ID・日時・画像ファイル名・キャプションの4項目をここへ書き出してから消す。
+KESU_KIROKU_DIR = os.path.join(REPO, "status", "buffer_queue", "kesu_kiroku")
+
+
+def kesu_taisho_kiroku_1168(rows, naze=""):
+    """★35743番：✕判定で外す対象を、消す前にここへ書き出して保存する。"""
+    taisho = [{
+        "yoyaku_id": x.get("post_id") or "",
+        "nichiji": x.get("due") or "",
+        "gazou_filename": "(画像なし／1168は画像を見ていない)",
+        "caption": x.get("text") or "",
+    } for x in rows]
+    rec = {"at": datetime.datetime.now(JST).strftime("%F %T"),
+           "naze": naze, "kensu": len(taisho), "taisho": taisho}
+    os.makedirs(KESU_KIROKU_DIR, exist_ok=True)
+    fn = "kesu_%s.json" % datetime.datetime.now(JST).strftime("%Y%m%d_%H%M%S_%f")
+    path = os.path.join(KESU_KIROKU_DIR, fn)
+    json.dump(rec, io.open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return path
 
 
 def gql(tok, q, v=None):
@@ -295,6 +315,9 @@ def kenpin(yoyaku, sent, itsu, tok, snap):
     elif "--hazusu" in sys.argv and not buffer_waku.ake():
         print("★枠切れなので外せない。", buffer_waku.riyuu())
     elif "--hazusu" in sys.argv:
+        # ★35743番：外す全件を、消す前にまとめて書き出して保存する
+        kesu_taisho_kiroku_1168([x for x in out if x["hantei"] == "✕"],
+                                 naze="1168_kenpin_hyou --hazusu：✕判定で外す")
         for x in out:
             if x["hantei"] != "✕":
                 continue
