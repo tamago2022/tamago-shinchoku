@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-11-21 23:43:02・hash=3393b01c92f9 -->
+<!-- 自動生成・genzaichi_sync.py・2026-11-22 00:03:03・hash=86a62330393e -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -164,11 +164,9 @@
 - 2026-10-11 名カバーの棚を許可制に（台帳 src/lib/meiCoverLedger.ts＝たまごさん指定だけ表示・prebuild点検 check-meicover-gate）。25件を外し（1語で戻せる：MEI_COVER_UNDO_20261011）、風をあつめて(Josh Turner)を追加。ハートは全サイト一時非表示（HEARTS_VISIBLE）。文字マークは左下・英語、グッドカバーだけ左上。added_by列のmigrationは未適用なら台帳だけで動く。
 
 <!-- 自動まとめ:始 -->
-## 今日までに届いた更新（自動まとめ・1日1回／2026-11-08 22:12）
+## 今日までに届いた更新（自動まとめ・1日1回／2026-11-21 23:58）
 
-- **205237号 空カード埋め|五木ひろし2/2**（11-07 12:13）9曲全件にnote/memo/src追加、main合流済み(commit b9c241712/705b83374)。公開はLovable OAuth invalid_grant既知障害でブロック中、本番未反映を実測確認済み。重複エスカレーションなし。
-- **205233号 空カード埋め|マイケル・フランクス(2/2)**（11-07 01:46）対象10曲中9曲は前セッション実装分がorigin/main合流済み・本番で実文言を確認。残り1曲(live-from-tokyo)はtabiCopy.ts経由でmain合流済みだがLovable OAuth公開ブロック(HTTP403)で本番未反映。副次発見:mac_jobs心臓が40分以上停止、振り分け所fw-20261107014610-d74bbへ再起動依頼済み。
-- **206319 GOD FUNKY番宣 仕上げ**（11-06 22:23）街の質感をCC0写真で後がけ（645コマ・音ハメ無改変）。自己採点68点で納品せず。ロボ3体と締めカードの3D差し替えは205673（3D正本）完了後に【続き】。待ち記録 status/itsumo/machi_3d.json。確認 https://tamago2022.github.［除去］.html
+- **35729番・見本市（声10種+映像1本）**（11-21 17:41）声の聞き比べ10種（MiniMax6+ElevenLabs4）・ループ映像1本（実写・海）を1枚の確認ページに集約。卵コンシェルジュ推しは声01（落ち着いた女性）と声07（透明感のある女性Aria）。残り映像3本はfal/ElevenLabsの鍵がこの環境に無く未生成（約114円・400円枠内）。URL: https://tamago2022.github.［除去］.html
 
 （子セッションは Vault に直接書かない。status/genzaichi_kouho.md に追記→夜にここへ1回だけ反映）
 <!-- 自動まとめ:終 -->
