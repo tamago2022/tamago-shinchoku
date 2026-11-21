@@ -56,7 +56,7 @@ URGENT_REASON = "常備の列（自動で積んだ・週枠の線は守る）"
 # ① 店主がGrok経由で頼んで、無駄カットで保留のままになっていた依頼（2026-11-22 店主名指し）
 GROK_GH = [1034, 1035, 1047, 1056, 1071, 1166, 1169, 1172]
 KANREN_BIN = 10
-KYOUTSUU = ("ブラウザ・web_fetch・osascript・Lovableのチャットは使わない。有料APIは使わない。音を出さない"
+KYOUTSUU = ("ブラウザ・web_fetch・osascript・Lovableのチャットは使わない。お金のかかる道具は使わない（0円）。音を出さない"
             "（再生の確認は node tools/iphone_kakunin.mjs だけ）。棚（worlds.ts・admin_shelf_picks）は触らない。"
             "店主に質問しない。\n")
 KOUKAI = ("【公開】joy-relief-station は npm run prebuild（関所全部）を通して main へ。公開が通らなければ "
@@ -126,6 +126,10 @@ def _tag(it, k):
     """常備の便の印。見たいもの・順番・線は守る（名指しの急ぎにしない）。"""
     ch = False
     want = {"joubi": k, "kubun": "mitai", "order": ORDER.index(k) + 1}
+    if k != "grok" and it.get("costsMoney") and not it.get("costApproved"):
+        # 常備の便は0円（お金のかかる道具は使わないと指示に書いてある）。語の拾い違いで止めない
+        want.update({"costsMoney": False})
+        it.pop("costAskedAt", None)
     if k != "grok":
         want.update({"urgent": True, "urgentReason": URGENT_REASON})
         if int(it.get("limitMin") or 999) > 90:
