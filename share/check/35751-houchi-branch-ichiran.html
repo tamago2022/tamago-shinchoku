@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35751 放置ブランチ6件（実質14本）の存在と役割 確認ページ</title>
+<style>
+  :root{--bg:#f4efe4;--ink:#2a2a2a;--sub:#7a7568;--line:#e2dccd;--aka:#c4483a;--ao:#3a5f7a;--midori:#3a7a52;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#efe9db;color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:#1c1c1c;border-bottom:1px solid #3a3a3a;padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35751 放置ブランチ6件（実質14本）の存在と役割</div>
+<h1>#35751 放置ブランチ6件（実質14本）の存在と役割</h1>
+<div class="date">2026-11-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+2026-08-18にたまごさんが名指しした「34〜37日放置されているブランチ6件」（<code>feature/17-redesign-door-cards</code>・jules系3本・<code>fix-release-years</code>・<code>agent/issue-60</code>）について、マージはせず、存在と1行説明だけを報告する。調査の結果：<code>agent/issue-60</code>は1本ではなく9本に分岐していた。全ブランチは現在のmain(origin/main)と共通の祖先を持たない（過去のmain履歴入れ替えの影響）＝単純mergeは不可。全14本とも未マージ・削除もされていないまま7月12〜15日時点の最終コミットで放置されている。
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>6</b><span>元の依頼で名指しされた件数</span></div>
+  <div class="num"><b>14</b><span>実際に存在する関連ブランチ数</span></div>
+  <div class="num"><b>0</b><span>mainへ合流済みの本数</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>feature/17-redesign-door-cards</b><a href="https://github.com/tamago2022/joy-relief-station/tree/feature/17-redesign-door-cards-12680062275518363983" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/tree/feature/17-redesign-door-cards-12680062275518363983</a></li>
+  <li><b>fix-release-years</b><a href="https://github.com/tamago2022/joy-relief-station/tree/fix-release-years-14692124615878586801" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/tree/fix-release-years-14692124615878586801</a></li>
+  <li><b>jules-healing-music</b><a href="https://github.com/tamago2022/joy-relief-station/tree/jules-healing-music-15917458499201303193" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/tree/jules-healing-music-15917458499201303193</a></li>
+  <li><b>agent/issue-60系（brancheの一覧）</b><a href="https://github.com/tamago2022/joy-relief-station/branches/all?query=agent%2Fissue-60" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/branches/all?query=agent%2Fissue-60</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>feature/17-redesign-door-cards-12680062275518363983</td><td class="yes">17号「扉カード」のデザイン再構築（2026-07-12最終コミット）</td></tr>
+<tr><td>fix-release-years-14692124615878586801</td><td class="yes">リリース年表記の修正。最終コミットは「PR closure and finalize obsolete work」＝対応側が既にobsolete扱いで止めている</td></tr>
+<tr><td>jules-healing-music-15917458499201303193</td><td class="yes">癒し系音楽100曲を追加し30曲棚を作る作業。重複データ整理・TSエラー修正済み</td></tr>
+<tr><td>jules-12471882554818161925-3c6a5e67</td><td class="yes">AGENTS.mdに「5段階完了・報告ルール」を追加するドキュメント更新</td></tr>
+<tr><td>jules-2123314332259490-6351de66</td><td class="yes">カード重複ロジックの修正（無関係データには触れない設計）</td></tr>
+<tr><td>agent/issue-60-healing-repair</td><td class="yes">58号：癒し棚YouTube修復バッチ1（partial）</td></tr>
+<tr><td>agent/issue-60-healing-partial-clean</td><td class="yes">58号：癒し棚修復レポートを累計表示へ修正</td></tr>
+<tr><td>agent/issue-60-missing-id-classify</td><td class="yes">58号：実行済み専用Workflowを成果PRから除外</td></tr>
+<tr><td>agent/issue-60-public-seven-repair</td><td class="yes">58号：公開棚7件の実修復を起動</td></tr>
+<tr><td>agent/issue-60-public-seven-workflow-trigger</td><td class="yes">58号：公開棚修復をPR開始時の一回実行へ変更</td></tr>
+<tr><td>agent/issue-60-public-seven-run-1</td><td class="yes">58号：公開棚7件の実修復を開始</td></tr>
+<tr><td>agent/issue-60-public-seven-syntax-fix</td><td class="yes">58号：構文修復ラッパー経由で公開棚修復を実行</td></tr>
+<tr><td>agent/issue-60-public-seven-run-2</td><td class="yes">58号：実行済みトリガーを成果PRから除外</td></tr>
+<tr><td>agent/issue-60-public-route-deploy-markers</td><td class="yes">58号：公開棚5ルートをLovable実データ検品へ追加</td></tr>
+</table>
+
+<footer>
+元の指示（2026-08-18）：「今回はマージしないでください。存在と、それぞれが何をするものかを1行ずつ報告するだけにしてください。たまごが後で判断します。」この確認ページはその報告であり、マージ・削除は一切行っていない。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+</body>
+</html>
