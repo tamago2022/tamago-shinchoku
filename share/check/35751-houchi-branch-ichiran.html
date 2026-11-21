@@ -51,8 +51,12 @@
 <h1>#35751 放置ブランチ6件（実質14本）の存在と役割</h1>
 <div class="date">2026-11-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
+<h2>① 何を直したか</h2>
 <div class="fix">
-2026-08-18にたまごさんが名指しした「34〜37日放置されているブランチ6件」（<code>feature/17-redesign-door-cards</code>・jules系3本・<code>fix-release-years</code>・<code>agent/issue-60</code>）について、マージはせず、存在と1行説明だけを報告する。調査の結果：<code>agent/issue-60</code>は1本ではなく9本に分岐していた。全ブランチは現在のmain(origin/main)と共通の祖先を持たない（過去のmain履歴入れ替えの影響）＝単純mergeは不可。全14本とも未マージ・削除もされていないまま7月12〜15日時点の最終コミットで放置されている。
+たまごさんが開けないリンク（非公開リポジトリのGitHub直リンク4本）をページから削除し、14本全部の名前と内容をこのページの表（⑤）へ直接書き写した。今回ページを開くだけで全情報が見える形に作り直した。
+</div>
+<div class="fix">
+元の依頼：2026-08-18にたまごさんが名指しした「34〜37日放置されているブランチ6件」（<code>feature/17-redesign-door-cards</code>・jules系3本・<code>fix-release-years</code>・<code>agent/issue-60</code>）について、マージはせず、存在と1行説明だけを報告する。調査の結果：<code>agent/issue-60</code>は1本ではなく9本に分岐していた。全ブランチは今の本体のコードと歴史がつながっていない（以前に本体の履歴を入れ替えた影響）ため、そのまま本体へ合わせることはできない。全14本とも合流・削除もされていないまま7月12〜15日時点で放置されている。
 </div>
 
 <h2>② 数字</h2>
@@ -65,18 +69,19 @@
 
 
 <h2>④ 押せるリンク</h2>
+<div class="note">
+joy-relief-station は非公開リポジトリのため、ブランチへの直リンクは本人がログインしていないと404になります（機械検品も同じ理由で一度不合格になりました）。<br>
+そのため直リンクは置かず、<b>14本全部の名前と内容をこのページの⑤の表に直接書き写しています</b>。ここから下の表を見れば、リンクを押さずに全件確認できます。
+</div>
 <ul class="links">
-  <li><b>feature/17-redesign-door-cards</b><a href="https://github.com/tamago2022/joy-relief-station/tree/feature/17-redesign-door-cards-12680062275518363983" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/tree/feature/17-redesign-door-cards-12680062275518363983</a></li>
-  <li><b>fix-release-years</b><a href="https://github.com/tamago2022/joy-relief-station/tree/fix-release-years-14692124615878586801" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/tree/fix-release-years-14692124615878586801</a></li>
-  <li><b>jules-healing-music</b><a href="https://github.com/tamago2022/joy-relief-station/tree/jules-healing-music-15917458499201303193" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/tree/jules-healing-music-15917458499201303193</a></li>
-  <li><b>agent/issue-60系（brancheの一覧）</b><a href="https://github.com/tamago2022/joy-relief-station/branches/all?query=agent%2Fissue-60" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/branches/all?query=agent%2Fissue-60</a></li>
+  <li><b>確認ページ本体（これ自体）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35751-houchi-branch-ichiran.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35751-houchi-branch-ichiran.html</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>feature/17-redesign-door-cards-12680062275518363983</td><td class="yes">17号「扉カード」のデザイン再構築（2026-07-12最終コミット）</td></tr>
-<tr><td>fix-release-years-14692124615878586801</td><td class="yes">リリース年表記の修正。最終コミットは「PR closure and finalize obsolete work」＝対応側が既にobsolete扱いで止めている</td></tr>
+<tr><td>feature/17-redesign-door-cards-12680062275518363983</td><td class="yes">17号「扉カード」のデザイン再構築（最後に動いたのは2026-07-12）</td></tr>
+<tr><td>fix-release-years-14692124615878586801</td><td class="yes">リリース年表記の修正。最後の記録は「PR closure and finalize obsolete work」＝対応側が既に使われない扱いで止めている</td></tr>
 <tr><td>jules-healing-music-15917458499201303193</td><td class="yes">癒し系音楽100曲を追加し30曲棚を作る作業。重複データ整理・TSエラー修正済み</td></tr>
 <tr><td>jules-12471882554818161925-3c6a5e67</td><td class="yes">AGENTS.mdに「5段階完了・報告ルール」を追加するドキュメント更新</td></tr>
 <tr><td>jules-2123314332259490-6351de66</td><td class="yes">カード重複ロジックの修正（無関係データには触れない設計）</td></tr>
