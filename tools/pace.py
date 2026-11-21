@@ -234,6 +234,10 @@ def manage_fuel(d, q):
             proposals.append((max(CAP_MIN, cap_now - 1), "今日の使用が今日の予算を超過(state=over)", -1))
         elif over_line < WEEK_UNDER_UP:
             proposals.append((min(CAP_MAX, cap_now + 1), "週の予算が余っている(overLine=%.1f)" % over_line, 1))
+        elif over_line <= 0 and day_state == "ok":
+            # 2026-11-22 店主「同時2本・週枠の線を守る」。実測：前の晩に「今日の予算超過」で1本に下げたあと、
+            #   日が替わって予算内・線の内側に戻っても上げる条件（-10%以下）に届かず、1本のまま固まっていた。
+            proposals.append((min(CAP_MAX, cap_now + 1), "線の内側で今日も予算内（overLine=%.1f）" % over_line, 1))
 
     downs = [p for p in proposals if p[2] < 0]
     ups = [p for p in proposals if p[2] > 0]

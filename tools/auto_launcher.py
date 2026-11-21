@@ -1254,6 +1254,90 @@ def split_big_job(it, q, urls):
     return True
 
 
+# ---- 本番の関所（2026-11-22・tools/honban_kanmon.py）---------------------------------
+# done を付ける直前に必ず通す。True のときだけ done にしてよい。
+#   本番で確かめた → True
+#   本番URLが無い・200でない・中身が空 → 作り直しへ戻す（3回で hold＋Dispatchへ1行。店主には上げない）
+#   外に出られない／関所が読めない → status="honban_machi"（10分後に測り直す。done にはしない）
+HONBAN_MODOSHI_JOUGEN = 3
+
+
+def _honban_toosu(it, reason=""):
+    try:
+        if HERE not in sys.path:
+            sys.path.insert(0, HERE)
+        import honban_kanmon
+        res = honban_kanmon.hantei(it)
+        honban_kanmon.kiroku(it, res, "auto_launcher")
+    except Exception as e:
+        res = {"ok": None, "url": None, "naze": "本番の関所が読めない：%r" % (e,)}
+        honban_kanmon = None
+    if res.get("ok") is True:
+        it["honbanUrl"] = res.get("url")
+        it["honbanCheckedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        it.pop("honbanNextAt", None)
+        return True
+    if res.get("ok") is None:
+        it["status"] = "honban_machi"
+        it["honbanNextAt"] = time.time() + 600
+        it["honbanNote"] = res.get("naze")
+        log("⏸ 本番の関所：測れないので完了にしない %s番「%s」・%s"
+            % (it.get("n"), it.get("title"), res.get("naze")))
+        return False
+    fails = int(it.get("honbanFailCount") or 0) + 1
+    it["honbanFailCount"] = fails
+    it.pop("honbanNextAt", None)
+    try:
+        redo_guard.note_fail_reason(it, "本番の関所：%s" % res.get("naze"))
+    except Exception:
+        pass
+    if fails < HONBAN_MODOSHI_JOUGEN:
+        it["status"] = "hold" if it.get("holdNote") else "waiting"
+        it["priority"] = it.get("priority") or 2
+        bun = honban_kanmon.modosu_bun(res) if honban_kanmon else ("\n\n【本番の関所で戻されました】%s" % res.get("naze"))
+        it["what"] = (it.get("what") or "") + bun
+        for k in ("finishedAt", "result", "urls", "sessionId", "startedAt"):
+            it.pop(k, None)
+        log("🚫 本番の関所NG %s番「%s」→ 作り直しへ（%d回目・%s）"
+            % (it.get("n"), it.get("title"), fails, res.get("naze")))
+        return False
+    it["status"] = "hold"
+    it["holdNote"] = "本番の関所で%d回戻った（%s）。本番に出す道が塞がっている＝Dispatchが道を直す" % (fails, res.get("naze"))
+    append_outbox(it, False)
+    log("🛑 本番の関所NG %d回 %s番「%s」→ hold（Dispatchへ1行・店主には上げない）"
+        % (fails, it.get("n"), it.get("title")))
+    return False
+
+
+def _honban_machi_hakarinaosu(q, saidai=1):
+    """status=honban_machi を10分おきに測り直す。1回に最大1本（auto_launcherを重くしない）。"""
+    changed = False
+    now = time.time()
+    n = 0
+    for it in q.get("items", []):
+        if it.get("status") != "honban_machi":
+            continue
+        if float(it.get("honbanNextAt") or 0) > now:
+            continue
+        if n >= saidai:
+            break
+        n += 1
+        changed = True
+        if _honban_toosu(it):
+            it["status"] = "done"
+            it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+            it["okBy"] = it.get("okBy") or "honban-kanmon"
+            it["okNote"] = "本番の関所PASS：%s" % it.get("honbanUrl")
+            append_outbox(it, True)
+            log("✅ 本番の関所PASS→完了 %s番「%s」%s" % (it.get("n"), it.get("title"), it.get("honbanUrl")))
+            try:
+                import dekimono_lib
+                dekimono_lib.record_done(it.get("n"), it.get("title"), it.get("result"), it.get("urls"))
+            except Exception:
+                pass
+    return changed
+
+
 def harvest(q):
     """2026-09-04 たまごさん「作業が終わって、終わったんであれば、そこは俺の確認待ちだよ。
     確認待ちでOKって言ったら初めて完了に入る。ダメだったらもう一回順番待ちに並ぶ」
@@ -1858,6 +1942,12 @@ def harvest(q):
             append_outbox(it, bool(it.get("urls")))
             log("… AI検品：判断できないため人の目へ %d番「%s」・理由:%s" % (it.get("n"), it.get("title"), reason))
         else:
+            # 2026-11-22 本番の関所（店主「ページを作ったと言うのに、実装・公開されていない」）。
+            #   実測：11/08以降のdone19件は全部ここを通っており、13件は確認ページ(share/check)だけで完了していた。
+            #   ★AI検品PASSは「完了」ではない。本番URLを叩いて中身を確かめたときだけ done を付ける。
+            if not _honban_toosu(it, reason):
+                changed = True
+                continue
             it["status"] = "done"
             it["checkedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
             it["okBy"] = "ai-verifier-auto"
@@ -1875,6 +1965,13 @@ def harvest(q):
             except Exception:
                 pass
         changed = True
+
+    # ---- 本番の関所で「測れなかった」ものを測り直す（2026-11-22）----
+    try:
+        if _honban_machi_hakarinaosu(q):
+            changed = True
+    except Exception as e:
+        log("本番の関所の測り直しで例外：%r" % (e,))
 
     # ---- 溜まった確認待ちを鬼監督に順番に見せる（2026-09-08新設・650番）----
     # たまごさんの言葉：「まじで大量に間違われて、そっちが勝手に間違えて、
@@ -2581,6 +2678,14 @@ def _main_impl():
       queue_alive = len([it for it in items
                          if it.get("status") == "running" and it.get("pid") and _pid_alive(it.get("pid"))])
       alive = max(alive, queue_alive)
+      # 2026-11-22 店主「工場が絶対に手持ち無沙汰にならないように。同時は2本まで」。
+      #   実測：machine.json は工場の便以外の Claude（Dispatch・Cowork の会話・別の子）も数えるため、
+      #   今日の上限が1本の日は、会話が1つ開いているだけで「走行3本／上限1本（空きなし）」となり、工場の便が0本のまま止まっていた。
+      #   本数の枠は工場の便（台帳で running・生きている pid）で数える。Mac の重さは下の負荷判定（fuka_hassha）が実測で見る。
+      _alive_all = alive
+      alive = queue_alive
+      if _alive_all > alive:
+          log("走行の数え方：工場の便%d本（Mac全体のClaude %d本は負荷判定で見る）" % (alive, _alive_all))
       safe_max = m.get("safeMax")
       if safe_max is None:
           # 2026-10-01: machine.json の新形式は safeMax ではなく
@@ -2639,7 +2744,7 @@ def _main_impl():
       if not only_tests:
           try:
               import fuka_hassha as _fuka
-              _fk = _fuka.hantei(alive=alive, source="auto_launcher")
+              _fk = _fuka.hantei(alive=_alive_all, source="auto_launcher")
           except Exception as _e:
               _fk = {"cap": 2, "stopNew": False, "reason": "fuka_hassha読込失敗（%s）→既定2本" % _e}
           if _fk.get("stopNew"):

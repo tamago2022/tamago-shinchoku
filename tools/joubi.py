@@ -46,11 +46,11 @@ KIROKU = os.path.join(DIR, "kiroku.jsonl")
 PUBLIC = os.path.join(ST, "public", "joubi.json")
 JRS = "/Users/mac/Desktop/joy-relief-station"
 
-ORDER = ["grok", "kanren", "kara", "naoshi", "video", "sns80", "mag", "shiire"]
-NAME = {"grok": "店主の依頼の残り", "kanren": "関連を4枚以上に", "kara": "空のコピー埋め", "naoshi": "コピー直し",
+ORDER = ["grok", "kanren", "fuda", "kara", "naoshi", "video", "sns80", "mag", "shiire"]
+NAME = {"grok": "店主の依頼の残り", "kanren": "関連を4枚以上に", "fuda": "料理・猫の関連カードの札と理由", "kara": "空のコピー埋め", "naoshi": "コピー直し",
         "video": "消えた動画の差し替え", "sns80": "SNSに出した曲を80点以上に", "mag": "マガジンの曲を独立ページ・関連4以上に",
         "shiire": "仕入れ（棚には置かない）"}
-PREFIX = {"kanren": "関連埋め｜", "video": "動画差し替え｜", "sns80": "SNS曲80点｜", "mag": "マガジン曲｜"}
+PREFIX = {"kanren": "関連埋め｜", "fuda": "札と理由埋め｜", "video": "動画差し替え｜", "sns80": "SNS曲80点｜", "mag": "マガジン曲｜"}
 MACHI = 3            # 常備の発車待ちの上限（同時2本＋次の1本）
 URGENT_REASON = "常備の列（自動で積んだ・週枠の線は守る）"
 # ① 店主がGrok経由で頼んで、無駄カットで保留のままになっていた依頼（2026-11-22 店主名指し）
@@ -263,6 +263,14 @@ def zairyou_mag():
     return sum(int(c.get(k) or 0) for k in ("no_page", "link_ng", "related_lt4", "copy_memo_ng", "video_dead"))
 
 
+def what_fuda():
+    return ("【札と理由埋め・常備の列②の続き】料理（/room/tashizan・/room/card の食べ物・食べ物の扉）と猫の部屋の関連カードで、"
+            "種類の札（原曲／カバー／同じ人の代表曲／パロディ／ライブ、料理なら 同じ食材／同じ作り手／合わせ技 など、その部屋の型にある札）"
+            "と理由1行が空のものを、上から20枚まで埋める。理由は事実で言える繋がり（出典つき）・ボンジョビおじさん構文。"
+            "推測でつながない。埋めたら残りの枚数を status/joubi/fuda_nokori.json に {\"at\",\"nokori\":残り枚数} で上書き。\n"
+            "%s%s%s" % (KOUKAI, KYOUTSUU, HOUKOKU))
+
+
 def what_video(rows):
     keys = ", ".join("%s（%s）" % (r.get("key"), "・".join(r.get("shelves") or [])[:40]) for r in rows)
     return ("【動画差し替え・常備の列④】引っ込めた（消えた・埋め込み不可）動画を差し替える。対象：%s\n"
@@ -335,6 +343,14 @@ def tsumu(kind, t, its_t):
             t["kanrenNext"] = k + 1
             return 1
         return 0
+    if kind == "fuda":
+        last = _load(os.path.join(DIR, "fuda_nokori.json"), {})
+        if t.get("fudaAt", "")[:10] == now()[:10] or last.get("nokori") == 0:
+            return 0               # 1日1便。前の便が「残り0」と書いたら積まない
+        if _queue_add(what_fuda(), "%s料理・猫の関連カード（20枚まで）" % PREFIX["fuda"], kind) != "failed":
+            t["fudaAt"] = now()
+            return 1
+        return 0
     if kind in ("kara", "naoshi", "shiire"):
         import itsumo_shigoto as its
         f = {"kara": its.tsumu_kara, "naoshi": its.tsumu_naoshi, "shiire": its.tsumu_shiire}[kind]
@@ -380,22 +396,24 @@ def tick(q, its_t=None):
     t = _load(TSUNDA, {})
     its_t = its_t if its_t is not None else {}
     m = _machi(q)
-    machi = sum(v for k, v in m.items() if k != "grok")
     tsunda = []
-    if machi < MACHI:
-        for kind in ORDER[1:]:
-            if machi >= MACHI:
-                break
-            if m.get(kind):
-                continue           # 1種類1便まで（同じ種類で列を埋めない）
+    # 店主の順で前から見る。「自分より前の種類の待ち＋自分」が MACHI 未満で、自分の種類が0本なら1便積む
+    #   （古い種類の便が溜まっていても、前の順の仕事が後ろに回らないように）。
+    mae = 0
+    for kind in ORDER[1:]:
+        if mae >= MACHI:
+            break
+        if not m.get(kind):
             try:
                 n = tsumu(kind, t, its_t)
             except Exception as e:
                 _append(KIROKU, {"at": now(), "shita": "積めなかった", "kind": kind, "err": str(e)[:200]})
                 n = 0
             if n:
-                machi += n
+                m[kind] = n
                 tsunda.append(kind)
+        mae += m.get(kind) or 0
+    if True:
         if tsunda:
             # 積んだ便に印（同じ q の末尾に入っている）
             for it in q.get("items", []):
@@ -466,8 +484,12 @@ def wake_issue(repo, num, token, post_comment, close_issue):
     q = _load(os.path.join(ST, "queue.json"), {})
     run = [it for it in q.get("items", []) if it.get("status") == "running"]
     run.sort(key=lambda it: str(it.get("startedAt") or ""), reverse=True)
-    bin_ = "／".join("%s番「%s」" % (it.get("n"), str(it.get("hyoudai") or it.get("title"))[:30]) for it in run[:2])
-    if not bin_:
+    bin_ = "走行中 " + "／".join("%s番「%s」" % (it.get("n"), str(it.get("hyoudai") or it.get("title"))[:30]) for it in run[:2])
+    nx0 = sorted([it for it in q.get("items", []) if it.get("status") == "waiting" and shurui(it)],
+                 key=lambda it: (it.get("order") or 99, it.get("n") or 0))[:1]
+    if run and nx0:
+        bin_ += "／常備の次＝%s番「%s」" % (nx0[0].get("n"), str(nx0[0].get("title"))[:30])
+    if not run:
         nx = sorted([it for it in q.get("items", []) if it.get("status") == "waiting" and shurui(it)],
                     key=lambda it: (it.get("order") or 99, it.get("n") or 0))[:1]
         bin_ = ("走行なし。次は%s番「%s」（%s）" % (nx[0].get("n"), str(nx[0].get("title"))[:30],
@@ -500,7 +522,7 @@ def self_test():
     ok &= shurui({"title": "判定日赤｜x"}) is None
     it = {"title": "関連埋め｜1便目", "limitMin": 180}
     _tag(it, "kanren")
-    ok &= it["kubun"] == "mitai" and it["order"] == 2 and it["limitMin"] == 90
+    ok &= it["kubun"] == "mitai" and it["order"] == 2 and shurui({"title": "札と理由埋め｜x"}) == "fuda" and it["limitMin"] == 90
     sys.path.insert(0, HERE)
     try:
         import shuwaku_sen as sw
