@@ -24,20 +24,17 @@
   ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  .report{background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 16px;}
+  .report h3{font-size:0.95rem;margin:0 0 8px;color:var(--ink);}
+  .report p{margin:0 0 10px;font-size:0.92rem;}
+  .report .src{color:var(--sub);font-size:0.8rem;}
   table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
   tr:last-child td{border-bottom:none;}
   .yes{color:var(--midori);font-weight:700;}
   .no{color:var(--aka);}
+  .kaizen{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.88rem;margin-bottom:10px;}
   footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
 </style>
 </head>
@@ -49,30 +46,88 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35755 ピーター・レベルズ/Base44/ソロプレナー 継続ベンチマーク</div>
 <h1>#35755 ピーター・レベルズ/Base44/ソロプレナー 継続ベンチマーク</h1>
-<div class="date">2026-11-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-11-22 作成・2026-11-22 23:xx 差し戻し対応（非公開リポのリンクを廃止し、調査内容をこのページ本文へ直接埋め込み）</div>
 
 <div class="fix">
-既存の深津貴之・Pieter Levels・梶谷健人の継続ベンチマーク体制(14日毎)に、Base44を新規対象として追加した
+① 1回目の確認ページは証拠を非公開リポ（joy-relief-station）のリンクだけで示していたため、たまごさんが押すと404になった。今回は<b>調査結果の全文をこのページ本文へ直接書き込み</b>、リンクを押さなくても中身がここだけで読めるようにした。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>4件</b><span>継続ベンチマーク対象の総数</span></div>
+  <div class="num"><b>3→4件</b><span>継続ベンチマーク対象（深津貴之・Pieter Levels・梶谷健人 → 今回Base44を追加）</span></div>
+  <div class="num"><b>0件</b><span>今回新規に採用した具体的な技術・施策（結論：採用なし）</span></div>
+</div>
+<div class="note">
+3者（深津貴之・Pieter Levels・梶谷健人）は2026-11-20に既にチェック済み。35755号の指示「ピーター・レベルズだとかBase44だとかソロプレナーの成功事例を調べて取り入れていく」のうち<b>Base44がまだ未調査</b>だったため、今回はBase44を新規対象として追加調査した。
 </div>
 
+<h2>前後の比較（スクリーンショット非対象の理由）</h2>
+<div class="note">この案件は画面の見た目を変える作業ではなく、継続調査の台帳（ai-brain/advisors/benchmark-targets.json）へ1件追加する社内文書作業のため、UIの前後スクリーンショットは対象外。代わりに台帳の中身を下の表で前後比較する。</div>
+<table>
+<tr><th>対象</th><th>追加前(〜2026-11-20)</th><th>追加後(2026-11-22)</th></tr>
+<tr><td>深津貴之</td><td class="yes">登録済</td><td class="yes">登録済（last_checked 2026-11-20）</td></tr>
+<tr><td>Pieter Levels</td><td class="yes">登録済</td><td class="yes">登録済（last_checked 2026-11-20）</td></tr>
+<tr><td>梶谷健人</td><td class="yes">登録済</td><td class="yes">登録済（last_checked 2026-11-20）</td></tr>
+<tr><td>Base44</td><td class="no">未登録</td><td class="yes">登録済（last_checked 2026-11-22・新規）</td></tr>
+</table>
 
+<h2>③ 調査内容（本文に直接埋め込み。リンクを押さず読める）</h2>
 
-<h2>④ 押せるリンク</h2>
+<div class="report">
+<h3>Base44とは</h3>
+<p>AI対話でアプリ・サイト・AIエージェントを作れる「バイブコーディング」サービス。無料プラン（クレジットカード不要）と有料プラン（$16/月〜）、Enterpriseは個別見積もり。認証・DB・決済・ホスティングを標準搭載し、追加のインフラ契約なしでそのまま公開できる構成。</p>
+<p class="src">出典：base44.com（公式サイト）</p>
+</div>
+
+<div class="report">
+<h3>運営体制</h3>
+<p>2024年創業、CEOはMaor Shlomo氏（イスラエル）。本人発言によれば初期投資は自己資金のみで外部資金調達は無く、創業時から黒字だったとされる。従業員6名（全員2025年5月採用）。2025年3月にステルスを解除。</p>
+</div>
+
+<div class="report">
+<h3>Wixによる買収</h3>
+<p>2025年6月18日、Wixが買収を発表。対価は初期8000万ドル＋2029年までのマイルストーン支払い。</p>
+<p class="src">出典：Globes（イスラエルの経済メディア）2025-06-18付記事</p>
+</div>
+
+<div class="report">
+<h3>不明点（正直に明記）</h3>
+<p>ユーザー数・MRR（月次売上）・具体的な集客手法については、今回確認できた出典の中に裏付けが見つからなかった。推測で埋めず「不明」として記録している。</p>
+</div>
+
+<div class="kaizen">
+<b>今回の結論：ごきげん補給所に直接転用できる新規の具体的技術・施策は見つからなかった。</b><br>
+・価格モデル（無料プラン＋クレジットカード不要）は、ごきげん補給所も既に無料・ログイン不要で実践済み。<br>
+・少人数・外部資金ゼロの運営体制も、このリポジトリのAI組織体制（Dispatch＋各担当セッション）で既に実践済み。<br>
+・SNS投稿自動化・SEO施策も、工場（tamago-shinchoku）側で既に独立に実践済み。<br>
+→ 新規採用技術なし。正直に「採用なし」と記録するに留める（他3者の前回チェックと同じ結論パターン）。
+</div>
+
+<h2>補足：深津貴之・Pieter Levels・梶谷健人（2026-11-20チェック・再掲）</h2>
+<div class="report">
+<h3>深津貴之（fladdict）</h3>
+<p>公開OSS「vibe-logger」（AIコーディングエージェント向け構造化ログ）を発見し、公式コードをそのまま取り入れ済み（<code>scripts/ai/vibe-log.mjs</code>）。これは別案件（判定日赤35654号）で既に実装・main合流済み。</p>
+</div>
+<div class="report">
+<h3>Pieter Levels（levelsio）</h3>
+<p>直近1ヶ月の投稿は欧州税制・AI課税のX投稿転載が中心で、具体的に採用できる技術情報は見つからなかった（正直に「採用なし」と記録）。</p>
+</div>
+<div class="report">
+<h3>梶谷健人（kajiken0630）</h3>
+<p>全記事が有料のため詳細は未確認。方向性として「Claude Code完結のAI部下運用」は、このリポジトリの常設Dispatch運用と同じ方向性で既に独立実践済み（新規採用なし）。</p>
+</div>
+
+<h2>④ 押せるリンク（たまごさんが実際に開けるものだけ）</h2>
 <ul class="links">
-  <li><b>benchmark-targets.json</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/advisors/benchmark-targets.json" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/advisors/benchmark-targets.json</a></li>
-  <li><b>Base44調査レポート</b><a href="https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/reports/benchmark/2026-11-22-base44.md" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/blob/main/ai-brain/reports/benchmark/2026-11-22-base44.md</a></li>
-  <li><b>対応コミット</b><a href="https://github.com/tamago2022/joy-relief-station/commit/f9a7099e2d8636a29bf6b39b4dec44ce8a8518c0" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/commit/f9a7099e2d8636a29bf6b39b4dec44ce8a8518c0</a></li>
+  <li><b>この確認ページ（今回の全証拠はここに埋め込み済み）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35755-base44-benchmark.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35755-base44-benchmark.html</a></li>
+  <li><b>進捗表（工場・公開）</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
-
-
+<div class="note">
+前回貼った <code>github.com/tamago2022/joy-relief-station/...</code> のリンクは非公開リポジトリのため廃止した（たまごさんが押すと404になるため）。調査の台帳そのものは非公開リポ側のファイル（ai-brain/advisors/benchmark-targets.json）に保存され続けるが、その中身は上の「③ 調査内容」に全文を転記済みなので、リンクを押す必要はない。
+</div>
 
 <footer>
-このページは #35755 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #35755 の差し戻し対応として手動で作り直した。書式は share/check/_template.html（共通の型）に揃えている。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
