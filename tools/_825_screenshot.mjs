@@ -23,7 +23,7 @@ const OUT_DIR = join(REPO_ROOT, "share/check/img");
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const LOAD_TIMEOUT_MS = 20000;
 const SETTLE_MS = 2500;
-const PROD_URL = process.env.SHOT_URL || "https://tamago2022.github.io/tamago-shinchoku/index.html";
+const PROD_URL = "https://tamago2022.github.io/tamago-shinchoku/index.html";
 const WIDTH = 375;
 
 const mode = process.argv[2] || "before";
@@ -127,7 +127,7 @@ async function withPage(fn) {
     await send("Runtime.enable");
     await send("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: 1400, deviceScaleFactor: 2, mobile: true });
     await send("Target.activateTarget", { targetId: page.id });
-    await send("Page.navigate", { url: PROD_URL + (PROD_URL.includes("?") ? "&" : "?") + "nc=" + Date.now() });
+    await send("Page.navigate", { url: PROD_URL + "?nc=" + Date.now() });
     await waitComplete(send);
     await sleep(SETTLE_MS);
     await fn(send);
@@ -145,17 +145,26 @@ async function withPage(fn) {
 async function shootBefore() {
   if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
   await withPage(async (send) => {
-    await sleep(2500);
-    const html = await evalJs(send, "document.body.innerHTML.length");
-    const hasTiktok = await evalJs(send, "/tiktok/i.test(document.body.innerHTML)");
-    const hasCharllane = await evalJs(send, "/charllane6002/i.test(document.body.innerHTML)");
-    const iframeSrcs = await evalJs(send, "JSON.stringify(Array.from(document.querySelectorAll('iframe')).map(f=>f.src))");
-    const blockquoteSrcs = await evalJs(send, "JSON.stringify(Array.from(document.querySelectorAll('blockquote')).map(b=>b.className))");
-    console.log("innerHTML長さ:", html, "hasTiktok:", hasTiktok, "hasCharllane:", hasCharllane, "iframes:", iframeSrcs, "blockquotes:", blockquoteSrcs);
+    // できたもの棚を開く（旧UI：種類フィルタ動画/音/記事/ページ/資料/修正・新しく作った/直したタブ・日付タブ）
+    const opened = await evalJs(
+      send,
+      `(() => {
+        const el = document.getElementById("dekitaSec");
+        if (!el) return "no-section";
+        el.querySelector("summary").click();
+        return "opened:" + el.open;
+      })()`,
+    );
+    console.log("dekitaSec:", opened);
+    await sleep(1800);
+    const top = await evalJs(
+      send,
+      `(() => { const el = document.getElementById("dekitaSec"); el.scrollIntoView({behavior:"instant",block:"start"}); return window.scrollY; })()`,
+    );
+    await sleep(400);
     const scrollHeight = await evalJs(send, "document.body.scrollHeight");
-    console.log("scrollHeight:", scrollHeight);
-    const remaining = Math.max(700, Math.min(4000, scrollHeight || 900));
-    await shoot(send, WIDTH, remaining, join(OUT_DIR, "_tmp-verify-check.png"), 0);
+    const remaining = Math.max(700, Math.min(1600, (scrollHeight || 900) - (top || 0)));
+    await shoot(send, WIDTH, remaining, join(OUT_DIR, "825-before-old-ui.png"), top || 0);
   });
 }
 
