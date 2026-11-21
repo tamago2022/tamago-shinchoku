@@ -77,8 +77,12 @@ const grid = document.getElementById("grid");
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 function thumbSrc(it){ return "t/" + it.id + (it.te || ".png"); }
+// 2026-11-22緊急対応（35754号の調査中に発見）：o/（受け渡し用・原寸に近い画像、691MB）が
+// GitHub Pagesのartifact上限1GBを超過させる主因と判明し、公開(gh-pages)からo/を除外した
+// （tools/pages_publish.sh参照）。mainにはo/の元データをそのまま残しているので、
+// 容量問題の本対応（1024番の推奨＝Git LFS化等）をすれば画質を戻せる。
 // it.o があれば「原寸に近い受け渡し用画像」。無ければサムネで代用。
-function bestSrc(it){ return it.o ? ("o/" + it.id + it.o) : thumbSrc(it); }
+function bestSrc(it){ return thumbSrc(it); }
 
 function matched(){
   const q = FILTER.trim().toLowerCase();
