@@ -52,7 +52,7 @@
 <div class="date">2026-11-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-店主指示(2026-08-16)「プロ/素人の線引き＝その名義でSpotify等に音源を出しているか」を、配信確認の新しい診断ページとして実装済み・main合流・独立検品PASS済み(同じ元の指示から35710/35711号でも同一実装が完了している)。本番公開(Lovableの「公開」反映)は、工場側の自動公開のしくみが2026-10-14からログイン承認切れで止まっており、ブラウザ経由・自動公開経路の両方を本日実測し、同一原因で公開不可を再確認した。
+店主指示(2026-08-16)「プロ/素人の線引き＝その名義でSpotify等に音源を出しているか」を実装(src/lib/streamingPresence.ts・診断ページ/admin/streaming-presence)。コードは既にmain合流・独立検品PASS済み(35710/35711号と同一実装)。本番公開(Lovable Publish)は、工場側OAuth鍵が2026-10-14からinvalid_grant(再同意が必要)のまま止まっており、Chrome/CDP経路・MCP直接経路(tools/98403_lovable_publish_mcp.py)の両方を本日実測し、同一原因で公開不可を再確認した。
 </div>
 
 <h2>② 数字</h2>
@@ -79,7 +79,7 @@
 </table>
 
 <footer>
-公開は見回り係の公開口へ引き継ぎ済み。たまごさん側でログイン承認を1回やり直せば解消する見込み。
+公開はDispatch自身のLovableコネクタ(deploy_project)へ引き継ぎ済み(status/itsumo/koukai_machi.jsonl)。たまごさんのOAuth再同意1回で解消する見込み。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
