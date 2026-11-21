@@ -49,27 +49,46 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35731 GitHub Actions「Tamago Patrol Quick（15分見回り）」の今の状態</div>
 <h1>#35731 GitHub Actions「Tamago Patrol Quick（15分見回り）」の今の状態</h1>
-<div class="date">2026-11-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-11-21 実測（gh run list をその場で叩いて確認。非公開リポへのリンクは使わず、実行結果をこのページに直接書いた）</div>
 
 <div class="fix">
-調べた結果、今は直っていました。10月10日〜10月31日はアカウントの課金トラブルで7回連続失敗していましたが、11月1日以降は7回連続で成功しています。頻度も2026-08-19に1日1回へ落としてあり、それ以降は変えていません。コードの修正は不要でした。
+10月10日〜10月31日はGitHubアカウントの課金トラブルで8回連続失敗していましたが、11月1日以降は7回連続で成功しています（直近の実行：11/20 01:54 JST・成功）。コードの修正は不要で、今回はアカウント側の障害が自然に解消していたことを実測で確認した。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>7回連続</b><span>直近の成功（11/1〜11/20・schedule実行）</span></div>
-  <div class="num"><b>7回連続</b><span>10月の失敗（10/10〜10/31・原因は課金トラブル）</span></div>
-  <div class="num"><b>1日1回</b><span>今の実行頻度（以前は15分おきで無料枠を使い切った事故あり）</span></div>
+  <div class="num"><b>8回連続</b><span>10月の失敗（10/10〜10/31・原因はGitHub課金トラブル、コード側の不具合ではない）</span></div>
+  <div class="num"><b>1日1回</b><span>今の実行頻度（2026-08-19以降は無料枠を守るため1日1回に固定・変更なし）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実行履歴（gh run list の実測）</b><a href="https://github.com/tamago2022/joy-relief-station/actions/workflows/tamago-patrol-quick.yml" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/actions/workflows/tamago-patrol-quick.yml</a></li>
+  <li><b>この確認ページ（証拠はこのページの中にすべて書いてあります）</b><a href="https://tamago2022.github.io/tamago-shinchoku/share/check/35731-patrol-quick-recovery.html" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/share/check/35731-patrol-quick-recovery.html</a></li>
+  <li><b>進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
-
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>11/20 01:54 JST</td><td class="yes">成功</td></tr>
+<tr><td>11/17 03:13 JST</td><td class="yes">成功</td></tr>
+<tr><td>11/14 01:04 JST</td><td class="yes">成功</td></tr>
+<tr><td>11/11 00:55 JST</td><td class="yes">成功</td></tr>
+<tr><td>11/08 00:00 JST</td><td class="yes">成功</td></tr>
+<tr><td>11/05 01:05 JST</td><td class="yes">成功</td></tr>
+<tr><td>11/01 23:56 JST</td><td class="yes">成功</td></tr>
+<tr><td>10/31 23:48 JST</td><td class="no">失敗(課金トラブル)</td></tr>
+<tr><td>10/29 00:27 JST</td><td class="no">失敗(課金トラブル)</td></tr>
+<tr><td>10/25 22:49 JST</td><td class="no">失敗(課金トラブル)</td></tr>
+<tr><td>10/22 23:39 JST</td><td class="no">失敗(課金トラブル)</td></tr>
+<tr><td>10/19 23:57 JST</td><td class="no">失敗(課金トラブル)</td></tr>
+<tr><td>10/16 23:03 JST</td><td class="no">失敗(課金トラブル)</td></tr>
+<tr><td>10/13 23:57 JST</td><td class="no">失敗(課金トラブル)</td></tr>
+<tr><td>10/10 23:54 JST</td><td class="no">失敗(課金トラブル)</td></tr>
+</table>
 
 <footer>
 このページは #35731 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
