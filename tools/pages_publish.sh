@@ -254,8 +254,6 @@ if [ "$CUR" != "$LAST" ]; then
       log "🛑 main の中身を取り出せませんでした（今回は公開を見送る）"
       exit 1
     fi
-    # 2026-11-22緊急対応：まるごと展開はsync_oneを経由しないため、ここでも同じ除外を適用する。
-    rm -rf "$PAGES/share/eagle-k7m2xq9p/o" 2>/dev/null || true
   else
     # 消えたもの
     while IFS= read -r -d '' f; do
