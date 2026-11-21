@@ -49,33 +49,33 @@
 
 <div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35749 詰まり見回りの通知失敗を止めた</div>
 <h1>#35749 詰まり見回りの通知失敗を止めた</h1>
-<div class="date">2026-11-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date">2026-11-22 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-毎日動く見回りの仕組みが、報告の文字数が多すぎて書き込みに失敗し、毎日通知を出し続けていた問題を直した。報告の文字数に上限を設け、超える分は省略して「全件は別の記録を見てください」と案内する形にした。直した後に実際に見回りを1回動かし、成功したことと、報告が正しく書き込まれたことを確認した。
+GitHub Actionsの『詰まり見回り』が、報告(Issue本文)の文字数が多すぎて書き込みに失敗し続けていたのを、報告の長さに6万字の上限を設けて直し、本体コードのmainへ反映した。直した後、本番で2回動かして2回とも成功した。前回の確認ページは本人が開けない非公開リポのリンクを貼っていたため、本行では実測データを本人が開ける公開の場所(tamago-shinchoku・公開リポ)へ書き出し、そこへのリンクに差し替えた。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-  <div class="num"><b>59969文字</b><span>直した後の報告の文字数（上限65536文字の内側）</span></div>
-  <div class="num"><b>154978文字</b><span>直す前に実際に出ていた文字数（上限を超えていた）</span></div>
-  <div class="num"><b>成功</b><span>直した後に実際に1回動かした結果</span></div>
+  <div class="num"><b>50/50</b><span>直す前に連続で失敗していた回数（2026-09-05〜2026-11-20・毎日）</span></div>
+  <div class="num"><b>2/2</b><span>直した後に本番で動かして成功した回数（2026-11-21）</span></div>
+  <div class="num"><b>87560字→59900字</b><span>報告(Issue本文)の文字数の実測（上限65536字の外→内側へ）</span></div>
 </div>
 
 
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-  <li><b>実際に動かした結果のページ</b><a href="https://github.com/tamago2022/joy-relief-station/actions/runs/44914561689" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/actions/runs/44914561689</a></li>
-  <li><b>書き込まれた報告のページ</b><a href="https://github.com/tamago2022/joy-relief-station/issues/1236" target="_blank" rel="noopener">https://github.com/tamago2022/joy-relief-station/issues/1236</a></li>
+  <li><b>実測の生データ（公開JSON）</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/35749_shouko.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/public/35749_shouko.json</a></li>
+  <li><b>進捗表トップ</b><a href="https://tamago2022.github.io/tamago-shinchoku/" target="_blank" rel="noopener">https://tamago2022.github.io/tamago-shinchoku/</a></li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>報告の文字数が上限の内側か</td><td class="yes">yes</td></tr>
-<tr><td>実際に1回動かして成功したか</td><td class="yes">yes</td></tr>
-<tr><td>報告が正しく書き込まれたか</td><td class="yes">yes</td></tr>
+<tr><td>報告の文字数が上限(65536字)の内側か（実測）</td><td class="yes">59900字（内側）</td></tr>
+<tr><td>直した後に本番で動かして成功したか</td><td class="yes">2/2 成功</td></tr>
+<tr><td>直す前は何回連続で失敗していたか</td><td class="no">50回連続（2026-09-05〜2026-11-20）</td></tr>
 </table>
 
 <footer>
