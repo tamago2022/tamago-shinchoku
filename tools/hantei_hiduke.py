@@ -602,6 +602,8 @@ def kuriageru(r, naze):
             "★自己申告では完了になりません（tools/oni_modoshi.py の検品を通ること）。",
             "たまごさんに質問しない。直して、URLを報告に貼る。",
             "★判定日赤｜報告・ログは全文を貼らず、前提が何から何へ変わったかを短く書くことを優先する。",
+            "★判定日赤｜安全に直せる小さいもの（明らかなtypo、壊れたリンクの非表示化など）はその場で直してよいが、"
+            "大きな変更や設計判断が要るものは手を付けず一覧（.claude/PENDING_DECISIONS.md等）に残すこと。",
         ])
         s, msg = command_ingest.queue_add(body, priority=1,
                                           label=("判定日赤｜" + (r.get("title") or ""))[:60],
