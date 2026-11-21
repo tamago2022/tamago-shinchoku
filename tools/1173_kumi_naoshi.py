@@ -157,6 +157,8 @@ def main():
                               "naze": "出るまで15分を切っていたので触らなかった"})
             print("  … 触らない %s %s" % (t.strftime("%F %H:%M"), mid))
             continue
+        # ★35743番：消す前に、消す1件を書き出して保存する（ここを飛ばさない）
+        irekae.kesu_taisho_kiroku([p], naze="1173_kumi_naoshi: 組み直しのため下ろす")
         r = irekae.gql(tok, irekae.M_DEL, {"input": {"id": p.get("id")}})
         dp = (r.get("data") or {}).get("deletePost") or {}
         ok = bool((dp.get("post") or {}).get("id"))
