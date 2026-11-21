@@ -178,10 +178,13 @@ def recent_done(limit=3):
         if not urls:
             continue
         good = [u for u in urls if os.path.basename(u).split("-", 1)[0] == str(n_)]
+        # 2026-11-22 店主「黙っていても成果が分かる形に」→ 本番（lovable.app）のURLを先に出す
+        honban = [u for u in urls if "lovable.app" in u and "/admin" not in u]
         picked[n_] = {
             "n": n_,
             "title": (d.get("title") or "")[:40],
-            "url": good[0] if good else urls[0],
+            "url": honban[0] if honban else (good[0] if good else urls[0]),
+            "honban": bool(honban),
             "ts": d.get("ts"),
         }
         if len(picked) >= limit:
@@ -450,7 +453,7 @@ def build():
         "generatedAt": now.isoformat(),
         "runningNow": running_now,
         "nextUp": next_up,
-        "recentDone": recent_done(3),
+        "recentDone": recent_done(6),
         # 2026-09-25 修正：**空回しが走っていると止まっていないことになっていた。**
         # ログインが切れていても runningNow に【空回し】が1本いるだけで
         # stoppedReason が null になり、進捗表に何も出ないまま5日が過ぎた。
