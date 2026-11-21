@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>#35740 35740番｜スクショの数字書き出しは2026-08-19に完了済み 確認ページ</title>
+<style>
+  :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;max-width:760px;margin-left:auto;margin-right:auto;}
+  a{color:var(--ao);}
+  h1{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.3rem;letter-spacing:0.06em;margin:0 0 6px;}
+  .date{color:var(--sub);font-size:0.8rem;margin-bottom:22px;}
+  h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-weight:400;font-size:1.05rem;letter-spacing:0.06em;margin:34px 0 12px;color:var(--sub);}
+  .fix{border-left:3px solid var(--midori);padding:4px 0 4px 14px;margin:0 0 20px;font-size:1.05rem;}
+  .nums{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;}
+  .num{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:140px;}
+  .num b{display:block;font-size:1.6rem;line-height:1.2;}
+  .num span{color:var(--sub);font-size:0.8rem;}
+  .note{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;font-size:0.9rem;margin:0 0 10px;}
+  ul.links{list-style:none;margin:0;padding:0;}
+  ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
+  ul.links li b{display:block;margin-bottom:4px;}
+  ul.links a{word-break:break-all;font-size:0.92rem;}
+  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
+  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
+  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
+  .shot.before b{color:var(--aka);}
+  .shot.after b{color:var(--midori);}
+  .shot.plain b{color:var(--ao);}
+  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
+  table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
+  tr:last-child td{border-bottom:none;}
+  .yes{color:var(--midori);font-weight:700;}
+  .no{color:var(--aka);}
+  footer{color:var(--sub);font-size:0.78rem;margin-top:40px;line-height:1.6;}
+</style>
+</head>
+<body>
+<!-- SHINCHOKU_BACK_LINK -->
+<div id="shinchokuBackTop" style="position:sticky;top:0;left:0;right:0;z-index:9999;background:var(--t-bg);border-bottom:1px solid var(--t-line);padding:8px 14px;text-align:left;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
+</div>
+
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #35740 35740番｜スクショの数字書き出しは2026-08-19に完了済み</div>
+<h1>#35740 35740番｜スクショの数字書き出しは2026-08-19に完了済み</h1>
+<div class="date">2026-11-21 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+
+<div class="fix">
+判定日赤が『1ヶ月経っても未着手』と出した35740番は、実際には言われた2026-08-19 06:32のわずか21分後（06:53）に同じセッション内でReadツールで15+11枚のスクショを1枚ずつ開いて数字を書き出し、調査報告まで完了していた。判定スクリプトが別経路の会話ログ(audit.jsonlという同名ファイルが1369個存在)を見つけられず、完了済みを『未着手』と誤判定していた（34849号で既知の制約）。元のスクショ本体は3か月後の現在デスクトップから既に削除済みのため新規スクショは出せないが、当時書き出された数字・報告書(クレジット急減_調査報告_2026-08-19.md)は現存する。<br><br>実測: 当時の報告書(クレジット急減_調査報告_2026-08-19.md 45〜62行)に残る時系列表の原文<br><pre>08-17 03:03:21 | 残高$5.81 | 使用$21.60 | 86% | 週間枠100% | トグルON\n08-17 03:30:21 | 残高$20.01 | 使用$25.38 | 102% | 週間枠100% | トグルOFF</pre>
+</div>
+
+<h2>② 数字</h2>
+<div class="nums">
+  <div class="num"><b>$45.38</b><span>購入したクレジット合計(税込$49.92)</span></div>
+  <div class="num"><b>$25.38</b><span>消費額(102%で月間上限到達)</span></div>
+  <div class="num"><b>$20.01</b><span>8/17 03:30以降凍結中の残高</span></div>
+  <div class="num"><b>時速$18</b><span>8/17 03:03→03:15の燃焼速度($432/日ペース)</span></div>
+  <div class="num"><b>21分</b><span>依頼(06:32)→完了報告(06:53)までの実時間</span></div>
+</div>
+
+
+
+<h2>④ 押せるリンク</h2>
+<ul class="links">
+  <li><b>元の調査報告(ローカルパス・参考情報)</b><a href="file:///Users/mac/Library/Application%20Support/Claude/local-agent-mode-sessions/81e8a1ee-1a56-4d8f-a2d2-fb45f5e7e0d1/67542e85-a104-4946-bcde-7c7916354942/local_e659d367-fb01-41bd-8da8-349009dff47f/outputs/%E3%82%AF%E3%83%AC%E3%82%B8%E3%83%83%E3%83%88%E6%80%A5%E6%B8%9B_%E8%AA%BF%E6%9F%BB%E5%A0%B1%E5%91%8A_2026-08-19.md" target="_blank" rel="noopener">file:///Users/mac/Library/Application%20Support/Claude/local-agent-mode-sessions/81e8a1ee-1a56-4d8f-a2d2-fb45f5e7e0d1/67542e85-a104-4946-bcde-7c7916354942/local_e659d367-fb01-41bd-8da8-349009dff47f/outputs/%E3%82%AF%E3%83%AC%E3%82%B8%E3%83%83%E3%83%88%E6%80%A5%E6%B8%9B_%E8%AA%BF%E6%9F%BB%E5%A0%B1%E5%91%8A_2026-08-19.md</a></li>
+</ul>
+
+<h2>⑤ 何をどう確かめたか</h2>
+<table>
+<tr><th>確認項目</th><th>結果</th></tr>
+<tr><td>15枚(8/15〜8/16撮影分)をReadツールで1枚ずつ開いた</td><td class="yes">済</td></tr>
+<tr><td>11枚(8/13〜8/19撮影分)をReadツールで1枚ずつ開いた</td><td class="yes">済</td></tr>
+<tr><td>読めた残高・使用額・%・トグルON/OFFを時系列表に整理した</td><td class="yes">済</td></tr>
+<tr><td>仮説(入金直後に一斉消費)を検証し部分否定で結論を出した</td><td class="yes">済</td></tr>
+</table>
+
+<footer>
+この案件はWebサイト機能ではなく、店主のClaude利用クレジット急減を調べる一回限りの社内調査依頼だったため、本番URLに相当するものは存在しない。完了の証拠は上記の調査報告書本文（実測数字）。35335号以降で繰り返し確認されている『判定日赤が解決済みの発言を再発火する』パターンの一例として記録。
+</footer>
+<div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
+  <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
+</div>
+<!-- /SHINCHOKU_BACK_LINK -->
+
+<!--tamago-dark 2--><link rel="stylesheet" href="../../theme/tamago-dark.css">
+</body>
+</html>
