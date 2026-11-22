@@ -57,6 +57,11 @@ TAG = re.compile(r"<(script|style)[^>]*>.*?</\1>|<[^>]+>", re.S | re.I)
 KARA = re.compile(r"(準備中|coming soon|工事中|Not Found|ページがありません|ページが見つかりません|"
                   r"この内容はまだありません|準備しています)", re.I)
 NAKAMI_SAITEI = 300
+# 2026-11-22（187251番）：/foo.json のような設定・APIファイルはHTMLページではないので
+# 「本文300字以上」の基準をそのまま当てない（小さい設定JSONが300字を超えないのは普通）。
+# 代わりに「有効なJSONとして読めて、空オブジェクト/空配列ではない」ことを見る＝
+# 基準を甘くするのではなく、そのファイルの型に合った確かめ方に変えるだけ。
+JSON_URL = re.compile(r"\.json(?:[?#]|$)", re.I)
 HON_KEYS = ("result", "report", "evidence", "note", "honbanUrl")
 
 
@@ -165,7 +170,14 @@ def hantei(item, fetch=None, aru=None):
             return {"ok": None, "url": u, "naze": "本番URLに届かない（%s）" % (body or "")[:80]}
         if code != 200:
             return {"ok": False, "url": u, "naze": "本番URLが200で返らない（%s）" % code}
-        if not CODE_URL.search(u):
+        if JSON_URL.search(u):
+            try:
+                data = json.loads(body)
+            except Exception:
+                return {"ok": False, "url": u, "naze": "本番のJSONが壊れている（parseできない）"}
+            if data in ({}, [], None, ""):
+                return {"ok": False, "url": u, "naze": "本番のJSONが空"}
+        elif not CODE_URL.search(u):
             t = chimon(body)
             if len(t) < NAKAMI_SAITEI:
                 return {"ok": False, "url": u, "naze": "本番の本文が%d文字しかない（最低%d）" % (len(t), NAKAMI_SAITEI)}
@@ -287,6 +299,21 @@ def _self_test():
         ("サイトの仕事でコードだけ→不合格",
          {"title": "マガジンの曲ページを直す", "result": "tools/magazine/mag_build.py を直した"},
          {GH + "tools/magazine/mag_build.py": (200, "x"), "_aru": True}, False),
+        ("小さい設定JSON・中身あり→合格（300字基準は当てない）",
+         {"result": "本番 https://joy-relief-station.lovable.app/gokigen-tane.json"},
+         {"https://joy-relief-station.lovable.app/gokigen-tane.json":
+             (200, '{"line_url": "https://lin.ee/O2tpTS2"}')}, True),
+        ("設定JSONが空→不合格",
+         {"urls": ["https://joy-relief-station.lovable.app/gokigen-tane.json"]},
+         {"https://joy-relief-station.lovable.app/gokigen-tane.json": (200, '{}')}, False),
+        ("設定JSONが壊れている→不合格",
+         {"urls": ["https://joy-relief-station.lovable.app/gokigen-tane.json"]},
+         {"https://joy-relief-station.lovable.app/gokigen-tane.json": (200, 'not json')}, False),
+        ("設定JSONに目印あり→合格",
+         {"urls": ["https://joy-relief-station.lovable.app/gokigen-tane.json"],
+          "honbanMejirushi": ["lin.ee/O2tpTS2"]},
+         {"https://joy-relief-station.lovable.app/gokigen-tane.json":
+             (200, '{"line_url": "https://lin.ee/O2tpTS2"}')}, True),
     ]
     for name, item, table, want in cases:
         _a = table.get("_aru", False)
