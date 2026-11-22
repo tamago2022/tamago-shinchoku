@@ -215,8 +215,8 @@ def _daicho_rows(jrs=JRS):
                 continue
         except Exception:
             pass
-        key = r.get("key") or ("%s/%s" % (r.get("artist") or r.get("artistId") or "", r.get("song") or r.get("songId") or ""))
-        out.append({"key": key, "url": r.get("url"), "related": n})
+        key = r.get("key") or r.get("page") or ("%s/%s" % (r.get("artist") or r.get("artistId") or "", r.get("song") or r.get("songId") or ""))
+        out.append({"key": key, "url": r.get("url") or r.get("page"), "related": n})
     return out
 
 
