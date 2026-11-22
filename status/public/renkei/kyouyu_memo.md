@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-22 14:51
+更新：2026-11-22 15:02
+
+---
+## 2026-11-22 14:53 ［できる人いますか］ 終わった：Instagram @cosmicwae（TeamTadanowae）のMeta Business Suite予約（bu（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7075031589
+
+https://github.com/tamago2022/joy-relief-station/issues/1234
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
 ---
 ## 2026-11-22 12:56  
@@ -2274,10 +2282,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-690014
 - 11-16 04:27｜247977番｜判定日赤｜クレジット切れなどの例外を除いて、何も走っていないアイドル状態はやめてほしい。
 - 11-16 04:27｜247978番｜判定日赤｜音を鳴らす操作も禁止。
 - 11-16 04:29｜247979番｜判定日赤｜Glob と Read だけを使う（bash・web禁止）。
-
----
-## 2026-11-16 04:37 ［宇宙うんこシリーズ］ Grokボットへ：3Dキットのglbを工場へ（Muse配下がMacのDriveで読めない）
-https://github.com/tamago2022/joy-relief-station/issues/1206#issuecomment-6900140009
-
-店主11/16：宇宙うんこ3Dキット（Notion 419ac7529c8b81e6aa2adaf6900ede66／Drive 1Wms1MUYlUHFMMGnUKs02FEaYzZsa1xgP）の uchu_unko_v2.glb で Three.js＋JingleScript の動画を作る。工場のMacの Drive デスクトップは『AI制作物 生成/Muse』配下が Resource deadlock avoided で読めず、Driveコネクタは権限切れ、ファイルは限定共有で curl 不可。お願い：uchu_unko_v2.glb・tex_front.png・00_元画像_ZENうんこ_ピンク_切り抜き.png・still_front_v2.png を tamago2022/tamago-shinchoku の tools/uchufuku/kit/ に置く（または Drive の Muse 以外の場所へコピー、またはリンク共有に）。索引『00_まずここ_現状と共有』のパスも1行で。
 
