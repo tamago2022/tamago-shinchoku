@@ -1,5 +1,5 @@
 {
- "checkedAt": "2026-11-22T09:11:01+09:00",
+ "checkedAt": "2026-11-23T09:10:24+09:00",
  "overallColor": "red",
  "redCount": 4,
  "items": [
@@ -24,43 +24,43 @@
    "label": "鬼監督が完了のたびに自動で動いているか",
    "color": "green",
    "count": 1,
-   "detail": "最終記録から約0.8時間経過（2026-11-22T08:22:26+09:00）／直近24時間の完了5件中、鬼監督の記録が付いているのは4件"
+   "detail": "最終記録から約3.5時間経過（2026-11-23T05:37:05+09:00）／直近24時間の完了7件中、鬼監督の記録が付いているのは6件"
   },
   {
    "key": "done_missing_url",
    "label": "URL無しで完了(done)になった仕事",
-   "color": "red",
-   "count": 1,
-   "detail": "直近24時間で完了した仕事のうちURLが空のもの：#141851"
+   "color": "green",
+   "count": 0,
+   "detail": "直近24時間の完了はすべてURL付き"
   },
   {
    "key": "factory_stalled",
    "label": "工場が止まったまま放置されていないか",
-   "color": "green",
-   "count": 0,
-   "detail": "最終発車から1.0時間・発車待ち5862件・空き2枠あり"
+   "color": "red",
+   "count": 5935,
+   "detail": "最終発車から3.9時間・発車待ち5935件・空き2枠あり"
   },
   {
    "key": "queue_max_regression",
    "label": "queue.jsonの最大番号が前回より減っていないか",
    "color": "green",
    "count": 0,
-   "detail": "前回259246番 → 今回262405番（減少なし）"
+   "detail": "前回262405番 → 今回270249番（減少なし）"
   },
   {
    "key": "big_files",
    "label": "公開リポジトリの1MB超ファイル",
    "color": "red",
    "count": 87,
-   "detail": "status/public/verify_log.jsonl(62.4MB)、share/done/index.html(44.4MB)、status/public/dispatch_outbox.jsonl(26.4MB)、status/queue.json(21.2MB)、share/_deliver/godfunky/2026-11-02_★最新_動画_GODFUNKY番宣_ロボットフェス試作.mp4(19.9MB)"
+   "detail": "status/public/verify_log.jsonl(62.4MB)、share/done/index.html(45.2MB)、status/public/dispatch_outbox.jsonl(26.4MB)、status/queue.json(21.2MB)、share/_deliver/godfunky/2026-11-02_★最新_動画_GODFUNKY番宣_ロボットフェス試作.mp4(19.9MB)"
   },
   {
    "key": "check_page_404",
    "label": "渡し済みの確認ページURLが404になっていないか",
    "color": "green",
    "count": 0,
-   "sample": 15,
-   "detail": "直近15件の確認ページはすべて200だった"
+   "sample": 11,
+   "detail": "直近11件の確認ページはすべて200だった"
   },
   {
    "key": "orphan_sessions",
@@ -73,15 +73,15 @@
    "key": "worktree_count",
    "label": "リポジトリ内のworktree（作業場）件数",
    "color": "green",
-   "count": 9,
-   "detail": "9件（しきい値100件以内）"
+   "count": 6,
+   "detail": "6件（しきい値100件以内）"
   },
   {
    "key": "unreported_completions",
    "label": "未報告の完了が溜まっていないか",
    "color": "red",
    "count": 52425,
-   "detail": "未報告の完了が52425件たまっている（最古は約1419.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
+   "detail": "未報告の完了が52425件たまっている（最古は約1443.7時間前：#None）。Dispatchが会話開始時にdispatch_outbox.jsonlを読んで報告する手順が守られていない疑い"
   }
  ],
  "queuedFixes": [
@@ -90,10 +90,9 @@
    "skipped": "既存の714番と同じ内容のためスキップ"
   },
   {
-   "key": "done_missing_url",
-   "status": "done",
-   "message": "262413番として発車待ちに追加しました（P2）",
-   "n": 262413
+   "key": "factory_stalled",
+   "status": "skipped",
+   "message": "246479番と同じ内容です（積みませんでした。別物なら label に『重複OK』と書いて送ってください）"
   },
   {
    "key": "big_files",
@@ -104,5 +103,11 @@
    "skipped": "既にこの点検が積んだ1118番が未解決のため積み直さない"
   }
  ],
- "autoClosedRecovered": []
+ "autoClosedRecovered": [
+  {
+   "n": 262413,
+   "key": "done_missing_url",
+   "label": "URL無しで完了(done)になった仕事"
+  }
+ ]
 }
