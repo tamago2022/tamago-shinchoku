@@ -271,6 +271,8 @@ def junkai(token=None, post=None, force=False, fetch=None):
                         "消えた理由：別の係が古い写しで受付の台帳を書き戻していた（直しました）。終わったら本番URLをここに書きます。"]))
                     posted += 1
                 tag.add(r.get("queueN"))
+                r["jotai"] = "待ち"
+                r["naze"] = "受付票が消えていた（未受付）→%s番で積み直して最前列へ（%s）" % (r.get("queueN"), now_iso()[:16])
             except Exception as e:
                 r["err"] = str(e)[:200]
             continue
@@ -355,6 +357,10 @@ def hyou(d=None):
             esc(js), esc(_jst(r.get("created"))), esc(r.get("url") or ""), r.get("n"), esc(r.get("title") or ""),
             esc(str(r.get("queueN") or "—")), esc(js), sumi, esc(r.get("itsu") or r.get("naze") or ""), henji))
     hik = meta.get("hikaku") or ""
+    # 表の中の数字（週枠など）は、測った元の値を <pre> で並べる（関所 sekisho の「実測の跡」）
+    qj = _load(os.path.join(REPO, "status", "quota.json"), {}) or {}
+    jissoku = "実測: status/quota.json allPct=%s%% allLevel=%s stopPct=%s%% resetAt=%s（%s）" % (
+        qj.get("allPct"), qj.get("allLevel"), qj.get("stopPct"), qj.get("resetAt"), qj.get("updatedAt"))
     page = """<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>Grokからの依頼の一覧</title>
 <style>body{font-family:-apple-system,'Hiragino Sans',sans-serif;margin:16px;color:#222;line-height:1.5}
@@ -370,11 +376,12 @@ a{color:#0645ad}.note{font-size:12px;color:#555;margin-top:14px}</style></head><
 <table><tr><th>依頼日</th><th>何を頼まれたか</th><th>受付</th><th>今の状態</th><th>Grokへの返事</th></tr>
 %s
 </table>
+<pre style="font-size:11px;color:#555;white-space:pre-wrap">%s</pre>
 <div class="note">「済」は本番（joy-relief-station.lovable.app）で中身を確かめたものだけ。「待ち」は工場の受付に入っていて未完了。「未受付」は届いたのに工場の受付に入っていなかったもの（見つけ次第、積み直して先頭へ）。<br>
 この表は工場の GitHub 見回り（10分に1回）が作り直します。台帳：tools/grok_irai.py</div>
 </body></html>""" % (esc(now_iso()[:16].replace("T", " ")), len(rows),
                      esc("／".join("%s %d" % (k, v) for k, v in sorted(cnt.items(), key=lambda x: ["済", "走行中", "検品待ち", "待ち", "保留", "未受付"].index(x[0]) if x[0] in ["済", "走行中", "検品待ち", "待ち", "保留", "未受付"] else 9))),
-                     esc(hik), "\n".join(tr))
+                     esc(hik), "\n".join(tr), esc(jissoku))
     os.makedirs(os.path.dirname(PAGE), exist_ok=True)
     with io.open(PAGE, "w", encoding="utf-8") as f:
         f.write(page)
