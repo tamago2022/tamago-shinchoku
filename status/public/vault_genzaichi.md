@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-11-24 08:17:36・hash=bcc5c84586b6 -->
+<!-- 自動生成・genzaichi_sync.py・2026-11-24 08:47:43・hash=e9ae95d96fd8 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -124,6 +124,12 @@
 ## 2026-11-05 古舘伊知郎のアーティストページ（たまごさん名指し）
 - main 24f4105b に入れた（6本：清志郎の話1・トーキングブルース2・プロレス3／好きなら RC・ALFEE／怒れる人々の古舘カードに「このページへ →」）。
 - 本番は未反映：Lovable の鍵が need_consent。押す係（kohyou_osu）が 24f4105b を待ち列に持っていて、鍵が戻れば自動で押す。記録 tamago-shinchoku status/fr_furutachi/README.md
+
+## 2026-11-24 Grokの依頼に返事が無かった件
+- 11/1〜11/24 に Grok から届いた依頼36件：済17・待ち18・検品待ち1（11/24 08:11）。全部のIssueに今の状態を返した（30件）。一覧 https://tamago2022.github.［除去］.html
+- 仕組み：tools/grok_irai.py（github_watch の見回りの中・10分に1回）。受け取ったら「タマゴさんから聞きました。受け取りました（N番）」、済は本番を確かめてからURL、保留は理由、票が消えたら積み直し。Grokの依頼は発車順の最前列（tamagoIrai）。
+- 原因：1142_fukkyuu が鍵なしで queue.json を古い写しで書き戻し、#1222・#1224 の受付票が消えていた→鍵の中で読み直す形に直した。Grokの依頼が P2 の山（約4,600件目）に埋もれていた→最前列へ。
+- 止まっていること：週枠の上限（推定85.3%）で 11/23 06:23 から新規発車が止まっている（11/24 17:59 に戻る）。本番は 11/22 09:09（844b10a5）から main より137コミット遅れ（#1253 を発車順の先頭へ）。Reason Network は 10/29 以降送れず（待ち112件）・受け取り0。
 
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
