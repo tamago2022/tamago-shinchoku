@@ -1066,7 +1066,22 @@ def check_repo(repo, token, st, budget):
             just_queued.add(str(num))
             picked += 1 if status == "done" else 0
             if status == "done":
-                _send_ack(repo, num, token, "issue", num, msg)
+                # 2026-11-24 店主「Grokに頼んだのに返事がない」：Grok の依頼には人の言葉で返し、台帳に載せる
+                #   （終わったら本番URLつきの「済」を grok_irai.junkai が返す）。それ以外は今まで通りの受付票。
+                _g = None
+                try:
+                    if TOOLS not in sys.path:
+                        sys.path.insert(0, TOOLS)
+                    import grok_irai as _gi
+                    if not is_pr and _gi.is_grok(it):
+                        _g = _gi.uketori(repo, num, it, msg)
+                except Exception as _e:
+                    log("grok_irai の受付に失敗（機械の受付票で返します）: %r" % (_e,))
+                if _g:
+                    if not api_post_issue_comment(repo, num, token, _g):
+                        log("Grok への受付の返事を書けず（%s #%s）" % (repo, num))
+                else:
+                    _send_ack(repo, num, token, "issue", num, msg)
             log("%s #%s「%s」→ %s（%s）" % (repo, num, (it.get("title") or "")[:40], status, msg))
         # ★2026-09-19 実機で踏んだ：1回の上限で break した回にもETagを保存していたため、
         #   **次の回が304になり、積み残した分を二度と見なくなった**（#431がこれで消えた）。
@@ -1299,6 +1314,16 @@ def main():
         log("1回の上限(%d件)まで積んだ。残りは次の回で拾う" % MAX_ADD_PER_RUN)
     st["stats"]["picked"] = st["stats"].get("picked", 0) + picked
     save_state(st)
+    # 2026-11-24：Grok の依頼の見回り（中で10分に1回）。票が消えていたら積み直し、済は本番で確かめてURLを返す。
+    try:
+        if TOOLS not in sys.path:
+            sys.path.insert(0, TOOLS)
+        import grok_irai as _gi
+        _np = _gi.junkai(token, api_post_issue_comment)
+        if _np:
+            log("Grok の依頼へ返事を %d 件書いた（grok_irai）" % _np)
+    except Exception as e:
+        log("grok_irai の見回りで例外: %r" % (e,))
     if picked:
         log("この回で %d 件を発車待ちへ積んだ（着火は auto_launcher が自動でやる）" % picked)
     return 0

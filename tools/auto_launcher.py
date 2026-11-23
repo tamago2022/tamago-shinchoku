@@ -2301,7 +2301,10 @@ def queue_rank_key(it, prio):
     return (u, p, int(o) if isinstance(o, int) else 10 ** 6, it.get("n") or 99)
 
 
-_TENSHU_GROK = re.compile(r"Grok|店主依頼|【Claude Codeに頼む】|店主の指示|店主OK|店主指名|店主推し|店主決定")
+# 2026-11-24：Grok の「タマゴさんから聞きました／頼まれました」型（#1202 #1212 #1222 #1239 ほか）を見落として
+#   P2 の山（約4,600件目）に埋もれていたので足す。台帳（tools/grok_irai.py）に載った票は joubi が tamagoIrai も立てる。
+_TENSHU_GROK = re.compile(r"Grok|店主依頼|【Claude Codeに頼む】|店主の指示|店主OK|店主指名|店主推し|店主決定"
+                          r"|タマゴさんから(?:聞きました|頼まれました)|タマゴさんの依頼|Lovable担当|オーケストレーター")
 
 
 def is_tenshu_grok_irai(it):
@@ -2362,11 +2365,82 @@ def _ato_de(it):
         return False
 
 
+# ---- 2026-11-24 判定日赤は1日2本まで・常備の列の後ろ（ループエンジニアリング_現状と計画_1122）----
+#   実測：自動発車165本中163本が判定日赤（昔の発言を確認ページにまとめるだけで本番を変えない仕事）。
+#   11-20=38本中38・11-21=111本中109が判定日赤（auto_launch.log の「🚀 自動発車」行）。
+#   → 判定日赤は常備の列（店主の依頼の残り→関連4枚未満→空コピー→消えた動画→SNS曲80点→マガジン曲→仕入れ）
+#     より必ず後ろに並べ、1日（JST）2本まで。緊急横入り（優先度1の長待ち）にも乗せない。
+HANTEI_AKA_PER_DAY = 2
+HANTEI_AKA_DIR = os.path.join(REPO, "status", "hantei_aka")
+HANTEI_AKA_LOG = os.path.join(HANTEI_AKA_DIR, "hassha.jsonl")
+HANTEI_AKA_PUBLIC = os.path.join(REPO, "status", "public", "hantei_aka_jougen.json")
+_HANTEI_AKA_RE = re.compile(r"判定日赤|判定日で赤")
+
+
+def is_hantei_aka(it):
+    """判定日赤（hantei_hiduke.py が積んだ『1週間/1ヶ月動いていない昔の発言』）の便か。
+    店主・Grok発の依頼（tamagoIrai 等）と常備の便は、題に語が入っていても数えない。"""
+    if it.get("joubi") or it.get("tamagoIrai") or it.get("honbanModoshi"):
+        return False      # honbanModoshi＝本番の関所で完了を外した票（やり直しの先頭・11-24）
+    t = str(it.get("title") or "")[:40]
+    if _HANTEI_AKA_RE.search(t):
+        return True
+    return str(it.get("what") or "").lstrip().startswith("【判定日で赤")
+
+
+def hantei_aka_today(items=None, today=None):
+    """今日（JST）発車した判定日赤の本数を2つの方法で数える。
+    ①発車の控え status/hantei_aka/hassha.jsonl（発車した瞬間に1行）
+    ②台帳 queue.json の startedAt が今日の判定日赤の票
+    多い方を採る（少なく数えて上限を破らない）。戻り値 dict。"""
+    today = today or time.strftime("%Y-%m-%d")
+    hikae = set()
+    try:
+        with io.open(HANTEI_AKA_LOG, encoding="utf-8") as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                except Exception:
+                    continue
+                if str(r.get("at") or "").startswith(today):
+                    hikae.add(r.get("n"))
+    except Exception:
+        pass
+    daicho = set(it.get("n") for it in (items or [])
+                 if str(it.get("startedAt") or "").startswith(today) and is_hantei_aka(it))
+    return {"hi": today, "hikae": len(hikae), "daicho": len(daicho),
+            "count": max(len(hikae), len(daicho)), "jougen": HANTEI_AKA_PER_DAY}
+
+
+def hantei_aka_kiroku(it):
+    try:
+        os.makedirs(HANTEI_AKA_DIR, exist_ok=True)
+        with io.open(HANTEI_AKA_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"), "n": it.get("n"),
+                                "title": str(it.get("title") or "")[:60]}, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def hantei_aka_narabe(waiting, items, today=None):
+    """発車待ちの並びから判定日赤を最後尾へ回し、今日の残り枠（2本−発車済み）を超える分は外す。
+    戻り値 (新しい並び, 数えた結果dict)"""
+    c = hantei_aka_today(items, today)
+    nokori = max(0, HANTEI_AKA_PER_DAY - c["count"])
+    hoka = [it for it in waiting if not is_hantei_aka(it)]
+    aka = [it for it in waiting if is_hantei_aka(it)]
+    c["machi"] = len(aka)
+    c["nokori"] = nokori
+    return hoka + aka[:nokori], c
+
+
 def urgent_wait_list(items, now=None):
     """発車待ち(waiting)のうち、優先度1またはurgentで、URGENT_WAIT_MIN分を超えて
-    待たされているものを「待たされた時間が長い順」に返す。空きが無ければ[]。"""
+    待たされているものを「待たされた時間が長い順」に返す。空きが無ければ[]。
+    2026-11-24：判定日赤は横入りさせない（1日2本・常備の後ろ）。"""
     out = [it for it in items
            if it.get("status") == "waiting" and not _ato_de(it)
+           and not is_hantei_aka(it)
            and (it.get("urgent") or it.get("priority") == 1)
            and (queued_minutes_ago(it, now) or 0) > URGENT_WAIT_MIN]
     out.sort(key=lambda it: queued_minutes_ago(it, now) or 0, reverse=True)
@@ -2817,6 +2891,16 @@ def _main_impl():
 
       waiting = sorted([it for it in items if it.get("status") == "waiting" and not _ato_de(it)
                         and (not _sen_stop or _isogi(it))], key=rank)
+      # 2026-11-24 判定日赤は常備の列より後ろ・1日2本まで（hantei_aka_narabe）
+      try:
+          waiting, _aka_c = hantei_aka_narabe(waiting, items)
+          _aka_c["at"] = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+          with io.open(HANTEI_AKA_PUBLIC + ".tmp", "w", encoding="utf-8") as _f:
+              _f.write(json.dumps(_aka_c, ensure_ascii=False))
+          os.replace(HANTEI_AKA_PUBLIC + ".tmp", HANTEI_AKA_PUBLIC)
+      except Exception as _e:
+          log("判定日赤の上限で例外（判定日赤は今回出さない）: %s" % _e)
+          waiting = [it for it in waiting if not is_hantei_aka(it)]
 
       # ---- 759番3回目の重複発車を機に追加した恒久ガード（案件#759・2026-09-13）----
       #   status/failures.md #15：759番は実装・本番push・Dispatch完了報告まで全部終わっていたのに
@@ -3082,7 +3166,20 @@ def launch_one(item, q, alive, safe_max):
     """発車を1本試す。空振り（False）が同じ理由で連続20回になったら列から外す（2026-11-12・karaburi_kanmon）。"""
     global _LAST_LOG
     _LAST_LOG = ""
+    # 2026-11-24 判定日赤は1日2本まで（どの道から来ても、ここで最後に止める）
+    _aka = is_hantei_aka(item)
+    if _aka and not item.get("test"):
+        try:
+            _c = hantei_aka_today((q or {}).get("items") or [])
+        except Exception:
+            _c = {"count": HANTEI_AKA_PER_DAY}
+        if _c["count"] >= HANTEI_AKA_PER_DAY:
+            log("判定日赤の上限：今日はもう%d本出したので%s番は明日へ（控え%d・台帳%d）"
+                % (_c["count"], item.get("n"), _c.get("hikae", -1), _c.get("daicho", -1)))
+            return False
     ok = _launch_one_core(item, q, alive, safe_max)
+    if ok and _aka:
+        hantei_aka_kiroku(item)
     try:
         import karaburi_kanmon
         if karaburi_kanmon.after(item, ok, _LAST_LOG):
@@ -3419,15 +3516,39 @@ def main():
     try:
         if not only_one_launcher():
             return 0      # 先客がいる。二重発車を作らない
+        _t0 = time.time()
         rc = _main_impl()
         # 2026-09-13：発車（上）が終わったあとに、遅くなりうる回収作業（下）を回す。
         #   「発車は必ず先にやる」。ここで例外・タイムアウトが起きても発車済みの分は失われない。
+        # 2026-11-24：心臓の120秒で殺されるのは、ほぼ全部この回収（_harvest_pass）の最中だった
+        #   （実測：11-24 05:45:54 の強制終了は 05:44:27 の発車のあと・01:11:39 も 01:10:02 の発車のあと。
+        #    発車の行はどちらも出ており、回収が残り時間を食い切っていた）。
+        #   回収は心臓が別に回す --harvest-only（専用の鍵）でも走る。ここでは
+        #   ①発車までに40秒以上かかった回は回収を飛ばす ②--harvest-only が走っている最中なら重ねない。
+        _hf = None
         try:
-            _harvest_pass()
+            if time.time() - _t0 > 40:
+                log("回収は今回飛ばします（発車まで%d秒かかったため・--harvest-only が拾う）" % (time.time() - _t0))
+            else:
+                try:
+                    _hf = io.open(os.path.join(REPO, "status", ".harvest_only.lock"), "a+")
+                    fcntl.flock(_hf.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except Exception:
+                    _hf = None
+                if _hf is not None:
+                    _harvest_pass()
         except RuntimeError:
             pass          # 鍵が取れなかっただけ。次回また拾う
         except Exception as e:
             log("harvestパス（発車のあと）に失敗: %s" % e)
+        finally:
+            if _hf is not None:
+                try:
+                    _hf.close()
+                except Exception:
+                    pass
+        if time.time() - _t0 > 90:
+            log("⏱ 発車係が%d秒かかりました（心臓の上限120秒）" % (time.time() - _t0))
         # 2026-10-08 許可ゼロ設定：まだ「入」になっていなければ1回だけ入れる（入なら何もしない）
         try:
             kz = os.path.join(os.path.dirname(HERE), "status", "kyoka_zero.json")
