@@ -59,6 +59,9 @@ def kinshi(item):
     # 2026-11-22 店主の名指し：常備の列①で保留を外した店主の依頼は、外してから2回まで出してよい（tools/joubi.py）
     if item.get("joubiKaijo"):
         return kaisuu(item) >= max(int(item.get("joubiKaijoKaisuu") or 0), j) + 2
+    # 2026-11-24 本番の関所で完了を外した票（tools/honban_modoshi_1124.py）は、やり直しを1回だけ出してよい
+    if isinstance(item.get("honbanModoshi"), dict):
+        return kaisuu(item) >= max(int(item["honbanModoshi"].get("kaisuu") or 2), j) + 1
     return kaisuu(item) >= j
 
 

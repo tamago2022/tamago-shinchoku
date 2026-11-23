@@ -119,6 +119,63 @@ def _yuurei_kanda(title):
     return shukudai.actionable({"source": "queue", "title": title or ""}) is False
 
 
+# ── 2026-11-24（Grok依頼 #1222 が消えた件）：queue.json は必ず鍵の中で「読み直して→番号で当てて→書く」 ──
+# 実測：11/19 19:47:4x にここ（ghost_waiting）が queue.json を読み、約1分かけて判定し、
+#   19:49:02 に鍵なしで丸ごと書き戻した。その間の 19:48:06 に github_watch が鍵つきで積んだ
+#   GH#1222（The Weeknd「Hong Kong」・255937番）が、古い写しで上書きされて消えた。
+#   さらに 19:51:26 に別の係が同じ 255937番を振り直し、Grok には「受付済み」と返したまま本体が無くなった。
+# → 判定は今までどおり外で（重い処理で鍵を長く握らない）、書くときだけ queue_lock の中で
+#   最新の queue.json を読み直し、決めた番号の行だけを、状態が判定時のままなら直す。他の行には触らない。
+def _kagi_de_kaku(changes, tmp_suffix):
+    """changes: {n: (判定時のstatus, 直す関数)}。直した番号のリストを返す。"""
+    sys.path.insert(0, HERE)
+    import queue_store
+    p = os.path.join(STATUS, "queue.json")
+    done = []
+    with queue_store.queue_lock():
+        q = json.load(io.open(p, encoding="utf-8"))
+        for i in q.get("items") or []:
+            c = changes.get(i.get("n"))
+            if c and str(i.get("status")) == str(c[0]):
+                c[1](i)
+                done.append(i.get("n"))
+        tmp = p + tmp_suffix
+        json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        os.replace(tmp, p)
+    return done
+
+
+def _kaku_self_test():
+    """逆テスト：判定中に別の係が積んだ行が、書き戻しで消えないこと。"""
+    import tempfile, shutil
+    global STATUS
+    keep = STATUS
+    d = tempfile.mkdtemp(prefix="t1142_")
+    try:
+        STATUS = d
+        p = os.path.join(d, "queue.json")
+        json.dump({"items": [{"n": 1, "status": "waiting", "title": "a"}]}, io.open(p, "w", encoding="utf-8"))
+        # 判定のあとに、別の係が 2番を積んだ
+        q2 = json.load(io.open(p, encoding="utf-8"))
+        q2["items"].append({"n": 2, "status": "waiting", "title": "GH1222"})
+        json.dump(q2, io.open(p, "w", encoding="utf-8"))
+        import queue_store
+        old = queue_store.QUEUE_LOCK
+        queue_store.QUEUE_LOCK = os.path.join(d, ".lock")
+        try:
+            got = _kagi_de_kaku({1: ("waiting", lambda i: i.update(status="cancelled"))}, ".t")
+        finally:
+            queue_store.QUEUE_LOCK = old
+        q3 = json.load(io.open(p, encoding="utf-8"))
+        ns = {i["n"]: i["status"] for i in q3["items"]}
+        ok = got == [1] and ns == {1: "cancelled", 2: "waiting"}
+        print("1142 kagi self-test:", "PASS" if ok else "FAIL %r" % ns)
+        return ok
+    finally:
+        STATUS = keep
+        shutil.rmtree(d, ignore_errors=True)
+
+
 # ── ① 途中で固まった案件を順番待ちへ戻す ───────────────────────────
 def naosu_stuck():
     p = os.path.join(STATUS, "queue.json")
@@ -157,25 +214,32 @@ def naosu_stuck():
         _gomi_assyuku()
     except Exception:
         pass
-    for i in target:
+    def _modosu(i):
         i["status"] = "waiting"
         i["restoredAt"] = now().isoformat()
         i["restoreWhy"] = "1142_fukkyuu：固まっていたので順番待ちへ戻した"
-    for i in yuurei:
+
+    def _torikesu(i):
         i["_preCancelStatus"] = i.get("status")
         i["status"] = "cancelled"
         i["cancelledAt"] = now().isoformat()
         i["restoreWhy"] = ("1142_fukkyuu：%d回やり直しても具体的な作業指示が無い"
                             "（たまごさんの相槌・感想の類）ため取り消し（1377番の再発防止）"
                             % _redo_total(i))
-    for i in kurikaeshi:
+
+    def _block(i):
         i["repeatBlockedAt"] = now().isoformat()
         i["restoreWhy"] = ("1142_fukkyuu：同じ失敗理由が繰り返されたためwaitingへ戻さず"
                             "stuckのまま保留（外部要因の疑い。状況が変わるまで人の確認待ち。"
                             "#35224の無限ループ再発防止）")
-    tmp = p + ".tmp1142"
-    json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    os.replace(tmp, p)
+    ch = {}
+    for i in target:
+        ch[i.get("n")] = ("stuck", _modosu)
+    for i in yuurei:
+        ch[i.get("n")] = ("stuck", _torikesu)
+    for i in kurikaeshi:
+        ch[i.get("n")] = ("stuck", _block)
+    _kagi_de_kaku(ch, ".tmp1142")
     detail = "／".join(str(i.get("n")) for i in target[:10])
     if yuurei:
         detail += "（うち取り消し：%s）" % "／".join(str(i.get("n")) for i in yuurei)
@@ -220,15 +284,13 @@ def naosu_ghost_waiting():
         _gomi_assyuku()
     except Exception:
         pass
-    for i in yuurei:
+    def _torikesu(i):
         i["_preCancelStatus"] = i.get("status")
         i["status"] = "cancelled"
         i["cancelledAt"] = now().isoformat()
         i["restoreWhy"] = ("1142_fukkyuu：順番待ちのまま具体的な作業指示が無い"
                             "（たまごさんの相槌・感想の類）ため取り消し（1377/1494番の再発防止）")
-    tmp = p + ".tmp1142b"
-    json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    os.replace(tmp, p)
+    _kagi_de_kaku({i.get("n"): ("waiting", _torikesu) for i in yuurei}, ".tmp1142b")
     detail = "／".join(str(i.get("n")) for i in yuurei[:10])
     return rec("ghost_waiting", True, "順番待ちの幽霊項目 %d件を取り消した" % len(yuurei), detail)
 
@@ -294,15 +356,13 @@ def naosu_taishou_nashi_kakutei():
         _gomi_assyuku()
     except Exception:
         pass
-    for i in hit:
+    def _torikesu(i):
         i["_preCancelStatus"] = i.get("status")
         i["status"] = "cancelled"
         i["cancelledAt"] = now().isoformat()
         i["restoreWhy"] = ("1142_fukkyuu：失敗台帳%sで『対象なし・完了』と確定済み"
                             "のため取り消し（1856番の再発防止）" % targets.get(i.get("n")))
-    tmp = p + ".tmp1142c"
-    json.dump(q, io.open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    os.replace(tmp, p)
+    _kagi_de_kaku({i.get("n"): (i.get("status"), _torikesu) for i in hit}, ".tmp1142c")
     detail = "／".join(str(i.get("n")) for i in hit[:10])
     return rec("taishou_nashi", True,
                "対象なし確定済み %d件を取り消した" % len(hit), detail)
@@ -453,4 +513,6 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--self-test" in sys.argv:
+        sys.exit(0 if _kaku_self_test() else 1)
     main()

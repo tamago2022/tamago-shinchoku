@@ -149,14 +149,33 @@ GROK_GYOU = ("\n【常備の列・2026-11-22 店主の名指しで保留を外�
              "（status/joubi/kiku.jsonl にも {\"at\",\"gh\",\"kiku\"} を1行）。\n")
 
 
+def _grok_gh():
+    """① の対象：昔の名指し8件＋Grok の依頼の台帳（tools/grok_irai.py・2026-11-24）に載った Issue 全部。
+    名指しを固定の8件だけにしていたので、11/8以降の Grok の依頼は P2 の山（約4,600件目）に埋もれていた。"""
+    out = set(GROK_GH)
+    try:
+        d = _load(os.path.join(os.path.dirname(DIR), "grok_irai", "daicho.json"), {})
+        for r in (d.get("irai") or {}).values():
+            if r.get("repo") == "tamago2022/joy-relief-station" and not r.get("sumiUrl") and not r.get("kanryouGaibu"):
+                out.add(int(r.get("n")))
+    except Exception:
+        pass
+    return out
+
+
 def grok_kaijo(q):
     ch = 0
     t = _load(TSUNDA, {})
     sumi = set(t.setdefault("grokKaijo", []))
+    grok_gh = _grok_gh()
     for it in q.get("items", []):
         g = _gh_no(it)
-        if g not in GROK_GH:
+        if g not in grok_gh:
             continue
+        if it.get("status") in ("waiting", "running") and not it.get("tamagoIrai") \
+                and "さんの返信" not in str(it.get("title") or ""):
+            it["tamagoIrai"] = True     # 発車順の最前列（auto_launcher.queue_rank_key）
+            ch += 1
         st = it.get("status")
         # 「〜さんの返信」の票は親の依頼の便が Issue のコメントごと読むので、保留のまま（同じ仕事を2本出さない）
         if st == "hold" and str(it.get("n")) not in sumi and "さんの返信" not in str(it.get("title") or ""):
