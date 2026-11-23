@@ -246,6 +246,15 @@ def junkai(token=None, post=None, force=False, fetch=None):
         if r.get("sumiUrl") or r.get("kanryouGaibu"):
             continue
         qs = _票(items, r)
+        if not qs and r.get("queue"):
+            # 前回は票があった。done/cancelled のまま7日たって控え（done_archive）へ移っただけなら、消えたとは数えない。
+            #   waiting/hold/running のまま消えた＝書き戻しで上書きされた（#1222 の形）なので積み直す。
+            mae = [str(x.get("status")) for x in r["queue"]]
+            if mae and all(s in SUMI + KENPIN + ("cancelled",) for s in mae):
+                r["jotai"] = "保留" if all(s == "cancelled" for s in mae) else "検品待ち"
+                r["naze"] = "票は控えへ移った（前回の状態：%s）" % "／".join(mae)
+                continue
+            r["tsuminaoshiAt"] = None
         js = jotai(qs, r)
         r["jotai"] = js
         r["queue"] = [{"n": i.get("n"), "status": i.get("status")} for i in qs[:4]]

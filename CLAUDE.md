@@ -9,6 +9,20 @@
 - 週枠の線・同時2本・Macの負荷は auto_launcher（shuwaku_sen）が守る（ループは積むだけ）。棚・見た目・有料API・Lovableのチャット・ブラウザ・web_fetch は使わない。並行の子の受け持ちは `status/kaizen/heikou.json`（同じ仕事を積まない）。
 - **機械の裏付け：** `tools/kaizen_loop.py --tick`（top_status の相乗り・中で間引く。`--self-test`）。結果 `status/kaizen/score.json`・写し `status/public/kaizen.json`・進捗表の1行「改善ループ」→ `status/public/kaizen.html`。
 
+## Grokの依頼には、受け取ったら「受け取りました」、終わったら本番URLつきで「済」を返す（憲法・2026-11-24・店主「Grokbotに頼んだのに返事がない。修正・反映したらリンクで報告して」）
+- 実測（11/24）：11/1以降のGrokの依頼35件のうち、人の言葉の返事が一度も無いもの15件。機械の受付票（accepted）だけで、Grokには「受付されただけ」に見えていた。#1222 は受付票ごと消えていた（1142_fukkyuu が鍵なしで queue.json を古い写しで書き戻した）。Grokの依頼の多くが P2 の山（約4,600件目）に埋もれていた。
+- **機械の裏付け：** `tools/grok_irai.py`（`--self-test`）。github_watch が Grok の Issue（ラベル grokbot→claude・本文の Grok・「タマゴさんから聞きました」型）を積んだら台帳 `status/grok_irai/daicho.json` に載せ、「タマゴさんから聞きました。受け取りました（N番）」を返す。github_watch の見回りの中（10分に1回・新しい定期処理なし）で、票が消えていたら積み直し、tamagoIrai を立てて最前列へ、済は `honban_kanmon.hantei` で本番を確かめてから URL を1回返す、保留は理由を1回返す。joubi の①（店主の依頼の残り）は台帳の Issue 全部が対象。表 `share/check/grok_irai.html`・`status/public/grok_irai.json`。1142_fukkyuu は `_kagi_de_kaku`（queue_lock の中で読み直して番号で当てる・`--self-test`）。
+
+## 完了(done)は本番で中身を確かめたときだけ（憲法・2026-11-22・店主「ページを作ったと言うのに、実装・公開されていない」）
+- 実測：11/08〜11/22 に done になった19件は全部「AI検品PASS→自動完了」。うち10件は確認ページ（share/check）しか証拠が無く、35634番は「Lovable公開障害で404のまま」と自分で書いたまま done になっていた。確認ページは作った本人がいつでも置けるので、本番の証拠に数えない。
+- **本番の証拠＝** サイトの仕事は joy-relief-station.lovable.app の該当URLが200で中身あり（`honbanMejirushi` があればその文字も本文にある）。仕組みの仕事は報告に書いた `tools/…` が origin/main に入っていること（GitHub の blob/main URL）。サイトの仕事はコードがmainに入っただけでは通らない。
+- **機械の裏付け：** `tools/honban_kanmon.py`（`--self-test`）。auto_launcher の AI検品PASS→done・verify_check_pages の PASS→done・oni_modoshi の kenpin の3か所が done を付ける直前に通す。NGは作り直しへ（3回で hold＋Dispatchへ1行・店主には上げない）、回線が無い時は `honban_machi`（10分後に測り直し）。記録 `status/public/honban_kanmon.json`。
+
+## 常備の列：工場は手持ち無沙汰にならない（憲法・2026-11-22 店主「俺が言わなきゃ動かないのは点数が低い。定期タスクでごまかすな」）
+- 発車待ちに常に「常備の仕事」が店主の順で積まれている：①店主の依頼の残り（Grok経由）②関連4枚未満のページ（10ページずつ）・料理/猫の札と理由 ③空コピー埋め→コピー直し ④消えた動画の差し替え ⑤SNS曲を80点以上 ⑥マガジン曲を独立ページ・関連4以上 ⑦仕入れ（棚には置かない）。新しい定期タスクは作らない。同時2本・週枠の線・今日の予算はそのまま守る。
+- 止まっていたら Grok Bot が `wake-dispatch` ラベルの Issue を立て、工場が拾って直し・発車・1行コメントして閉じる。
+- **機械の裏付け：** `tools/joubi.py`（auto_launcher→itsumo_shigoto.tick から毎回。`--self-test`／引数なしで今の列）、受け口 `tools/github_watch.py` の wake-dispatch、無駄カットの例外 `tools/mudacut.kinshi`（①で外した依頼は+2回まで）、最近完了の本番URL優先 `tools/top_status.recent_done`。説明 `status/joubi/README.md`。
+
 ## 再生テストは必ず無音（憲法・2026-11-14・店主「Macのスピーカーから曲が鳴った。音が出るテストは二度とやらない」）
 - 本番ページの再生を確かめる時は `node tools/iphone_kakunin.mjs <URL> <出力の頭> [--tap SEL] [--link 文字]` だけを使う（iPhone 14 の WebKit・headless・全フレームに消音の初期スクリプト・YouTube埋め込みに mute=1・消音でない media を見つけたら止めて exit 3）。再生の判定は音ではなく currentTime。Chromium 系を使う時は `--mute-audio`。自作の再生テストは書かない。逆テスト：`--self-test`。
 
