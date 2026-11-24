@@ -325,21 +325,27 @@ def page(k, rows=None):
             "".join(li)))
     sumi = [r for r in rows if r["jotai"] not in ("kuichigai", "honnin")]
     sumi_li = "".join("<li>%s %s（%d/4）</li>" % (e(JOTAI_JA[r["jotai"]]), e(r["namae"]), r["kotae"]) for r in sumi)
+    total = len(rows)
+    suu = {jo: len([r for r in rows if r["jotai"] == jo]) for jo in ("kuichigai", "honnin", "itchi", "fumei", "mada")}
+    kazu_line = "全%d項目中：🔴食い違い%d件・🟠本人判断%d件・🟢一致%d件・⚪要確認%d件・答え待ち%d件" % (
+        total, suu["kuichigai"], suu["honnin"], suu["itchi"], suu["fumei"], suu["mada"])
     return """<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>法務チェック：本人判断だけ（%s）</title>
 <style>body{font-family:-apple-system,"Hiragino Sans",sans-serif;max-width:760px;margin:0 auto;padding:16px;line-height:1.7;color:#222}
 h1{font-size:1.3em}section{border:1px solid #ddd;border-radius:10px;padding:12px 14px;margin:14px 0}section.kuichigai{border:2px solid #b91c1c}
 section.honnin{border:2px solid #b45309}h2{font-size:1.05em;margin:0 0 6px}.q{font-weight:bold}.why{color:#b91c1c;font-size:.9em}
 ul{padding-left:1.1em}li{margin:4px 0}.h{color:#fff;border-radius:4px;padding:0 6px;font-size:.85em}li.mada{color:#999}
-.note{background:#fff8e1;padding:8px 12px;border-radius:8px;font-size:.9em}small a{margin-left:4px}</style></head><body>
+.note{background:#fff8e1;padding:8px 12px;border-radius:8px;font-size:.9em}.num{font-weight:bold}small a{margin-left:4px}</style></head><body>
 <h1>法務チェック：たまごさんが決めることだけ</h1>
 <p class="note">%s</p>
-<p>%s／答えた人：%s（%d/4）／更新 %s<br>全部の表と議論：<a href="%s">GitHub Issue #%s</a></p>
+<p class="num">%s</p>
+<p>%s／答えた人：%s（%d/4）／更新 %s<br>全部の表と議論：<a href="%s">GitHub Issue #%s</a>／このページ：<a href="%s">%s</a></p>
 %s
 <h2 style="font-size:1em;margin-top:24px">決めなくてよかった行（4人の答えが割れていない）</h2><ul>%s</ul>
 </body></html>""" % (
-        e(k.get("kai", "")), e(DISCLAIMER), e(k.get("title", "")), e("・".join(kotae_hito) or "まだ"), len(kotae_hito),
+        e(k.get("kai", "")), e(DISCLAIMER), e(kazu_line), e(k.get("title", "")), e("・".join(kotae_hito) or "まだ"), len(kotae_hito),
         time.strftime("%F %H:%M"), e(k.get("url", "")), e(str(num)),
+        e(PAGE_BASE % num if num else ""), e(PAGE_BASE % num if num else ""),
         "".join(cards) or "<p>今のところ、たまごさんが決めることはありません。</p>", sumi_li)
 
 
