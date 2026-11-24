@@ -7,7 +7,7 @@ th{background:var(--t-panel);position:sticky;top:0}.s{color:var(--t-mute);font-s
 tr.済 td:nth-child(4) b{color:var(--t-ok)}tr.待ち td:nth-child(4) b{color:var(--t-warn)}tr.未受付 td:nth-child(4) b,tr.保留 td:nth-child(4) b{color:var(--t-ng)}
 a{color:var(--t-info)}.note{font-size:12px;color:var(--t-mute);margin-top:14px}</style></head><body>
 <h1>Grok（Grok Bot）からの依頼の一覧</h1>
-<div class="s">更新：2026-11-24 16:37 ／ 11/1以降に Grok から届いた依頼（joy-relief-station の Issue）</div>
+<div class="s">更新：2026-11-24 16:59 ／ 11/1以降に Grok から届いた依頼（joy-relief-station の Issue）</div>
 <div class="sum">全部で <b>36</b> 件：済 17／検品待ち 1／待ち 18</div>
 <div class="s">数え方①GitHubのIssue（ラベル grokbot→claude・本文のGrok・Grokの書き方）＝35件／数え方②工場の受付の記録（発車待ち＋完了の控えのGH番号）＝32件。差の3件は説明がつく：#1222＝受付票が消えた（未受付）、#1223＝同じく受付票が消えたが別の便で済、#1242＝wake-dispatchは受付票を作らず直接返事する仕組み。よって総数35件で確定。本番は11/22 09:09（844b10a5）のまま、mainより137コミット遅れ（#1253）。</div>
 <table><tr><th>依頼日</th><th>何を頼まれたか</th><th>受付</th><th>今の状態</th><th>Grokへの返事</th></tr>
@@ -48,7 +48,7 @@ a{color:var(--t-info)}.note{font-size:12px;color:var(--t-mute);margin-top:14px}<
 <tr class='待ち'><td>11/24 06:46</td><td><a href='https://github.com/tamago2022/joy-relief-station/issues/1254'>#1254</a> 【Claude Codeに頼む】今、人は何に苦しんでいるのか――ポエトリーリーディング用 ぶっ刺さる共感・代弁ネタ ディープリサーチ（2026-11）をObsidianへ格納</td><td>274852</td><td><b>待ち</b> <div class='s'>週枠の上限（推定85%）で11/23 06:23から新しい便が止まっている。枠が戻る11/24 17:59以降、店主の依頼の列（最前列）から着手</div></td><td><a href="https://github.com/tamago2022/joy-relief-station/issues/1254#issuecomment-7114946893">返事</a></td></tr>
 <tr class='済'><td>11/24 07:48</td><td><a href='https://github.com/tamago2022/joy-relief-station/issues/1255'>#1255</a> 工場が止まっている（wake-dispatch）</td><td>—</td><td><b>済</b> <div class='s'>wake-dispatch：工場が原因を返した</div></td><td>あり</td></tr>
 </table>
-<pre style="font-size:11px;color:var(--t-mute);white-space:pre-wrap">実測: status/quota.json allPct=85.3% allLevel=stop stopPct=85% resetAt=2026-11-24 17:59（2026-11-24 16:25）</pre>
+<pre style="font-size:11px;color:var(--t-mute);white-space:pre-wrap">実測: status/quota.json allPct=85.3% allLevel=stop stopPct=85% resetAt=2026-11-24 17:59（2026-11-24 16:45）</pre>
 <div class="note">「済」は本番（joy-relief-station.lovable.app）で中身を確かめたものだけ。「待ち」は工場の受付に入っていて未完了。「未受付」は届いたのに工場の受付に入っていなかったもの（見つけ次第、積み直して先頭へ）。<br>
 この表は工場の GitHub 見回り（10分に1回）が作り直します。台帳：tools/grok_irai.py</div>
 
