@@ -660,6 +660,9 @@ while :; do
   #   読むだけ（0円）。20分おき。00_現在地.md のまとめ書きは1時間おきに起きて、22時以降・変化があった時だけ1日1回。
   tick_every 80 && ( python3 "$REPO/tools/vault_kanmon.py" > "$REPO/status/vault_kanmon/run.log" 2>&1 & ) >/dev/null 2>&1
   every_hours genzaichi_matome 6 && ( python3 "$REPO/tools/genzaichi_matome.py" >> "$REPO/status/vault_kanmon/matome.log" 2>&1 & ) >/dev/null 2>&1
+  # 2026-11-24（GH1230）Obsidianへの受け口。Grokがvault_okuri/へpushするだけでVaultの00 inboxへ一方向コピー（追加のみ）。
+  #   git pullはmachine_status_push.shが別便で既にやっている前提。ここはコピーだけ。読み書きは軽い＝0円。1時間おき。
+  every_hours vault_okuri_tenso 1 && ( python3 "$REPO/tools/vault_okuri_tenso.py" >> "$REPO/status/vault_kanmon/okuri.log" 2>&1 & ) >/dev/null 2>&1
   # 2026-10-11 テザリングの関所。たまごさん「Wi-Fiが重すぎてテザリング中＝通信量が限られる」
   #   テザリング中は push／yt-dlp／大量取得／朗読ループ／Playwright／Googleドライブを止め、Wi-Fiに戻ったら自動で再開。1分おき。
   tick_every 4  && ( python3 "$REPO/tools/tethering_kanmon.py" > /dev/null 2>> "$REPO/status/tethering.log" & ) >/dev/null 2>&1
