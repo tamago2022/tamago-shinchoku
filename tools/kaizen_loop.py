@@ -496,12 +496,17 @@ def candidates(score=None, items=None, bin_=None):
     for n, b in bin_.items():
         recent.setdefault(b.get("key"), []).append(b)
     yameta = kata_yameta()
+    try:
+        import kaizen_kind_matsu_kanmon as kmk
+        matsu = kmk.paused_kinds(load(MANABU, {"rows": [], "kanmon": {}}), items=items)
+    except Exception:
+        matsu = {}
     out = []
     for r in score.get("pages") or []:
         if r["score"] >= 100:
             continue
         kinds = [c["k"] for c in r["checks"] if not c["ok"]]
-        kinds = [k for k in heikou_skip(r, kinds) if k not in yameta]
+        kinds = [k for k in heikou_skip(r, kinds) if k not in yameta and k not in matsu]
         if not kinds:
             continue
         skip = False
