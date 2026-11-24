@@ -30,6 +30,8 @@
     python3 tools/vault_kanmon.py --self-test  # 逆テスト
   許可された書き手（Python）：tools/genzaichi_matome.py・entaku_kaigi.py・x_kiwa.py・gumroad_sales_sync.py・
     shared_brain_sync.py（いずれも頼まれた成果物か、低頻度）。それ以外の tools/ は Vault に書かない。
+    2026-11-24追加：tools/vault_okuri_tenso.py（GH1230・Obsidianへの受け口。vault_okuri/配下の.mdを
+    00 inbox/へ追加のみでコピー。1時間に1回・同名は上書きしない・1日の件数に上限あり）。
 """
 import io
 import json
