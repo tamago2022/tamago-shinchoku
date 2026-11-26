@@ -620,6 +620,33 @@ def hashiru(dry=False):
     # コメント参照。
     with hatsugen_lock():
         rows = {r["id"]: r for r in jsonl(HATSUGEN) if r.get("id")}
+        # 40192号対策（2026-11-26）：hantei_1ken()のactionable判定（540-549行目の
+        # _NOT_TASKチェック）は「判定日(1週間/1ヶ月)が来た時だけ」呼ばれる
+        # （上の `if not kita: return None` で、判定日を両方消化済みの行は
+        # 二度と評価されない）。そのため、_NOT_TASKへ新しいパターンを後から
+        # 追加しても、判定日を消化し終えた古いゴースト行は actionable=None の
+        # まま永久に残り、tools/tomaranai.py の「3回以上言わせた」ルート
+        # （nankai.json経由・判定日とは無関係にactionableだけを見る）が無限に
+        # 再発車し続けていた（実例：901e24a87524「今回は前回までと同じ手順を
+        # 繰り返さず、原因の調べ方・実装の方法そのものを変えてください。」が
+        # 2026-09-17の誤登録以来、両方の判定日を2026-10-29に消化済みなのに
+        # 2026-10-02に40192号として再発車された）。判定日の有無と無関係に、
+        # 既にactionable=Falseでない全行を毎回_NOT_TASKへ照らし直し、一致したら
+        # ここで直接書き込む（赤判定・state変更には触れない＝影響範囲を
+        # 「書き込みの機会を広げる」だけに限定する）。
+        if rows:
+            try:
+                sys.path.insert(0, HERE)
+                import shukudai as _shukudai_sweep
+                for r in rows.values():
+                    if r.get("actionable") is False:
+                        continue
+                    _title = r.get("title") or ""
+                    if (_shukudai_sweep._NOT_TASK.search(_title)
+                            or _shukudai_sweep._is_quoted_reference_text(_title)):
+                        r["actionable"] = False
+            except Exception:
+                pass
         ima = ima_no_jotai()
         mita, aka, tojita = 0, 0, 0
         for r in rows.values():
