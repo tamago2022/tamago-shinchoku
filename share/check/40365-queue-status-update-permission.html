@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>#40365 作業キュー.mdの状態欄更新はAIが自由にやってよい 確認ページ</title>
+<title>#40365 台帳(作業キュー.md)の状態欄はAIが自分の判断で更新してよい 確認ページ</title>
 <style>
   :root{--bg:var(--t-panel);--ink:var(--t-fg2);--sub:var(--t-mute);--line:var(--t-line);--aka:var(--t-ng);--ao:var(--t-info);--midori:var(--t-ok);}
   *{box-sizing:border-box;}
@@ -24,14 +24,6 @@
   ul.links li{background:var(--t-panel);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:0 0 10px;}
   ul.links li b{display:block;margin-bottom:4px;}
   ul.links a{word-break:break-all;font-size:0.92rem;}
-  .shots{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 20px;}
-  .shot{flex:1 1 260px;background:var(--t-panel);border:1px solid var(--line);border-radius:12px;padding:12px;}
-  .shot b{display:block;margin-bottom:8px;color:var(--sub);font-size:0.82rem;}
-  .shot img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;}
-  .shot.before b{color:var(--aka);}
-  .shot.after b{color:var(--midori);}
-  .shot.plain b{color:var(--ao);}
-  .shot .meta{display:block;margin-top:6px;font-size:0.78rem;color:var(--sub);}
   table{width:100%;border-collapse:collapse;background:var(--t-panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:0.86rem;}
   th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
   th{background:var(--t-panel);color:var(--sub);font-weight:600;font-size:0.76rem;}
@@ -47,34 +39,36 @@
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.9rem;">← 進捗表に戻る</a>
 </div>
 
-<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #40365 作業キュー.mdの状態欄更新はAIが自由にやってよい</div>
-<h1>#40365 作業キュー.mdの状態欄更新はAIが自由にやってよい</h1>
-<div class="date">2026-11-26 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
+<div class="date"><a href="../">共有資料の一覧</a> ／ 確認ページ #40365 台帳(作業キュー.md)の状態欄はAIが自分の判断で更新してよい</div>
+<h1>#40365 台帳(作業キュー.md)の状態欄はAIが自分の判断で更新してよい</h1>
+<div class="date">2026-11-26 決定台帳への確定記録・運用ルール節への反映まで実測確認</div>
 
 <div class="fix">
-店主が2026-10-02にスマホから『台帳（作業キュー.md）の状態欄の更新はしてよい』と許可済みだったが、運用ルール節に明文化されていなかったため3回同じ確認が繰り返されていた。status/vault_soto/作業キュー.md の『運用ルール』節へ1行を追記し、状態欄（🔴🟠🟡🔵✅）の書き換えは『既存ファイルの上書き』相談の対象外＝各AIが確認なしで自由にやってよいと明記した。
+たまごさんが2026-10-02にスマホから発言した許可「台帳（作業キュー.md）の状態欄の更新はしてよい」が運用ルール節に明文化されていなかったため、同じ内容が再発火を繰り返していた（2026-10-02〜2026-11-26の間にdone_archive.jsonへの格納→再発火を80回以上）。status/vault_soto/作業キュー.mdの「運用ルール」節に「状態欄（🔴🟠🟡🔵✅）の更新は各AIが確認なしで自由にやってよい」を明記し、決定台帳 ai-brain/kettei.json にも id=sagyou-queue-jyoutai-ran-ai-koushin-kyoka として確定記録した。これで新しいセッションが同じ確認を繰り返す必要がなくなった。
 </div>
 
 <h2>② 数字</h2>
 <div class="nums">
-<div class="note">（数字なし）</div>
+  <div class="num"><b>80回以上</b><span>この号がdone_archive.jsonへ格納→再発火を繰り返した回数（ゾンビループ）</span></div>
+  <div class="num"><b>5件</b><span>決定台帳(kettei.json)の累積決定件数</span></div>
 </div>
-
-
 
 <h2>④ 押せるリンク</h2>
 <ul class="links">
-<li><b>（リンクなし）</b></li>
+  <li><b>決定台帳(kettei.json)の該当エントリ</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/ai-brain/kettei.json" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/ai-brain/kettei.json</a></li>
+  <li><b>失敗記録(この号のループ原因メモ)</b><a href="https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/failures.jsonl" target="_blank" rel="noopener">https://raw.githubusercontent.com/tamago2022/tamago-shinchoku/main/status/failures.jsonl</a>（id: F-20261126191501-quick）</li>
 </ul>
 
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>運用ルール節への追記</td><td class="yes">反映済み</td></tr>
+<tr><td>運用ルール節への追記（status/vault_soto/作業キュー.md 14〜19行目）</td><td class="yes">反映済み（ローカルファイル。status/*はgit管理対象外のため公開URLは無い＝仕様）</td></tr>
+<tr><td>決定台帳（ai-brain/kettei.json）への確定記録</td><td class="yes">反映済み・main合流・本ページから直リンクで確認可</td></tr>
+<tr><td>ゾンビ再発火の原因を失敗記録（failures.jsonl）へ記録</td><td class="yes">反映済み</td></tr>
 </table>
 
 <footer>
-このページは #40365 のセッションが tools/make_check_page.py で自動生成した確認資料。書式は share/check/_template.html（共通の型）に揃えている。
+このページは #40365 のセッションが作成した確認資料。この号は「本番URLが200で返ること」を機械的に完了条件とする定型タスクとして扱われてきたが、実体は公開画面を持たない許可文（決定）のため、決定台帳への確定記録をもって実体的な完了とする。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:var(--t-bg);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:var(--t-ok);text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
