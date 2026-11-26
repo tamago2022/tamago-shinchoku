@@ -1,4 +1,4 @@
-<!-- 自動生成・genzaichi_sync.py・2026-11-26 17:33:08・hash=e9ae95d96fd8 -->
+<!-- 自動生成・genzaichi_sync.py・2026-11-21 14:12:40・hash=3393b01c92f9 -->
 # 00_現在地（一つの会議室・正本）
 **読む場所の1行：チャットのClaude＝Vaultのこのファイル／Codex＝GitHub joy-relief-station の docs/genzaichi.md／Claude Code＝CLAUDE.md経由でこのファイル（更新はClaude Code、自動でGitHubへ写る）**
 > 読む場所：チャットのClaude＝このファイル／Codex＝GitHub `docs/genzaichi.md`（joy-relief-station）／Claude Codeの子セッション＝CLAUDE.md経由でこのファイル。更新はClaude Code側のみ（区切りごと）。GitHubへは自動で写る。
@@ -125,12 +125,6 @@
 - main 24f4105b に入れた（6本：清志郎の話1・トーキングブルース2・プロレス3／好きなら RC・ALFEE／怒れる人々の古舘カードに「このページへ →」）。
 - 本番は未反映：Lovable の鍵が need_consent。押す係（kohyou_osu）が 24f4105b を待ち列に持っていて、鍵が戻れば自動で押す。記録 tamago-shinchoku status/fr_furutachi/README.md
 
-## 2026-11-24 Grokの依頼に返事が無かった件
-- 11/1〜11/24 に Grok から届いた依頼36件：済17・待ち18・検品待ち1（11/24 08:11）。全部のIssueに今の状態を返した（30件）。一覧 https://tamago2022.github.［除去］.html
-- 仕組み：tools/grok_irai.py（github_watch の見回りの中・10分に1回）。受け取ったら「タマゴさんから聞きました。受け取りました（N番）」、済は本番を確かめてからURL、保留は理由、票が消えたら積み直し。Grokの依頼は発車順の最前列（tamagoIrai）。
-- 原因：1142_fukkyuu が鍵なしで queue.json を古い写しで書き戻し、#1222・#1224 の受付票が消えていた→鍵の中で読み直す形に直した。Grokの依頼が P2 の山（約4,600件目）に埋もれていた→最前列へ。
-- 止まっていること：週枠の上限（推定85.3%）で 11/23 06:23 から新規発車が止まっている（11/24 17:59 に戻る）。本番は 11/22 09:09（844b10a5）から main より137コミット遅れ（#1253 を発車順の先頭へ）。Reason Network は 10/29 以降送れず（待ち112件）・受け取り0。
-
 ## 止まっていること・たまごの判断待ち
 - 2026-10-25 海外の法的リスク6点：Google Fonts・録画系・課金は該当なし（直す物なし）。判断待ち＝メール配信前の住所の出し方／DMCA代理人（$6・3年ごと・投稿機能を作る時でよい）／13歳未満の一文。https://tamago2022.github.［除去］.html
 - 地球観察日記 第2作：見積り約106円（上限170円）の承認（#975に「承認 170円」）。詩の短縮版はChatGPTが#975へ。
@@ -170,9 +164,11 @@
 - 2026-10-11 名カバーの棚を許可制に（台帳 src/lib/meiCoverLedger.ts＝たまごさん指定だけ表示・prebuild点検 check-meicover-gate）。25件を外し（1語で戻せる：MEI_COVER_UNDO_20261011）、風をあつめて(Josh Turner)を追加。ハートは全サイト一時非表示（HEARTS_VISIBLE）。文字マークは左下・英語、グッドカバーだけ左上。added_by列のmigrationは未適用なら台帳だけで動く。
 
 <!-- 自動まとめ:始 -->
-## 今日までに届いた更新（自動まとめ・1日1回／2026-11-21 23:58）
+## 今日までに届いた更新（自動まとめ・1日1回／2026-11-08 22:12）
 
-- **35729番・見本市（声10種+映像1本）**（11-21 17:41）声の聞き比べ10種（MiniMax6+ElevenLabs4）・ループ映像1本（実写・海）を1枚の確認ページに集約。卵コンシェルジュ推しは声01（落ち着いた女性）と声07（透明感のある女性Aria）。残り映像3本はfal/ElevenLabsの鍵がこの環境に無く未生成（約114円・400円枠内）。URL: https://tamago2022.github.［除去］.html
+- **205237号 空カード埋め|五木ひろし2/2**（11-07 12:13）9曲全件にnote/memo/src追加、main合流済み(commit b9c241712/705b83374)。公開はLovable OAuth invalid_grant既知障害でブロック中、本番未反映を実測確認済み。重複エスカレーションなし。
+- **205233号 空カード埋め|マイケル・フランクス(2/2)**（11-07 01:46）対象10曲中9曲は前セッション実装分がorigin/main合流済み・本番で実文言を確認。残り1曲(live-from-tokyo)はtabiCopy.ts経由でmain合流済みだがLovable OAuth公開ブロック(HTTP403)で本番未反映。副次発見:mac_jobs心臓が40分以上停止、振り分け所fw-20261107014610-d74bbへ再起動依頼済み。
+- **206319 GOD FUNKY番宣 仕上げ**（11-06 22:23）街の質感をCC0写真で後がけ（645コマ・音ハメ無改変）。自己採点68点で納品せず。ロボ3体と締めカードの3D差し替えは205673（3D正本）完了後に【続き】。待ち記録 status/itsumo/machi_3d.json。確認 https://tamago2022.github.［除去］.html
 
 （子セッションは Vault に直接書かない。status/genzaichi_kouho.md に追記→夜にここへ1回だけ反映）
 <!-- 自動まとめ:終 -->
@@ -201,5 +197,3 @@
 - 2026-11-01 ごきげん補給所：棚編集のゴミ箱で画面が黒くなって固まる不具合を直して公開（削除の確認が編集パネルの裏に隠れていた。再発止め check-confirm-on-top）。空の棚「AIコメディ」を削除（中身0件・控え status/tana_sakujo_hikae/）。
 
 - 2026-11-19 人物ページ（76人）：iPhoneでDataviewがコードのまま→原因は community-plugins.json から dataview が外れていた（11/19 7:01に古い一覧で書き戻し）。戻した。保険に各ページのDataviewの下へ「スマホ用の写し」（普通のリンクの表）を置き、tools/jinbutsu/utsushi.py が1日1回更新（AIなし・teiki_jougenに登録）。店主の1手：iPhoneのObsidianを閉じて開き直す。
-
-- 2026-11-22 ループエンジニアリング：完了(done)は本番で中身を確かめたときだけ付く関所を入れた（tools/honban_kanmon.py。auto_launcher・verify_check_pages・oni_modoshi の3か所）。done19件中10件は本番の証拠なし。燃料の163/165本が判定日赤だった→11/23に1日2本へ絞り常備(joubi)へ回す。正本「ループエンジニアリング_現状と計画_1122.md」。
