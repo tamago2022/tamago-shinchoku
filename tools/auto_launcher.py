@@ -3235,6 +3235,16 @@ def _launch_one_core(item, q, alive, safe_max):
     except Exception as _e:
         log("無駄カットの関所でエラー %s番: %s" % (item.get("n"), _e))
 
+    # ---- 空票の関所（2026-11-26・40147番）：タイトルが入力テンプレのまま（本文未記入）の票は保留 ----
+    try:
+        import kara_irai_kanmon as _kik
+        if _kik.is_kara(item):
+            _kik.horyu(item)
+            log("🛑 空票の関所：%s番はタイトルが未記入テンプレのままなので保留にしました「%s」" % (item.get("n"), item.get("title")))
+            return False
+    except Exception as _e:
+        log("空票の関所でエラー %s番: %s" % (item.get("n"), _e))
+
     # ---- 棚の関所（2026-10-22 たまごさん「棚に置くのは本当に慎重にしたい」）----
     #   棚に入れる・置く・移す仕事は、たまごさんがその日に曲名と棚名を名指しした票
     #   （tanaMeishi.hi＝今日）だけ発車する。前日以前の言葉では動かさない。止めたら保留(hold)。
