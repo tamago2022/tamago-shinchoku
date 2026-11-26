@@ -21,6 +21,16 @@ share/done/index.htmlの「判定日赤」ログを確認すると #2311〜#3368
 される（is_kara()が文字列完全一致で見るだけなので、新しいテンプレ文言
 が見つかるたびにここへ追記する）。
 
+40241番（2026-11-26・tamago-orchestratorが発車中に発見）は3件目の
+バリエーション：タイトル「作業を再開してください。」も同じ2026-10-02に
+スマホから追加（why="スマホから追加"）。本文（what）も「作業を再開して
+ください」の繰り返しのみで実行対象が一切書かれておらず、完了条件も
+「タイトルの文字列自体が本番に出て200で返る」という自己言及で満たせない
+形になっている。status/tomaranai.jsonlの記録で#2301番時代（2026-09-30）
+から同一タイトルが繰り返し出現し重複スキップされていたことを確認済み。
+mudacut.py（3回目以降hold）はhasshaJougen=2のため2回目の発車を防げず、
+この回でtamago-orchestrator自身が気づいてKARA_TITLESへ追記した。
+
 対応：発車前にタイトルが既知の未入力テンプレのままかを見て、そうなら
 即hold（3回待たず1回目で止める）。解除はたまごさんが本文を書き直して
 タイトルが変わった時だけ（自動的にこの関所を通らなくなる）。
@@ -42,6 +52,8 @@ KARA_TITLES = {
     "対応してほしいこと",
     "この形式を厳守してください。",
     "この形式を厳守してください",
+    "作業を再開してください。",
+    "作業を再開してください",
 }
 
 HORYU_NOTE = (
@@ -87,16 +99,22 @@ if __name__ == "__main__":
     ok_false_real = is_kara({"n": 4, "title": "棚のバッジの位置を直す"})
     ok_true3 = is_kara({"n": 5, "title": "この形式を厳守してください。"})
     ok_true4 = is_kara({"n": 6, "title": "この形式を厳守してください"})
+    ok_true5 = is_kara({"n": 7, "title": "作業を再開してください。"})
+    ok_true6 = is_kara({"n": 8, "title": "作業を再開してください"})
     print("kara(title完全一致, test無し) ->", ok_true, "(期待 True)")
     print("kara(末尾コロン無し)        ->", ok_true2, "(期待 True)")
     print("kara(testフラグ付き)        ->", ok_false_test, "(期待 False)")
     print("kara(実在する依頼文)        ->", ok_false_real, "(期待 False)")
     print("kara(40340番と同じ句点あり) ->", ok_true3, "(期待 True)")
     print("kara(40340番と同じ句点なし) ->", ok_true4, "(期待 True)")
+    print("kara(40241番と同じ句点あり) ->", ok_true5, "(期待 True)")
+    print("kara(40241番と同じ句点なし) ->", ok_true6, "(期待 True)")
     assert ok_true is True
     assert ok_true2 is True
     assert ok_false_test is False
     assert ok_false_real is False
     assert ok_true3 is True
     assert ok_true4 is True
+    assert ok_true5 is True
+    assert ok_true6 is True
     print("KARA_IRAI_KANMON_SELFTEST: PASS")
