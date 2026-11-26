@@ -456,6 +456,21 @@ _IKEHAYA_KYOKASHO_PASTE_MARKER = "brain-market.com/u/ikehaya"
 _REMOTE_CONTROL_OFFLINE_NOTIFY_MARKER = (
     "再接続するか、/remote-control を実行して新しいセッションを開始してください")
 
+# ★40192号実例（2026-11-26）：tools/command_ingest.py のやり直しエスカレーション
+#   処理（OWNER_REDO_ESCALATE_AT=3）が、同じ案件の手直し指摘が3回に達した時、
+#   タスクのwhat欄へ「同じ直し方で%d回やり直しになっています。今回は前回までと
+#   同じ手順を繰り返さず、原因の調べ方・実装の方法そのものを変えてください。」と
+#   いう機械の催促文を自動で追記する。auto_launcher.pyがこれを「【タスク】…
+#   【完了条件】…」形式で子セッションへ渡す構造自体は_AUTO_TASK_MARKERで既に
+#   弾けるが、1853号のガード実装（2026-09-30）より前の2026-09-17時点で、この
+#   催促文自身が既にhatsugen.jsonlへ「たまごさんの発言」として誤登録されており
+#   （id 901e24a87524）、以後17回以上★赤判定→自動発車を繰り返す自己言及的な
+#   無限ループになっていた。ガードは新規取り込みしか防がないため、この催促文
+#   そのものも1816号以来の考え方（出どころの決まり文句で丸ごと弾く）で
+#   先頭マーカーに加える（既存汚染行はtools/shukudai.pyの_NOT_TASK側で救済）。
+_OWNER_REDO_ESCALATION_MARKER = (
+    "今回は前回までと同じ手順を繰り返さず、原因の調べ方・実装の方法そのものを変えてください")
+
 # ★1846号実例（2026-09-30）：上5つのマーカー（_SKILL_LOAD_MARKER / _VERIFY_PROMPT_MARKER /
 #   _COPY_NAOSHI_PROMPT_MARKER / _HANTEI_HIDUKE_MARKER / _ONI_MODOSHI_PROMPT_MARKER）は
 #   「メッセージの先頭が固定文言で始まるか」（.lstrip().startswith(...)）で判定していた。
@@ -486,6 +501,7 @@ _MACHINE_MARKERS_ANYWHERE = (
     _AUTOCOMPACT_SUMMARY_MARKER,
     _IKEHAYA_KYOKASHO_PASTE_MARKER,
     _REMOTE_CONTROL_OFFLINE_NOTIFY_MARKER,
+    _OWNER_REDO_ESCALATION_MARKER,
 )
 
 
