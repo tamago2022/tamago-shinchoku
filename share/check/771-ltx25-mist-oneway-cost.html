@@ -55,11 +55,17 @@
 <b style="color:var(--aka);">★2026-09-12差し戻し対応：</b>「最初と最後のフレームで岩・太陽・人物の位置が一致」という前回の報告は誤りだった。特徴点マッチングで数値測定したところ、実際は横に23px(画面幅の1.8%)ずれ、1.4%ズームインしていた(単調に増加＝ゆっくり前進、往復ではない)。追加のfal課金をせず、生成済みの動画1本(750番と同じくfalへの新規リクエストは無し)にffmpeg(vidstabのtripodモード＝最初のコマへ機械的に固定)を後処理として適用し、横ズレを23px→7px(0.5%)、ズームを1.4%→1.0%まで圧縮した。目視でも下のbefore/after画像の通りほぼ一致する。fal.aiダッシュボードの前後差での実費確定は、公式Billing APIを見つけて叩いたが権限不足(403)、ブラウザ操作の手段も無いため今回も取得できず、計算値のみ据え置き。
 </div>
 
+<div class="fix" style="border-left-color:var(--ao);">
+<b style="color:var(--ao);">★2026-11-26差し戻し対応（2回目）：</b>admin key(<code>~/.fal_admin_key</code>)を再度叩き直したところ<b>401(Invalid API key)</b>＝キー自体が無効と判明（403=権限不足ではなく、もっと手前で拒否されている）。一方、fal公式ドキュメント(fal.ai/docs/platform-apis/v1/models/pricing)を読み直し、<b>通常キー(~/.fal_key)でも`/v1/models/pricing`は200で読めること</b>を新たに発見した。実測：<code>GET https://api.fal.ai/v1/models/pricing?endpoint_id=lightricks/ltx-2.5/image-to-video/fast</code> → <code>{"unit_price":0.01,"unit":"units","currency":"USD"}</code>。これは公式APIが返す現在の単価そのもので、早見表に書いた推定単価ではない。これと、本番生成時にレスポンスヘッダーで確認済みの<b>x-fal-billable-units=71.24</b>を掛けると<b>71.24 × $0.01 = $0.7124（約106.9円・150円/ドル）</b>になる。これは下の「$0.0548(8.2円)」という旧計算値（採用したffmpeg後処理と同じく750/771番で出した最初の推定）の約13倍で、旧計算値の単価の仮定（秒数ベース）が誤っていた可能性が高い。ただし71.24という値が本当にこの5.48秒の生成1本に対応するログは本セッションでは見つけられず、確認ページのfooter記載を根拠にしている点は変わらない。実際に請求されたcost_total（1円単位の実費そのもの）を返す`/v1/models/billing-events`・`/v1/models/usage`は通常キーで403（権限不足）、admin keyは401（無効）で今回も取得できなかった——必要な権限は`billing:usage:read`で、fal.ai公式ドキュメントにより<b>キー作成時のPermission presetで「READONLY」または「BILLING」を選ぶ</b>ことが必要と判明（以前は「admin権限」としか書けなかったが、今回で正確な名称が分かった）。
+</div>
+
 <h2>② 数字</h2>
 <div class="nums">
   <div class="num"><b>5.48秒</b><span>動画の長さ</span></div>
   <div class="num"><b>1280x720</b><span>スタビライズ後の解像度</span></div>
-  <div class="num"><b>$0.0548 (8.2円)</b><span>公称単価からの計算値(150円/ドル)・追加課金なし</span></div>
+  <div class="num"><b>$0.0548 (8.2円)</b><span>旧・公称単価からの計算値(150円/ドル)・追加課金なし</span></div>
+  <div class="num"><b>$0.7124 (106.9円)</b><span>新・公式pricing API単価($0.01/unit)×実測71.24 units(2026-11-26算出・計算値)</span></div>
+  <div class="num"><b>401</b><span>admin keyを再実測した結果（無効キー。403ではない）</span></div>
   <div class="num"><b>23px→7px</b><span>カメラの横ズレ(修正前→後、画面幅1280pxに対する比率1.8%→0.5%)</span></div>
   <div class="num"><b>1.4%→1.0%</b><span>ズーム量(修正前→後)</span></div>
   <div class="num"><b>116/136コマ</b><span>もやが右方向に動いた割合(左方向は0)</span></div>
@@ -85,12 +91,12 @@
 <tr><td>カメラが完全固定か</td><td class="yes">特徴点マッチングで数値測定。修正前は横23px(1.8%)ズレ・1.4%ズーム(単調増加=往復なし)。ffmpeg tripodスタビライズで横7px(0.5%)・ズーム1.0%まで圧縮、目視でほぼ一致</td></tr>
 <tr><td>もやが一方向に流れ続けるか(戻らないか)</td><td class="yes">オプティカルフロー解析：136コマ中116コマで右方向の動き、左方向の動きは0コマ</td></tr>
 <tr><td>ループ向きの絵になっているか</td><td class="yes">スタビライズ後の最初と最後のフレームがほぼ同一構図(上のbefore/after画像参照)</td></tr>
-<tr><td>ダッシュボードのSubtotal前後差を1円まで確定できたか</td><td class="no">ブラウザ操作ツールなし＋Billing APIは403(admin権限が必要)で不可、計算値のみ。たまごさん本人にしかできない1点(下記)が必要</td></tr>
+<tr><td>ダッシュボードのSubtotal前後差を1円まで確定できたか</td><td class="no">通常キーは`/v1/models/pricing`のみ200(単価は読めた)、`/v1/models/usage`・`/v1/models/billing-events`(実費明細)は403(権限不足)。admin keyは401(無効)で不可。計算値($0.7124)のみ。たまごさん本人にしかできない1点(下記)が必要</td></tr>
 </table>
 
 <footer>
-実費が1円まで確定できなかった理由：fal.ai公式Billing API(GET https://api.fal.ai/v1/account/billing、fal.ai/docs/platform-apis/v1/account/billingに実在)を正しいエンドポイントまで特定して呼び出したが『This API key is not permitted to perform this action』(403)で拒否された。ドキュメント上もこの系のAPIはadmin API keyが必要と明記されている。現在の~/.fal_keyは動画生成専用の通常キーでadmin権限が無い。レスポンスヘッダーにx-fal-billable-units=71.24という値はあったが、USDへ換算する単価(unit_price)を取得する手段が同じ理由で無く、根拠のない換算をして『実費』と書くことはしていない。ブラウザ操作ツールもこのセッションには搭載されていない。この2つが揃わない限り、AI側だけでダッシュボード実測を再現する方法は無い（本セッションを含め複数回試行して同じ結論・経路を使い切ったため、これ以上AI側だけで繰り返さない）。<br><br>
-<b>たまごさんにしかできない1点：</b>①fal.ai管理画面(https://fal.ai/dashboard/keys)でadmin scope付きのAPIキーを追加発行いただくか、②次に1本生成する前後で一度だけ https://fal.ai/dashboard/usage-billing を見てSubtotalの数字を教えていただくか、のどちらか。①なら以後は自動で実費が取れるようになり、②なら今回の1本分だけその場で確定できます。
+実費が1円まで確定できなかった理由（2026-11-26再確認）：fal.ai公式ドキュメント(fal.ai/docs/documentation/model-apis/authentication/key-based)により、実費明細(cost_total)を返す`/v1/models/billing-events`・`/v1/models/usage`に必要な権限は`billing:usage:read`で、キー作成時のPermission presetで「<b>READONLY</b>」または「<b>BILLING</b>」を選んだキーが必要と判明（以前は「admin権限」という曖昧な言い方しかできなかった）。通常キー(~/.fal_key、Permission preset「API」)でこの2本を叩くと403「This API key is not permitted to perform this action」。一方、既にあるadmin key(~/.fal_admin_key)を叩くと401「Invalid API key or malformed Authorization header」＝キー自体が無効（403ではなく401なので、権限不足ではなくキーが失効・作成時のミス等で機能していない）。新たに見つけた`/v1/models/pricing`は通常キーでも200で読め、ltx-2.5/image-to-video/fastの公式単価$0.01/unitを取得できたが、これは「単価」であり「実際にいくら請求されたか」の確定ではない。レスポンスヘッダーのx-fal-billable-units=71.24(2026-09-12記録)と組み合わせると$0.7124(106.9円)という計算値になるが、これも計算値であり実費そのものではない。ブラウザ操作ツールもこのセッションには搭載されていない。この3回目の試行でも同じ結論に達したため、これ以上AI側だけでは繰り返さない。<br><br>
+<b>たまごさんにしかできない1点：</b>https://fal.ai/dashboard/keys を開いて、Create key → Permission presetで「<b>READONLY</b>」(推奨・読み取り専用)または「<b>BILLING</b>」を選んで新しいキーを発行し、値を <code>~/.fal_admin_key</code> に書き込んでください（ファイルに直接追記・値はこちらには見せなくて大丈夫です）。これで以後は`/v1/models/billing-events`から1円単位の実費を自動で取得できるようになります。もし鍵発行が難しければ、代わりに一度だけ https://fal.ai/dashboard/usage-billing を開いてSubtotalの数字を教えていただければ、今回の1本分だけその場で確定できます。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
