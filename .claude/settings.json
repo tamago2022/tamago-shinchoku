@@ -85,6 +85,18 @@
         ]
       },
       {
+        "$kanmon": "osascript_zenmen",
+        "$comment": "39685号（2026-10-02・スマホから登録→2026-11-26実装。★3回言わせている）。たまごさん「AppleScript / System Events / osascript は禁止。」1186号はブラウザ2種を名指しした限定ルールだったため、用途・対象アプリを問わず osascript呼び出し全般／tell application構文／System Events／Pythonのappscript系ライブラリ／NSAppleScript等のネイティブAPIを全面的に拒否する。Bash/Write/Edit/MultiEditの中身だけを見る。.md等の記録と、既存の禁止コード自身は見に行かない。逆テスト：node tools/stop_kanmon/39685_osascript_zenmen_kinshi.mjs --self-test",
+        "matcher": "Bash|Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/mac/tamago/tamago-shinchoku/tools/stop_kanmon/39685_osascript_zenmen_kinshi.mjs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
         "$kanmon": "muon",
         "$comment": "2026-10-10 無音の関所。afplay/ffplay/say等の再生コマンドと、無音の指定（Chromium=--mute-audio／WebKit=tools/muon.mjs muonContext／Firefox=media.volume_scale=0）なしにブラウザを起動するファイルの実行・書き込みを拒否する。判定の正本は tools/muon.py check_text。逆テスト：python3 tools/muon.py --self-test",
         "matcher": "Bash|Write|Edit|MultiEdit",
