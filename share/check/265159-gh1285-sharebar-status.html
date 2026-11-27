@@ -52,7 +52,7 @@
 <div class="date">2026-11-27 実装・main合流・本番(GitHub Pages)反映まで実測確認</div>
 
 <div class="fix">
-動画・曲ページでLINE/X共有を押すと「これ、ちょっと読んでみて。」が付く不具合。コードは直してmainに合流済み(commit 5bc22e8e8)。だが本番(joy-relief-station.lovable.app)はLovableの鍵切れ(別件#1253・OAuth再承認待ち)で公開が止まっており、まだ直る前のコードのまま。
+動画・曲ページでLINE/X共有を押すと「これ、ちょっと読んでみて。」が付く不具合。直すコードはすでにmainに合流済み。だが本番(joy-relief-station.lovable.app)はLovableの鍵切れ(別件#1253・OAuth再承認待ち)で公開が止まっており、まだ直る前のコードのまま表示されている。
 </div>
 
 <h2>② 数字</h2>
@@ -71,14 +71,14 @@
 <h2>⑤ 何をどう確かめたか</h2>
 <table>
 <tr><th>確認項目</th><th>結果</th></tr>
-<tr><td>mainのコード(ShareBar.tsx)</td><td class="yes">直っている(isFeaturePathで記事だけに限定)</td></tr>
+<tr><td>mainのコード(ShareBar.tsx)</td><td class="yes">直っている(記事ページだけに限定する分岐が入っている)</td></tr>
 <tr><td>本番 /feature/funky のLINE共有文</td><td class="yes">「これ、ちょっと読んでみて」あり(記事なので正しい)</td></tr>
 <tr><td>本番 /room/anime/momoume のLINE共有文</td><td class="no">「これ、ちょっと読んでみて」がまだ付いている(直る前のまま)</td></tr>
 <tr><td>原因</td><td class="no">Lovable公開がOAuth鍵切れ(#1253)で止まっている・たまごさんの再承認待ち</td></tr>
 </table>
 
 <footer>
-公開(Lovable Publish)はOAuth再承認待ちのため実行していません。鍵が直ればこのページの不合格行(no)が自動で合格に変わります。GitHub Issue #1285・commit 5bc22e8e8。
+公開(Lovable Publish)はOAuth再承認待ちのため実行していません。鍵が直ればこのページの不合格行(no)が自動で合格に変わります。
 </footer>
 <div id="shinchokuBackBottom" style="margin:30px 0 10px;padding:14px;text-align:center;background:#1c1c1c;border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;">
   <a href="https://tamago2022.github.io/tamago-shinchoku/" style="color:#8ef0ae;text-decoration:none;font-weight:700;font-size:0.95rem;">← 進捗表に戻る</a>
