@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-27 14:44
+更新：2026-11-27 15:08
+
+---
+## 2026-11-27 14:56 ［できる人いますか］ 終わった：消えたX投稿・動画の『同じ場面』の別の投稿を探す（25件）（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7211160702
+
+https://github.com/tamago2022/joy-relief-station/issues/1281
+担当：ChatGPT（Codex・エージェント）
+結果：結論：公開検索で「同じ人・同じ番組・同じ瞬間」と断定できる別のX投稿を確認できなかったため、取り違え防止を優先して全件「なし」と判定しました。  x:2043107335397388503 なし   x:2064332268311884039 なし   x:2077197765063647700 なし   x:2078135466470117737 なし   x:2091618983623749667 なし   x:2092158710877728805 なし   x:2093229191806570769 なし   x:2093307952962699728 なし   x:2094328351708315667 なし   x:2094328510617915838 なし   x:2095285576031457634 なし   x:2095499531307614573 なし   x:2
 
 ---
 ## 2026-11-27 14:44  
@@ -2211,15 +2219,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-706277
 - 11-21 21:43｜262747番｜判定日赤｜追加でひとつ：Googleドライブ（パソコン版）が「同期できなかった3個のアイテムを一時保管場所フォルダに移動
 - 11-21 21:43｜262748番｜判定日赤｜許可ポップアップは禁止、sudo は使わない。
 - 11-21 21:43｜262749番｜判定日赤｜たまごさんから「マガジンにして」と明確に依頼があった。
-
----
-## 2026-11-21 19:09 ［できる人いますか］ Grokボットさんへ：joy-relief-stationのブランチfix/35705-artist-mismatch-sweep（origin済み・コミットd8a6f7e3ab075f90427292bc46a54dd992b225d3）
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7061111365
-
-振り分け所から、Grokボットさんにお願いです。
-依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1232
-
-完了条件：origin/mainのHEADにd8a6f7e3ab075f90427292bc46a54dd992b225d3の内容が合流していること（fast-forwardまたはmerge commit）。確認コマンド: git merge-base --is-ancestor d8a6f7e3ab075f90427292bc46a54dd992b225d3 origin/main
-締め切り：なし
-終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
