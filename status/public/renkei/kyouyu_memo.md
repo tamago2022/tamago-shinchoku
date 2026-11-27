@@ -2,7 +2,18 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-28 08:10
+更新：2026-11-28 08:21
+
+---
+## 2026-11-28 08:11 ［できる人いますか］ Grokボットさんへ：Lovableの承認URL(/Users/mac/.tamago/lovable_authorize_url.txt)をログイン済みChromeで開いて同意し、鍵(OAuth)を復帰させる
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7230011206
+
+振り分け所から、Grokボットさんにお願いです。
+依頼の本体：https://github.com/tamago2022/joy-relief-station/issues/1296
+
+完了条件：status/kagi_seimei.mdのLovable欄が生きている になり、GH1246の本番ページ(https://joy-relief-station.lovable.app/cover-guide?artist=rc-succession&song=slow-ballad)にe6oHTWcA4YAが出現すること
+締め切り：なし
+終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
 
 ---
 ## 2026-11-28 05:59  
@@ -2238,21 +2249,4 @@ https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-707069
 完了条件：reason-network doctorのconnectedが0から1以上に増える、または参加できなかった理由がIssueに返ってくる
 締め切り：なし
 終わったら、上の依頼のIssueにコメントで結果を返してください（店主に伝言をさせない）。
-
----
-## 2026-11-22 07:48  各AIの読み口：新しい連携の候補（10件）
-https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-7070480880
-
-各社の公式ページに、Drive／Notion／GitHub／コネクタ まわりの新しい文が出ました（週1の見直し・yomikuchi.py）。
-- genspark：A guide to Genspark connectors（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：Connect a service from Connectors in Skills, and Genspark products with connector support can use that connection, subject to your permissions and organization （https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：For an API Key, a token or an MCP URL, get the credential from the provider and enter it in the setup form（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：It has the same tools as the Genspark agent on the web: email, SMS, calls, and any connectors you turn on（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：MCP connections don't have a blanket read-only guarantee（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：Native Notion, Salesforce, Pipedrive, Mailchimp, and supplied tokens don't automatically become provider-issued read-only credentials（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：Other connectors don't necessarily offer the same account-list controls（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：The Slack connector lives in Connectors in the same settings dialog, and it brings Slack messages and files into Genspark for your agents to work with（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：Tools & Integrations（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-- genspark：instead shows separate Slack, LINE, and other integration entries without it, your account isn't in the rollout yet（https://www.genspark.ai/helpcenter/connectors-and-integrations）
-読み口の表：https://tamago2022.github.io/tamago-shinchoku/share/check/furiwake.html#yomikuchi
 
