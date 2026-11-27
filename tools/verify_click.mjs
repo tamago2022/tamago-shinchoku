@@ -578,11 +578,30 @@ async function main() {
     // aria-selected="true"（＝既に選択中のタブ）も自己参照とみなし除外する。
     const isCurrentPageMarked = (e) =>
       e.ariaCurrent === "page" || (e.role === "tab" && e.ariaSelected === "true");
+    // 案件#1254実測（GH1254・share/o.html の「Obsidianで開く」ボタン）：href="obsidian://open?..."
+    // のようなカスタムURIスキームのリンクは、ヘッドレスChrome環境にOSのプロトコルハンドラ
+    // （Obsidianアプリ等）が無いため、クリックしてもlocation.hrefが変わらず新しいタブも開かない
+    // ＝ページ側から観測できる変化が原理的に起きない。実機（Obsidianがインストール済みのスマホ/PC）
+    // では正しくOSがアプリへ引き渡すが、この検品環境では「無反応」にしかなりえない＝
+    // target="_blank"(案件#718)・自己参照リンク(案件#1353)と同種の構造的に検証不能なリンク。
+    // http/https以外のスキーム（obsidian:, mailto:, tel:, sms: 等）への<a href>は、
+    // 無反応判定の対象から外し自動OK扱いにする。
+    const isCustomSchemeLink = (href) => {
+      if (!href) return false;
+      const m = /^([a-z][a-z0-9+.-]*):/i.exec(href.trim());
+      if (!m) return false;
+      const scheme = m[1].toLowerCase();
+      return scheme !== "http" && scheme !== "https";
+    };
     const buttonLike = elements.filter((e) => !(e.tag === "A" && e.href) && !isCurrentPageMarked(e));
     const selfLinks = elements.filter(
-      (e) => (e.tag === "A" && e.href && isSelfLink(e.href)) || isCurrentPageMarked(e),
+      (e) =>
+        (e.tag === "A" && e.href && (isSelfLink(e.href) || isCustomSchemeLink(e.href))) ||
+        isCurrentPageMarked(e),
     );
-    const linksWithHref = elements.filter((e) => e.tag === "A" && e.href && !isSelfLink(e.href) && !isCurrentPageMarked(e));
+    const linksWithHref = elements.filter(
+      (e) => e.tag === "A" && e.href && !isSelfLink(e.href) && !isCustomSchemeLink(e.href) && !isCurrentPageMarked(e),
+    );
     result.selfLinkCount = selfLinks.length;
     const LINK_SAMPLE = 5;
     const linkSample = linksWithHref.slice(0, LINK_SAMPLE);
