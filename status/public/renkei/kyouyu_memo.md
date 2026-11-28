@@ -2,7 +2,15 @@
 
 正本：https://github.com/tamago2022/joy-relief-station/issues?q=label%3A店主の指示メモ （ラベル「店主の指示メモ」の付いたIssue。1企画＝1Issue）
 ルール：@メンションは書かない／勝手に配信しない（配信は工場の仕組みだけ）／店主に伝言をさせない。
-更新：2026-11-28 15:09
+更新：2026-11-28 15:34
+
+---
+## 2026-11-28 15:17 ［できる人いますか］ 終わった：Lovableの承認URL(/Users/mac/.tamago/lovable_authorize_url.txt)を（ChatGPT（Codex・エージェント））
+https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7235240038
+
+https://github.com/tamago2022/joy-relief-station/issues/1296
+担当：ChatGPT（Codex・エージェント）
+結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
 ---
 ## 2026-11-28 15:02  
@@ -2275,14 +2283,6 @@ https://github.com/tamago2022/joy-relief-station/issues/1040#issuecomment-707563
 https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7075252367
 
 https://github.com/tamago2022/joy-relief-station/issues/1243
-担当：ChatGPT（Codex・エージェント）
-結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
-
----
-## 2026-11-22 14:53 ［できる人いますか］ 終わった：Instagram @cosmicwae（TeamTadanowae）のMeta Business Suite予約（bu（ChatGPT（Codex・エージェント））
-https://github.com/tamago2022/joy-relief-station/issues/1052#issuecomment-7075031589
-
-https://github.com/tamago2022/joy-relief-station/issues/1234
 担当：ChatGPT（Codex・エージェント）
 結果：You have reached your Codex usage limits. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
 
